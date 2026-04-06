@@ -1375,7 +1375,7 @@ const POLICIES=[
   {id:"no_refund",label:"No Refund", desc:"No refunds under any circumstances"},
 ];
 const USERS=[
-  {id:"u0",role:"admin", email:"admin@awaz.no",  hash:sh("Admin2025!"),  name:"Admin"},
+  {id:"u0",role:"admin", email:"shams.nn@outlook.com",  hash:sh("Admin2025!"),  name:"Admin"},
   {id:"u1",role:"artist",email:"soraya@awaz.no", hash:sh("Soraya123!"),  name:"Soraya Rahimi",  artistId:"a1"},
   {id:"u2",role:"artist",email:"ahmad@awaz.no",  hash:sh("Ahmad123!"),   name:"Ahmad Zafar",   artistId:"a2"},
   {id:"u3",role:"artist",email:"khalid@awaz.no", hash:sh("Khalid123!"),  name:"Khalid Noori",  artistId:"a4"},
