@@ -4150,12 +4150,12 @@ function AIWidget({ artists, onPick }) {
               </div>
             </div>
             <div style={{marginBottom:14}}>
-              <div style={{color:C.muted,fontSize:T.xs,fontWeight:700,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:7}}{t('aiStyle')}</div>
+              <div style={{color:C.muted,fontSize:T.xs,fontWeight:700,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:7}}>{t('aiStyle')}</div>
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
                 {moods.map(([v,l,d])=><button key={v} onClick={()=>setPrefs(p=>({...p,mood:v}))} style={{background:prefs.mood===v?`${C.ruby}18`:C.surface,color:prefs.mood===v?C.ruby:C.muted,border:`1px solid ${prefs.mood===v?`${C.ruby}44`:C.border}`,borderRadius:7,padding:"8px 10px",fontSize:T.xs,cursor:"pointer",fontFamily:"inherit",textAlign:"left",minHeight:44,WebkitTapHighlightColor:"transparent"}}><div style={{fontWeight:700}}>{l}</div><div style={{fontSize:9,opacity:0.7,marginTop:1}}>{d}</div></button>)}
               </div>
             </div>
-            <Btn v="lapis" full onClick={run} disabled={!prefs.event&&!prefs.mood}{t('aiFindBtn')}</Btn>
+            <Btn v="lapis" full onClick={run} disabled={!prefs.event&&!prefs.mood}>{t('aiFindBtn')}</Btn>
           </>
         )}
         {step==="loading"&&<div style={{textAlign:"center",padding:"24px 0"}}><div style={{width:32,height:32,border:`2px solid ${C.border}`,borderTopColor:C.lapis,borderRadius:"50%",animation:"spin 0.8s linear infinite",margin:"0 auto 12px"}}/><div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.md,color:C.text}}>Analyzing…</div></div>}
