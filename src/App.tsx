@@ -1142,9 +1142,9 @@ function LoginSheet({ users, open, onLogin, onClose }) {
           <div style={{color:C.muted,fontSize:T.sm}}>Create your account</div>
         </div>
         <div style={{display:"flex",flexDirection:"column",gap:12,marginBottom:14}}>
-          <Inp label="Full name *" placeholder="Ditt navn" value={name} onChange={e=>setName(e.target.value)} onKeyDown={e=>e.key==="Enter"&&doRegister()}/>
-          <Inp label="E-post *" type="email" placeholder="you@email.com" value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==="Enter"&&doRegister()}/>
-          <Inp label="Passord *" type="password" placeholder="At least 8 characters" value={pass} onChange={e=>setPass(e.target.value)} onKeyDown={e=>e.key==="Enter"&&doRegister()} hint="At least 8 characters"/>
+          <Inp label="Full name *" placeholder="Your name" value={name} onChange={e=>setName(e.target.value)} onKeyDown={e=>e.key==="Enter"&&doRegister()}/>
+          <Inp label="Email *" type="email" placeholder="you@email.com" value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==="Enter"&&doRegister()}/>
+          <Inp label="Password *" type="password" placeholder="At least 8 characters" value={pass} onChange={e=>setPass(e.target.value)} onKeyDown={e=>e.key==="Enter"&&doRegister()} hint="At least 8 characters"/>
         </div>
         {err&&<div style={{background:C.rubyS,border:`1px solid ${C.ruby}28`,borderRadius:8,padding:"10px 13px",color:C.ruby,fontSize:T.xs,marginBottom:12}}>⚠ {err}</div>}
         <Btn full sz="lg" loading={loading} onClick={doRegister}>Create account</Btn>
@@ -1154,7 +1154,7 @@ function LoginSheet({ users, open, onLogin, onClose }) {
         </button>
         <div style={{background:C.surface,borderRadius:10,padding:"12px 14px",border:`1px solid ${C.border}`,marginTop:14}}>
           <div style={{fontSize:T.xs,color:C.muted,lineHeight:1.7}}>
-            Are you an artist? Use the <button onClick={()=>{onClose();}} style={{background:"none",border:"none",color:C.gold,cursor:"pointer",fontFamily:"inherit",fontSize:T.xs,textDecoration:"underline",padding:0}}>«Apply as Artist»</button>-knappen i stedet.
+            Are you an artist? Use the <button onClick={()=>{onClose();}} style={{background:"none",border:"none",color:C.gold,cursor:"pointer",fontFamily:"inherit",fontSize:T.xs,textDecoration:"underline",padding:0}}>Apply as Artist</button> button instead.
           </div>
         </div>
       </div>
