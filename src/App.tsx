@@ -1117,6 +1117,7 @@ function LoginSheet({ users, open, onLogin, onClose }) {
                  <Btn full sz="lg" loading={loading} onClick={doForgot}>Send tilbakestillingslenke</Btn>
                  <button onClick={()=>setMode("login")} style={{background:"none",border:"none",color:C.muted,cursor:"pointer",fontSize:T.sm,fontFamily:"inherit",minHeight:36}}>← Tilbake til innlogging</button>
                </div></>}
+        </div>
       </div>
     </Sheet>
   );
