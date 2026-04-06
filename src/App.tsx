@@ -208,6 +208,102 @@ const TRANSLATIONS = {
     back:"← Back", from:"FROM", clearFilters:"Clear filters",
     noArtistsFound:"No artists found", tryDifferent:"Try a different genre or search term.",
     artistsCount:"{n} artist", artistsCountPlural:"{n} artists",
+    howStep1Title:"Discover",
+    howStep1Desc:"Browse verified artists by genre and location",
+    howStep2Title:"Choose Date",
+    howStep2Desc:"View live calendars — pick an open date",
+    howStep3Title:"Pay Deposit",
+    howStep3Desc:"Artist-set deposit via Stripe — auto-split",
+    howStep4Title:"Chat Opens",
+    howStep4Desc:"Direct messaging after payment",
+    howStep5Title:"Enjoy",
+    howStep5Desc:"Balance paid cash to artist after concert",
+    howSectionTitle:"How It Works",
+    howSectionSub:"Simple, transparent, secure from search to performance",
+    footerDesc:"The premier platform for booking verified Afghan artists across Europe.",
+    footerBrowse:"Browse",
+    footerApply:"Apply",
+    footerPricing:"Pricing",
+    searchArtists:"Search artists…",
+    bookDirectly:"Book directly — no agencies",
+    chatLockedTitle2:"Chat Locked",
+    chatLockedBody2:"Pay the deposit to unlock messaging.",
+    securedByStripe:"Secured by Stripe",
+    depositConfirmed2:"Deposit Confirmed!",
+    continueToChat2:"Continue to Chat →",
+    balanceCashNote2:"Balance paid cash to artist after concert",
+    createYourAccount:"Create your account",
+    emailSent2:"Email sent!",
+    checkInbox2:"Check your inbox at",
+    backToSignIn2:"Back to sign in",
+    enterYourEmail2:"Enter your email and we will send you a reset link.",
+    sendResetLink2:"Send reset link",
+    demoNote2:"These are removed when you connect Supabase Auth.",
+    bookingTerms:"Booking Terms",
+    pricingByCountry:"Pricing by Country",
+    pricesLocal:"Prices shown in local currency · Stripe deposit auto-converts to EUR",
+    noSocialConnected:"No social accounts connected",
+    noSocialDesc:"This artist hasn't linked Spotify or Instagram yet.",
+    selectDate2:"Select a Date",
+    cashAfterConcert:"Cash after concert",
+    platformOverview2:"Platform Overview",
+    recentBookings:"Recent Bookings",
+    allBookings2:"All Bookings",
+    allConversations2:"All Conversations",
+    noMessages:"No messages",
+    paymentSplit:"Payment Split",
+    awazAdmin:"Awaz Admin",
+    platformControl:"Platform Control",
+    adminPanel:"Admin Panel",
+    pendingApproval:"Pending approval",
+    connectStripe:"Connect Stripe",
+    addSocial:"Add Spotify & Instagram",
+    addNow:"Add now →",
+    noBookingsYet2:"No bookings yet. Add available dates!",
+    tapToToggle:"Tap dates to toggle Available ↔ Blocked",
+    myBookings2:"My Bookings",
+    noBookingsYet3:"No bookings yet.",
+    noChatsYet2:"Chats unlock after customers pay the deposit.",
+    noMessagesYet:"No messages yet",
+    socialMedia:"Social Media",
+    myProfile2:"My Profile",
+    tapToChange:"Tap to change photo",
+    notConnected:"Not Connected",
+    youReceive:"You receive",
+    artistPortal:"Artist Portal",
+    depositSplit:"Deposit Split",
+    findPerfectArtist:"Find your perfect artist",
+    startOver:"Start over",
+    profileUnderReview:"Your profile is under review. Sign in to connect Stripe and complete verification.",
+    submitApplication:"Submit Application",
+    inquiryReceived:"Inquiry Received",
+    privateInquiry:"Private Inquiry",
+    directToOwner:"Direct to Owner",
+    directToOwnerDesc:"Personal response · Price negotiation · Bespoke packages",
+    budgetRange:"Budget Range",
+    selectRange:"Select a range…",
+    preferredArtist:"Preferred Artist (optional)",
+    notSureYet:"Not sure yet — let the owner suggest",
+    noInquiriesYet:"No inquiries yet",
+    noInquiriesDesc:"Visitor inquiries appear here once the contact widget is live.",
+    yourReply:"Your Reply (sent)",
+    marketPricing:"Market Pricing",
+    saveMarketPricing:"Save Market Pricing",
+    connectingStripe:"Connecting to Stripe…",
+    stripeSecurity:"Stripe Connect · Bank-level security · Instant payouts",
+    loadingSpotify:"Loading Spotify…",
+    spotifyBlocked:"Spotify widget blocked by browser",
+    viewOnInstagram:"View on Instagram ↗",
+    watchOnTikTok:"Watch on TikTok ↗",
+    applyAsArtistTitle:"Apply as Artist",
+    spotifyAppLabel:"Spotify app:",
+    spotifyLinkRecognized:"Spotify link recognized",
+    instagramRecognized:"Instagram profile recognized",
+    howToFindLink:"How to find your link",
+    spotifyInstructions:"Spotify app: Go to your profile → three dots (⋯) → Share → Copy link to artist",
+    artistProfileNotFound:"Artist Profile Not Found",
+    noStripe:"No Stripe",
+    recentBookingsLabel:"Recent Bookings",
   },
 
   no: {
@@ -277,6 +373,102 @@ const TRANSLATIONS = {
     back:"← Tilbake", from:"FRA", clearFilters:"Fjern filtre",
     noArtistsFound:"Ingen artister funnet", tryDifferent:"Prøv en annen sjanger eller søkeord.",
     artistsCount:"{n} artist", artistsCountPlural:"{n} artister",
+    howStep1Title:"Utforsk",
+    howStep1Desc:"Se verifiserte artister etter sjanger og sted",
+    howStep2Title:"Velg dato",
+    howStep2Desc:"Se live-kalendere — velg en ledig dato",
+    howStep3Title:"Betal depositum",
+    howStep3Desc:"Artistens depositum via Stripe — automatisk delt",
+    howStep4Title:"Chat åpnes",
+    howStep4Desc:"Direkte melding etter betaling",
+    howStep5Title:"Nyt",
+    howStep5Desc:"Saldo betales kontant til artisten etter konserten",
+    howSectionTitle:"Slik fungerer det",
+    howSectionSub:"Enkelt, transparent, sikkert fra søk til fremføring",
+    footerDesc:"Den fremste plattformen for å booke verifiserte afghanske artister i Europa.",
+    footerBrowse:"Utforsk",
+    footerApply:"Søk",
+    footerPricing:"Priser",
+    searchArtists:"Søk artister…",
+    bookDirectly:"Bestill direkte — ingen agenter",
+    chatLockedTitle2:"Chat låst",
+    chatLockedBody2:"Betal depositum for å åpne meldinger.",
+    securedByStripe:"Sikret av Stripe",
+    depositConfirmed2:"Depositum bekreftet!",
+    continueToChat2:"Fortsett til chat →",
+    balanceCashNote2:"Saldo betales kontant til artisten etter konserten",
+    createYourAccount:"Opprett din konto",
+    emailSent2:"E-post sendt!",
+    checkInbox2:"Sjekk innboksen din på",
+    backToSignIn2:"Tilbake til innlogging",
+    enterYourEmail2:"Skriv inn e-posten din, så sender vi en tilbakestillingslenke.",
+    sendResetLink2:"Send tilbakestillingslenke",
+    demoNote2:"Disse fjernes når du kobler til Supabase Auth.",
+    bookingTerms:"Bestillingsvilkår",
+    pricingByCountry:"Priser per land",
+    pricesLocal:"Priser vist i lokal valuta · Stripe-depositum konverteres automatisk til EUR",
+    noSocialConnected:"Ingen sosiale kontoer koblet til",
+    noSocialDesc:"Denne artisten har ikke koblet til Spotify eller Instagram ennå.",
+    selectDate2:"Velg en dato",
+    cashAfterConcert:"Kontant etter konsert",
+    platformOverview2:"Plattformoversikt",
+    recentBookings:"Siste bookinger",
+    allBookings2:"Alle bookinger",
+    allConversations2:"Alle samtaler",
+    noMessages:"Ingen meldinger",
+    paymentSplit:"Betalingsdeling",
+    awazAdmin:"Awaz Admin",
+    platformControl:"Plattformkontroll",
+    adminPanel:"Adminpanel",
+    pendingApproval:"Venter på godkjenning",
+    connectStripe:"Koble til Stripe",
+    addSocial:"Legg til Spotify og Instagram",
+    addNow:"Legg til nå →",
+    noBookingsYet2:"Ingen bookinger ennå. Legg til tilgjengelige datoer!",
+    tapToToggle:"Trykk på datoer for å veksle Ledig ↔ Blokkert",
+    myBookings2:"Mine bookinger",
+    noBookingsYet3:"Ingen bookinger ennå.",
+    noChatsYet2:"Chat låses opp når kundene betaler depositum.",
+    noMessagesYet:"Ingen meldinger ennå",
+    socialMedia:"Sosiale medier",
+    myProfile2:"Min profil",
+    tapToChange:"Trykk for å endre bilde",
+    notConnected:"Ikke tilkoblet",
+    youReceive:"Du mottar",
+    artistPortal:"Artistportal",
+    depositSplit:"Depositum-deling",
+    findPerfectArtist:"Finn din perfekte artist",
+    startOver:"Start på nytt",
+    profileUnderReview:"Profilen din er under vurdering. Logg inn for å koble til Stripe og fullføre verifisering.",
+    submitApplication:"Send søknad",
+    inquiryReceived:"Forespørsel mottatt",
+    privateInquiry:"Privat forespørsel",
+    directToOwner:"Direkte til eier",
+    directToOwnerDesc:"Personlig svar · Prisforhandling · Skreddersydde pakker",
+    budgetRange:"Budsjettramme",
+    selectRange:"Velg en ramme…",
+    preferredArtist:"Foretrukket artist (valgfritt)",
+    notSureYet:"Ikke sikker ennå — la eieren foreslå",
+    noInquiriesYet:"Ingen forespørsler ennå",
+    noInquiriesDesc:"Besøkendes forespørsler vises her når kontaktwidgeten er aktiv.",
+    yourReply:"Ditt svar (sendt)",
+    marketPricing:"Markedspriser",
+    saveMarketPricing:"Lagre markedspriser",
+    connectingStripe:"Kobler til Stripe…",
+    stripeSecurity:"Stripe Connect · Banknivå sikkerhet · Umiddelbare utbetalinger",
+    loadingSpotify:"Laster Spotify…",
+    spotifyBlocked:"Spotify-widget blokkert av nettleser",
+    viewOnInstagram:"Se på Instagram ↗",
+    watchOnTikTok:"Se på TikTok ↗",
+    applyAsArtistTitle:"Søk som artist",
+    spotifyAppLabel:"Spotify-appen:",
+    spotifyLinkRecognized:"Spotify-lenke gjenkjent",
+    instagramRecognized:"Instagram-profil gjenkjent",
+    howToFindLink:"Slik finner du lenken",
+    spotifyInstructions:"Spotify-appen: Gå til profil → tre prikker (⋯) → Del → Kopier lenke til artist",
+    artistProfileNotFound:"Artistprofil ikke funnet",
+    noStripe:"Ingen Stripe",
+    recentBookingsLabel:"Siste bookinger",
   },
 
   de: {
@@ -346,6 +538,102 @@ const TRANSLATIONS = {
     back:"← Zurück", from:"AB", clearFilters:"Filter löschen",
     noArtistsFound:"Keine Künstler gefunden", tryDifferent:"Versuche ein anderes Genre oder Suchbegriff.",
     artistsCount:"{n} Künstler", artistsCountPlural:"{n} Künstler",
+    howStep1Title:"Entdecken",
+    howStep1Desc:"Verifizierte Künstler nach Genre und Ort durchsuchen",
+    howStep2Title:"Datum wählen",
+    howStep2Desc:"Live-Kalender anzeigen — freies Datum wählen",
+    howStep3Title:"Anzahlung bezahlen",
+    howStep3Desc:"Künstler-Anzahlung via Stripe — automatisch aufgeteilt",
+    howStep4Title:"Chat öffnet sich",
+    howStep4Desc:"Direktnachrichten nach Zahlung",
+    howStep5Title:"Genießen",
+    howStep5Desc:"Restbetrag bar nach dem Konzert bezahlt",
+    howSectionTitle:"So funktioniert es",
+    howSectionSub:"Einfach, transparent, sicher von der Suche bis zur Aufführung",
+    footerDesc:"Die führende Plattform für die Buchung verifizierter afghanischer Künstler in Europa.",
+    footerBrowse:"Entdecken",
+    footerApply:"Bewerben",
+    footerPricing:"Preise",
+    searchArtists:"Künstler suchen…",
+    bookDirectly:"Direkt buchen — keine Agenturen",
+    chatLockedTitle2:"Chat gesperrt",
+    chatLockedBody2:"Zahle die Anzahlung um Nachrichten freizuschalten.",
+    securedByStripe:"Gesichert von Stripe",
+    depositConfirmed2:"Anzahlung bestätigt!",
+    continueToChat2:"Weiter zum Chat →",
+    balanceCashNote2:"Restbetrag bar nach dem Konzert bezahlt",
+    createYourAccount:"Konto erstellen",
+    emailSent2:"E-Mail gesendet!",
+    checkInbox2:"Überprüfe deinen Posteingang bei",
+    backToSignIn2:"Zurück zur Anmeldung",
+    enterYourEmail2:"Gib deine E-Mail ein und wir senden dir einen Reset-Link.",
+    sendResetLink2:"Reset-Link senden",
+    demoNote2:"Diese werden entfernt, wenn du Supabase Auth verbindest.",
+    bookingTerms:"Buchungsbedingungen",
+    pricingByCountry:"Preise nach Land",
+    pricesLocal:"Preise in Landeswährung · Stripe-Anzahlung wird automatisch in EUR umgerechnet",
+    noSocialConnected:"Keine sozialen Konten verbunden",
+    noSocialDesc:"Dieser Künstler hat noch kein Spotify oder Instagram verknüpft.",
+    selectDate2:"Datum auswählen",
+    cashAfterConcert:"Bargeld nach dem Konzert",
+    platformOverview2:"Plattformübersicht",
+    recentBookings:"Aktuelle Buchungen",
+    allBookings2:"Alle Buchungen",
+    allConversations2:"Alle Gespräche",
+    noMessages:"Keine Nachrichten",
+    paymentSplit:"Zahlungsaufteilung",
+    awazAdmin:"Awaz Admin",
+    platformControl:"Plattformsteuerung",
+    adminPanel:"Adminbereich",
+    pendingApproval:"Genehmigung ausstehend",
+    connectStripe:"Stripe verbinden",
+    addSocial:"Spotify & Instagram hinzufügen",
+    addNow:"Jetzt hinzufügen →",
+    noBookingsYet2:"Noch keine Buchungen. Füge verfügbare Daten hinzu!",
+    tapToToggle:"Tippe auf Daten um Verfügbar ↔ Gesperrt umzuschalten",
+    myBookings2:"Meine Buchungen",
+    noBookingsYet3:"Noch keine Buchungen.",
+    noChatsYet2:"Chats werden nach Anzahlung freigeschaltet.",
+    noMessagesYet:"Noch keine Nachrichten",
+    socialMedia:"Soziale Medien",
+    myProfile2:"Mein Profil",
+    tapToChange:"Tippe zum Ändern des Fotos",
+    notConnected:"Nicht verbunden",
+    youReceive:"Du erhältst",
+    artistPortal:"Künstlerportal",
+    depositSplit:"Anzahlungsaufteilung",
+    findPerfectArtist:"Finden Sie Ihren perfekten Künstler",
+    startOver:"Von vorne beginnen",
+    profileUnderReview:"Ihr Profil wird überprüft. Melden Sie sich an, um Stripe zu verbinden und die Verifizierung abzuschließen.",
+    submitApplication:"Bewerbung einreichen",
+    inquiryReceived:"Anfrage erhalten",
+    privateInquiry:"Private Anfrage",
+    directToOwner:"Direkt an den Inhaber",
+    directToOwnerDesc:"Persönliche Antwort · Preisverhandlung · Maßgeschneiderte Pakete",
+    budgetRange:"Budgetrahmen",
+    selectRange:"Bereich auswählen…",
+    preferredArtist:"Bevorzugter Künstler (optional)",
+    notSureYet:"Noch nicht sicher — den Inhaber vorschlagen lassen",
+    noInquiriesYet:"Noch keine Anfragen",
+    noInquiriesDesc:"Besucheranfragen erscheinen hier, sobald das Kontakt-Widget live ist.",
+    yourReply:"Ihre Antwort (gesendet)",
+    marketPricing:"Marktpreise",
+    saveMarketPricing:"Marktpreise speichern",
+    connectingStripe:"Verbinde mit Stripe…",
+    stripeSecurity:"Stripe Connect · Banksicherheit · Sofortige Auszahlungen",
+    loadingSpotify:"Spotify wird geladen…",
+    spotifyBlocked:"Spotify-Widget vom Browser blockiert",
+    viewOnInstagram:"Auf Instagram ansehen ↗",
+    watchOnTikTok:"Auf TikTok ansehen ↗",
+    applyAsArtistTitle:"Als Künstler bewerben",
+    spotifyAppLabel:"Spotify-App:",
+    spotifyLinkRecognized:"Spotify-Link erkannt",
+    instagramRecognized:"Instagram-Profil erkannt",
+    howToFindLink:"So findest du deinen Link",
+    spotifyInstructions:"Spotify-App: Profil → drei Punkte (⋯) → Teilen → Link zum Künstler kopieren",
+    artistProfileNotFound:"Künstlerprofil nicht gefunden",
+    noStripe:"Kein Stripe",
+    recentBookingsLabel:"Aktuelle Buchungen",
   },
 
   fr: {
@@ -415,6 +703,102 @@ const TRANSLATIONS = {
     back:"← Retour", from:"DÈS", clearFilters:"Effacer les filtres",
     noArtistsFound:"Aucun artiste trouvé", tryDifferent:"Essayez un autre genre ou terme de recherche.",
     artistsCount:"{n} artiste", artistsCountPlural:"{n} artistes",
+    howStep1Title:"Découvrir",
+    howStep1Desc:"Parcourez les artistes vérifiés par genre et lieu",
+    howStep2Title:"Choisir une date",
+    howStep2Desc:"Consultez les calendriers en direct — choisissez une date",
+    howStep3Title:"Payer l'acompte",
+    howStep3Desc:"Acompte fixé par l'artiste via Stripe — partage automatique",
+    howStep4Title:"Chat débloqué",
+    howStep4Desc:"Messagerie directe après le paiement",
+    howStep5Title:"Profiter",
+    howStep5Desc:"Solde payé en espèces après le concert",
+    howSectionTitle:"Comment ça marche",
+    howSectionSub:"Simple, transparent, sécurisé de la recherche à la performance",
+    footerDesc:"La première plateforme de réservation d'artistes afghans vérifiés en Europe.",
+    footerBrowse:"Parcourir",
+    footerApply:"Postuler",
+    footerPricing:"Tarifs",
+    searchArtists:"Rechercher des artistes…",
+    bookDirectly:"Réservez directement — sans agences",
+    chatLockedTitle2:"Chat verrouillé",
+    chatLockedBody2:"Payez l'acompte pour débloquer la messagerie.",
+    securedByStripe:"Sécurisé par Stripe",
+    depositConfirmed2:"Acompte confirmé !",
+    continueToChat2:"Continuer vers le chat →",
+    balanceCashNote2:"Solde payé en espèces après le concert",
+    createYourAccount:"Créer votre compte",
+    emailSent2:"E-mail envoyé !",
+    checkInbox2:"Vérifiez votre boîte de réception à",
+    backToSignIn2:"Retour à la connexion",
+    enterYourEmail2:"Entrez votre e-mail et nous vous enverrons un lien de réinitialisation.",
+    sendResetLink2:"Envoyer le lien de réinitialisation",
+    demoNote2:"Ceux-ci sont supprimés lorsque vous connectez Supabase Auth.",
+    bookingTerms:"Conditions de réservation",
+    pricingByCountry:"Tarifs par pays",
+    pricesLocal:"Prix en devise locale · L'acompte Stripe est automatiquement converti en EUR",
+    noSocialConnected:"Aucun compte social connecté",
+    noSocialDesc:"Cet artiste n'a pas encore lié Spotify ou Instagram.",
+    selectDate2:"Sélectionner une date",
+    cashAfterConcert:"Espèces après le concert",
+    platformOverview2:"Vue d'ensemble",
+    recentBookings:"Réservations récentes",
+    allBookings2:"Toutes les réservations",
+    allConversations2:"Toutes les conversations",
+    noMessages:"Pas de messages",
+    paymentSplit:"Répartition du paiement",
+    awazAdmin:"Awaz Admin",
+    platformControl:"Contrôle de la plateforme",
+    adminPanel:"Panneau admin",
+    pendingApproval:"En attente d'approbation",
+    connectStripe:"Connecter Stripe",
+    addSocial:"Ajouter Spotify & Instagram",
+    addNow:"Ajouter maintenant →",
+    noBookingsYet2:"Pas encore de réservations. Ajoutez des dates disponibles !",
+    tapToToggle:"Appuyez sur les dates pour basculer Disponible ↔ Bloqué",
+    myBookings2:"Mes réservations",
+    noBookingsYet3:"Pas encore de réservations.",
+    noChatsYet2:"Les chats se débloquent après le paiement de l'acompte.",
+    noMessagesYet:"Pas encore de messages",
+    socialMedia:"Réseaux sociaux",
+    myProfile2:"Mon profil",
+    tapToChange:"Appuyer pour changer la photo",
+    notConnected:"Non connecté",
+    youReceive:"Vous recevez",
+    artistPortal:"Portail artiste",
+    depositSplit:"Répartition de l'acompte",
+    findPerfectArtist:"Trouvez votre artiste parfait",
+    startOver:"Recommencer",
+    profileUnderReview:"Votre profil est en cours d'examen. Connectez-vous pour relier Stripe et finaliser la vérification.",
+    submitApplication:"Soumettre la candidature",
+    inquiryReceived:"Demande reçue",
+    privateInquiry:"Demande privée",
+    directToOwner:"Directement au propriétaire",
+    directToOwnerDesc:"Réponse personnelle · Négociation de prix · Forfaits sur mesure",
+    budgetRange:"Fourchette budgétaire",
+    selectRange:"Sélectionner une fourchette…",
+    preferredArtist:"Artiste préféré (facultatif)",
+    notSureYet:"Pas encore sûr — laisser le propriétaire suggérer",
+    noInquiriesYet:"Pas encore de demandes",
+    noInquiriesDesc:"Les demandes des visiteurs apparaissent ici lorsque le widget de contact est en ligne.",
+    yourReply:"Votre réponse (envoyée)",
+    marketPricing:"Tarifs du marché",
+    saveMarketPricing:"Enregistrer les tarifs",
+    connectingStripe:"Connexion à Stripe…",
+    stripeSecurity:"Stripe Connect · Sécurité bancaire · Versements instantanés",
+    loadingSpotify:"Chargement Spotify…",
+    spotifyBlocked:"Widget Spotify bloqué par le navigateur",
+    viewOnInstagram:"Voir sur Instagram ↗",
+    watchOnTikTok:"Voir sur TikTok ↗",
+    applyAsArtistTitle:"Devenir artiste",
+    spotifyAppLabel:"Application Spotify :",
+    spotifyLinkRecognized:"Lien Spotify reconnu",
+    instagramRecognized:"Profil Instagram reconnu",
+    howToFindLink:"Comment trouver votre lien",
+    spotifyInstructions:"App Spotify : Allez à votre profil → trois points (⋯) → Partager → Copier le lien",
+    artistProfileNotFound:"Profil artiste introuvable",
+    noStripe:"Sans Stripe",
+    recentBookingsLabel:"Réservations récentes",
   },
 
   da: {
@@ -485,6 +869,102 @@ const TRANSLATIONS = {
     back:"بازگشت →", from:"از", clearFilters:"پاک کردن فیلترها",
     noArtistsFound:"هنرمندی یافت نشد", tryDifferent:"ژانر یا عبارت جستجوی دیگری امتحان کنید.",
     artistsCount:"{n} هنرمند", artistsCountPlural:"{n} هنرمند",
+    howStep1Title:"کشف",
+    howStep1Desc:"هنرمندان تایید شده را بر اساس ژانر و موقعیت مرور کنید",
+    howStep2Title:"تاریخ را انتخاب کنید",
+    howStep2Desc:"تقویم‌های زنده را ببینید — یک تاریخ آزاد انتخاب کنید",
+    howStep3Title:"پیش‌پرداخت کنید",
+    howStep3Desc:"پیش‌پرداخت تعیین‌شده توسط هنرمند از طریق Stripe — تقسیم خودکار",
+    howStep4Title:"چت باز می‌شود",
+    howStep4Desc:"پیام مستقیم پس از پرداخت",
+    howStep5Title:"لذت ببرید",
+    howStep5Desc:"باقیمانده نقداً به هنرمند پس از کنسرت پرداخت می‌شود",
+    howSectionTitle:"چگونه کار می‌کند",
+    howSectionSub:"ساده، شفاف، امن از جستجو تا اجرا",
+    footerDesc:"پیشرفته‌ترین پلتفرم برای رزرو هنرمندان تایید شده افغان در اروپا.",
+    footerBrowse:"مرور",
+    footerApply:"درخواست",
+    footerPricing:"قیمت‌ها",
+    searchArtists:"جستجوی هنرمندان…",
+    bookDirectly:"مستقیم رزرو کنید — بدون آژانس",
+    chatLockedTitle2:"چت قفل است",
+    chatLockedBody2:"پیش‌پرداخت را بپردازید تا پیام‌رسانی باز شود.",
+    securedByStripe:"توسط Stripe ایمن شده",
+    depositConfirmed2:"پیش‌پرداخت تایید شد!",
+    continueToChat2:"ادامه به چت →",
+    balanceCashNote2:"باقیمانده نقداً به هنرمند پس از کنسرت",
+    createYourAccount:"حساب خود را ایجاد کنید",
+    emailSent2:"ایمیل ارسال شد!",
+    checkInbox2:"صندوق ورودی خود را در",
+    backToSignIn2:"بازگشت به ورود",
+    enterYourEmail2:"ایمیل خود را وارد کنید تا لینک بازنشانی ارسال شود.",
+    sendResetLink2:"ارسال لینک بازنشانی",
+    demoNote2:"اینها پس از اتصال به Supabase Auth حذف می‌شوند.",
+    bookingTerms:"شرایط رزرو",
+    pricingByCountry:"قیمت‌گذاری بر اساس کشور",
+    pricesLocal:"قیمت‌ها به ارز محلی نشان داده می‌شوند · پیش‌پرداخت Stripe به EUR تبدیل می‌شود",
+    noSocialConnected:"هیچ حساب اجتماعی متصل نیست",
+    noSocialDesc:"این هنرمند هنوز Spotify یا Instagram را متصل نکرده است.",
+    selectDate2:"یک تاریخ انتخاب کنید",
+    cashAfterConcert:"نقد پس از کنسرت",
+    platformOverview2:"نمای کلی پلتفرم",
+    recentBookings:"رزروهای اخیر",
+    allBookings2:"همه رزروها",
+    allConversations2:"همه مکالمات",
+    noMessages:"هیچ پیامی نیست",
+    paymentSplit:"تقسیم پرداخت",
+    awazAdmin:"مدیریت آواز",
+    platformControl:"کنترل پلتفرم",
+    adminPanel:"پنل مدیریت",
+    pendingApproval:"در انتظار تایید",
+    connectStripe:"اتصال به Stripe",
+    addSocial:"Spotify و Instagram اضافه کنید",
+    addNow:"اکنون اضافه کنید →",
+    noBookingsYet2:"هنوز رزروی ندارید. تاریخ‌های موجود را اضافه کنید!",
+    tapToToggle:"برای تغییر وضعیت روی تاریخ‌ها ضربه بزنید",
+    myBookings2:"رزروهای من",
+    noBookingsYet3:"هنوز رزروی ندارید.",
+    noChatsYet2:"چت‌ها پس از پرداخت پیش‌پرداخت باز می‌شوند.",
+    noMessagesYet:"هنوز پیامی نیست",
+    socialMedia:"شبکه‌های اجتماعی",
+    myProfile2:"پروفایل من",
+    tapToChange:"برای تغییر عکس ضربه بزنید",
+    notConnected:"متصل نیست",
+    youReceive:"شما دریافت می‌کنید",
+    artistPortal:"پورتال هنرمند",
+    depositSplit:"تقسیم پیش‌پرداخت",
+    findPerfectArtist:"هنرمند مناسب خود را پیدا کنید",
+    startOver:"دوباره شروع کنید",
+    profileUnderReview:"پروفایل شما در حال بررسی است. برای اتصال به Stripe و تکمیل تأیید وارد شوید.",
+    submitApplication:"ارسال درخواست",
+    inquiryReceived:"استعلام دریافت شد",
+    privateInquiry:"استعلام خصوصی",
+    directToOwner:"مستقیم به مالک",
+    directToOwnerDesc:"پاسخ شخصی · مذاکره قیمت · بسته‌های سفارشی",
+    budgetRange:"محدوده بودجه",
+    selectRange:"یک محدوده انتخاب کنید…",
+    preferredArtist:"هنرمند مورد نظر (اختیاری)",
+    notSureYet:"هنوز مطمئن نیستم — اجازه دهید مالک پیشنهاد دهد",
+    noInquiriesYet:"هنوز استعلامی نیست",
+    noInquiriesDesc:"استعلام‌های بازدیدکنندگان پس از راه‌اندازی ویجت تماس اینجا ظاهر می‌شوند.",
+    yourReply:"پاسخ شما (ارسال شد)",
+    marketPricing:"قیمت‌های بازار",
+    saveMarketPricing:"قیمت‌های بازار را ذخیره کنید",
+    connectingStripe:"در حال اتصال به Stripe…",
+    stripeSecurity:"Stripe Connect · امنیت سطح بانک · پرداخت فوری",
+    loadingSpotify:"در حال بارگذاری Spotify…",
+    spotifyBlocked:"ویجت Spotify توسط مرورگر مسدود شد",
+    viewOnInstagram:"در اینستاگرام ببینید ↗",
+    watchOnTikTok:"در TikTok ببینید ↗",
+    applyAsArtistTitle:"درخواست هنرمند",
+    spotifyAppLabel:"برنامه Spotify:",
+    spotifyLinkRecognized:"لینک Spotify شناسایی شد",
+    instagramRecognized:"پروفایل Instagram شناسایی شد",
+    howToFindLink:"چگونه لینک خود را پیدا کنید",
+    spotifyInstructions:"برنامه Spotify: به پروفایل بروید ← سه نقطه (⋯) ← اشتراک‌گذاری ← کپی لینک",
+    artistProfileNotFound:"پروفایل هنرمند یافت نشد",
+    noStripe:"بدون Stripe",
+    recentBookingsLabel:"رزروهای اخیر",
   },
 
   ps: {
@@ -555,6 +1035,102 @@ const TRANSLATIONS = {
     back:"شاته ←", from:"له", clearFilters:"فلترونه پاک کړئ",
     noArtistsFound:"هیڅ هنرمند ونه موندل شو", tryDifferent:"بل ژانر یا د لټون اصطلاح هڅه وکړئ.",
     artistsCount:"{n} هنرمند", artistsCountPlural:"{n} هنرمندان",
+    howStep1Title:"موندل",
+    howStep1Desc:"د ژانر او ځای له مخې تایید شوي هنرمندان وګورئ",
+    howStep2Title:"نیټه غوره کړئ",
+    howStep2Desc:"ژوندي کلینډرونه وګورئ — خلاصه نیټه وټاکئ",
+    howStep3Title:"پیشکي ورکړئ",
+    howStep3Desc:"د هنرمند لخوا د Stripe له لارې پیشکي — اتوماتیک وویشل",
+    howStep4Title:"چیټ خلاصیږي",
+    howStep4Desc:"د تادیې وروسته مستقیم پیغام لیږل",
+    howStep5Title:"خوند واخلئ",
+    howStep5Desc:"د کنسرت وروسته هنرمند ته نقد پاتې رقم",
+    howSectionTitle:"دا څنګه کار کوي",
+    howSectionSub:"ساده، شفاف، له لټون نه تر اجرا پورې خوندي",
+    footerDesc:"د اروپا کې د تایید شوو افغان هنرمندانو د بکولو لومړنۍ پلیټفارم.",
+    footerBrowse:"وګورئ",
+    footerApply:"غوښتنه",
+    footerPricing:"بیې",
+    searchArtists:"هنرمندان ولټوئ…",
+    bookDirectly:"مستقیم بک کړئ — هیڅ اجنسۍ نشته",
+    chatLockedTitle2:"چیټ قفل دی",
+    chatLockedBody2:"د پیغامونو د خلاصولو لپاره پیشکي ورکړئ.",
+    securedByStripe:"د Stripe لخوا خوندي",
+    depositConfirmed2:"پیشکي تایید شوه!",
+    continueToChat2:"چیټ ته دوام →",
+    balanceCashNote2:"د کنسرت وروسته هنرمند ته نقد پاتې رقم",
+    createYourAccount:"خپل حساب جوړ کړئ",
+    emailSent2:"بریښنالیک ولیږل شو!",
+    checkInbox2:"خپل inbox وګورئ",
+    backToSignIn2:"ننوتلو ته شاته",
+    enterYourEmail2:"خپل بریښنالیک دننه کړئ، موږ به تاسو ته لینک ولیږو.",
+    sendResetLink2:"د بیا تنظیم لینک ولیږئ",
+    demoNote2:"کله چې Supabase Auth وصل کړئ دا لرې کیږي.",
+    bookingTerms:"د بکنګ شرایط",
+    pricingByCountry:"د هیواد له مخې بیې",
+    pricesLocal:"قیمتونه د محلي اسعارو کې ښودل کیږي · د Stripe پیشکي اتوماتیک EUR ته بدلیږي",
+    noSocialConnected:"هیڅ ټولنیز حساب وصل نه دی",
+    noSocialDesc:"دې هنرمند لاهم Spotify یا Instagram نه دی وصل کړی.",
+    selectDate2:"نیټه وټاکئ",
+    cashAfterConcert:"د کنسرت وروسته نقدي",
+    platformOverview2:"د پلیټفارم لنډیز",
+    recentBookings:"وروستي بکنګونه",
+    allBookings2:"ټول بکنګونه",
+    allConversations2:"ټولې خبرې اترې",
+    noMessages:"هیڅ پیغام نشته",
+    paymentSplit:"د تادیې ویش",
+    awazAdmin:"د آواز اداره",
+    platformControl:"د پلیټفارم کنترول",
+    adminPanel:"د مدیریت پینل",
+    pendingApproval:"د تاییدۍ انتظار",
+    connectStripe:"Stripe وصل کړئ",
+    addSocial:"Spotify او Instagram اضافه کړئ",
+    addNow:"اوس اضافه کړئ →",
+    noBookingsYet2:"لاهم هیڅ بکنګ نشته. شته نیټې اضافه کړئ!",
+    tapToToggle:"د موجود ↔ بند د بدلولو لپاره نیټو ته وټاکئ",
+    myBookings2:"زما بکنګونه",
+    noBookingsYet3:"لاهم هیڅ بکنګ نشته.",
+    noChatsYet2:"چیټونه د پیرودونکو د پیشکي ورکولو وروسته خلاصیږي.",
+    noMessagesYet:"لاهم هیڅ پیغام نشته",
+    socialMedia:"ټولنیزې رسنۍ",
+    myProfile2:"زما پروفایل",
+    tapToChange:"د انځور د بدلولو لپاره ووهئ",
+    notConnected:"وصل نه دی",
+    youReceive:"تاسو ترلاسه کوئ",
+    artistPortal:"د هنرمند پورتال",
+    depositSplit:"د پیشکي ویش",
+    findPerfectArtist:"خپل مناسب هنرمند ومومئ",
+    startOver:"بیا پیل کړئ",
+    profileUnderReview:"ستاسو پروفایل د بیاکتنې لاندې دی. د Stripe وصلولو او تاییدیې بشپړولو لپاره ننوتئ.",
+    submitApplication:"غوښتنه وسپارئ",
+    inquiryReceived:"پوښتنه ترلاسه شوه",
+    privateInquiry:"خصوصي پوښتنه",
+    directToOwner:"مستقیم مالک ته",
+    directToOwnerDesc:"شخصي ځواب · د بیې خبرې اترې · ځانګړي کڅوړې",
+    budgetRange:"د بودیجې سلسله",
+    selectRange:"یوه سلسله وټاکئ…",
+    preferredArtist:"غوره هنرمند (اختیاري)",
+    notSureYet:"لاهم ډاډه نه یم — مالک ته اجازه ورکړئ چې وړاندیز وکړي",
+    noInquiriesYet:"لاهم هیڅ پوښتنه نشته",
+    noInquiriesDesc:"د لیدونکو پوښتنې دلته ښکاري کله چې د اړیکو ویجیټ ژوندی وي.",
+    yourReply:"ستاسو ځواب (ولیږل شو)",
+    marketPricing:"د بازار بیې",
+    saveMarketPricing:"د بازار بیې خوندي کړئ",
+    connectingStripe:"Stripe سره د وصل کیدو هڅه…",
+    stripeSecurity:"Stripe Connect · د بانک کچه امنیت · فوري تادیات",
+    loadingSpotify:"Spotify بارول کیږي…",
+    spotifyBlocked:"د Spotify ویجیټ د براوزر لخوا بند شو",
+    viewOnInstagram:"پر Instagram وګورئ ↗",
+    watchOnTikTok:"پر TikTok وګورئ ↗",
+    applyAsArtistTitle:"د هنرمند غوښتنه",
+    spotifyAppLabel:"د Spotify ایپ:",
+    spotifyLinkRecognized:"د Spotify لینک وپیژندل شو",
+    instagramRecognized:"د Instagram پروفایل وپیژندل شو",
+    howToFindLink:"خپل لینک چیرې ومومئ",
+    spotifyInstructions:"د Spotify ایپ: پروفایل ته لاړ شئ ← درې نقطې (⋯) ← شریکول ← د هنرمند لینک کاپي کړئ",
+    artistProfileNotFound:"د هنرمند پروفایل ونه موندل شو",
+    noStripe:"Stripe نشته",
+    recentBookingsLabel:"وروستي بکنګونه",
   },
 };
 
@@ -687,13 +1263,13 @@ function SpotifyEmbed({ artistId, profileUrl }) {
   if (status === "loading") return (
     <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:10,padding:"24px 0"}}>
       <div style={{width:28,height:28,border:"2px solid rgba(29,185,84,0.2)",borderTopColor:"#1DB954",borderRadius:"50%",animation:"spin 0.8s linear infinite"}}/>
-      <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,color:"#1DB954"}}>Loading Spotify…</span>
+      <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,color:"#1DB954"}}>{t('loadingSpotify')}</span>
     </div>
   );
 
   if (status === "blocked") return (
     <div style={{background:"rgba(29,185,84,0.05)",border:"1px solid rgba(29,185,84,0.2)",borderRadius:10,padding:"16px",marginTop:4,textAlign:"center"}}>
-      <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:700,color:"#1DB954",marginBottom:6}}>Spotify widget blocked by browser</div>
+      <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:700,color:"#1DB954",marginBottom:6}}>{t('spotifyBlocked')}</div>
       <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:12,color:C.muted,lineHeight:1.7,marginBottom:12}}>
         This only happens in preview. On your published Vercel site the widget loads fully. Add <code style={{background:C.bg,padding:"1px 5px",borderRadius:3,fontSize:11}}>frame-src open.spotify.com</code> to vercel.json CSP.
       </div>
@@ -876,7 +1452,7 @@ function SocialBar({ artist }) {
               display:"flex",alignItems:"center",justifyContent:"center",gap:8,
               background:"linear-gradient(135deg,#833AB4,#E1306C,#F77737)",color:"#fff",borderRadius:20,padding:"11px",
               textDecoration:"none",fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:700,
-            }}>View on Instagram ↗</a>
+            }}>{t('viewOnInstagram')}</a>
           </div>
         </div>
       )}
@@ -906,7 +1482,7 @@ function SocialBar({ artist }) {
               display:"flex",alignItems:"center",justifyContent:"center",gap:8,
               background:"linear-gradient(135deg,#69C9D0,#EE1D52)",color:"#fff",borderRadius:20,padding:"11px",
               textDecoration:"none",fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:700,
-            }}>Watch on TikTok ↗</a>
+            }}>{t('watchOnTikTok')}</a>
           </div>
         </div>
       )}
@@ -1231,8 +1807,8 @@ function Chat({ booking, artist, myRole, onClose, onSend }) {
           {!booking.chatUnlocked&&(
             <div style={{background:C.rubyS,border:`1px solid ${C.ruby}28`,borderRadius:12,padding:20,textAlign:"center",margin:"auto 0"}}>
               <div style={{fontSize:28,marginBottom:8}}>🔒</div>
-              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text,marginBottom:6}}>Chat Locked</div>
-              <div style={{color:C.muted,fontSize:T.sm,lineHeight:1.6}}>Pay the deposit to unlock messaging.</div>
+              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text,marginBottom:6}}>{t('chatLockedTitle2')}</div>
+              <div style={{color:C.muted,fontSize:T.sm,lineHeight:1.6}}>{t('chatLockedBody2')}</div>
             </div>
           )}
           {msgs.map((m,i)=>{const s=bub(m.from);return(
@@ -1281,14 +1857,14 @@ function StripeCheckout({ booking, artist, onSuccess, onClose }) {
             <div style={{textAlign:"center",padding:"48px 0"}}>
               <div style={{width:48,height:48,border:`3px solid ${C.border}`,borderTopColor:C.gold,borderRadius:"50%",animation:"spin 0.8s linear infinite",margin:"0 auto 20px"}}/>
               <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,color:C.text,marginBottom:6}}>Processing…</div>
-              <div style={{color:C.muted,fontSize:T.sm}}>Secured by Stripe</div>
+              <div style={{color:C.muted,fontSize:T.sm}}>{t('securedByStripe')}</div>
             </div>
           )}
 
           {step==="done"&&(
             <div style={{textAlign:"center",padding:"32px 0"}}>
               <div style={{width:60,height:60,borderRadius:"50%",background:C.emeraldS,border:`2px solid ${C.emerald}`,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 18px",fontSize:26}}>✓</div>
-              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:8}}>Deposit Confirmed!</div>
+              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:8}}>{t('depositConfirmed2')}</div>
               <div style={{color:C.muted,fontSize:T.sm,lineHeight:1.7,marginBottom:8}}>
                 <strong style={{color:C.gold}}>€{deposit}</strong> processed securely.
               </div>
@@ -1305,8 +1881,8 @@ function StripeCheckout({ booking, artist, onSuccess, onClose }) {
               <div style={{background:C.emeraldS,border:`1px solid ${C.emerald}44`,borderRadius:10,padding:"10px 14px",marginBottom:16,fontSize:T.sm,color:C.emerald}}>
                 💬 Chat with {artist.name} is now unlocked!
               </div>
-              <Btn v="emerald" sz="lg" full onClick={()=>{onSuccess();onClose();}}>Continue to Chat →</Btn>
-              <div style={{color:C.muted,fontSize:T.xs,marginTop:10}}>Balance paid cash to artist after concert</div>
+              <Btn v="emerald" sz="lg" full onClick={()=>{onSuccess();onClose();}}>{t('continueToChat2')}</Btn>
+              <div style={{color:C.muted,fontSize:T.xs,marginTop:10}}>{t('balanceCashNote2')}</div>
             </div>
           )}
 
@@ -1651,7 +2227,7 @@ function LoginSheet({ users, open, onLogin, onClose }) {
       <div style={{padding:"16px 20px 32px"}}>
         <div style={{textAlign:"center",marginBottom:20}}>
           <div style={{fontFamily:"'Noto Naskh Arabic',serif",fontSize:T.xl,color:C.gold,marginBottom:4}}>آواز</div>
-          <div style={{color:C.muted,fontSize:T.sm}}>Create your account</div>
+          <div style={{color:C.muted,fontSize:T.sm}}>{t('createYourAccount')}</div>
         </div>
         <div style={{display:"flex",flexDirection:"column",gap:12,marginBottom:14}}>
           <Inp label="Full name *" placeholder="Your name" value={name} onChange={e=>setName(e.target.value)} onKeyDown={e=>e.key==="Enter"&&doRegister()}/>
@@ -1666,7 +2242,7 @@ function LoginSheet({ users, open, onLogin, onClose }) {
         </button>
         <div style={{background:C.surface,borderRadius:10,padding:"12px 14px",border:`1px solid ${C.border}`,marginTop:14}}>
           <div style={{fontSize:T.xs,color:C.muted,lineHeight:1.7}}>
-            Are you an artist? Use the <button onClick={()=>{onClose();}} style={{background:"none",border:"none",color:C.gold,cursor:"pointer",fontFamily:"inherit",fontSize:T.xs,textDecoration:"underline",padding:0}}>Apply as Artist</button> button instead.
+            Are you an artist? Use the <button onClick={()=>{onClose();}} style={{background:"none",border:"none",color:C.gold,cursor:"pointer",fontFamily:"inherit",fontSize:T.xs,textDecoration:"underline",padding:0}}>{t('applyAsArtistTitle')}</button> button instead.
           </div>
         </div>
       </div>
@@ -1680,15 +2256,15 @@ function LoginSheet({ users, open, onLogin, onClose }) {
           <div style={{fontFamily:"'Noto Naskh Arabic',serif",fontSize:T.xl,color:C.gold,marginBottom:4}}>آواز</div>
           {mode==="forgot_sent"
             ?<><div style={{fontSize:36,marginBottom:8}}>📧</div>
-               <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text,marginBottom:6}}>Email sent!</div>
+               <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text,marginBottom:6}}>{t('emailSent2')}</div>
                <div style={{color:C.muted,fontSize:T.sm,lineHeight:1.7,marginBottom:20}}>Check your inbox at <strong style={{color:C.gold}}>{email}</strong> for a link to reset your password.</div>
-               <Btn full sz="lg" onClick={()=>setMode("login")}>Back to sign in</Btn></>
-            :<><div style={{color:C.muted,fontSize:T.sm,marginBottom:16,lineHeight:1.6}}>Enter your email and we will send you a reset link.</div>
+               <Btn full sz="lg" onClick={()=>setMode("login")}>{t('backToSignIn2')}</Btn></>
+            :<><div style={{color:C.muted,fontSize:T.sm,marginBottom:16,lineHeight:1.6}}>{t('enterYourEmail2')}</div>
                <Inp label={t('email')} type="email" placeholder="you@email.com" value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==="Enter"&&doForgot()}/>
                {err&&<div style={{background:C.rubyS,border:`1px solid ${C.ruby}28`,borderRadius:8,padding:"10px 13px",color:C.ruby,fontSize:T.xs,marginTop:10}}>&#9888; {err}</div>}
                <div style={{marginTop:14,display:"flex",flexDirection:"column",gap:8}}>
-                 <Btn full sz="lg" loading={loading} onClick={doForgot}>Send reset link</Btn>
-                 <button onClick={()=>setMode("login")} style={{background:"none",border:"none",color:C.muted,cursor:"pointer",fontSize:T.sm,fontFamily:"inherit",minHeight:36}}>Back to sign in</button>
+                 <Btn full sz="lg" loading={loading} onClick={doForgot}>{t('sendResetLink2')}</Btn>
+                 <button onClick={()=>setMode("login")} style={{background:"none",border:"none",color:C.muted,cursor:"pointer",fontSize:T.sm,fontFamily:"inherit",minHeight:36}}>{t('backToSignIn2')}</button>
                </div></>}
         </div>
       </div>
@@ -1724,7 +2300,7 @@ function LoginSheet({ users, open, onLogin, onClose }) {
               <div style={{fontSize:T.xs,color:C.saffron,fontWeight:700,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:6,display:"flex",alignItems:"center",gap:6}}>
                 <span>⚠</span> Demo accounts — testing only
               </div>
-              <div style={{fontSize:T.xs,color:C.muted,marginBottom:10,lineHeight:1.5}}>These are removed when you connect Supabase Auth.</div>
+              <div style={{fontSize:T.xs,color:C.muted,marginBottom:10,lineHeight:1.5}}>{t('demoNote2')}</div>
               {[["admin@awaz.no","Admin2025!","Admin"],["soraya@awaz.no","Soraya123!","Artist"],["khalid@awaz.no","Khalid123!","Artist"]].map(([e,p,r])=>(
                 <button key={e} onClick={()=>{setEmail(e);setPass(p);setErr("");}}
                   style={{display:"flex",justifyContent:"space-between",width:"100%",background:"transparent",border:"none",borderBottom:`1px solid ${C.border}`,color:C.textD,cursor:"pointer",fontSize:T.xs,padding:"10px 0",fontFamily:"inherit",minHeight:44,WebkitTapHighlightColor:"transparent"}}>
@@ -1844,7 +2420,7 @@ function ProfilePage({ artist, bookings, onBack, onBookingCreated }) {
                   <div style={{display:"flex",flexWrap:"wrap",gap:7}}>{artist.tags.map(t=><Badge key={t} color={artist.color} sm={false}>{t}</Badge>)}</div>
                 </div>
                 <div style={{background:C.card,borderRadius:12,padding:vp.isMobile?20:28,border:`1px solid ${C.border}`}}>
-                  <div style={{fontFamily:"'Cormorant Garamond',serif",color:C.gold,fontSize:T.xl,fontWeight:700,marginBottom:14,letterSpacing:"-0.3px"}}>Booking Terms</div>
+                  <div style={{fontFamily:"'Cormorant Garamond',serif",color:C.gold,fontSize:T.xl,fontWeight:700,marginBottom:14,letterSpacing:"-0.3px"}}>{t('bookingTerms')}</div>
                   <div style={{display:"grid",gridTemplateColumns:vp.isMobile?"1fr":"1fr 1fr",gap:12}}>
                     {[["💳",`€${artist.deposit} deposit via Stripe`,"Paid at booking — auto-split"],["💬","Chat unlocks immediately","Direct messaging after payment"],["💵","Balance in cash","To artist after the concert"],["📋",`${policy?.label} policy`,policy?.desc||""]].map(([icon,k,v])=>(
                       <div key={k} style={{background:C.surface,borderRadius:8,padding:"12px 14px",border:`1px solid ${C.border}`,borderLeft:`3px solid ${artist.color}35`}}>
@@ -1858,8 +2434,8 @@ function ProfilePage({ artist, bookings, onBack, onBookingCreated }) {
                 {/* Market pricing — if artist has set country prices */}
                 {artist.countryPricing?.filter(r=>r.active).length>0&&(
                   <div style={{background:C.card,borderRadius:12,padding:vp.isMobile?20:28,border:`1px solid ${C.border}`}}>
-                    <div style={{fontFamily:"'Cormorant Garamond',serif",color:C.gold,fontSize:T.xl,fontWeight:700,marginBottom:6,letterSpacing:"-0.3px"}}>Pricing by Country</div>
-                    <div style={{color:C.muted,fontSize:T.xs,marginBottom:14}}>Prices shown in local currency · Stripe deposit auto-converts to EUR</div>
+                    <div style={{fontFamily:"'Cormorant Garamond',serif",color:C.gold,fontSize:T.xl,fontWeight:700,marginBottom:6,letterSpacing:"-0.3px"}}>{t('pricingByCountry')}</div>
+                    <div style={{color:C.muted,fontSize:T.xs,marginBottom:14}}>{t('pricesLocal')}</div>
                     <div style={{display:"flex",flexDirection:"column",gap:7}}>
                       {artist.countryPricing.filter(r=>r.active).map(row=>{
                         const m=MARKETS.find(m=>m.code===row.code);
@@ -1916,8 +2492,8 @@ function ProfilePage({ artist, bookings, onBack, onBookingCreated }) {
                   ?<SocialBar artist={artist}/>
                   :<div style={{textAlign:"center",padding:"40px 24px",background:C.card,borderRadius:12,border:`1px solid ${C.border}`}}>
                     <div style={{fontSize:36,marginBottom:12}}>🎵</div>
-                    <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text,marginBottom:6}}>No social accounts connected</div>
-                    <div style={{color:C.muted,fontSize:T.sm}}>This artist hasn't linked Spotify or Instagram yet.</div>
+                    <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text,marginBottom:6}}>{t('noSocialConnected')}</div>
+                    <div style={{color:C.muted,fontSize:T.sm}}>{t('noSocialDesc')}</div>
                   </div>
                 }
               </div>
@@ -1942,14 +2518,14 @@ function ProfilePage({ artist, bookings, onBack, onBookingCreated }) {
             <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,overflow:"hidden",boxShadow:"0 8px 40px rgba(0,0,0,0.5)"}}>
               <div style={{height:3,background:`linear-gradient(90deg,${artist.color},${C.gold},${artist.color})`}}/>
               <div style={{padding:20}}>
-                <div style={{fontFamily:"'Cormorant Garamond',serif",color:C.gold,fontSize:T.lg,fontWeight:700,marginBottom:14}}>Select a Date</div>
+                <div style={{fontFamily:"'Cormorant Garamond',serif",color:C.gold,fontSize:T.lg,fontWeight:700,marginBottom:14}}>{t('selectDate2')}</div>
                 <MiniCal artist={artist} selDay={selDay} selMonth={selMonth} selYear={selYear} onSelect={(d,m,y)=>{setSelDay(d);setSelMonth(m);setSelYear(y);}} bookings={bookings}/>
                 <HR color={artist.color} my={14}/>
                 {selDay&&!showBook&&(
                   <div style={{background:C.surface,borderRadius:8,padding:"12px 14px",marginBottom:12,border:`1px solid ${C.border}`}}>
                     <div style={{display:"flex",justifyContent:"space-between",fontSize:T.sm,marginBottom:6}}><span style={{color:C.muted}}>Date</span><span style={{color:C.text,fontWeight:600}}>{MONTHS[selMonth]} {selDay}</span></div>
                     <div style={{display:"flex",justifyContent:"space-between",fontSize:T.sm,marginBottom:6}}><span style={{color:C.muted}}>Deposit</span><span style={{color:C.gold,fontWeight:700}}>€{artist.deposit}</span></div>
-                    <div style={{display:"flex",justifyContent:"space-between",fontSize:T.sm}}><span style={{color:C.muted}}>Balance</span><span style={{color:C.textD}}>Cash after concert</span></div>
+                    <div style={{display:"flex",justifyContent:"space-between",fontSize:T.sm}}><span style={{color:C.muted}}>Balance</span><span style={{color:C.textD}}>{t('cashAfterConcert')}</span></div>
                   </div>
                 )}
                 {!showBook?(
@@ -2056,7 +2632,7 @@ function AdminDash({ artists, bookings, users, inquiries, onAction, onLogout, on
     <div style={{padding:vp.isMobile?"16px":"28px 32px",maxWidth:1080}}>
       {tab==="overview"&&(
         <div>
-          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:14}}>Platform Overview</div>
+          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:14}}>{t('platformOverview2')}</div>
           <div style={{display:"grid",gridTemplateColumns:`repeat(${vp.isMobile?2:3},1fr)`,gap:10,marginBottom:20}}>
             <SB icon="💶" label="Deposits Collected" value={`€${totalDep.toLocaleString()}`} color={C.gold}/>
             <SB icon="🏦" label="Awaz Revenue (12%)" value={`€${awazCut}`}                   color={C.emerald}/>
@@ -2065,7 +2641,7 @@ function AdminDash({ artists, bookings, users, inquiries, onAction, onLogout, on
             <SB icon="🔍" label="Pending Review"     value={pendingApp}                       color={C.ruby}/>
             <SB icon="🎤" label="Active Artists"     value={artists.filter(a=>a.status==="approved").length} color={C.lavender}/>
           </div>
-          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text,marginBottom:12}}>Recent Bookings</div>
+          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text,marginBottom:12}}>{t('recentBookings')}</div>
           {bookings.slice(0,4).map(b=>{
             const art=artists.find(a=>a.id===b.artistId);
             const sc=b.status==="confirmed"?C.emerald:b.status==="completed"?C.lapis:C.saffron;
@@ -2089,7 +2665,7 @@ function AdminDash({ artists, bookings, users, inquiries, onAction, onLogout, on
 
       {tab==="bookings"&&(
         <div>
-          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:14}}>All Bookings</div>
+          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:14}}>{t('allBookings2')}</div>
           <div style={{display:"flex",flexDirection:"column",gap:10}}>
             {bookings.map(b=>{
               const art=artists.find(a=>a.id===b.artistId);
@@ -2145,7 +2721,7 @@ function AdminDash({ artists, bookings, users, inquiries, onAction, onLogout, on
                         <div style={{display:"flex",flexWrap:"wrap",gap:5,marginTop:6}}>
                           <Badge color={sc}>{a.status}</Badge>
                           {a.verified?<Badge color={C.emerald}>✓ Verified</Badge>:<Badge color={C.saffron}>Unverified</Badge>}
-                          {a.stripeConnected?<Badge color={C.lapis}>💳</Badge>:<Badge color={C.muted}>No Stripe</Badge>}
+                          {a.stripeConnected?<Badge color={C.lapis}>💳</Badge>:<Badge color={C.muted}>{t('noStripe')}</Badge>}
                         </div>
                       </div>
                     </div>
@@ -2164,7 +2740,7 @@ function AdminDash({ artists, bookings, users, inquiries, onAction, onLogout, on
 
       {tab==="messages"&&(
         <div>
-          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:14}}>All Conversations</div>
+          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:14}}>{t('allConversations2')}</div>
           <div style={{display:"flex",flexDirection:"column",gap:8}}>
             {bookings.map(b=>{
               const art=artists.find(a=>a.id===b.artistId);
@@ -2175,7 +2751,7 @@ function AdminDash({ artists, bookings, users, inquiries, onAction, onLogout, on
                   <div style={{flex:1,minWidth:0}}>
                     <div style={{fontWeight:600,color:C.text,fontSize:T.sm,marginBottom:2}}>{b.customerName} ↔ {art?.name}</div>
                     {last?<div style={{color:C.muted,fontSize:T.xs,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{last.text}</div>
-                         :<div style={{color:C.muted,fontSize:T.xs,fontStyle:"italic"}}>No messages</div>}
+                         :<div style={{color:C.muted,fontSize:T.xs,fontStyle:"italic"}}>{t('noMessages')}</div>}
                   </div>
                   <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:4,flexShrink:0}}>
                     <Badge color={b.chatUnlocked?C.emerald:C.ruby}>{b.chatUnlocked?"Open":"Locked"}</Badge>
@@ -2202,7 +2778,7 @@ function AdminDash({ artists, bookings, users, inquiries, onAction, onLogout, on
             <SB icon="⏳" label="Pending"               value={`€${bookings.filter(b=>!b.depositPaid).reduce((s,b)=>s+b.deposit,0)}`} color={C.saffron}/>
           </div>
           <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:10,padding:16,marginBottom:14}}>
-            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.md,color:C.gold,fontWeight:700,marginBottom:12}}>Payment Split</div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.md,color:C.gold,fontWeight:700,marginBottom:12}}>{t('paymentSplit')}</div>
             <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
               {[["Artist deposit","Set by artist (min €500)",C.gold],["Artist (88%)","Auto-transferred to Stripe",C.emerald],["Awaz (12%)","Platform revenue",C.lapis]].map(([l,d,c])=>(
                 <div key={l} style={{background:C.surface,borderRadius:8,padding:"12px",border:`1px solid ${C.border}`,borderTop:`3px solid ${c}38`}}>
@@ -2239,8 +2815,8 @@ function AdminDash({ artists, bookings, users, inquiries, onAction, onLogout, on
       <div style={{height:3,background:`linear-gradient(90deg,${C.ruby},${C.gold},${C.lapis})`,position:"fixed",top:0,left:0,right:0,zIndex:300}}/>
       <div style={{position:"fixed",top:3,left:0,right:0,zIndex:200,background:`${C.surface}F8`,backdropFilter:"blur(20px)",borderBottom:`1px solid ${C.border}`,padding:"12px 16px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
         <div>
-          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.md,fontWeight:700,color:C.gold}}>Awaz Admin</div>
-          <div style={{fontSize:T.xs,color:C.muted}}>Platform Control</div>
+          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.md,fontWeight:700,color:C.gold}}>{t('awazAdmin')}</div>
+          <div style={{fontSize:T.xs,color:C.muted}}>{t('platformControl')}</div>
         </div>
         <Btn v="ghost" sz="sm" onClick={onLogout}>Sign Out</Btn>
       </div>
@@ -2259,7 +2835,7 @@ function AdminDash({ artists, bookings, users, inquiries, onAction, onLogout, on
       <div style={{width:220,background:C.surface,borderRight:`1px solid ${C.border}`,padding:"40px 0 24px",display:"flex",flexDirection:"column",position:"fixed",top:3,bottom:0,zIndex:100,overflowY:"auto"}}>
         <div style={{padding:"0 20px 20px",borderBottom:`1px solid ${C.border}`,marginBottom:14}}>
           <div style={{fontFamily:"'Noto Naskh Arabic',serif",fontSize:18,color:C.gold,marginBottom:3}}>آواز</div>
-          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:15,fontWeight:700,color:C.text}}>Admin Panel</div>
+          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:15,fontWeight:700,color:C.text}}>{t('adminPanel')}</div>
         </div>
         {navItems.map((item)=>(
           <button key={item.id} onClick={()=>setTab(item.id)} style={{display:"flex",gap:10,alignItems:"center",padding:"12px 20px",background:tab===item.id?C.goldS:"transparent",color:tab===item.id?C.gold:C.muted,border:"none",cursor:"pointer",fontFamily:"inherit",fontSize:T.sm,fontWeight:tab===item.id?700:400,borderLeft:`3px solid ${tab===item.id?C.gold:"transparent"}`,width:"100%",textAlign:"left",minHeight:48,WebkitTapHighlightColor:"transparent"}}>
@@ -2367,17 +2943,17 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
           <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:4}}>
             Hey, {artist.name.split(" ")[0]} 👋
           </div>
-          {artist.status==="pending"&&<div style={{background:"rgba(196,120,32,0.08)",border:`1px solid ${C.saffron}38`,borderRadius:10,padding:"12px 14px",marginBottom:12,fontSize:T.sm,color:C.textD,fontFamily:"'DM Sans',sans-serif"}}>⏳ <strong style={{color:C.saffron}}>Pending approval</strong> — 24–48 hours to review.</div>}
+          {artist.status==="pending"&&<div style={{background:"rgba(196,120,32,0.08)",border:`1px solid ${C.saffron}38`,borderRadius:10,padding:"12px 14px",marginBottom:12,fontSize:T.sm,color:C.textD,fontFamily:"'DM Sans',sans-serif"}}>⏳ <strong style={{color:C.saffron}}>{t('pendingApproval')}</strong> — 24–48 hours to review.</div>}
           {!artist.stripeConnected&&artist.status==="approved"&&(
             <div style={{background:"rgba(99,91,255,0.08)",border:"1px solid rgba(99,91,255,0.28)",borderRadius:10,padding:"12px 14px",marginBottom:12,fontSize:T.sm,color:C.textD,fontFamily:"'DM Sans',sans-serif",display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,flexWrap:"wrap"}}>
-              <span>💳 <strong style={{color:"#8B83FF"}}>Connect Stripe</strong> to receive deposits</span>
+              <span>💳 <strong style={{color:"#8B83FF"}}>{t('connectStripe')}</strong> to receive deposits</span>
               <Btn v="stripe" sz="sm" onClick={()=>setShowStripeConnect(true)}>Connect →</Btn>
             </div>
           )}
           {!artist.spotify&&!artist.instagram&&artist.status==="approved"&&(
             <div style={{background:"rgba(200,168,74,0.06)",border:`1px solid ${C.gold}28`,borderRadius:10,padding:"12px 14px",marginBottom:12,fontSize:T.sm,color:C.textD,fontFamily:"'DM Sans',sans-serif",display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,flexWrap:"wrap"}}>
-              <span>🎵 <strong style={{color:C.gold}}>Add Spotify & Instagram</strong> — artists with social proof get 3× more views</span>
-              <Btn v="ghost" sz="sm" onClick={()=>setTab("social")}>Add now →</Btn>
+              <span>🎵 <strong style={{color:C.gold}}>{t('addSocial')}</strong> — artists with social proof get 3× more views</span>
+              <Btn v="ghost" sz="sm" onClick={()=>setTab("social")}>{t('addNow')}</Btn>
             </div>
           )}
           <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10,marginBottom:16}}>
@@ -2390,7 +2966,7 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
             ))}
           </div>
           {myB.length===0
-            ?<div style={{textAlign:"center",padding:32,background:C.card,borderRadius:12,border:`1px solid ${C.border}`,color:C.muted,fontSize:T.sm,fontStyle:"italic"}}>No bookings yet. Add available dates!</div>
+            ?<div style={{textAlign:"center",padding:32,background:C.card,borderRadius:12,border:`1px solid ${C.border}`,color:C.muted,fontSize:T.sm,fontStyle:"italic"}}>{t('noBookingsYet2')}</div>
             :myB.slice(0,4).map(b=>(
               <div key={b.id} style={{background:C.card,border:`1px solid ${C.border}`,borderLeft:`3px solid ${b.status==="confirmed"?C.emerald:C.saffron}`,borderRadius:10,padding:"12px 14px",marginBottom:8,display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,minHeight:64}}>
                 <div style={{flex:1,minWidth:0}}>
@@ -2409,7 +2985,7 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
       {tab==="calendar"&&(
         <div>
           <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:4}}>Availability</div>
-          <div style={{color:C.muted,fontSize:T.sm,marginBottom:16}}>Tap dates to toggle Available ↔ Blocked</div>
+          <div style={{color:C.muted,fontSize:T.sm,marginBottom:16}}>{t('tapToToggle')}</div>
           <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:vp.isMobile?16:24}}>
             <MiniCal artist={artist} editMode onToggle={(mo,yr,day)=>onToggleDay(artist.id,mo,yr,day)} bookings={bookings}/>
           </div>
@@ -2421,9 +2997,9 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
 
       {tab==="bookings"&&(
         <div>
-          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:14}}>My Bookings</div>
+          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:14}}>{t('myBookings2')}</div>
           {myB.length===0
-            ?<div style={{textAlign:"center",padding:32,background:C.card,borderRadius:12,border:`1px solid ${C.border}`,color:C.muted,fontSize:T.sm,fontStyle:"italic"}}>No bookings yet.</div>
+            ?<div style={{textAlign:"center",padding:32,background:C.card,borderRadius:12,border:`1px solid ${C.border}`,color:C.muted,fontSize:T.sm,fontStyle:"italic"}}>{t('noBookingsYet3')}</div>
             :<div style={{display:"flex",flexDirection:"column",gap:10}}>
               {myB.map(b=>{
                 const sc=b.status==="confirmed"?C.emerald:b.status==="completed"?C.lapis:C.saffron;
@@ -2453,7 +3029,7 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
         <div>
           <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:14}}>Messages</div>
           {myB.filter(b=>b.chatUnlocked).length===0
-            ?<div style={{textAlign:"center",padding:32,background:C.card,borderRadius:12,border:`1px solid ${C.border}`,color:C.muted,fontSize:T.sm,fontStyle:"italic"}}>Chats unlock after customers pay the deposit.</div>
+            ?<div style={{textAlign:"center",padding:32,background:C.card,borderRadius:12,border:`1px solid ${C.border}`,color:C.muted,fontSize:T.sm,fontStyle:"italic"}}>{t('noChatsYet2')}</div>
             :myB.filter(b=>b.chatUnlocked).map(b=>{
               const last=b.messages?.[b.messages.length-1];
               return(
@@ -2462,7 +3038,7 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
                   <div style={{flex:1,minWidth:0}}>
                     <div style={{fontWeight:600,color:C.text,fontSize:T.sm,marginBottom:2}}>{b.customerName}</div>
                     {last?<div style={{color:C.muted,fontSize:T.xs,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{last.text}</div>
-                         :<div style={{color:C.muted,fontSize:T.xs,fontStyle:"italic"}}>No messages yet</div>}
+                         :<div style={{color:C.muted,fontSize:T.xs,fontStyle:"italic"}}>{t('noMessagesYet')}</div>}
                   </div>
                   <span style={{color:C.muted,fontSize:T.xs,flexShrink:0}}>{b.messages?.length||0} msgs</span>
                 </div>
@@ -2482,7 +3058,7 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
         return(
         <div style={{display:"flex",flexDirection:"column",gap:16}}>
           <div>
-            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:4}}>Social Media</div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:4}}>{t('socialMedia')}</div>
             <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:T.sm,color:C.muted,lineHeight:1.7}}>
               Connect your accounts. Your public profile will show a live Spotify widget and your Instagram link.
             </div>
@@ -2532,9 +3108,9 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
 
               {/* Instruction */}
               <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:10,padding:"12px 14px",marginTop:12}}>
-                <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:T.sm,fontWeight:700,color:C.text,marginBottom:6}}>How to find your link</div>
+                <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:T.sm,fontWeight:700,color:C.text,marginBottom:6}}>{t('howToFindLink')}</div>
                 <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:T.sm,color:C.textD,lineHeight:1.8}}>
-                  <strong style={{color:C.gold}}>Spotify app:</strong> Go to your profile → three dots (⋯) → Share → Copy link to artist<br/>
+                  <strong style={{color:C.gold}}>{t('spotifyAppLabel')}</strong> Go to your profile → three dots (⋯) → Share → Copy link to artist<br/>
                   <strong style={{color:C.gold}}>Browser:</strong> Go to your Spotify page → copy the URL from the address bar
                 </div>
               </div>
@@ -2545,7 +3121,7 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
                   <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
                     <div style={{width:32,height:32,borderRadius:"50%",background:"rgba(29,185,84,0.15)",border:"1px solid rgba(29,185,84,0.3)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:16}}>✓</div>
                     <div>
-                      <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:T.sm,fontWeight:700,color:"#1DB954"}}>Spotify link recognized</div>
+                      <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:T.sm,fontWeight:700,color:"#1DB954"}}>{t('spotifyLinkRecognized')}</div>
                       <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:T.xs,color:C.muted,marginTop:2}}>Artist-ID: {previewSpotifyId}</div>
                     </div>
                   </div>
@@ -2607,7 +3183,7 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
                   <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
                     <div style={{width:32,height:32,borderRadius:"50%",background:"rgba(225,48,108,0.15)",border:"1px solid rgba(225,48,108,0.3)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:16}}>✓</div>
                     <div>
-                      <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:T.sm,fontWeight:700,color:"#E1306C"}}>Instagram profile recognized</div>
+                      <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:T.sm,fontWeight:700,color:"#E1306C"}}>{t('instagramRecognized')}</div>
                       <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:T.xs,color:C.muted,marginTop:2}}>{previewHandle}{socialF.instagramFollowers?` · ${socialF.instagramFollowers} følgere`:""}</div>
                     </div>
                   </div>
@@ -2704,7 +3280,7 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
       {tab==="profile"&&(
         <div>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
-            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text}}>My Profile</div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text}}>{t('myProfile2')}</div>
             <Btn v="ghost" sz="sm" onClick={()=>setEditing(!editing)}>{editing?"Cancel":"Edit"}</Btn>
           </div>
           <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden"}}>
@@ -2713,7 +3289,7 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
               <div style={{display:"flex",gap:14,alignItems:"flex-start",marginBottom:16}}>
                 <div>
                   <PhotoUpload photo={artist.photo} onPhoto={p=>onUpdateArtist(artist.id,{photo:p})} color={artist.color} emoji={artist.emoji} size={vp.isMobile?72:88}/>
-                  <div style={{textAlign:"center",marginTop:5,fontSize:T.xs,color:C.muted}}>Tap to change</div>
+                  <div style={{textAlign:"center",marginTop:5,fontSize:T.xs,color:C.muted}}>{t('tapToChange')}</div>
                 </div>
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:700,color:C.text}}>{artist.name}</div>
@@ -2743,7 +3319,7 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
                   <HR color={artist.color}/>
                   <div style={{display:"flex",flexWrap:"wrap",gap:8,alignItems:"center",marginBottom:12}}>
                     <span style={{color:C.muted,fontSize:T.xs}}>Stripe:</span>
-                    {artist.stripeConnected?<Badge color={C.emerald}>✓ Connected</Badge>:<><Badge color={C.ruby}>Not Connected</Badge><Btn v="stripe" sz="sm" onClick={()=>setShowStripeConnect(true)} xs={{marginLeft:4}}>Connect →</Btn></>}
+                    {artist.stripeConnected?<Badge color={C.emerald}>✓ Connected</Badge>:<><Badge color={C.ruby}>{t('notConnected')}</Badge><Btn v="stripe" sz="sm" onClick={()=>setShowStripeConnect(true)} xs={{marginLeft:4}}>Connect →</Btn></>}
                   </div>
                   <div style={{display:"flex",flexWrap:"wrap",gap:8,alignItems:"center",marginBottom:14}}>
                     <span style={{color:C.muted,fontSize:T.xs}}>Deposit:</span>
@@ -2773,7 +3349,7 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
           {artist.photo?<img src={artist.photo} alt="" style={{width:32,height:32,borderRadius:7,objectFit:"cover"}}/>:<div style={{width:32,height:32,borderRadius:7,background:`${artist.color}18`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}}>{artist.emoji}</div>}
           <div>
             <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.sm,fontWeight:700,color:C.text}}>{artist.name}</div>
-            <div style={{fontSize:9,color:artist.color,textTransform:"uppercase",fontWeight:700}}>Artist Portal</div>
+            <div style={{fontSize:9,color:artist.color,textTransform:"uppercase",fontWeight:700}}>{t('artistPortal')}</div>
           </div>
         </div>
         <Btn v="ghost" sz="sm" onClick={onLogout}>Out</Btn>
@@ -2794,7 +3370,7 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
         <div style={{padding:"0 20px 20px",borderBottom:`1px solid ${C.border}`,marginBottom:14}}>
           {artist.photo?<img src={artist.photo} alt="" style={{width:42,height:42,borderRadius:8,objectFit:"cover",marginBottom:10}}/>:<div style={{width:42,height:42,borderRadius:8,background:`${artist.color}18`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,marginBottom:10}}>{artist.emoji}</div>}
           <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.sm,fontWeight:700,color:C.text}}>{artist.name}</div>
-          <div style={{fontSize:T.xs,color:artist.color,textTransform:"uppercase",fontWeight:700,marginTop:2}}>Artist Portal</div>
+          <div style={{fontSize:T.xs,color:artist.color,textTransform:"uppercase",fontWeight:700,marginTop:2}}>{t('artistPortal')}</div>
         </div>
         {navItems.map(({id,icon,label})=>(
           <button key={id} onClick={()=>setTab(id)} style={{display:"flex",gap:10,alignItems:"center",padding:"12px 20px",background:tab===id?`${artist.color}18`:"transparent",color:tab===id?artist.color:C.muted,border:"none",cursor:"pointer",fontFamily:"inherit",fontSize:T.sm,fontWeight:tab===id?700:400,borderLeft:`3px solid ${tab===id?artist.color:"transparent"}`,width:"100%",textAlign:"left",minHeight:48}}>
@@ -2836,7 +3412,7 @@ function StripeConnectSheet({ artist, onConnected, onClose }) {
         ):loading?(
           <div style={{textAlign:"center",padding:"32px 0"}}>
             <div style={{width:44,height:44,border:`3px solid ${C.border}`,borderTopColor:"#635BFF",borderRadius:"50%",animation:"spin 0.8s linear infinite",margin:"0 auto 16px"}}/>
-            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,color:C.text}}>Connecting to Stripe…</div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,color:C.text}}>{t('connectingStripe')}</div>
           </div>
         ):(
           <>
@@ -2851,7 +3427,7 @@ function StripeConnectSheet({ artist, onConnected, onClose }) {
               style={{width:"100%",background:"linear-gradient(135deg,#635BFF,#7B72FF)",color:"#fff",border:"none",borderRadius:10,padding:16,fontSize:T.md,fontWeight:800,cursor:iban.trim()?"pointer":"not-allowed",opacity:iban.trim()?1:0.5,fontFamily:"inherit",minHeight:52}}>
               Connect via Stripe →
             </button>
-            <div style={{textAlign:"center",marginTop:10,color:C.muted,fontSize:T.xs}}>Stripe Connect · Bank-level security · Instant payouts</div>
+            <div style={{textAlign:"center",marginTop:10,color:C.muted,fontSize:T.xs}}>{t('stripeSecurity')}</div>
           </>
         )}
       </div>
@@ -2905,7 +3481,7 @@ function InquiryWidget({ artists, onSubmit }) {
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={C.bg} strokeWidth="2.2" strokeLinecap="round">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
           </svg>
-          {!vp.isMobile&&<span>Private Inquiry</span>}
+          {!vp.isMobile&&<span>{t('privateInquiry')}</span>}
         </button>
       </div>
 
@@ -2920,7 +3496,7 @@ function InquiryWidget({ artists, onSubmit }) {
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={C.bg} strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
               </div>
             </div>
-            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:800,color:C.text,marginBottom:10}}>Inquiry Received</div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:800,color:C.text,marginBottom:10}}>{t('inquiryReceived')}</div>
             <div style={{color:C.muted,fontSize:T.sm,lineHeight:1.9,marginBottom:28,maxWidth:320,margin:"0 auto 28px"}}>
               Thank you, <strong style={{color:C.gold}}>{f.name.split(" ")[0]}</strong>. Your inquiry has been sent directly to the owner. You will receive a personalised response within <strong style={{color:C.text}}>24 hours</strong>.
             </div>
@@ -2942,8 +3518,8 @@ function InquiryWidget({ artists, onSubmit }) {
                 <span style={{fontFamily:"'Noto Naskh Arabic',serif",fontSize:18,color:C.bg,fontWeight:700}}>آ</span>
               </div>
               <div>
-                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text}}>Direct to Owner</div>
-                <div style={{fontSize:T.xs,color:C.muted,lineHeight:1.5,marginTop:2}}>Personal response · Price negotiation · Bespoke packages</div>
+                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text}}>{t('directToOwner')}</div>
+                <div style={{fontSize:T.xs,color:C.muted,lineHeight:1.5,marginTop:2}}>{t('directToOwnerDesc')}</div>
               </div>
             </div>
 
@@ -2967,19 +3543,19 @@ function InquiryWidget({ artists, onSubmit }) {
             </div>
 
             <div style={{display:"flex",flexDirection:"column",gap:5}}>
-              <label style={{fontSize:T.xs,color:C.muted,fontWeight:700,letterSpacing:"0.8px",textTransform:"uppercase"}}>Budget Range</label>
+              <label style={{fontSize:T.xs,color:C.muted,fontWeight:700,letterSpacing:"0.8px",textTransform:"uppercase"}}>{t('budgetRange')}</label>
               <select value={f.budget} onChange={e=>setF(p=>({...p,budget:e.target.value}))}
                 style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:10,padding:"13px 15px",color:f.budget?C.text:C.muted,fontSize:T.base,outline:"none",width:"100%",fontFamily:"inherit",minHeight:44,WebkitAppearance:"none"}}>
-                <option value="">Select a range…</option>
+                <option value="">{t('selectRange')}</option>
                 {BUDGETS.map(b=><option key={b} value={b}>{b}</option>)}
               </select>
             </div>
 
             <div style={{display:"flex",flexDirection:"column",gap:5}}>
-              <label style={{fontSize:T.xs,color:C.muted,fontWeight:700,letterSpacing:"0.8px",textTransform:"uppercase"}}>Preferred Artist (optional)</label>
+              <label style={{fontSize:T.xs,color:C.muted,fontWeight:700,letterSpacing:"0.8px",textTransform:"uppercase"}}>{t('preferredArtist')}</label>
               <select value={f.artistId} onChange={e=>setF(p=>({...p,artistId:e.target.value}))}
                 style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:10,padding:"13px 15px",color:f.artistId?C.text:C.muted,fontSize:T.base,outline:"none",width:"100%",fontFamily:"inherit",minHeight:44,WebkitAppearance:"none"}}>
-                <option value="">Not sure yet — let the owner suggest</option>
+                <option value="">{t('notSureYet')}</option>
                 {approved.map(a=><option key={a.id} value={a.id}>{a.emoji} {a.name} — {a.genre}</option>)}
               </select>
             </div>
@@ -3036,7 +3612,7 @@ function CountryPricingTab({ artist, onUpdateArtist, vp }) {
     <div style={{display:"flex",flexDirection:"column",gap:16}}>
       {/* Header */}
       <div>
-        <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:4}}>Market Pricing</div>
+        <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:4}}>{t('marketPricing')}</div>
         <div style={{fontSize:T.sm,color:C.muted,lineHeight:1.7}}>
           Set your fee per country. Customers see your local-currency price. Toggle markets on/off to control where you appear.
         </div>
@@ -3135,7 +3711,7 @@ function CountryPricingTab({ artist, onUpdateArtist, vp }) {
           ✓ Market pricing saved and live on your profile.
         </div>
       ):(
-        <Btn v="gold" sz="lg" onClick={save} xs={{width:"100%"}}>Save Market Pricing</Btn>
+        <Btn v="gold" sz="lg" onClick={save} xs={{width:"100%"}}>{t('saveMarketPricing')}</Btn>
       )}
     </div>
   );
@@ -3194,7 +3770,7 @@ function InquiryPanel({ inquiries, artists, onUpdateInquiry, vp }) {
           </div>
           {sel.status==="replied"&&sel.reply&&(
             <div style={{background:C.emeraldS,border:`1px solid ${C.emerald}44`,borderRadius:8,padding:"14px"}}>
-              <div style={{fontSize:T.xs,color:C.emerald,fontWeight:700,letterSpacing:"0.6px",textTransform:"uppercase",marginBottom:6}}>Your Reply (sent)</div>
+              <div style={{fontSize:T.xs,color:C.emerald,fontWeight:700,letterSpacing:"0.6px",textTransform:"uppercase",marginBottom:6}}>{t('yourReply')}</div>
               <div style={{fontSize:T.sm,color:C.textD,lineHeight:1.7}}>{sel.reply}</div>
             </div>
           )}
@@ -3226,8 +3802,8 @@ function InquiryPanel({ inquiries, artists, onUpdateInquiry, vp }) {
       {inquiries.length===0?(
         <div style={{textAlign:"center",padding:"48px 24px",background:C.card,borderRadius:12,border:`1px solid ${C.border}`}}>
           <div style={{fontSize:36,marginBottom:12}}>📬</div>
-          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,color:C.text,marginBottom:6}}>No inquiries yet</div>
-          <div style={{color:C.muted,fontSize:T.sm}}>Visitor inquiries appear here once the contact widget is live.</div>
+          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,color:C.text,marginBottom:6}}>{t('noInquiriesYet')}</div>
+          <div style={{color:C.muted,fontSize:T.sm}}>{t('noInquiriesDesc')}</div>
         </div>
       ):(
         <div style={{display:"flex",flexDirection:"column",gap:10}}>
@@ -3442,7 +4018,7 @@ export default function App() {
         <style>{`@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;0,800&family=DM+Sans:wght@400;500;700&display=swap');*{box-sizing:border-box;margin:0;padding:0;}`}</style>
         <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:16,padding:32,maxWidth:400,width:"100%",textAlign:"center"}}>
           <div style={{fontSize:40,marginBottom:16}}>⚠️</div>
-          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:22,fontWeight:700,color:C.text,marginBottom:8}}>Artist Profile Not Found</div>
+          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:22,fontWeight:700,color:C.text,marginBottom:8}}>{t('artistProfileNotFound')}</div>
           <div style={{color:C.muted,fontSize:14,lineHeight:1.7,marginBottom:24}}>
             You're logged in as <strong style={{color:C.gold}}>{session.name}</strong> but your artist profile could not be loaded. Please contact support or sign out and try again.
           </div>
@@ -3679,12 +4255,12 @@ export default function App() {
             <Geo id="hiw" op={0.03}/>
             <div style={{maxWidth:1240,margin:"0 auto",padding:vp.isMobile?"28px 16px":"60px 48px",position:"relative"}}>
               <div style={{textAlign:"center",marginBottom:vp.isMobile?28:44}}>
-                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:6}}>How It Works</div>
+                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:6}}>{t('howSectionTitle')}</div>
                 <div style={{color:C.muted,fontSize:T.sm,maxWidth:360,margin:"0 auto",lineHeight:1.5}}>Simple, transparent, secure from search to performance</div>
               </div>
               <div style={{display:"grid",gridTemplateColumns:vp.isMobile?"1fr":vp.isTablet?"repeat(3,1fr)":"repeat(5,1fr)",gap:vp.isMobile?12:16,position:"relative"}}>
                 {!vp.isMobile&&<div style={{position:"absolute",top:28,left:"10%",right:"10%",height:1,background:`linear-gradient(90deg,transparent,${C.gold}24,${C.gold}24,transparent)`}}/>}
-                {[["🔍","Discover","Browse verified artists by genre and location"],["📅","Choose Date","View live calendars — pick an open date"],["💳","Pay Deposit","Artist-set deposit via Stripe — auto-split"],["💬","Chat Opens","Direct messaging after payment"],["🎶","Enjoy","Balance paid cash to artist after concert"]].map(([icon,title,desc],i)=>(
+                {[["🔍",t('howStep1Title'),t('howStep1Desc')],["📅",t('howStep2Title'),t('howStep2Desc')],["💳",t('howStep3Title'),t('howStep3Desc')],["💬",t('howStep4Title'),t('howStep4Desc')],["🎶",t('howStep5Title'),t('howStep5Desc')]].map(([icon,title,desc],i)=>(
                   vp.isMobile?(
                     <div key={title} style={{display:"flex",gap:14,alignItems:"flex-start",padding:"12px 14px",background:C.card,borderRadius:10,border:`1px solid ${C.border}`}}>
                       <div style={{width:40,height:40,borderRadius:"50%",background:C.bg,border:`1px solid ${C.borderM}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>
@@ -3713,13 +4289,13 @@ export default function App() {
                   <div style={{fontFamily:"'Noto Naskh Arabic',serif",fontSize:16,color:C.gold}}>آواز</div>
                   <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:15,fontWeight:700,color:C.text}}>Awaz</div>
                 </div>
-                <p style={{color:C.muted,fontSize:T.xs,lineHeight:1.7,marginBottom:16}}>The premier platform for booking verified Afghan artists across Europe.</p>
+                <p style={{color:C.muted,fontSize:T.xs,lineHeight:1.7,marginBottom:16}}>{t('footerDesc')}</p>
                 <div style={{display:"flex",flexWrap:"wrap",gap:14,marginBottom:16}}>
-                  {[["Browse",()=>nav("browse")],["Apply",()=>setShowApply(true)],["How It Works",()=>nav("how")]].map(([l,fn])=>(
+                  {[[t('footerBrowse'),()=>nav("browse")],[t('footerApply'),()=>setShowApply(true)],[t('howItWorks'),()=>nav("how")]].map(([l,fn])=>(
                     <button key={l} onClick={fn} style={{color:C.muted,fontSize:T.xs,cursor:"pointer",background:"none",border:"none",fontFamily:"inherit",padding:0,minHeight:36}}>{l}</button>
                   ))}
                 </div>
-                <div style={{color:C.faint,fontSize:T.xs}}>© {YEAR} Awaz AS · Oslo · Payments by Stripe</div>
+                <div style={{color:C.faint,fontSize:T.xs}}>{t('footerCopyright').replace('{year}', YEAR)}</div>
               </div>
             ):(
               <div style={{maxWidth:1240,margin:"0 auto",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:16}}>
@@ -3728,11 +4304,11 @@ export default function App() {
                   <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:14,fontWeight:700,color:C.text}}>Awaz — Afghan Artist Booking</div>
                 </div>
                 <div style={{display:"flex",gap:18}}>
-                  {[["Browse",()=>nav("browse")],["Apply",()=>setShowApply(true)],["How It Works",()=>nav("how")],["Pricing",()=>nav("pricing")]].map(([l,fn])=>(
+                  {[[t('footerBrowse'),()=>nav("browse")],[t('footerApply'),()=>setShowApply(true)],[t('howItWorks'),()=>nav("how")],["Pricing",()=>nav("pricing")]].map(([l,fn])=>(
                     <button key={l} onClick={fn} style={{color:C.muted,fontSize:T.xs,cursor:"pointer",background:"none",border:"none",fontFamily:"inherit",padding:0,minHeight:36}}>{l}</button>
                   ))}
                 </div>
-                <div style={{color:C.faint,fontSize:T.xs}}>© {YEAR} Awaz AS · Oslo · Stripe</div>
+                <div style={{color:C.faint,fontSize:T.xs}}>{t('footerCopyright').replace('{year}', String(YEAR))}</div>
               </div>
             )}
           </footer>
@@ -3744,12 +4320,12 @@ export default function App() {
         <div style={{paddingTop:vp.isMobile?56:62,paddingBottom:vp.isMobile?88:0}}>
           <div style={{maxWidth:1240,margin:"0 auto",padding:vp.isMobile?"16px":"36px 48px"}}>
             <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:4}}>{t('browseArtists')}</div>
-            <div style={{color:C.muted,fontSize:T.xs,marginBottom:14}}>{lang==='da'?'رزرو مستقیم — بدون آژانس':(lang==='no'?'Bestill direkte — ingen agenter':'Book directly — no agencies')}</div>
+            <div style={{color:C.muted,fontSize:T.xs,marginBottom:14}}>{t('bookDirectly')}</div>
 
             {/* Search */}
             <div style={{display:"flex",background:C.card,border:`1px solid ${C.border}`,borderRadius:10,padding:"0 14px",alignItems:"center",gap:8,height:52,marginBottom:12}}>
               <span style={{color:C.muted,fontSize:16}}>🔍</span>
-              <input placeholder="Search artists…" value={search} onChange={e=>setSearch(e.target.value)}
+              <input {...{placeholder:t('searchArtists')}} value={search} onChange={e=>setSearch(e.target.value)}
                 style={{flex:1,background:"transparent",border:"none",color:C.text,fontSize:T.base,outline:"none",height:"100%",minWidth:0}}/>
               {search&&<button onClick={()=>setSearch("")} aria-label="Fjern søk" style={{background:"none",border:"none",color:C.muted,cursor:"pointer",fontSize:20,lineHeight:1,flexShrink:0,minWidth:32,minHeight:32,WebkitTapHighlightColor:"transparent"}}>×</button>}
             </div>
@@ -4073,7 +4649,7 @@ export default function App() {
               ))}
             </div>
             <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:vp.isMobile?16:22}}>
-              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.gold,marginBottom:14,textAlign:"center"}}>Deposit Split</div>
+              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.gold,marginBottom:14,textAlign:"center"}}>{t('depositSplit')}</div>
               <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10}}>
                 {[["Artist deposit","Set by artist\nmin €500",C.gold],["You receive","88% direct\nto Stripe",C.emerald],["Awaz fee","12% platform\noperations",C.lapis]].map(([l,v,c])=>(
                   <div key={l} style={{background:C.surface,borderRadius:8,padding:"12px",border:`1px solid ${C.border}`,borderTop:`3px solid ${c}38`,textAlign:"center"}}>
@@ -4142,7 +4718,7 @@ function AIWidget({ artists, onPick }) {
       <div style={{padding:20}}>
         <div style={{display:"flex",gap:10,alignItems:"center",marginBottom:16}}>
           <div style={{width:34,height:34,borderRadius:8,background:C.lapisS,border:`1px solid ${C.lapis}38`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}}>✦</div>
-          <div><div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.md,fontWeight:700,color:C.text}}>{t('aiTitle')}</div><div style={{color:C.muted,fontSize:T.xs}}>Find your perfect artist</div></div>
+          <div><div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.md,fontWeight:700,color:C.text}}>{t('aiTitle')}</div><div style={{color:C.muted,fontSize:T.xs}}>{t('findPerfectArtist')}</div></div>
         </div>
         {step==="idle"&&(
           <>
@@ -4173,7 +4749,7 @@ function AIWidget({ artists, onPick }) {
                 <div style={{background:i===0?`${C.gold}20`:C.surface,border:`1px solid ${i===0?`${C.gold}44`:C.border}`,borderRadius:4,padding:"2px 7px",fontSize:T.xs,fontWeight:800,color:i===0?C.gold:C.muted,flexShrink:0}}>{a.match}%</div>
               </div>
             ))}
-            <button onClick={()=>{setStep("idle");setResults([]);setPrefs({event:"",mood:""}); }} style={{background:"none",border:"none",color:C.muted,cursor:"pointer",fontSize:T.xs,fontFamily:"inherit",textDecoration:"underline",marginTop:4,minHeight:36,WebkitTapHighlightColor:"transparent"}}>Start over</button>
+            <button onClick={()=>{setStep("idle");setResults([]);setPrefs({event:"",mood:""}); }} style={{background:"none",border:"none",color:C.muted,cursor:"pointer",fontSize:T.xs,fontFamily:"inherit",textDecoration:"underline",marginTop:4,minHeight:36,WebkitTapHighlightColor:"transparent"}}>{t('startOver')}</button>
           </div>
         )}
       </div>
@@ -4275,7 +4851,7 @@ function ApplySheet({ onSubmit, onClose }) {
 
             <div style={{display:"flex",gap:8,marginTop:18}}>
               {step>1&&<Btn v="ghost" onClick={()=>{setStep(s=>s-1);setErr("");}} xs={{flex:1}}>{t('back')}</Btn>}
-              {step<2?<Btn onClick={next} xs={{flex:step>1?2:1}}>Next →</Btn>:<Btn onClick={submit} loading={loading} xs={{flex:2}}>Submit Application</Btn>}
+              {step<2?<Btn onClick={next} xs={{flex:step>1?2:1}}>Next →</Btn>:<Btn onClick={submit} loading={loading} xs={{flex:2}}>{t('submitApplication')}</Btn>}
             </div>
           </>
         )}
