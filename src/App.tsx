@@ -1392,6 +1392,7 @@ const ARTISTS=[
       {code:"NL",active:false,price:2500, deposit:1000},
       {code:"US",active:false,price:2800, deposit:1100},
     ],
+  },
   {id:"a2",name:"Ahmad Zafar",      nameDari:"احمد ظفر",      genre:"Rubab · Traditional",location:"Kandahar · Bergen",rating:4.93,reviews:52, priceInfo:"From €1,800",deposit:800, emoji:"🪕",color:C.lapis, photo:null,bio:"A virtuoso of the rubab — Afghanistan's national instrument. Ahmad has dedicated 20 years mastering both the Kabuli and Herati styles. His performances bridge generations, carrying the sound of ancient Afghanistan into every concert hall in Europe.",tags:["Rubab","Traditional","Festival"],               instruments:["Rubab","Tabla"],            superhost:false,status:"approved",joined:"Mar 2024",available:{[MK]:[2,9,16,22,23,29],[MK2]:[3,6,10,14,17,21]},blocked:{[MK]:[13]},           earnings:3600,totalBookings:4, verified:true, stripeConnected:true, stripeAccount:"acct_ahm456",cancellationPolicy:"flexible",
     spotify:{monthlyListeners:"41K",topTracks:["Rubab Raga No. 1","Herati Saz","Safar"],profileUrl:"https://open.spotify.com/artist/example"},
     instagram:{handle:"@ahmad.rubab",followers:"22.8K",profileUrl:"https://instagram.com/ahmad.rubab",posts:[{thumb:"🪕",caption:"Studio"},{thumb:"🎵",caption:"Bergen"},{thumb:"🏔",caption:"Afghanistan"}]},
@@ -1401,6 +1402,7 @@ const ARTISTS=[
       {code:"DE",active:true, price:1800, deposit:800},
       {code:"GB",active:false,price:1600, deposit:700},
     ],
+  },
   {id:"a3",name:"Mariam & Ensemble",nameDari:"مریم و گروه",   genre:"Afghan Folk",        location:"Herat · London", rating:5.0, reviews:41, priceInfo:"From €4,000",deposit:1200,emoji:"🎶",color:C.emerald,photo:null,bio:"A six-piece ensemble specializing in Herati folk music. Their sound blends dutaar, dohol, and haunting vocals that transport audiences to the valleys of western Afghanistan.",tags:["Folk","Ensemble","Wedding","Eid","Cultural"],   instruments:["Dutaar","Dohol","Tula"],    superhost:true, status:"pending", joined:"Nov 2024",available:{[MK]:[5,12,19,25,26]},                                         blocked:{[MK]:[]},             earnings:0,   totalBookings:0, verified:false,stripeConnected:false,stripeAccount:null,cancellationPolicy:"moderate",
     spotify:null,
     instagram:{handle:"@mariam.ensemble",followers:"11.4K",profileUrl:"https://instagram.com/mariam.ensemble",posts:[{thumb:"🎶",caption:"Rehearsal"},{thumb:"🌸",caption:"Herat"},{thumb:"👥",caption:"Ensemble"}]},
@@ -4280,3 +4282,4 @@ function ApplySheet({ onSubmit, onClose }) {
     </Sheet>
   );
 }
+  
