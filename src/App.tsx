@@ -3373,7 +3373,7 @@ export default function App() {
   const isRTL = isRTLLang(lang);
   const [users,setUsers]=useState(USERS);
   const [artists,setArtists]=useState(ARTISTS);
-  const [bookings,setBookings]=useState(BOOKINGS);
+  const [bookings,setBookings]=useState(DEMO_BOOKINGS);
   const [inquiries,setInquiries]=useState(DEMO_INQUIRIES);
   const handleNewInquiry=inq=>setInquiries(p=>[inq,...p]);
   const handleUpdateInquiry=(id,updates)=>setInquiries(p=>p.map(i=>i.id===id?{...i,...updates}:i));
