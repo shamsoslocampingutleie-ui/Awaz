@@ -1143,7 +1143,7 @@ function LoginSheet({ users, open, onLogin, onClose }) {
         </div>
         <div style={{display:"flex",flexDirection:"column",gap:12,marginBottom:14}}>
           <Inp label="Full name *" placeholder="Ditt navn" value={name} onChange={e=>setName(e.target.value)} onKeyDown={e=>e.key==="Enter"&&doRegister()}/>
-          <Inp label="E-post *" type="email" placeholder="deg@email.com" value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==="Enter"&&doRegister()}/>
+          <Inp label="E-post *" type="email" placeholder="you@email.com" value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==="Enter"&&doRegister()}/>
           <Inp label="Passord *" type="password" placeholder="At least 8 characters" value={pass} onChange={e=>setPass(e.target.value)} onKeyDown={e=>e.key==="Enter"&&doRegister()} hint="At least 8 characters"/>
         </div>
         {err&&<div style={{background:C.rubyS,border:`1px solid ${C.ruby}28`,borderRadius:8,padding:"10px 13px",color:C.ruby,fontSize:T.xs,marginBottom:12}}>⚠ {err}</div>}
@@ -1169,12 +1169,12 @@ function LoginSheet({ users, open, onLogin, onClose }) {
                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text,marginBottom:6}}>Email sent!</div>
                <div style={{color:C.muted,fontSize:T.sm,lineHeight:1.7,marginBottom:20}}>Check your inbox at <strong style={{color:C.gold}}>{email}</strong> for a link to reset your password.</div>
                <Btn full sz="lg" onClick={()=>setMode("login")}>Back to sign in</Btn></>
-            :<><div style={{color:C.muted,fontSize:T.sm,marginBottom:16,lineHeight:1.6}}>Enter your email and we'll send you a link to reset your password.</div>
-               <Inp label="E-post" type="email" placeholder="deg@email.com" value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==="Enter"&&doForgot()}/>
-               {err&&<div style={{background:C.rubyS,border:`1px solid ${C.ruby}28`,borderRadius:8,padding:"10px 13px",color:C.ruby,fontSize:T.xs,marginTop:10}}>⚠ {err}</div>}
+            :<><div style={{color:C.muted,fontSize:T.sm,marginBottom:16,lineHeight:1.6}}>Enter your email and we will send you a reset link.</div>
+               <Inp label="Email" type="email" placeholder="you@email.com" value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==="Enter"&&doForgot()}/>
+               {err&&<div style={{background:C.rubyS,border:`1px solid ${C.ruby}28`,borderRadius:8,padding:"10px 13px",color:C.ruby,fontSize:T.xs,marginTop:10}}>&#9888; {err}</div>}
                <div style={{marginTop:14,display:"flex",flexDirection:"column",gap:8}}>
                  <Btn full sz="lg" loading={loading} onClick={doForgot}>Send reset link</Btn>
-                 <button onClick={()=>setMode("login")} style={{background:"none",border:"none",color:C.muted,cursor:"pointer",fontSize:T.sm,fontFamily:"inherit",minHeight:36}}>← Back to sign in</button>
+                 <button onClick={()=>setMode("login")} style={{background:"none",border:"none",color:C.muted,cursor:"pointer",fontSize:T.sm,fontFamily:"inherit",minHeight:36}}>Back to sign in</button>
                </div></>}
         </div>
       </div>
@@ -1189,8 +1189,8 @@ function LoginSheet({ users, open, onLogin, onClose }) {
           <div style={{color:C.muted,fontSize:T.sm}}>Welcome back</div>
         </div>
         <div style={{display:"flex",flexDirection:"column",gap:12,marginBottom:14}}>
-          <Inp label="E-post" type="email" placeholder="deg@email.com" value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==="Enter"&&doLogin()}/>
-          <Inp label="Passord" type="password" placeholder="••••••••" value={pass} onChange={e=>setPass(e.target.value)} onKeyDown={e=>e.key==="Enter"&&doLogin()}/>
+          <Inp label="Email" type="email" placeholder="you@email.com" value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==="Enter"&&doLogin()}/>
+          <Inp label="Password" type="password" placeholder="••••••••" value={pass} onChange={e=>setPass(e.target.value)} onKeyDown={e=>e.key==="Enter"&&doLogin()}/>
         </div>
         {err&&<div style={{background:C.rubyS,border:`1px solid ${C.ruby}28`,borderRadius:8,padding:"10px 13px",color:C.ruby,fontSize:T.xs,marginBottom:12}}>⚠ {err}</div>}
         <Btn full sz="lg" loading={loading} disabled={locked} onClick={doLogin}>Sign In</Btn>
