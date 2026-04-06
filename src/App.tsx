@@ -1160,6 +1160,8 @@ function LoginSheet({ users, open, onLogin, onClose }) {
       </div>
     </Sheet>
   );
+
+  if(mode==="forgot"||mode==="forgot_sent") return(
     <Sheet open={open} onClose={onClose} title="Reset Password">
       <div style={{padding:"16px 20px 32px"}}>
         <div style={{textAlign:"center",marginBottom:20}}>
