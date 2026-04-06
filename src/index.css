@@ -109,3 +109,15 @@ code {
   padding: 4px 8px;
   background: var(--code-bg);
 }
+body, html {
+  background: #07060B;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+#root {
+  background: #07060B;
+  min-height: 100vh;
+  width: 100%;
+}
