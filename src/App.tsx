@@ -1019,17 +1019,18 @@ function ArtistCard({ artist, onClick, compact=false }) {
 
 // ── Login sheet — Supabase Auth + demo fallback ────────────────────────
 function LoginSheet({ users, open, onLogin, onClose }) {
-  const [mode,setMode]=useState("login"); // login | forgot | forgot_sent
+  const [mode,setMode]=useState("login"); // login | register | forgot | forgot_sent
   const [email,setEmail]=useState(""),[pass,setPass]=useState(""),
+    [name,setName]=useState(""),
     [err,setErr]=useState(""),
     [attempts,setAt]=useState(0),[locked,setLocked]=useState(false),
     [loading,setLoading]=useState(false);
 
-  useEffect(()=>{ if(open){setErr("");setMode("login");} },[open]);
+  useEffect(()=>{ if(open){setErr("");setMode("login");setName("");} },[open]);
 
   const doLogin=async()=>{
-    if(locked){setErr("For mange forsøk. Vent 5 min.");return;}
-    if(!email||!pass){setErr("Skriv inn e-post og passord.");return;}
+    if(locked){setErr("Too many attempts. Wait 5 min.");return;}
+    if(!email||!pass){setErr("Enter email and password.");return;}
     setLoading(true);setErr("");
 
     // ── Supabase Auth (production) ────────────────────────────────────
@@ -1043,7 +1044,7 @@ function LoginSheet({ users, open, onLogin, onClose }) {
             const na=prev+1;
             if(na>=5){setLocked(true);setTimeout(()=>{setLocked(false);setAt(0);},5*60*1000);}
             setErr(error.message==="Invalid login credentials"
-              ? `Feil e-post eller passord. ${Math.max(0,5-na)} forsøk igjen.`
+              ? `Invalid email or password. ${Math.max(0,5-na)} attempts left.`
               : error.message);
             return na;
           });
@@ -1061,7 +1062,7 @@ function LoginSheet({ users, open, onLogin, onClose }) {
         });
       } catch(e){
         setLoading(false);
-        setErr("Tilkoblingsfeil — prøv igjen.");
+        setErr("Connection error — please try again.");
       }
       return;
     }
@@ -1074,7 +1075,7 @@ function LoginSheet({ users, open, onLogin, onClose }) {
         setAt(prev=>{
           const na=prev+1;
           if(na>=5){setLocked(true);setTimeout(()=>{setLocked(false);setAt(0);},5*60*1000);}
-          setErr(`Feil credentials. ${Math.max(0,5-na)} forsøk igjen.`);
+          setErr(`Wrong credentials. ${Math.max(0,5-na)} attempts left.`);
           return na;
         });
         return;
@@ -1084,7 +1085,7 @@ function LoginSheet({ users, open, onLogin, onClose }) {
   };
 
   const doForgot=async()=>{
-    if(!email){setErr("Skriv inn e-postadressen din.");return;}
+    if(!email){setErr("Enter your email address.");return;}
     setLoading(true);setErr("");
     if(HAS_SUPA){
       const sb=await getSupabase();
@@ -1100,22 +1101,80 @@ function LoginSheet({ users, open, onLogin, onClose }) {
     }
   };
 
-  if(mode==="forgot"||mode==="forgot_sent") return(
-    <Sheet open={open} onClose={onClose} title="Tilbakestill passord">
+  const doRegister=async()=>{
+    if(!name.trim()){setErr("Enter your name.");return;}
+    if(!email||!email.includes("@")){setErr("Valid email required.");return;}
+    if(pass.length<8){setErr("Password must be at least 8 characters.");return;}
+    setLoading(true);setErr("");
+    if(HAS_SUPA){
+      try{
+        const sb=await getSupabase();
+        const{data,error}=await sb.auth.signUp({
+          email:email.toLowerCase().trim(),
+          password:pass,
+          options:{data:{name:name.trim()}},
+        });
+        setLoading(false);
+        if(error){setErr(error.message);return;}
+        if(data.user&&!data.session){
+          // Email confirmation required
+          setMode("forgot_sent");
+          return;
+        }
+        if(data.user){
+          await sb.from("profiles").insert([{id:data.user.id,role:"customer",name:name.trim()}]);
+          onLogin({id:data.user.id,email:data.user.email,name:name.trim(),role:"customer",artistId:null});
+        }
+      }catch(e){setLoading(false);setErr("Registration failed — please try again.");}
+    } else {
+      setTimeout(()=>{
+        setLoading(false);
+        setErr("Demo mode: registration requires Supabase. Use demo accounts.");
+      },400);
+    }
+  };
+
+  if(mode==="register") return(
+    <Sheet open={open} onClose={onClose} title="Create account">
+      <div style={{padding:"16px 20px 32px"}}>
+        <div style={{textAlign:"center",marginBottom:20}}>
+          <div style={{fontFamily:"'Noto Naskh Arabic',serif",fontSize:T.xl,color:C.gold,marginBottom:4}}>آواز</div>
+          <div style={{color:C.muted,fontSize:T.sm}}>Create your account</div>
+        </div>
+        <div style={{display:"flex",flexDirection:"column",gap:12,marginBottom:14}}>
+          <Inp label="Full name *" placeholder="Ditt navn" value={name} onChange={e=>setName(e.target.value)} onKeyDown={e=>e.key==="Enter"&&doRegister()}/>
+          <Inp label="E-post *" type="email" placeholder="deg@email.com" value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==="Enter"&&doRegister()}/>
+          <Inp label="Passord *" type="password" placeholder="At least 8 characters" value={pass} onChange={e=>setPass(e.target.value)} onKeyDown={e=>e.key==="Enter"&&doRegister()} hint="At least 8 characters"/>
+        </div>
+        {err&&<div style={{background:C.rubyS,border:`1px solid ${C.ruby}28`,borderRadius:8,padding:"10px 13px",color:C.ruby,fontSize:T.xs,marginBottom:12}}>⚠ {err}</div>}
+        <Btn full sz="lg" loading={loading} onClick={doRegister}>Create account</Btn>
+        <button onClick={()=>setMode("login")}
+          style={{background:"none",border:"none",color:C.muted,cursor:"pointer",fontSize:T.sm,fontFamily:"inherit",width:"100%",textAlign:"center",marginTop:12,minHeight:36}}>
+          Already have an account? <span style={{color:C.gold,textDecoration:"underline"}}>Sign In</span>
+        </button>
+        <div style={{background:C.surface,borderRadius:10,padding:"12px 14px",border:`1px solid ${C.border}`,marginTop:14}}>
+          <div style={{fontSize:T.xs,color:C.muted,lineHeight:1.7}}>
+            Are you an artist? Use the <button onClick={()=>{onClose();}} style={{background:"none",border:"none",color:C.gold,cursor:"pointer",fontFamily:"inherit",fontSize:T.xs,textDecoration:"underline",padding:0}}>«Apply as Artist»</button>-knappen i stedet.
+          </div>
+        </div>
+      </div>
+    </Sheet>
+  );
+    <Sheet open={open} onClose={onClose} title="Reset Password">
       <div style={{padding:"16px 20px 32px"}}>
         <div style={{textAlign:"center",marginBottom:20}}>
           <div style={{fontFamily:"'Noto Naskh Arabic',serif",fontSize:T.xl,color:C.gold,marginBottom:4}}>آواز</div>
           {mode==="forgot_sent"
             ?<><div style={{fontSize:36,marginBottom:8}}>📧</div>
-               <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text,marginBottom:6}}>E-post sendt!</div>
-               <div style={{color:C.muted,fontSize:T.sm,lineHeight:1.7,marginBottom:20}}>Sjekk innboksen din på <strong style={{color:C.gold}}>{email}</strong> for en lenke til å tilbakestille passordet.</div>
-               <Btn full sz="lg" onClick={()=>setMode("login")}>Tilbake til innlogging</Btn></>
-            :<><div style={{color:C.muted,fontSize:T.sm,marginBottom:16,lineHeight:1.6}}>Skriv inn e-postadressen din og vi sender deg en lenke for å tilbakestille passordet.</div>
+               <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text,marginBottom:6}}>Email sent!</div>
+               <div style={{color:C.muted,fontSize:T.sm,lineHeight:1.7,marginBottom:20}}>Check your inbox at <strong style={{color:C.gold}}>{email}</strong> for a link to reset your password.</div>
+               <Btn full sz="lg" onClick={()=>setMode("login")}>Back to sign in</Btn></>
+            :<><div style={{color:C.muted,fontSize:T.sm,marginBottom:16,lineHeight:1.6}}>Enter your email and we'll send you a link to reset your password.</div>
                <Inp label="E-post" type="email" placeholder="deg@email.com" value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==="Enter"&&doForgot()}/>
                {err&&<div style={{background:C.rubyS,border:`1px solid ${C.ruby}28`,borderRadius:8,padding:"10px 13px",color:C.ruby,fontSize:T.xs,marginTop:10}}>⚠ {err}</div>}
                <div style={{marginTop:14,display:"flex",flexDirection:"column",gap:8}}>
-                 <Btn full sz="lg" loading={loading} onClick={doForgot}>Send tilbakestillingslenke</Btn>
-                 <button onClick={()=>setMode("login")} style={{background:"none",border:"none",color:C.muted,cursor:"pointer",fontSize:T.sm,fontFamily:"inherit",minHeight:36}}>← Tilbake til innlogging</button>
+                 <Btn full sz="lg" loading={loading} onClick={doForgot}>Send reset link</Btn>
+                 <button onClick={()=>setMode("login")} style={{background:"none",border:"none",color:C.muted,cursor:"pointer",fontSize:T.sm,fontFamily:"inherit",minHeight:36}}>← Back to sign in</button>
                </div></>}
         </div>
       </div>
@@ -1123,30 +1182,35 @@ function LoginSheet({ users, open, onLogin, onClose }) {
   );
 
   return(
-    <Sheet open={open} onClose={onClose} title="Logg inn på Awaz">
+    <Sheet open={open} onClose={onClose} title="Sign in to Awaz">
       <div style={{padding:"16px 20px 32px"}}>
         <div style={{textAlign:"center",marginBottom:20}}>
           <div style={{fontFamily:"'Noto Naskh Arabic',serif",fontSize:T.xl,color:C.gold,marginBottom:4}}>آواز</div>
-          <div style={{color:C.muted,fontSize:T.sm}}>Velkommen tilbake</div>
+          <div style={{color:C.muted,fontSize:T.sm}}>Welcome back</div>
         </div>
         <div style={{display:"flex",flexDirection:"column",gap:12,marginBottom:14}}>
           <Inp label="E-post" type="email" placeholder="deg@email.com" value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==="Enter"&&doLogin()}/>
           <Inp label="Passord" type="password" placeholder="••••••••" value={pass} onChange={e=>setPass(e.target.value)} onKeyDown={e=>e.key==="Enter"&&doLogin()}/>
         </div>
         {err&&<div style={{background:C.rubyS,border:`1px solid ${C.ruby}28`,borderRadius:8,padding:"10px 13px",color:C.ruby,fontSize:T.xs,marginBottom:12}}>⚠ {err}</div>}
-        <Btn full sz="lg" loading={loading} disabled={locked} onClick={doLogin}>Logg inn</Btn>
+        <Btn full sz="lg" loading={loading} disabled={locked} onClick={doLogin}>Sign In</Btn>
         <button onClick={()=>setMode("forgot")}
           style={{background:"none",border:"none",color:C.muted,cursor:"pointer",fontSize:T.sm,fontFamily:"inherit",textDecoration:"underline",width:"100%",textAlign:"center",marginTop:12,minHeight:36}}>
-          Glemt passord?
+          Forgot password?
+        </button>
+        <div style={{height:1,background:C.border,margin:"14px 0"}}/>
+        <button onClick={()=>setMode("register")}
+          style={{background:"none",border:`1px solid ${C.border}`,color:C.textD,cursor:"pointer",fontSize:T.sm,fontFamily:"inherit",width:"100%",textAlign:"center",borderRadius:10,padding:"12px",minHeight:44}}>
+          New here? <span style={{color:C.gold,fontWeight:700}}>Create account</span>
         </button>
         {!HAS_SUPA&&(
           <>
             <HR color={C.border} my={16}/>
             <div style={{background:C.surface,borderRadius:10,padding:"14px",border:`1px solid ${C.border}`}}>
               <div style={{fontSize:T.xs,color:C.saffron,fontWeight:700,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:6,display:"flex",alignItems:"center",gap:6}}>
-                <span>⚠</span> Demo-kontoer — kun for testing
+                <span>⚠</span> Demo accounts — testing only
               </div>
-              <div style={{fontSize:T.xs,color:C.muted,marginBottom:10,lineHeight:1.5}}>Disse fjernes når du kobler til Supabase Auth.</div>
+              <div style={{fontSize:T.xs,color:C.muted,marginBottom:10,lineHeight:1.5}}>These are removed when you connect Supabase Auth.</div>
               {[["admin@awaz.no","Admin2025!","Admin"],["soraya@awaz.no","Soraya123!","Artist"],["khalid@awaz.no","Khalid123!","Artist"]].map(([e,p,r])=>(
                 <button key={e} onClick={()=>{setEmail(e);setPass(p);setErr("");}}
                   style={{display:"flex",justifyContent:"space-between",width:"100%",background:"transparent",border:"none",borderBottom:`1px solid ${C.border}`,color:C.textD,cursor:"pointer",fontSize:T.xs,padding:"10px 0",fontFamily:"inherit",minHeight:44,WebkitTapHighlightColor:"transparent"}}>
@@ -1959,7 +2023,7 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
 
               {/* Honest explanation */}
               <div style={{background:"rgba(225,48,108,0.06)",border:"1px solid rgba(225,48,108,0.14)",borderRadius:8,padding:"10px 12px",marginBottom:14,fontFamily:"'DM Sans',sans-serif",fontSize:T.sm,color:"#E1306C",lineHeight:1.7}}>
-                ℹ Instagram tillater ikke automatisk henting av data uten innlogging fra din konto. Lim inn profil-URL-en eller @handle — vi genererer lenken automatisk. Følgertall legger du inn selv.
+                ℹ Instagram does not allow automatic data fetching without logging in from your account. Paste your profile URL or @handle — we generate the link automatically. Enter your follower count manually.
               </div>
 
               <div style={{display:"flex",flexDirection:"column",gap:10}}>
@@ -2075,7 +2139,7 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
               onUpdateArtist(artist.id,{spotify:null,instagram:null,youtube:null,tiktok:null});
               setSocialSaved(false);
             }} style={{background:"none",border:"none",color:C.muted,cursor:"pointer",fontSize:T.sm,fontFamily:"inherit",textDecoration:"underline",padding:0,minHeight:36}}>
-              Fjern alle sosiale kontoer
+              Remove all social accounts
             </button>
           )}
         </div>
@@ -2414,15 +2478,15 @@ export default function App() {
             </div>
           )}
           {vp.isMobile&&!session&&(
-            <button onClick={()=>setShowLogin(true)} aria-label="Logg inn"
+            <button onClick={()=>setShowLogin(true)} aria-label="Sign In"
               style={{width:44,height:44,borderRadius:10,background:C.surface,border:`1px solid ${C.border}`,color:C.muted,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,WebkitTapHighlightColor:"transparent"}}>
               👤
             </button>
           )}
           {vp.isMobile&&session&&(
-            <button onClick={logout} aria-label="Logg ut"
+            <button onClick={logout} aria-label="Sign out"
               style={{width:44,height:44,borderRadius:10,background:C.rubyS,border:`1px solid ${C.ruby}44`,color:C.ruby,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,fontFamily:"inherit",WebkitTapHighlightColor:"transparent",letterSpacing:"0.3px"}}>
-              Logg ut
+              Sign out
             </button>
           )}
         </div>
@@ -3083,7 +3147,7 @@ function ApplySheet({ onSubmit, onClose }) {
         }
         setLoading(false);setDone(true);
         return;
-      }catch(e){setLoading(false);setErr("Feil ved registrering — prøv igjen.");return;}
+      }catch(e){setLoading(false);setErr("Registration failed — please try again.");return;}
     }
 
     // ── Demo fallback ─────────────────────────────────────────────────
