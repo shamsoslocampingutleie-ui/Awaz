@@ -1382,7 +1382,7 @@ const USERS=[
 ];
 const ARTISTS=[
   {id:"a1",name:"Soraya Rahimi",    nameDari:"ثریا رحیمی",   genre:"Classical Ghazal",  location:"Kabul · Oslo",   rating:4.98,reviews:87, priceInfo:"From €2,500",deposit:1000,emoji:"🎤",color:C.ruby,   photo:null,bio:"Soraya is one of Europe's leading Afghan vocalists, rooted in the classical ghazal tradition. Her voice carries the soul of centuries of Afghan poetry — Rumi, Hafez, Bedil — delivered with technical mastery and emotional depth that leaves audiences speechless.",tags:["Ghazal","Classical","Wedding","Eid"],        instruments:["Vocals","Harmonium"],       superhost:true, status:"approved",joined:"Jan 2024",available:{[MK]:[3,7,8,14,15,21,22,28],[MK2]:[1,5,8,12,15,19,22,26]},blocked:{[MK]:[10,11]},        earnings:7500,totalBookings:6, verified:true, stripeConnected:true, stripeAccount:"acct_sor123",cancellationPolicy:"moderate",
-    spotify:{monthlyListeners:"124K",topTracks:["Laila (Live Oslo)",`Ghazal-e-Rumi`,"Del-e-Man"],profileUrl:"https://open.spotify.com/artist/example"},
+    spotify:{monthlyListeners:"124K",topTracks:["Laila (Live Oslo)","Ghazal-e-Rumi","Del-e-Man"],profileUrl:"https://open.spotify.com/artist/example"},
     instagram:{handle:"@soraya.rahimi.music",followers:"89.2K",profileUrl:"https://instagram.com/soraya.rahimi.music",posts:[{thumb:"🎤",caption:"Oslo Concert"},{thumb:"🎶",caption:"Recording"},{thumb:"🌹",caption:"Eid Special"}]},
     countryPricing:[
       {code:"NO",active:true, price:28000,deposit:11500},
