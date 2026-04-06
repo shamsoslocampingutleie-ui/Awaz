@@ -137,8 +137,439 @@ const T = {
   "5xl":"clamp(52px, 12vw,  92px)",   // display            (was 48–88px)
 };
 
-const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
-const WDAYS  = ["Mo","Tu","We","Th","Fr","Sa","Su"];
+// ── i18n Translation System ───────────────────────────────────────────
+// EN · NO · DE · FR · دری (da) · پښتو (ps)
+// RTL: Dari and Pashto — dir="rtl" applied to root element automatically.
+const TRANSLATIONS = {
+  en: {
+    browseArtists:"Browse Artists", howItWorks:"How It Works", pricing:"Pricing",
+    applyAsArtist:"Apply as Artist", signIn:"Sign In", signOut:"Sign Out",
+    heroEyebrow:"Book Afghan Artists Directly",
+    heroLine1:"Book Afghan", heroLine2:"Artists", heroLine2em:"Directly",
+    heroBody:"Discover and book verified Afghan artists — ghazal, rubab, folk, and fusion — for your wedding, Eid, cultural event or private gathering.",
+    searchPlaceholder:"Artist, genre, or city…", searchBtn:"Search",
+    trustVerified:"Verified artists", trustStripe:"Stripe payments",
+    trustChat:"Direct chat", trustDeposits:"Artist-set deposits", trustCulture:"Afghan culture",
+    featuredTitle:"Featured Artists", featuredSub:"Verified · ready to book", seeAll:"See all →",
+    aiTitle:"AI Artist Matching", aiFindBtn:"Find My Artist ✦", aiEvent:"Event Type", aiStyle:"Music Style",
+    openDates:"open", topBadge:"★ Top", depositLabel:"deposit",
+    available:"Available", booked:"Booked", blocked:"Blocked",
+    selectDate:"Select a Date", continueWith:"Continue with", selectDateFirst:"Select a date first",
+    bookNow:"Book Now", completeBooking:"Complete Your Booking",
+    yourName:"Your Name", email:"Email", phone:"Phone",
+    eventType:"Event Type", eventPlaceholder:"Wedding, Eid…",
+    notes:"Notes (optional)", notesPlaceholder:"Special requests…",
+    dateLabel:"Date", depositAmount:"Deposit", balanceCash:"Cash after concert",
+    payViaStripe:"Pay €{n} via Stripe →", stripeNote:"🔒 Stripe · SSL · PCI compliant",
+    depositConfirmed:"Deposit Confirmed!", continueToChat:"Continue to Chat →",
+    balanceCashNote:"Balance paid cash to artist after concert",
+    chatUnlocked:"Chat with {name} is now unlocked!",
+    signInToAwaz:"Sign in to Awaz", welcomeBack:"Welcome back",
+    password:"Password", forgotPassword:"Forgot password?",
+    newHere:"New here?", createAccountLink:"Create account",
+    createAccount:"Create account", alreadyHaveAccount:"Already have an account?",
+    enterEmailPass:"Enter email and password.",
+    wrongCredentials:"Wrong credentials. {n} attempts left.",
+    tooManyAttempts:"Too many attempts. Wait 5 min.",
+    resetPassword:"Reset Password", sendResetLink:"Send reset link",
+    enterYourEmail:"Enter your email and we will send you a reset link.",
+    emailSent:"Email sent!", checkInbox:"Check your inbox at",
+    forResetLink:"for a link to reset your password.",
+    backToSignIn:"Back to sign in", demoAccounts:"Demo accounts — testing only",
+    demoNote:"These are removed when you connect Supabase Auth.",
+    fullName:"Full name", atLeast8:"At least 8 characters",
+    validEmailRequired:"Valid email required.", passwordMin8:"Password must be at least 8 characters.",
+    passwordsDontMatch:"Passwords don't match.", nameRequired:"Enter your name.",
+    portalHome:"Home", portalCalendar:"Calendar", portalBookings:"Bookings",
+    portalMessages:"Messages", portalProfile:"Profile", portalSocial:"Social",
+    availabilityTitle:"Availability", availabilityHint:"Tap dates to toggle Available ↔ Blocked",
+    myBookings:"My Bookings", messagesTitle:"Messages", myProfile:"My Profile",
+    editProfile:"Edit", cancelEdit:"Cancel", saveProfile:"Save",
+    noBookingsYet:"No bookings yet. Add available dates!",
+    noChatsYet:"Chats unlock after customers pay the deposit.",
+    depositPaid:"Deposit ✓ Paid", depositPending:"✗ Pending",
+    platformOverview:"Platform Overview", allBookings:"All Bookings", allArtists:"Artists",
+    allConversations:"All Conversations", finance:"Finance",
+    aboutTab:"About", instrumentsTab:"Instruments", socialTab:"Social",
+    reviewsTab:"Reviews", policyTab:"Terms",
+    howTitle:"Book in 6", howTitleEm:"simple steps",
+    howSub:"From discovery to performance — the entire booking process is designed to be fast, safe, and completely transparent.",
+    pricingTitle:"Simple Pricing", pricingSubtitle:"Transparent fees — no surprises, no hidden costs",
+    forClients:"For Clients", forArtists:"For Artists",
+    footerTagline:"The premier platform for booking verified Afghan artists across Europe.",
+    footerCopyright:"© {year} Awaz AS · Oslo · Payments by Stripe",
+    months:["January","February","March","April","May","June","July","August","September","October","November","December"],
+    wdays:["Mo","Tu","We","Th","Fr","Sa","Su"],
+    applyTitle:"Apply as Artist",
+    monthlyListeners:"monthly listeners", subscribers:"subscribers", followers:"followers",
+    chatLocked:"Locked — deposit required", chatActive:"Active",
+    typeMessage:"Type a message…", depositRequired:"Deposit required",
+    chatLockedTitle:"Chat Locked", chatLockedBody:"Pay the deposit to unlock messaging.",
+    back:"← Back", from:"FROM", clearFilters:"Clear filters",
+    noArtistsFound:"No artists found", tryDifferent:"Try a different genre or search term.",
+    artistsCount:"{n} artist", artistsCountPlural:"{n} artists",
+  },
+
+  no: {
+    browseArtists:"Artister", howItWorks:"Slik fungerer det", pricing:"Priser",
+    applyAsArtist:"Søk som artist", signIn:"Logg inn", signOut:"Logg ut",
+    heroEyebrow:"Bestill afghanske artister direkte",
+    heroLine1:"Bestill afghanske", heroLine2:"artister", heroLine2em:"direkte",
+    heroBody:"Finn og bestill verifiserte afghanske artister — ghazal, rubab, folkemusikk og fusion — til ditt bryllup, Eid, kulturfest eller private sammenkomst.",
+    searchPlaceholder:"Artist, sjanger eller by…", searchBtn:"Søk",
+    trustVerified:"Verifiserte artister", trustStripe:"Stripe-betaling",
+    trustChat:"Direkte chat", trustDeposits:"Depositum satt av artist", trustCulture:"Afghansk kultur",
+    featuredTitle:"Fremhevede artister", featuredSub:"Verifisert · klar til å booke", seeAll:"Se alle →",
+    aiTitle:"AI Artistmatch", aiFindBtn:"Finn min artist ✦", aiEvent:"Arrangementtype", aiStyle:"Musikstil",
+    openDates:"ledig", topBadge:"★ Topp", depositLabel:"depositum",
+    available:"Ledig", booked:"Booket", blocked:"Blokkert",
+    selectDate:"Velg en dato", continueWith:"Fortsett med", selectDateFirst:"Velg en dato først",
+    bookNow:"Book nå", completeBooking:"Fullfør bestillingen",
+    yourName:"Ditt navn", email:"E-post", phone:"Telefon",
+    eventType:"Arrangementtype", eventPlaceholder:"Bryllup, Eid…",
+    notes:"Notater (valgfritt)", notesPlaceholder:"Spesielle ønsker…",
+    dateLabel:"Dato", depositAmount:"Depositum", balanceCash:"Kontant etter konsert",
+    payViaStripe:"Betal €{n} via Stripe →", stripeNote:"🔒 Stripe · SSL · PCI-sertifisert",
+    depositConfirmed:"Depositum bekreftet!", continueToChat:"Fortsett til chat →",
+    balanceCashNote:"Saldo betales kontant til artisten etter konserten",
+    chatUnlocked:"Chat med {name} er nå låst opp!",
+    signInToAwaz:"Logg inn på Awaz", welcomeBack:"Velkommen tilbake",
+    password:"Passord", forgotPassword:"Glemt passord?",
+    newHere:"Ny her?", createAccountLink:"Opprett konto",
+    createAccount:"Opprett konto", alreadyHaveAccount:"Har du allerede en konto?",
+    enterEmailPass:"Skriv inn e-post og passord.",
+    wrongCredentials:"Feil innlogging. {n} forsøk igjen.",
+    tooManyAttempts:"For mange forsøk. Vent 5 min.",
+    resetPassword:"Tilbakestill passord", sendResetLink:"Send tilbakestillingslenke",
+    enterYourEmail:"Skriv inn e-posten din, så sender vi en tilbakestillingslenke.",
+    emailSent:"E-post sendt!", checkInbox:"Sjekk innboksen din på",
+    forResetLink:"for en lenke til å tilbakestille passordet ditt.",
+    backToSignIn:"Tilbake til innlogging", demoAccounts:"Demokontoer — kun for testing",
+    demoNote:"Disse fjernes når du kobler til Supabase Auth.",
+    fullName:"Fullt navn", atLeast8:"Minst 8 tegn",
+    validEmailRequired:"Gyldig e-post kreves.", passwordMin8:"Passord må ha minst 8 tegn.",
+    passwordsDontMatch:"Passordene stemmer ikke overens.", nameRequired:"Skriv inn navnet ditt.",
+    portalHome:"Hjem", portalCalendar:"Kalender", portalBookings:"Bookinger",
+    portalMessages:"Meldinger", portalProfile:"Profil", portalSocial:"Sosiale",
+    availabilityTitle:"Tilgjengelighet", availabilityHint:"Trykk på datoer for å veksle Ledig ↔ Blokkert",
+    myBookings:"Mine bookinger", messagesTitle:"Meldinger", myProfile:"Min profil",
+    editProfile:"Rediger", cancelEdit:"Avbryt", saveProfile:"Lagre",
+    noBookingsYet:"Ingen bookinger ennå. Legg til tilgjengelige datoer!",
+    noChatsYet:"Chat låses opp når kundene betaler depositum.",
+    depositPaid:"Depositum ✓ Betalt", depositPending:"✗ Venter",
+    platformOverview:"Plattformoversikt", allBookings:"Alle bookinger", allArtists:"Artister",
+    allConversations:"Alle samtaler", finance:"Økonomi",
+    aboutTab:"Om", instrumentsTab:"Instrumenter", socialTab:"Sosiale",
+    reviewsTab:"Anmeldelser", policyTab:"Vilkår",
+    howTitle:"Bestill i 6", howTitleEm:"enkle trinn",
+    howSub:"Fra oppdagelse til fremføring — hele bestillingsprosessen er rask, sikker og fullstendig transparent.",
+    pricingTitle:"Enkle priser", pricingSubtitle:"Transparente avgifter — ingen overraskelser, ingen skjulte kostnader",
+    forClients:"For kunder", forArtists:"For artister",
+    footerTagline:"Den fremste plattformen for å booke verifiserte afghanske artister i Europa.",
+    footerCopyright:"© {year} Awaz AS · Oslo · Betaling via Stripe",
+    months:["Januar","Februar","Mars","April","Mai","Juni","Juli","August","September","Oktober","November","Desember"],
+    wdays:["Ma","Ti","On","To","Fr","Lø","Sø"],
+    applyTitle:"Søk som artist",
+    monthlyListeners:"månedlige lyttere", subscribers:"abonnenter", followers:"følgere",
+    chatLocked:"Låst — depositum kreves", chatActive:"Aktiv",
+    typeMessage:"Skriv en melding…", depositRequired:"Depositum kreves",
+    chatLockedTitle:"Chat låst", chatLockedBody:"Betal depositum for å låse opp meldinger.",
+    back:"← Tilbake", from:"FRA", clearFilters:"Fjern filtre",
+    noArtistsFound:"Ingen artister funnet", tryDifferent:"Prøv en annen sjanger eller søkeord.",
+    artistsCount:"{n} artist", artistsCountPlural:"{n} artister",
+  },
+
+  de: {
+    browseArtists:"Künstler", howItWorks:"So funktioniert es", pricing:"Preise",
+    applyAsArtist:"Als Künstler bewerben", signIn:"Anmelden", signOut:"Abmelden",
+    heroEyebrow:"Afghanische Künstler direkt buchen",
+    heroLine1:"Afghanische Künstler", heroLine2:"", heroLine2em:"direkt buchen",
+    heroBody:"Entdecke und buche verifizierte afghanische Künstler — Ghazal, Rubab, Folk und Fusion — für deine Hochzeit, Eid, Kulturveranstaltung oder private Feier.",
+    searchPlaceholder:"Künstler, Genre oder Stadt…", searchBtn:"Suchen",
+    trustVerified:"Verifizierte Künstler", trustStripe:"Stripe-Zahlung",
+    trustChat:"Direktchat", trustDeposits:"Anzahlung vom Künstler", trustCulture:"Afghanische Kultur",
+    featuredTitle:"Empfohlene Künstler", featuredSub:"Verifiziert · buchungsbereit", seeAll:"Alle anzeigen →",
+    aiTitle:"KI-Künstler-Matching", aiFindBtn:"Meinen Künstler finden ✦", aiEvent:"Veranstaltungsart", aiStyle:"Musikstil",
+    openDates:"frei", topBadge:"★ Top", depositLabel:"Anzahlung",
+    available:"Verfügbar", booked:"Gebucht", blocked:"Gesperrt",
+    selectDate:"Datum auswählen", continueWith:"Weiter mit", selectDateFirst:"Zuerst ein Datum wählen",
+    bookNow:"Jetzt buchen", completeBooking:"Buchung abschließen",
+    yourName:"Ihr Name", email:"E-Mail", phone:"Telefon",
+    eventType:"Veranstaltungsart", eventPlaceholder:"Hochzeit, Eid…",
+    notes:"Notizen (optional)", notesPlaceholder:"Besondere Wünsche…",
+    dateLabel:"Datum", depositAmount:"Anzahlung", balanceCash:"Rest bar bezahlen",
+    payViaStripe:"€{n} via Stripe zahlen →", stripeNote:"🔒 Stripe · SSL · PCI-zertifiziert",
+    depositConfirmed:"Anzahlung bestätigt!", continueToChat:"Weiter zum Chat →",
+    balanceCashNote:"Restbetrag wird nach dem Konzert bar an den Künstler gezahlt",
+    chatUnlocked:"Chat mit {name} ist jetzt freigeschaltet!",
+    signInToAwaz:"Bei Awaz anmelden", welcomeBack:"Willkommen zurück",
+    password:"Passwort", forgotPassword:"Passwort vergessen?",
+    newHere:"Neu hier?", createAccountLink:"Konto erstellen",
+    createAccount:"Konto erstellen", alreadyHaveAccount:"Schon ein Konto?",
+    enterEmailPass:"E-Mail und Passwort eingeben.",
+    wrongCredentials:"Falsche Anmeldedaten. {n} Versuche übrig.",
+    tooManyAttempts:"Zu viele Versuche. 5 Minuten warten.",
+    resetPassword:"Passwort zurücksetzen", sendResetLink:"Zurücksetze-Link senden",
+    enterYourEmail:"Gib deine E-Mail ein und wir senden dir einen Link.",
+    emailSent:"E-Mail gesendet!", checkInbox:"Überprüfe deinen Posteingang bei",
+    forResetLink:"für einen Link zum Zurücksetzen deines Passworts.",
+    backToSignIn:"Zurück zur Anmeldung", demoAccounts:"Demokonten — nur zum Testen",
+    demoNote:"Diese werden entfernt, wenn du Supabase Auth verbindest.",
+    fullName:"Vollständiger Name", atLeast8:"Mindestens 8 Zeichen",
+    validEmailRequired:"Gültige E-Mail erforderlich.", passwordMin8:"Passwort muss mindestens 8 Zeichen haben.",
+    passwordsDontMatch:"Passwörter stimmen nicht überein.", nameRequired:"Gib deinen Namen ein.",
+    portalHome:"Start", portalCalendar:"Kalender", portalBookings:"Buchungen",
+    portalMessages:"Nachrichten", portalProfile:"Profil", portalSocial:"Social Media",
+    availabilityTitle:"Verfügbarkeit", availabilityHint:"Tippe auf Daten um Verfügbar ↔ Gesperrt umzuschalten",
+    myBookings:"Meine Buchungen", messagesTitle:"Nachrichten", myProfile:"Mein Profil",
+    editProfile:"Bearbeiten", cancelEdit:"Abbrechen", saveProfile:"Speichern",
+    noBookingsYet:"Noch keine Buchungen. Füge verfügbare Daten hinzu!",
+    noChatsYet:"Chats werden nach Anzahlung freigeschaltet.",
+    depositPaid:"Anzahlung ✓ Bezahlt", depositPending:"✗ Ausstehend",
+    platformOverview:"Plattformübersicht", allBookings:"Alle Buchungen", allArtists:"Künstler",
+    allConversations:"Alle Gespräche", finance:"Finanzen",
+    aboutTab:"Über", instrumentsTab:"Instrumente", socialTab:"Soziales",
+    reviewsTab:"Bewertungen", policyTab:"Bedingungen",
+    howTitle:"In 6 einfachen", howTitleEm:"Schritten buchen",
+    howSub:"Von der Entdeckung bis zur Aufführung — der gesamte Buchungsprozess ist schnell, sicher und völlig transparent.",
+    pricingTitle:"Einfache Preise", pricingSubtitle:"Transparente Gebühren — keine Überraschungen, keine versteckten Kosten",
+    forClients:"Für Kunden", forArtists:"Für Künstler",
+    footerTagline:"Die führende Plattform für die Buchung verifizierter afghanischer Künstler in Europa.",
+    footerCopyright:"© {year} Awaz AS · Oslo · Zahlungen über Stripe",
+    months:["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"],
+    wdays:["Mo","Di","Mi","Do","Fr","Sa","So"],
+    applyTitle:"Als Künstler bewerben",
+    monthlyListeners:"monatliche Hörer", subscribers:"Abonnenten", followers:"Follower",
+    chatLocked:"Gesperrt — Anzahlung erforderlich", chatActive:"Aktiv",
+    typeMessage:"Nachricht eingeben…", depositRequired:"Anzahlung erforderlich",
+    chatLockedTitle:"Chat gesperrt", chatLockedBody:"Zahle die Anzahlung, um Nachrichten freizuschalten.",
+    back:"← Zurück", from:"AB", clearFilters:"Filter löschen",
+    noArtistsFound:"Keine Künstler gefunden", tryDifferent:"Versuche ein anderes Genre oder Suchbegriff.",
+    artistsCount:"{n} Künstler", artistsCountPlural:"{n} Künstler",
+  },
+
+  fr: {
+    browseArtists:"Artistes", howItWorks:"Comment ça marche", pricing:"Tarifs",
+    applyAsArtist:"Devenir artiste", signIn:"Connexion", signOut:"Déconnexion",
+    heroEyebrow:"Réservez des artistes afghans directement",
+    heroLine1:"Réservez des artistes", heroLine2:"afghans", heroLine2em:"directement",
+    heroBody:"Découvrez et réservez des artistes afghans vérifiés — ghazal, rubab, folk et fusion — pour votre mariage, Aïd, événement culturel ou rassemblement privé.",
+    searchPlaceholder:"Artiste, genre ou ville…", searchBtn:"Rechercher",
+    trustVerified:"Artistes vérifiés", trustStripe:"Paiement Stripe",
+    trustChat:"Chat direct", trustDeposits:"Acompte fixé par l'artiste", trustCulture:"Culture afghane",
+    featuredTitle:"Artistes à la une", featuredSub:"Vérifiés · prêts à réserver", seeAll:"Voir tout →",
+    aiTitle:"Correspondance IA", aiFindBtn:"Trouver mon artiste ✦", aiEvent:"Type d'événement", aiStyle:"Style musical",
+    openDates:"libre", topBadge:"★ Top", depositLabel:"acompte",
+    available:"Disponible", booked:"Réservé", blocked:"Bloqué",
+    selectDate:"Choisir une date", continueWith:"Continuer avec", selectDateFirst:"Choisissez d'abord une date",
+    bookNow:"Réserver", completeBooking:"Finaliser la réservation",
+    yourName:"Votre nom", email:"E-mail", phone:"Téléphone",
+    eventType:"Type d'événement", eventPlaceholder:"Mariage, Aïd…",
+    notes:"Notes (optionnel)", notesPlaceholder:"Demandes spéciales…",
+    dateLabel:"Date", depositAmount:"Acompte", balanceCash:"Solde en espèces",
+    payViaStripe:"Payer €{n} via Stripe →", stripeNote:"🔒 Stripe · SSL · PCI certifié",
+    depositConfirmed:"Acompte confirmé !", continueToChat:"Continuer vers le chat →",
+    balanceCashNote:"Solde payé en espèces à l'artiste après le concert",
+    chatUnlocked:"Le chat avec {name} est maintenant débloqué !",
+    signInToAwaz:"Connexion à Awaz", welcomeBack:"Bon retour",
+    password:"Mot de passe", forgotPassword:"Mot de passe oublié ?",
+    newHere:"Nouveau ici ?", createAccountLink:"Créer un compte",
+    createAccount:"Créer un compte", alreadyHaveAccount:"Déjà un compte ?",
+    enterEmailPass:"Entrez l'e-mail et le mot de passe.",
+    wrongCredentials:"Mauvaises informations. {n} tentatives restantes.",
+    tooManyAttempts:"Trop de tentatives. Attendez 5 min.",
+    resetPassword:"Réinitialiser le mot de passe", sendResetLink:"Envoyer le lien de réinitialisation",
+    enterYourEmail:"Entrez votre e-mail et nous vous enverrons un lien.",
+    emailSent:"E-mail envoyé !", checkInbox:"Vérifiez votre boîte de réception à",
+    forResetLink:"pour un lien de réinitialisation.",
+    backToSignIn:"Retour à la connexion", demoAccounts:"Comptes démo — tests uniquement",
+    demoNote:"Ceux-ci sont supprimés lorsque vous connectez Supabase Auth.",
+    fullName:"Nom complet", atLeast8:"Au moins 8 caractères",
+    validEmailRequired:"E-mail valide requis.", passwordMin8:"Le mot de passe doit comporter au moins 8 caractères.",
+    passwordsDontMatch:"Les mots de passe ne correspondent pas.", nameRequired:"Entrez votre nom.",
+    portalHome:"Accueil", portalCalendar:"Calendrier", portalBookings:"Réservations",
+    portalMessages:"Messages", portalProfile:"Profil", portalSocial:"Réseaux sociaux",
+    availabilityTitle:"Disponibilité", availabilityHint:"Appuyez sur les dates pour basculer Disponible ↔ Bloqué",
+    myBookings:"Mes réservations", messagesTitle:"Messages", myProfile:"Mon profil",
+    editProfile:"Modifier", cancelEdit:"Annuler", saveProfile:"Enregistrer",
+    noBookingsYet:"Pas encore de réservations. Ajoutez des dates disponibles !",
+    noChatsYet:"Les chats se débloquent après le paiement de l'acompte.",
+    depositPaid:"Acompte ✓ Payé", depositPending:"✗ En attente",
+    platformOverview:"Vue d'ensemble", allBookings:"Toutes les réservations", allArtists:"Artistes",
+    allConversations:"Toutes les conversations", finance:"Finance",
+    aboutTab:"À propos", instrumentsTab:"Instruments", socialTab:"Social",
+    reviewsTab:"Avis", policyTab:"Conditions",
+    howTitle:"Réservez en 6", howTitleEm:"étapes simples",
+    howSub:"De la découverte à la performance — tout le processus de réservation est rapide, sécurisé et totalement transparent.",
+    pricingTitle:"Tarification simple", pricingSubtitle:"Frais transparents — pas de surprises ni de frais cachés",
+    forClients:"Pour les clients", forArtists:"Pour les artistes",
+    footerTagline:"La première plateforme de réservation d'artistes afghans vérifiés en Europe.",
+    footerCopyright:"© {year} Awaz AS · Oslo · Paiements par Stripe",
+    months:["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"],
+    wdays:["Lu","Ma","Me","Je","Ve","Sa","Di"],
+    applyTitle:"Devenir artiste",
+    monthlyListeners:"auditeurs mensuels", subscribers:"abonnés", followers:"abonnés",
+    chatLocked:"Verrouillé — acompte requis", chatActive:"Actif",
+    typeMessage:"Écrire un message…", depositRequired:"Acompte requis",
+    chatLockedTitle:"Chat verrouillé", chatLockedBody:"Payez l'acompte pour débloquer la messagerie.",
+    back:"← Retour", from:"DÈS", clearFilters:"Effacer les filtres",
+    noArtistsFound:"Aucun artiste trouvé", tryDifferent:"Essayez un autre genre ou terme de recherche.",
+    artistsCount:"{n} artiste", artistsCountPlural:"{n} artistes",
+  },
+
+  da: {
+    // Dari — دری — RTL
+    browseArtists:"هنرمندان", howItWorks:"چگونه کار می‌کند", pricing:"قیمت‌ها",
+    applyAsArtist:"درخواست هنرمند", signIn:"ورود", signOut:"خروج",
+    heroEyebrow:"هنرمندان افغان را رزرو کنید",
+    heroLine1:"هنرمندان افغان", heroLine2:"را", heroLine2em:"مستقیم رزرو کنید",
+    heroBody:"هنرمندان تایید شده افغان را بیابید — غزل، رباب، موسیقی محلی و فیوژن — برای عروسی، عید، رویدادهای فرهنگی یا مجالس خصوصی.",
+    searchPlaceholder:"هنرمند، ژانر یا شهر...", searchBtn:"جستجو",
+    trustVerified:"هنرمندان تایید شده", trustStripe:"پرداخت امن",
+    trustChat:"چت مستقیم", trustDeposits:"پیش‌پرداخت", trustCulture:"فرهنگ افغانی",
+    featuredTitle:"هنرمندان برگزیده", featuredSub:"تایید شده · آماده رزرو", seeAll:"همه را ببینید ←",
+    aiTitle:"تطابق هوشمند هنرمند", aiFindBtn:"پیدا کردن هنرمند ✦", aiEvent:"نوع رویداد", aiStyle:"سبک موسیقی",
+    openDates:"آزاد", topBadge:"★ برتر", depositLabel:"پیش‌پرداخت",
+    available:"موجود", booked:"رزرو شده", blocked:"مسدود",
+    selectDate:"تاریخ را انتخاب کنید", continueWith:"ادامه با", selectDateFirst:"ابتدا تاریخ را انتخاب کنید",
+    bookNow:"رزرو کنید", completeBooking:"رزرو خود را کامل کنید",
+    yourName:"نام شما", email:"ایمیل", phone:"تلفن",
+    eventType:"نوع مراسم", eventPlaceholder:"عروسی، عید...",
+    notes:"یادداشت‌ها (اختیاری)", notesPlaceholder:"درخواست‌های خاص...",
+    dateLabel:"تاریخ", depositAmount:"پیش‌پرداخت", balanceCash:"باقیمانده نقدی",
+    payViaStripe:"پرداخت €{n} از طریق Stripe ←", stripeNote:"🔒 Stripe · SSL · PCI",
+    depositConfirmed:"پیش‌پرداخت تایید شد!", continueToChat:"ادامه به چت ←",
+    balanceCashNote:"باقیمانده نقدی به هنرمند پس از کنسرت پرداخت می‌شود",
+    chatUnlocked:"چت با {name} باز شد!",
+    signInToAwaz:"ورود به آواز", welcomeBack:"خوش آمدید",
+    password:"رمز عبور", forgotPassword:"رمز را فراموش کردید؟",
+    newHere:"تازه وارد هستید؟", createAccountLink:"ایجاد حساب",
+    createAccount:"ایجاد حساب کاربری", alreadyHaveAccount:"قبلاً حساب دارید؟",
+    enterEmailPass:"ایمیل و رمز عبور را وارد کنید.",
+    wrongCredentials:"اطلاعات اشتباه است. {n} تلاش باقی مانده.",
+    tooManyAttempts:"تلاش‌های زیاد. ۵ دقیقه صبر کنید.",
+    resetPassword:"بازنشانی رمز عبور", sendResetLink:"ارسال لینک بازنشانی",
+    enterYourEmail:"ایمیل خود را وارد کنید تا لینک بازنشانی ارسال شود.",
+    emailSent:"ایمیل ارسال شد!", checkInbox:"صندوق ورودی خود را در",
+    forResetLink:"برای لینک بازنشانی رمز عبور بررسی کنید.",
+    backToSignIn:"بازگشت به ورود", demoAccounts:"حساب‌های آزمایشی",
+    demoNote:"این‌ها پس از اتصال به Supabase Auth حذف می‌شوند.",
+    fullName:"نام کامل", atLeast8:"حداقل ۸ کاراکتر",
+    validEmailRequired:"ایمیل معتبر لازم است.", passwordMin8:"رمز عبور باید حداقل ۸ کاراکتر داشته باشد.",
+    passwordsDontMatch:"رمزهای عبور مطابقت ندارند.", nameRequired:"نام خود را وارد کنید.",
+    portalHome:"خانه", portalCalendar:"تقویم", portalBookings:"رزروها",
+    portalMessages:"پیام‌ها", portalProfile:"پروفایل", portalSocial:"شبکه‌های اجتماعی",
+    availabilityTitle:"دسترس‌پذیری", availabilityHint:"برای تغییر وضعیت روی تاریخ‌ها ضربه بزنید",
+    myBookings:"رزروهای من", messagesTitle:"پیام‌ها", myProfile:"پروفایل من",
+    editProfile:"ویرایش", cancelEdit:"لغو", saveProfile:"ذخیره",
+    noBookingsYet:"هنوز رزروی ندارید. تاریخ‌های موجود را اضافه کنید!",
+    noChatsYet:"چت‌ها پس از پرداخت پیش‌پرداخت باز می‌شوند.",
+    depositPaid:"پیش‌پرداخت ✓ پرداخت شد", depositPending:"✗ در انتظار",
+    platformOverview:"نمای کلی پلتفرم", allBookings:"همه رزروها", allArtists:"هنرمندان",
+    allConversations:"همه مکالمات", finance:"مالی",
+    aboutTab:"درباره", instrumentsTab:"سازها", socialTab:"اجتماعی",
+    reviewsTab:"نظرات", policyTab:"شرایط",
+    howTitle:"در ۶ مرحله", howTitleEm:"رزرو کنید",
+    howSub:"از کشف تا اجرا — کل فرآیند رزرو سریع، امن و کاملاً شفاف طراحی شده است.",
+    pricingTitle:"قیمت‌گذاری ساده", pricingSubtitle:"هزینه‌های شفاف — بدون هزینه پنهان",
+    forClients:"برای مشتریان", forArtists:"برای هنرمندان",
+    footerTagline:"برترین پلتفرم برای رزرو هنرمندان تایید شده افغان در اروپا.",
+    footerCopyright:"© {year} Awaz AS · اسلو · پرداخت از طریق Stripe",
+    months:["جنوری","فبروری","مارچ","اپریل","می","جون","جولای","اگست","سپتامبر","اکتوبر","نوامبر","دسامبر"],
+    wdays:["د","س","چ","پ","ج","ش","ی"],
+    applyTitle:"درخواست هنرمند",
+    monthlyListeners:"شنونده ماهانه", subscribers:"مشترک", followers:"دنبال‌کننده",
+    chatLocked:"قفل — پیش‌پرداخت لازم است", chatActive:"فعال",
+    typeMessage:"پیام بنویسید…", depositRequired:"پیش‌پرداخت لازم است",
+    chatLockedTitle:"چت قفل است", chatLockedBody:"برای باز شدن چت پیش‌پرداخت را بپردازید.",
+    back:"بازگشت →", from:"از", clearFilters:"پاک کردن فیلترها",
+    noArtistsFound:"هنرمندی یافت نشد", tryDifferent:"ژانر یا عبارت جستجوی دیگری امتحان کنید.",
+    artistsCount:"{n} هنرمند", artistsCountPlural:"{n} هنرمند",
+  },
+
+  ps: {
+    // Pashto — پښتو — RTL
+    browseArtists:"هنرمندان", howItWorks:"دا څنګه کار کوي", pricing:"بیې",
+    applyAsArtist:"د هنرمند غوښتنه", signIn:"ننوتل", signOut:"وتل",
+    heroEyebrow:"افغان هنرمندان مستقیم بک کړئ",
+    heroLine1:"افغان هنرمندان", heroLine2:"مستقیم", heroLine2em:"بک کړئ",
+    heroBody:"تایید شوي افغان هنرمندان ومومئ — غزل، رباب، د خلکو موسیقي او فیوژن — ستاسو د واده، اختر، کلتوري پیښو یا شخصي غونډو لپاره.",
+    searchPlaceholder:"هنرمند، ژانر یا ښار...", searchBtn:"لټون",
+    trustVerified:"تایید شوي هنرمندان", trustStripe:"خوندي تادیه",
+    trustChat:"مستقیم چیټ", trustDeposits:"د هنرمند لخوا پیشکي", trustCulture:"افغاني کلتور",
+    featuredTitle:"غوره هنرمندان", featuredSub:"تایید شوي · د بکولو لپاره چمتو", seeAll:"ټول وګورئ ←",
+    aiTitle:"د هنرمند هوښیار مطابقت", aiFindBtn:"زما هنرمند ومومئ ✦", aiEvent:"د پیښې ډول", aiStyle:"د موسیقۍ سټایل",
+    openDates:"موجود", topBadge:"★ غوره", depositLabel:"پیشکي",
+    available:"موجود", booked:"بک شوی", blocked:"بند",
+    selectDate:"نیټه وټاکئ", continueWith:"سره دوام", selectDateFirst:"لومړی نیټه وټاکئ",
+    bookNow:"اوس بک کړئ", completeBooking:"بکنګ بشپړ کړئ",
+    yourName:"ستاسو نوم", email:"بریښنالیک", phone:"تلیفون",
+    eventType:"د پیښې ډول", eventPlaceholder:"واده، اختر...",
+    notes:"یادداشتونه (اختیاري)", notesPlaceholder:"ځانګړي غوښتنې...",
+    dateLabel:"نیټه", depositAmount:"پیشکي", balanceCash:"پاتې رقم نقد",
+    payViaStripe:"د Stripe له لارې €{n} تادیه کړئ ←", stripeNote:"🔒 Stripe · SSL · PCI",
+    depositConfirmed:"پیشکي تایید شوه!", continueToChat:"چیټ ته دوام ←",
+    balanceCashNote:"د کنسرت وروسته هنرمند ته نقد پیسې",
+    chatUnlocked:"د {name} سره چیټ خلاص شو!",
+    signInToAwaz:"آواز ته ننوتل", welcomeBack:"ښه راغلاست",
+    password:"پاسورډ", forgotPassword:"پاسورډ مو هیر کړ؟",
+    newHere:"نوی یاست؟", createAccountLink:"حساب جوړ کړئ",
+    createAccount:"حساب جوړ کړئ", alreadyHaveAccount:"دمخه حساب لرئ؟",
+    enterEmailPass:"بریښنالیک او پاسورډ دننه کړئ.",
+    wrongCredentials:"غلط معلومات. {n} هڅې پاتې.",
+    tooManyAttempts:"ډیرې هڅې. ۵ دقیقې انتظار وکړئ.",
+    resetPassword:"پاسورډ بیا تنظیم کړئ", sendResetLink:"د بیا تنظیم لینک ولیږئ",
+    enterYourEmail:"خپل بریښنالیک دننه کړئ، موږ به تاسو ته لینک ولیږو.",
+    emailSent:"بریښنالیک ولیږل شو!", checkInbox:"خپل inbox وګورئ",
+    forResetLink:"د پاسورډ بیا تنظیم لپاره لینک.",
+    backToSignIn:"ننوتلو ته شاته", demoAccounts:"د ازموینې حسابونه",
+    demoNote:"کله چې Supabase Auth وصل کړئ دا لرې کیږي.",
+    fullName:"بشپړ نوم", atLeast8:"لږترلږه ۸ کارکتونه",
+    validEmailRequired:"سم بریښنالیک اړین دی.", passwordMin8:"پاسورډ باید لږترلږه ۸ کارکتونه ولري.",
+    passwordsDontMatch:"پاسورډونه سره سمون نه خوري.", nameRequired:"خپل نوم دننه کړئ.",
+    portalHome:"کور", portalCalendar:"کلینډر", portalBookings:"بکنګونه",
+    portalMessages:"پیغامونه", portalProfile:"پروفایل", portalSocial:"ټولنیز رسنۍ",
+    availabilityTitle:"شتون", availabilityHint:"د موجود ↔ بند د بدلولو لپاره نیټو ته وټاکئ",
+    myBookings:"زما بکنګونه", messagesTitle:"پیغامونه", myProfile:"زما پروفایل",
+    editProfile:"سمول", cancelEdit:"لغوه", saveProfile:"خوندي کړئ",
+    noBookingsYet:"لاهم هیڅ بکنګ نشته. شته نیټې اضافه کړئ!",
+    noChatsYet:"چیټونه د پیرودونکو د پیشکي ورکولو وروسته خلاصیږي.",
+    depositPaid:"پیشکي ✓ ورکړل شوه", depositPending:"✗ انتظار",
+    platformOverview:"د پلیټفارم لنډیز", allBookings:"ټول بکنګونه", allArtists:"هنرمندان",
+    allConversations:"ټولې خبرې اترې", finance:"مالي",
+    aboutTab:"په اړه", instrumentsTab:"آلات", socialTab:"ټولنیز",
+    reviewsTab:"بیاکتنې", policyTab:"شرایط",
+    howTitle:"په ۶ مرحلو کې", howTitleEm:"بک کړئ",
+    howSub:"له کشف څخه تر اجرا پورې — ټول د بکولو پروسه چټکه، خوندي او بشپړه شفافه ده.",
+    pricingTitle:"ساده قیمتونه", pricingSubtitle:"شفاف فیسونه — هیڅ پټ لګښت نشته",
+    forClients:"د پیرودونکو لپاره", forArtists:"د هنرمندانو لپاره",
+    footerTagline:"د اروپا کې د تایید شوو افغان هنرمندانو د بکولو لومړنۍ پلیټفارم.",
+    footerCopyright:"© {year} Awaz AS · اوسلو · د Stripe له لارې تادیه",
+    months:["جنوري","فبروري","مارچ","اپریل","مئ","جون","جولای","اګست","سپتمبر","اکتوبر","نومبر","ډسمبر"],
+    wdays:["د","س","چ","پ","ج","ش","ی"],
+    applyTitle:"د هنرمند غوښتنه",
+    monthlyListeners:"میاشتني اوریدونکي", subscribers:"مشتریان", followers:"پیروان",
+    chatLocked:"قفل — پیشکي اړینه ده", chatActive:"فعال",
+    typeMessage:"پیغام ولیکئ…", depositRequired:"پیشکي اړینه ده",
+    chatLockedTitle:"چیټ قفل دی", chatLockedBody:"د پیغامونو د خلاصولو لپاره پیشکي ورکړئ.",
+    back:"شاته ←", from:"له", clearFilters:"فلترونه پاک کړئ",
+    noArtistsFound:"هیڅ هنرمند ونه موندل شو", tryDifferent:"بل ژانر یا د لټون اصطلاح هڅه وکړئ.",
+    artistsCount:"{n} هنرمند", artistsCountPlural:"{n} هنرمندان",
+  },
+};
+
+// Module-level lang ref — updated on toggle
+let _lang = (() => { try { return localStorage.getItem('awaz-lang')||'en'; } catch { return 'en'; } })();
+// Translation helper — falls back to English
+const t = key => TRANSLATIONS[_lang]?.[key] ?? TRANSLATIONS.en[key] ?? key;
+// RTL check — Dari and Pashto both use Arabic script, right-to-left
+const isRTLLang = l => l==='da'||l==='ps';
+// Dynamic months/weekdays from active language
+const getMonths = () => (TRANSLATIONS[_lang]||TRANSLATIONS.en).months;
+const getWdays  = () => (TRANSLATIONS[_lang]||TRANSLATIONS.en).wdays;
+// Proxy arrays — used as MONTHS[i] throughout the codebase
+const MONTHS = new Proxy([], { get:(_,k) => typeof k==='string'&&!isNaN(k) ? getMonths()[+k] : getMonths()[k] });
+const WDAYS  = new Proxy([], { get:(_,k) => typeof k==='string'&&!isNaN(k) ? getWdays()[+k]  : getWdays()[k]  });
 const NOW    = new Date();
 const MK     = `${NOW.getFullYear()}-${NOW.getMonth()}`;
 const _nm    = NOW.getMonth()+1;
@@ -330,7 +761,7 @@ function SocialBar({ artist }) {
             {spotify.monthlyListeners && (
               <div style={{display:"flex",alignItems:"baseline",gap:6,marginBottom:12}}>
                 <span style={{fontFamily:"'Cormorant Garamond',serif",fontSize:26,fontWeight:800,color:C.text,lineHeight:1}}>{spotify.monthlyListeners}</span>
-                <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:12,color:C.muted}}>monthly listeners</span>
+                <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:12,color:C.muted}}>{ t('monthlyListeners') }</span>
               </div>
             )}
 
@@ -389,7 +820,7 @@ function SocialBar({ artist }) {
             {youtube.subscribers && (
               <div style={{display:"flex",alignItems:"baseline",gap:6,marginBottom:10}}>
                 <span style={{fontFamily:"'Cormorant Garamond',serif",fontSize:26,fontWeight:800,color:C.text,lineHeight:1}}>{youtube.subscribers}</span>
-                <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:12,color:C.muted}}>subscribers</span>
+                <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:12,color:C.muted}}>{ t('subscribers') }</span>
               </div>
             )}
             {/* Latest video embed — also iframe, same fallback pattern */}
@@ -438,7 +869,7 @@ function SocialBar({ artist }) {
             {instagram.followers && (
               <div style={{display:"flex",alignItems:"baseline",gap:6,marginBottom:12}}>
                 <span style={{fontFamily:"'Cormorant Garamond',serif",fontSize:26,fontWeight:800,color:C.text,lineHeight:1}}>{instagram.followers}</span>
-                <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:12,color:C.muted}}>followers</span>
+                <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:12,color:C.muted}}>{ t('followers') }</span>
               </div>
             )}
             <a href={instagram.profileUrl} target="_blank" rel="noopener noreferrer" style={{
@@ -468,7 +899,7 @@ function SocialBar({ artist }) {
             {tiktok.followers && (
               <div style={{display:"flex",alignItems:"baseline",gap:6,marginBottom:12}}>
                 <span style={{fontFamily:"'Cormorant Garamond',serif",fontSize:26,fontWeight:800,color:C.text,lineHeight:1}}>{tiktok.followers}</span>
-                <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:12,color:C.muted}}>followers</span>
+                <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:12,color:C.muted}}>{ t('followers') }</span>
               </div>
             )}
             <a href={`https://tiktok.com/${tiktok.handle}`} target="_blank" rel="noopener noreferrer" style={{
@@ -755,7 +1186,7 @@ function MiniCal({ artist, onSelect, selDay, selMonth, selYear, editMode, onTogg
         })}
       </div>
       <div style={{display:"flex",gap:12,marginTop:10}}>
-        {[{c:C.emerald,l:"Available"},{c:C.ruby,l:"Booked"},{c:C.muted,l:"Blocked"}].map(({c,l})=>(
+        {[{c:C.emerald,l:t('available')},{c:C.ruby,l:t('booked')},{c:C.muted,l:t('blocked')}].map(({c,l})=>(
           <div key={l} style={{display:"flex",alignItems:"center",gap:4,fontSize:T.xs,color:C.muted}}>
             <div style={{width:8,height:8,borderRadius:2,background:c+"38",border:`1px solid ${c}48`}}/>{l}
           </div>
@@ -953,11 +1384,23 @@ const ARTISTS=[
   {id:"a1",name:"Soraya Rahimi",    nameDari:"ثریا رحیمی",   genre:"Classical Ghazal",  location:"Kabul · Oslo",   rating:4.98,reviews:87, priceInfo:"From €2,500",deposit:1000,emoji:"🎤",color:C.ruby,   photo:null,bio:"Soraya is one of Europe's leading Afghan vocalists, rooted in the classical ghazal tradition. Her voice carries the soul of centuries of Afghan poetry — Rumi, Hafez, Bedil — delivered with technical mastery and emotional depth that leaves audiences speechless.",tags:["Ghazal","Classical","Wedding","Eid"],        instruments:["Vocals","Harmonium"],       superhost:true, status:"approved",joined:"Jan 2024",available:{[MK]:[3,7,8,14,15,21,22,28],[MK2]:[1,5,8,12,15,19,22,26]},blocked:{[MK]:[10,11]},        earnings:7500,totalBookings:6, verified:true, stripeConnected:true, stripeAccount:"acct_sor123",cancellationPolicy:"moderate",
     spotify:{monthlyListeners:"124K",topTracks:["Laila (Live Oslo)",`Ghazal-e-Rumi`,"Del-e-Man"],profileUrl:"https://open.spotify.com/artist/example"},
     instagram:{handle:"@soraya.rahimi.music",followers:"89.2K",profileUrl:"https://instagram.com/soraya.rahimi.music",posts:[{thumb:"🎤",caption:"Oslo Concert"},{thumb:"🎶",caption:"Recording"},{thumb:"🌹",caption:"Eid Special"}]},
-  },
+    countryPricing:[
+      {code:"NO",active:true, price:28000,deposit:11500},
+      {code:"SE",active:true, price:26000,deposit:10500},
+      {code:"DE",active:true, price:2500, deposit:1000},
+      {code:"GB",active:true, price:2200, deposit:900},
+      {code:"NL",active:false,price:2500, deposit:1000},
+      {code:"US",active:false,price:2800, deposit:1100},
+    ],
   {id:"a2",name:"Ahmad Zafar",      nameDari:"احمد ظفر",      genre:"Rubab · Traditional",location:"Kandahar · Bergen",rating:4.93,reviews:52, priceInfo:"From €1,800",deposit:800, emoji:"🪕",color:C.lapis, photo:null,bio:"A virtuoso of the rubab — Afghanistan's national instrument. Ahmad has dedicated 20 years mastering both the Kabuli and Herati styles. His performances bridge generations, carrying the sound of ancient Afghanistan into every concert hall in Europe.",tags:["Rubab","Traditional","Festival"],               instruments:["Rubab","Tabla"],            superhost:false,status:"approved",joined:"Mar 2024",available:{[MK]:[2,9,16,22,23,29],[MK2]:[3,6,10,14,17,21]},blocked:{[MK]:[13]},           earnings:3600,totalBookings:4, verified:true, stripeConnected:true, stripeAccount:"acct_ahm456",cancellationPolicy:"flexible",
     spotify:{monthlyListeners:"41K",topTracks:["Rubab Raga No. 1","Herati Saz","Safar"],profileUrl:"https://open.spotify.com/artist/example"},
     instagram:{handle:"@ahmad.rubab",followers:"22.8K",profileUrl:"https://instagram.com/ahmad.rubab",posts:[{thumb:"🪕",caption:"Studio"},{thumb:"🎵",caption:"Bergen"},{thumb:"🏔",caption:"Afghanistan"}]},
-  },
+    countryPricing:[
+      {code:"NO",active:true, price:20700,deposit:9200},
+      {code:"SE",active:true, price:19000,deposit:8500},
+      {code:"DE",active:true, price:1800, deposit:800},
+      {code:"GB",active:false,price:1600, deposit:700},
+    ],
   {id:"a3",name:"Mariam & Ensemble",nameDari:"مریم و گروه",   genre:"Afghan Folk",        location:"Herat · London", rating:5.0, reviews:41, priceInfo:"From €4,000",deposit:1200,emoji:"🎶",color:C.emerald,photo:null,bio:"A six-piece ensemble specializing in Herati folk music. Their sound blends dutaar, dohol, and haunting vocals that transport audiences to the valleys of western Afghanistan.",tags:["Folk","Ensemble","Wedding","Eid","Cultural"],   instruments:["Dutaar","Dohol","Tula"],    superhost:true, status:"pending", joined:"Nov 2024",available:{[MK]:[5,12,19,25,26]},                                         blocked:{[MK]:[]},             earnings:0,   totalBookings:0, verified:false,stripeConnected:false,stripeAccount:null,cancellationPolicy:"moderate",
     spotify:null,
     instagram:{handle:"@mariam.ensemble",followers:"11.4K",profileUrl:"https://instagram.com/mariam.ensemble",posts:[{thumb:"🎶",caption:"Rehearsal"},{thumb:"🌸",caption:"Herat"},{thumb:"👥",caption:"Ensemble"}]},
@@ -975,7 +1418,31 @@ const ARTISTS=[
     instagram:{handle:"@rustamband",followers:"8.7K",profileUrl:"https://instagram.com/rustamband",posts:[{thumb:"🎷",caption:"Berlin"},{thumb:"🎺",caption:"Jazz Festival"},{thumb:"🌐",caption:"World Tour"}]},
   },
 ];
-const BOOKINGS=[
+// ── Global markets — diaspora-relevant countries with EUR conversion ──
+const MARKETS=[
+  {code:"NO",flag:"🇳🇴",name:"Norway",      currency:"NOK",sym:"kr",  toEur:0.087, pop:true},
+  {code:"SE",flag:"🇸🇪",name:"Sweden",      currency:"SEK",sym:"kr",  toEur:0.089, pop:true},
+  {code:"DK",flag:"🇩🇰",name:"Denmark",     currency:"DKK",sym:"kr",  toEur:0.134, pop:true},
+  {code:"DE",flag:"🇩🇪",name:"Germany",     currency:"EUR",sym:"€",   toEur:1,     pop:true},
+  {code:"GB",flag:"🇬🇧",name:"United Kingdom",currency:"GBP",sym:"£", toEur:1.17,  pop:true},
+  {code:"NL",flag:"🇳🇱",name:"Netherlands", currency:"EUR",sym:"€",   toEur:1,     pop:true},
+  {code:"FR",flag:"🇫🇷",name:"France",      currency:"EUR",sym:"€",   toEur:1,     pop:false},
+  {code:"BE",flag:"🇧🇪",name:"Belgium",     currency:"EUR",sym:"€",   toEur:1,     pop:false},
+  {code:"CH",flag:"🇨🇭",name:"Switzerland", currency:"CHF",sym:"Fr",  toEur:1.03,  pop:false},
+  {code:"AT",flag:"🇦🇹",name:"Austria",     currency:"EUR",sym:"€",   toEur:1,     pop:false},
+  {code:"US",flag:"🇺🇸",name:"USA",         currency:"USD",sym:"$",   toEur:0.92,  pop:true},
+  {code:"CA",flag:"🇨🇦",name:"Canada",      currency:"CAD",sym:"$",   toEur:0.68,  pop:false},
+  {code:"AU",flag:"🇦🇺",name:"Australia",   currency:"AUD",sym:"$",   toEur:0.61,  pop:false},
+  {code:"AE",flag:"🇦🇪",name:"UAE",         currency:"AED",sym:"د.إ", toEur:0.25,  pop:false},
+  {code:"AF",flag:"🇦🇫",name:"Afghanistan", currency:"USD",sym:"$",   toEur:0.92,  pop:false},
+];
+
+// ── Demo inquiries (owner inbox) ──────────────────────────────────────
+const DEMO_INQUIRIES=[
+  {id:"i1",name:"Farid Ahmadzai",email:"farid@email.com",country:"NO",eventType:"Wedding Reception",date:"June 2025",budget:"€2,500–5,000",preferredArtist:"a1",message:"We are planning a 200-person wedding in Oslo and would love Soraya Rahimi. Is there any flexibility on the price if we book two nights?",status:"new",ts:Date.now()-3600000},
+  {id:"i2",name:"Zainab Hussain",email:"zainab@email.com",country:"GB",eventType:"Cultural Gala",date:"August 2025",budget:"€5,000+",preferredArtist:"",message:"We represent the Afghan Cultural Society of London. We are organising our annual gala and are interested in multiple artists. Please contact us to discuss a package deal.",status:"viewed",ts:Date.now()-86400000},
+  {id:"i3",name:"Omar Karimi",email:"omar@gmail.com",country:"DE",eventType:"Eid Celebration",date:"March 2025",budget:"€1,000–2,500",preferredArtist:"a4",message:"Small private Eid party, approx 60 guests in Berlin. Very interested in Khalid Noori. What is the minimum booking fee?",status:"replied",reply:"Thank you Omar! We have spoken to Khalid and he can offer a special rate for intimate events. Will send details shortly.",ts:Date.now()-172800000},
+];
   {id:"b1",artistId:"a1",customerName:"Nasrin Ahmadi",  customerEmail:"nasrin@email.com", date:`${MONTHS[NOW.getMonth()]} 7, ${NOW.getFullYear()}`, event:"Wedding Reception",   deposit:1000,depositPaid:true, status:"confirmed", chatUnlocked:true, messages:[{from:"customer",text:"So excited for the big day!",time:"10:30"},{from:"artist",text:"It will be absolutely unforgettable.",time:"10:45"},{from:"customer",text:"Can we add a Dari folk song?",time:"11:00"},{from:"artist",text:"Of course! I'll prepare Laila specially.",time:"11:12"}]},
   {id:"b2",artistId:"a2",customerName:"Jamshid Karimi", customerEmail:"jamshid@email.com",date:`${MONTHS[NOW.getMonth()]} 9, ${NOW.getFullYear()}`, event:"Eid Celebration",     deposit:800, depositPaid:true, status:"completed",  chatUnlocked:true, messages:[{from:"customer",text:"Thank you for the amazing performance!",time:"21:00"},{from:"artist",text:"Eid Mubarak to you and your family!",time:"21:20"}]},
   {id:"b3",artistId:"a4",customerName:"Layla Mansouri", customerEmail:"layla@email.com",  date:`${MONTHS[NOW.getMonth()]} 10, ${NOW.getFullYear()}`,event:"Corporate Gala",       deposit:1000,depositPaid:false,status:"pending_payment",chatUnlocked:false,messages:[]},
@@ -1009,7 +1476,7 @@ function ArtistCard({ artist, onClick, compact=false }) {
           <div style={{display:"flex",gap:8,alignItems:"center",marginTop:5,flexWrap:"wrap"}}>
             <Stars rating={artist.rating} count={artist.reviews} size={12}/>
             <span style={{color:C.muted,fontSize:T.xs}}>·</span>
-            <span style={{color:C.emerald,fontSize:T.sm,fontWeight:700}}>{open} open</span>
+            <span style={{color:C.emerald,fontSize:T.sm,fontWeight:700}}>{open} {t('openDates')}</span>
           </div>
         </div>
         <div style={{textAlign:"right",flexShrink:0}}>
@@ -1041,7 +1508,7 @@ function ArtistCard({ artist, onClick, compact=false }) {
         </div>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
           <span style={{color:C.muted,fontSize:T.sm}}>📍 {artist.location}</span>
-          <Badge color={C.emerald}>{open} open</Badge>
+          <Badge color={C.emerald}>{open} {t('openDates')}</Badge>
         </div>
         <div style={{display:"flex",flexWrap:"wrap",gap:5,marginBottom:14}}>
           {artist.tags.slice(0,3).map(t=><Badge key={t} color={artist.color}>{t}</Badge>)}
@@ -1177,7 +1644,7 @@ function LoginSheet({ users, open, onLogin, onClose }) {
   };
 
   if(mode==="register") return(
-    <Sheet open={open} onClose={onClose} title="Create account">
+    <Sheet open={open} onClose={onClose} title={t('createAccount')}>
       <div style={{padding:"16px 20px 32px"}}>
         <div style={{textAlign:"center",marginBottom:20}}>
           <div style={{fontFamily:"'Noto Naskh Arabic',serif",fontSize:T.xl,color:C.gold,marginBottom:4}}>آواز</div>
@@ -1189,10 +1656,10 @@ function LoginSheet({ users, open, onLogin, onClose }) {
           <Inp label="Password *" type="password" placeholder="At least 8 characters" value={pass} onChange={e=>setPass(e.target.value)} onKeyDown={e=>e.key==="Enter"&&doRegister()} hint="At least 8 characters"/>
         </div>
         {err&&<div style={{background:C.rubyS,border:`1px solid ${C.ruby}28`,borderRadius:8,padding:"10px 13px",color:C.ruby,fontSize:T.xs,marginBottom:12}}>⚠ {err}</div>}
-        <Btn full sz="lg" loading={loading} onClick={doRegister}>Create account</Btn>
+        <Btn full sz="lg" loading={loading} onClick={doRegister}{t('createAccount')}</Btn>
         <button onClick={()=>setMode("login")}
           style={{background:"none",border:"none",color:C.muted,cursor:"pointer",fontSize:T.sm,fontFamily:"inherit",width:"100%",textAlign:"center",marginTop:12,minHeight:36}}>
-          Already have an account? <span style={{color:C.gold,textDecoration:"underline"}}>Sign In</span>
+          {t('alreadyHaveAccount')} <span style={{color:C.gold,textDecoration:"underline"}}>{t('createAccountLink')}</span>
         </button>
         <div style={{background:C.surface,borderRadius:10,padding:"12px 14px",border:`1px solid ${C.border}`,marginTop:14}}>
           <div style={{fontSize:T.xs,color:C.muted,lineHeight:1.7}}>
@@ -1204,7 +1671,7 @@ function LoginSheet({ users, open, onLogin, onClose }) {
   );
 
   if(mode==="forgot"||mode==="forgot_sent") return(
-    <Sheet open={open} onClose={onClose} title="Reset Password">
+    <Sheet open={open} onClose={onClose} title={t('resetPassword')}>
       <div style={{padding:"16px 20px 32px"}}>
         <div style={{textAlign:"center",marginBottom:20}}>
           <div style={{fontFamily:"'Noto Naskh Arabic',serif",fontSize:T.xl,color:C.gold,marginBottom:4}}>آواز</div>
@@ -1214,7 +1681,7 @@ function LoginSheet({ users, open, onLogin, onClose }) {
                <div style={{color:C.muted,fontSize:T.sm,lineHeight:1.7,marginBottom:20}}>Check your inbox at <strong style={{color:C.gold}}>{email}</strong> for a link to reset your password.</div>
                <Btn full sz="lg" onClick={()=>setMode("login")}>Back to sign in</Btn></>
             :<><div style={{color:C.muted,fontSize:T.sm,marginBottom:16,lineHeight:1.6}}>Enter your email and we will send you a reset link.</div>
-               <Inp label="Email" type="email" placeholder="you@email.com" value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==="Enter"&&doForgot()}/>
+               <Inp label={t('email')} type="email" placeholder="you@email.com" value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==="Enter"&&doForgot()}/>
                {err&&<div style={{background:C.rubyS,border:`1px solid ${C.ruby}28`,borderRadius:8,padding:"10px 13px",color:C.ruby,fontSize:T.xs,marginTop:10}}>&#9888; {err}</div>}
                <div style={{marginTop:14,display:"flex",flexDirection:"column",gap:8}}>
                  <Btn full sz="lg" loading={loading} onClick={doForgot}>Send reset link</Btn>
@@ -1226,18 +1693,18 @@ function LoginSheet({ users, open, onLogin, onClose }) {
   );
 
   return(
-    <Sheet open={open} onClose={onClose} title="Sign in to Awaz">
+    <Sheet open={open} onClose={onClose} title={t('signInToAwaz')}>
       <div style={{padding:"16px 20px 32px"}}>
         <div style={{textAlign:"center",marginBottom:20}}>
           <div style={{fontFamily:"'Noto Naskh Arabic',serif",fontSize:T.xl,color:C.gold,marginBottom:4}}>آواز</div>
-          <div style={{color:C.muted,fontSize:T.sm}}>Welcome back</div>
+          <div style={{color:C.muted,fontSize:T.sm}}>{t('welcomeBack')}</div>
         </div>
         <div style={{display:"flex",flexDirection:"column",gap:12,marginBottom:14}}>
-          <Inp label="Email" type="email" placeholder="you@email.com" value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==="Enter"&&doLogin()}/>
-          <Inp label="Password" type="password" placeholder="••••••••" value={pass} onChange={e=>setPass(e.target.value)} onKeyDown={e=>e.key==="Enter"&&doLogin()}/>
+          <Inp label={t('email')} type="email" placeholder="you@email.com" value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==="Enter"&&doLogin()}/>
+          <Inp label={t('password')} type="password" placeholder="••••••••" value={pass} onChange={e=>setPass(e.target.value)} onKeyDown={e=>e.key==="Enter"&&doLogin()}/>
         </div>
         {err&&<div style={{background:C.rubyS,border:`1px solid ${C.ruby}28`,borderRadius:8,padding:"10px 13px",color:C.ruby,fontSize:T.xs,marginBottom:12}}>⚠ {err}</div>}
-        <Btn full sz="lg" loading={loading} disabled={locked} onClick={doLogin}>Sign In</Btn>
+        <Btn full sz="lg" loading={loading} disabled={locked} onClick={doLogin}>{t('signIn')}</Btn>
         <button onClick={()=>setMode("forgot")}
           style={{background:"none",border:"none",color:C.muted,cursor:"pointer",fontSize:T.sm,fontFamily:"inherit",textDecoration:"underline",width:"100%",textAlign:"center",marginTop:12,minHeight:36}}>
           Forgot password?
@@ -1245,7 +1712,7 @@ function LoginSheet({ users, open, onLogin, onClose }) {
         <div style={{height:1,background:C.border,margin:"14px 0"}}/>
         <button onClick={()=>setMode("register")}
           style={{background:"none",border:`1px solid ${C.border}`,color:C.textD,cursor:"pointer",fontSize:T.sm,fontFamily:"inherit",width:"100%",textAlign:"center",borderRadius:10,padding:"12px",minHeight:44}}>
-          New here? <span style={{color:C.gold,fontWeight:700}}>Create account</span>
+          {t('newHere')} <span style={{color:C.gold,fontWeight:700}}>{t('createAccountLink')}</span>
         </button>
         {!HAS_SUPA&&(
           <>
@@ -1307,7 +1774,7 @@ function ProfilePage({ artist, bookings, onBack, onBookingCreated }) {
         <div style={{position:"absolute",inset:0,background:`radial-gradient(ellipse at 30% 80%,${artist.color}0C 0%,transparent 60%)`,pointerEvents:"none",zIndex:0}}/>
         <div style={{maxWidth:1200,margin:"0 auto",padding:`0 ${vp.isMobile?16:48}px`,position:"relative",zIndex:1}}>
           <div style={{paddingTop:16,marginBottom:16}}>
-            <button onClick={onBack} style={{background:"transparent",border:`1px solid ${C.border}`,color:C.muted,borderRadius:8,padding:"10px 16px",fontSize:T.sm,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:7,minHeight:44,WebkitTapHighlightColor:"transparent"}}>← Back</button>
+            <button onClick={onBack} style={{background:"transparent",border:`1px solid ${C.border}`,color:C.muted,borderRadius:8,padding:"10px 16px",fontSize:T.sm,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:7,minHeight:44,WebkitTapHighlightColor:"transparent"}}>{t('back')}</button>
           </div>
           <div style={{display:"flex",flexDirection:vp.isMobile?"column":"row",gap:vp.isMobile?14:24,alignItems:vp.isMobile?"flex-start":"flex-end",paddingBottom:24,position:"relative"}}>
             <div style={{position:"relative",flexShrink:0}}>
@@ -1340,7 +1807,7 @@ function ProfilePage({ artist, bookings, onBack, onBookingCreated }) {
                 <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:800,color:artist.color}}>{artist.priceInfo}</div>
                 <div style={{fontSize:T.xs,color:C.muted,marginTop:2}}>€{artist.deposit} deposit · Balance cash</div>
               </div>
-              <Btn v="gold" sz="lg" onClick={()=>setShowCal(true)}>Book Now</Btn>
+              <Btn v="gold" sz="lg" onClick={()=>setShowCal(true)}>{t('bookNow')}</Btn>
             </div>
           )}
         </div>
@@ -1352,7 +1819,7 @@ function ProfilePage({ artist, bookings, onBack, onBookingCreated }) {
         <div>
           {/* Tab bar — scrollable on mobile */}
           <div style={{display:"flex",gap:0,borderBottom:`1px solid ${C.border}`,overflowX:"auto",WebkitOverflowScrolling:"touch",scrollbarWidth:"none",padding:vp.isMobile?"0 16px":0}}>
-            {[["about","About"],["instruments","Instruments"],["social","Social"],["reviews","Reviews"],["policy","Terms"]].map(([id,l])=>(
+            {[["about",t('aboutTab')],["instruments",t('instrumentsTab')],["social",t('socialTab')],["reviews",t('reviewsTab')],["policy",t('policyTab')]].map(([id,l])=>(
               <button key={id} onClick={()=>setTab(id)}
                 style={{background:"transparent",color:tab===id?artist.color:C.muted,border:"none",borderBottom:`2px solid ${tab===id?artist.color:"transparent"}`,padding:"14px 18px",fontSize:T.sm,fontWeight:700,cursor:"pointer",fontFamily:"inherit",flexShrink:0,marginBottom:-1,minHeight:48,WebkitTapHighlightColor:"transparent",letterSpacing:"0.2px"}}>
                 {l}
@@ -1385,6 +1852,36 @@ function ProfilePage({ artist, bookings, onBack, onBookingCreated }) {
                     ))}
                   </div>
                 </div>
+                {/* Market pricing — if artist has set country prices */}
+                {artist.countryPricing?.filter(r=>r.active).length>0&&(
+                  <div style={{background:C.card,borderRadius:12,padding:vp.isMobile?20:28,border:`1px solid ${C.border}`}}>
+                    <div style={{fontFamily:"'Cormorant Garamond',serif",color:C.gold,fontSize:T.xl,fontWeight:700,marginBottom:6,letterSpacing:"-0.3px"}}>Pricing by Country</div>
+                    <div style={{color:C.muted,fontSize:T.xs,marginBottom:14}}>Prices shown in local currency · Stripe deposit auto-converts to EUR</div>
+                    <div style={{display:"flex",flexDirection:"column",gap:7}}>
+                      {artist.countryPricing.filter(r=>r.active).map(row=>{
+                        const m=MARKETS.find(m=>m.code===row.code);
+                        if(!m) return null;
+                        const eurP=row.price?Math.round(row.price*m.toEur):null;
+                        const eurD=row.deposit?Math.round(row.deposit*m.toEur):null;
+                        return(
+                          <div key={row.code} style={{display:"flex",alignItems:"center",gap:12,padding:"11px 14px",background:C.surface,borderRadius:8,border:`1px solid ${C.border}`}}>
+                            <span style={{fontSize:20,flexShrink:0}}>{m.flag}</span>
+                            <div style={{flex:1,minWidth:0}}>
+                              <div style={{fontWeight:700,fontSize:T.sm,color:C.text}}>{m.name}</div>
+                              <div style={{fontSize:T.xs,color:C.muted,marginTop:1}}>{m.currency !== "EUR" ? `${m.sym}${row.deposit?.toLocaleString()} deposit` : `€${row.deposit?.toLocaleString()} deposit`}</div>
+                            </div>
+                            <div style={{textAlign:"right",flexShrink:0}}>
+                              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:800,color:artist.color}}>
+                                {m.sym}{row.price?.toLocaleString()}
+                              </div>
+                              {m.currency!=="EUR"&&eurP&&<div style={{fontSize:T.xs,color:C.muted}}>≈ €{eurP.toLocaleString()}</div>}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
             {tab==="instruments"&&(
@@ -1455,16 +1952,16 @@ function ProfilePage({ artist, bookings, onBack, onBookingCreated }) {
                 {!showBook?(
                   <button onClick={()=>selDay&&setShowBook(true)} disabled={!selDay}
                     style={{width:"100%",background:selDay?`linear-gradient(135deg,${artist.color},${artist.color}AA)`:C.border,color:selDay?"#fff":C.muted,border:"none",borderRadius:10,padding:14,fontSize:T.base,fontWeight:800,cursor:selDay?"pointer":"not-allowed",fontFamily:"inherit",minHeight:50,letterSpacing:"0.2px"}}>
-                    {selDay?`Book ${artist.name} ✦`:"Select an available date"}
+                     {selDay?`${t('bookNow')} — ${MONTHS[selMonth]} ${selDay} ✦`:t('selectDateFirst')}
                   </button>
                 ):(
                   <div style={{display:"flex",flexDirection:"column",gap:10}}>
                     <button onClick={()=>{setShowBook(false);setErr("");}} style={{background:"none",border:"none",color:C.muted,cursor:"pointer",fontSize:T.sm,fontFamily:"inherit",textAlign:"left",minHeight:36}}>← Change date</button>
                     {err&&<div style={{background:C.rubyS,border:`1px solid ${C.ruby}28`,borderRadius:7,padding:"10px 12px",color:C.ruby,fontSize:T.sm}}>⚠ {err}</div>}
-                    <Inp label="Your Name *" placeholder="Full name" value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))}/>
+                    <Inp label={t('yourName')+' *'} placeholder={t('yourName')} value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))}/>
                     <Inp label="Email *" type="email" placeholder="you@email.com" value={form.email} onChange={e=>setForm(f=>({...f,email:e.target.value}))}/>
-                    <Inp label="Event Type" placeholder="Wedding, Eid…" value={form.event} onChange={e=>setForm(f=>({...f,event:e.target.value}))}/>
-                    <Inp label="Notes (optional)" placeholder="Special requests…" value={form.notes} onChange={e=>setForm(f=>({...f,notes:e.target.value}))} rows={2}/>
+                    <Inp label={t('eventType')} placeholder={t('eventPlaceholder')} value={form.event} onChange={e=>setForm(f=>({...f,event:e.target.value}))}/>
+                    <Inp label={t('notes')} placeholder={t('notesPlaceholder')} value={form.notes} onChange={e=>setForm(f=>({...f,notes:e.target.value}))} rows={2}/>
                     <button onClick={doBook} disabled={!form.name||!form.email}
                       style={{width:"100%",background:"linear-gradient(135deg,#635BFF,#7B72FF)",color:"#fff",border:"none",borderRadius:10,padding:14,fontSize:T.base,fontWeight:800,cursor:"pointer",opacity:!form.name||!form.email?0.5:1,fontFamily:"inherit",minHeight:50,letterSpacing:"0.2px"}}>
                       Pay €{artist.deposit} via Stripe →
@@ -1481,7 +1978,7 @@ function ProfilePage({ artist, bookings, onBack, onBookingCreated }) {
       </div>
 
       {/* Mobile: Calendar Sheet */}
-      <Sheet open={showCal} onClose={()=>setShowCal(false)} title="Select a Date">
+      <Sheet open={showCal} onClose={()=>setShowCal(false)} title={t('selectDate')}>
         <div style={{padding:"16px 20px 32px"}}>
           <MiniCal artist={artist} selDay={selDay} selMonth={selMonth} selYear={selYear} onSelect={(d,m,y)=>{setSelDay(d);setSelMonth(m);setSelYear(y);}} bookings={bookings}/>
           {selDay&&(
@@ -1491,24 +1988,24 @@ function ProfilePage({ artist, bookings, onBack, onBookingCreated }) {
             </div>
           )}
           <Btn full sz="lg" disabled={!selDay} onClick={()=>{if(selDay){setShowCal(false);setShowBook(true);}}} style={{marginTop:8}}>
-            {selDay?`Continue with ${MONTHS[selMonth]} ${selDay}`:"Select a date first"}
+             {selDay?`${t('continueWith')} ${MONTHS[selMonth]} ${selDay}`:t('selectDateFirst')}
           </Btn>
         </div>
       </Sheet>
 
       {/* Mobile: Booking form sheet */}
-      <Sheet open={showBook&&vp.isMobile} onClose={()=>setShowBook(false)} title="Complete Your Booking">
+      <Sheet open={showBook&&vp.isMobile} onClose={()=>setShowBook(false)} title={t('completeBooking')}>
         <div style={{padding:"16px 20px 32px",display:"flex",flexDirection:"column",gap:12}}>
           <div style={{background:C.surface,borderRadius:10,padding:"12px 14px",border:`1px solid ${C.border}`}}>
             <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}><span style={{color:C.muted,fontSize:T.sm}}>{artist.name}</span><span style={{color:C.gold,fontWeight:700,fontSize:T.md,fontFamily:"'Cormorant Garamond',serif"}}>€{artist.deposit}</span></div>
             <div style={{color:C.muted,fontSize:T.xs}}>{MONTHS[selMonth]} {selDay}, {selYear}</div>
           </div>
           {err&&<div style={{background:C.rubyS,border:`1px solid ${C.ruby}28`,borderRadius:8,padding:"10px 13px",color:C.ruby,fontSize:T.xs}}>⚠ {err}</div>}
-          <Inp label="Your Name *" placeholder="Full name" value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))}/>
+          <Inp label={t('yourName')+' *'} placeholder={t('yourName')} value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))}/>
           <Inp label="Email *" type="email" placeholder="you@email.com" value={form.email} onChange={e=>setForm(f=>({...f,email:e.target.value}))}/>
           <Inp label="Phone" type="tel" placeholder="+47 …" value={form.phone} onChange={e=>setForm(f=>({...f,phone:e.target.value}))}/>
-          <Inp label="Event Type" placeholder="Wedding, Eid…" value={form.event} onChange={e=>setForm(f=>({...f,event:e.target.value}))}/>
-          <Inp label="Notes (optional)" placeholder="Special requests…" value={form.notes} onChange={e=>setForm(f=>({...f,notes:e.target.value}))} rows={2}/>
+          <Inp label={t('eventType')} placeholder={t('eventPlaceholder')} value={form.event} onChange={e=>setForm(f=>({...f,event:e.target.value}))}/>
+          <Inp label={t('notes')} placeholder={t('notesPlaceholder')} value={form.notes} onChange={e=>setForm(f=>({...f,notes:e.target.value}))} rows={2}/>
           <button onClick={doBook} disabled={!form.name||!form.email}
             style={{width:"100%",background:"linear-gradient(135deg,#635BFF,#7B72FF)",color:"#fff",border:"none",borderRadius:10,padding:16,fontSize:T.md,fontWeight:800,cursor:"pointer",opacity:!form.name||!form.email?0.5:1,fontFamily:"inherit",minHeight:52}}>
             Pay €{artist.deposit} via Stripe →
@@ -1524,7 +2021,7 @@ function ProfilePage({ artist, bookings, onBack, onBookingCreated }) {
 }
 
 // ── Admin Dashboard ────────────────────────────────────────────────────
-function AdminDash({ artists, bookings, users, onAction, onLogout, onMsg }) {
+function AdminDash({ artists, bookings, users, inquiries, onAction, onLogout, onMsg, onUpdateInquiry }) {
   const vp=useViewport();
   const [tab,setTab]=useState("overview");
   const [chat,setChat]=useState(null);
@@ -1536,11 +2033,12 @@ function AdminDash({ artists, bookings, users, onAction, onLogout, onMsg }) {
   const awazCut=Math.round(totalDep*0.12);
 
   const navItems=[
-    {id:"overview",icon:"📊",label:"Overview"},
-    {id:"bookings",icon:"📅",label:"Bookings"},
-    {id:"artists", icon:"🎤",label:"Artists"},
-    {id:"messages",icon:"💬",label:"Messages"},
-    {id:"finance", icon:"💶",label:"Finance"},
+    {id:"overview",icon:"📊",label:t('platformOverview')},
+    {id:"inquiries",icon:"📬",label:"Inquiries",badge:inquiries.filter(i=>i.status==="new").length},
+    {id:"bookings",icon:"📅",label:t('allBookings')},
+    {id:"artists", icon:"🎤",label:t('allArtists')},
+    {id:"messages",icon:"💬",label:t('portalMessages')},
+    {id:"finance", icon:"💶",label:t('finance')},
   ];
 
   const SB=({icon,label,value,color=C.gold})=>(
@@ -1687,6 +2185,10 @@ function AdminDash({ artists, bookings, users, onAction, onLogout, onMsg }) {
         </div>
       )}
 
+      {tab==="inquiries"&&(
+        <InquiryPanel inquiries={inquiries} artists={artists} onUpdateInquiry={onUpdateInquiry} vp={vp}/>
+      )}
+
       {tab==="finance"&&(
         <div>
           <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:14}}>Finance</div>
@@ -1756,10 +2258,11 @@ function AdminDash({ artists, bookings, users, onAction, onLogout, onMsg }) {
           <div style={{fontFamily:"'Noto Naskh Arabic',serif",fontSize:18,color:C.gold,marginBottom:3}}>آواز</div>
           <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:15,fontWeight:700,color:C.text}}>Admin Panel</div>
         </div>
-        {navItems.map(({id,icon,label})=>(
-          <button key={id} onClick={()=>setTab(id)} style={{display:"flex",gap:10,alignItems:"center",padding:"12px 20px",background:tab===id?C.goldS:"transparent",color:tab===id?C.gold:C.muted,border:"none",cursor:"pointer",fontFamily:"inherit",fontSize:T.sm,fontWeight:tab===id?700:400,borderLeft:`3px solid ${tab===id?C.gold:"transparent"}`,width:"100%",textAlign:"left",minHeight:48,WebkitTapHighlightColor:"transparent"}}>
-            <span style={{fontSize:18}}>{icon}</span>{label}
-            {id==="artists"&&pendingApp>0&&<span style={{marginLeft:"auto",background:C.ruby,color:"#fff",borderRadius:10,padding:"1px 7px",fontSize:10,fontWeight:700}}>{pendingApp}</span>}
+        {navItems.map((item)=>(
+          <button key={item.id} onClick={()=>setTab(item.id)} style={{display:"flex",gap:10,alignItems:"center",padding:"12px 20px",background:tab===item.id?C.goldS:"transparent",color:tab===item.id?C.gold:C.muted,border:"none",cursor:"pointer",fontFamily:"inherit",fontSize:T.sm,fontWeight:tab===item.id?700:400,borderLeft:`3px solid ${tab===item.id?C.gold:"transparent"}`,width:"100%",textAlign:"left",minHeight:48,WebkitTapHighlightColor:"transparent"}}>
+            <span style={{fontSize:18}}>{item.icon}</span>{item.label}
+            {item.id==="artists"&&pendingApp>0&&<span style={{marginLeft:"auto",background:C.ruby,color:"#fff",borderRadius:10,padding:"1px 7px",fontSize:10,fontWeight:700}}>{pendingApp}</span>}
+            {item.id==="inquiries"&&(item.badge||0)>0&&<span style={{marginLeft:"auto",background:C.ruby,color:"#fff",borderRadius:10,padding:"1px 7px",fontSize:10,fontWeight:700}}>{item.badge}</span>}
           </button>
         ))}
         <div style={{marginTop:"auto",padding:"16px 20px",borderTop:`1px solid ${C.border}`}}>
@@ -1808,12 +2311,13 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
   const depositsIn=myB.filter(b=>b.depositPaid).reduce((s,b)=>s+Math.round(b.deposit*0.88),0);
 
   const navItems=[
-    {id:"overview",icon:"🏠",label:"Home"},
-    {id:"calendar",icon:"📅",label:"Calendar"},
-    {id:"bookings",icon:"📋",label:"Bookings"},
-    {id:"messages",icon:"💬",label:"Messages"},
-    {id:"profile", icon:"👤",label:"Profile"},
-    {id:"social",  icon:"🎵",label:"Social"},
+    {id:"overview",icon:"🏠",label:t('portalHome')},
+    {id:"calendar",icon:"📅",label:t('portalCalendar')},
+    {id:"bookings",icon:"📋",label:t('portalBookings')},
+    {id:"messages",icon:"💬",label:t('portalMessages')},
+    {id:"pricing", icon:"🌍",label:"Pricing"},
+    {id:"profile", icon:"👤",label:t('portalProfile')},
+    {id:"social",  icon:"🎵",label:t('portalSocial')},
   ];
 
   const saveEdit=()=>{
@@ -1962,6 +2466,10 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
               );
             })}
         </div>
+      )}
+
+      {tab==="pricing"&&(
+        <CountryPricingTab artist={artist} onUpdateArtist={onUpdateArtist} vp={vp}/>
       )}
 
       {tab==="social"&&(()=>{
@@ -2348,6 +2856,499 @@ function StripeConnectSheet({ artist, onConnected, onClose }) {
   );
 }
 
+// ── Private Inquiry Widget (floating concierge button + form) ─────────
+function InquiryWidget({ artists, onSubmit }) {
+  const [open,setOpen]=useState(false);
+  const [step,setStep]=useState("form"); // form | sent
+  const [f,setF]=useState({name:"",email:"",country:"NO",eventType:"",date:"",budget:"",artistId:"",message:""});
+  const [err,setErr]=useState("");
+  const vp=useViewport();
+
+  const BUDGETS=["Under €1,000","€1,000 – 2,500","€2,500 – 5,000","€5,000 – 10,000","€10,000+","Flexible / Open to offers"];
+  const approved=artists.filter(a=>a.status==="approved");
+
+  const submit=()=>{
+    if(!f.name.trim()||!f.email.includes("@")){setErr("Please enter your name and a valid email.");return;}
+    if(!f.message.trim()){setErr("Please describe your event.");return;}
+    setErr("");
+    onSubmit({...f,id:`i_${Date.now()}`,status:"new",ts:Date.now()});
+    setStep("sent");
+  };
+
+  const reset=()=>{setStep("form");setF({name:"",email:"",country:"NO",eventType:"",date:"",budget:"",artistId:"",message:""});setErr("");};
+
+  return(
+    <>
+      {/* Floating concierge button */}
+      <div style={{
+        position:"fixed",
+        bottom:vp.isMobile?"80px":"32px",
+        right:vp.isMobile?"16px":"32px",
+        zIndex:150,
+      }}>
+        <button onClick={()=>{setOpen(true);reset();}}
+          style={{
+            display:"flex",alignItems:"center",gap:9,
+            background:`linear-gradient(135deg,${C.gold},${C.saffron})`,
+            color:C.bg,border:"none",borderRadius:vp.isMobile?"50%":"50px",
+            width:vp.isMobile?52:undefined,height:52,
+            padding:vp.isMobile?0:"0 20px",
+            cursor:"pointer",fontFamily:"'DM Sans',sans-serif",
+            fontSize:13,fontWeight:800,letterSpacing:"0.3px",
+            boxShadow:`0 8px 32px ${C.gold}55`,
+            WebkitTapHighlightColor:"transparent",
+            animation:"inquiryPulse 3s ease-in-out infinite",
+          }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={C.bg} strokeWidth="2.2" strokeLinecap="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+          {!vp.isMobile&&<span>Private Inquiry</span>}
+        </button>
+      </div>
+
+      {/* Inquiry sheet */}
+      <Sheet open={open} onClose={()=>setOpen(false)} title={step==="sent"?"":"Private Inquiry"} maxH="96vh">
+        {step==="sent"?(
+          <div style={{padding:"40px 24px 48px",textAlign:"center"}}>
+            {/* Premium sent confirmation */}
+            <div style={{width:72,height:72,margin:"0 auto 20px",position:"relative"}}>
+              <div style={{position:"absolute",inset:0,borderRadius:"50%",background:C.goldS,border:`2px solid ${C.gold}44`,animation:"spin 6s linear infinite"}}/>
+              <div style={{position:"absolute",inset:6,borderRadius:"50%",background:C.gold,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={C.bg} strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+            </div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:800,color:C.text,marginBottom:10}}>Inquiry Received</div>
+            <div style={{color:C.muted,fontSize:T.sm,lineHeight:1.9,marginBottom:28,maxWidth:320,margin:"0 auto 28px"}}>
+              Thank you, <strong style={{color:C.gold}}>{f.name.split(" ")[0]}</strong>. Your inquiry has been sent directly to the owner. You will receive a personalised response within <strong style={{color:C.text}}>24 hours</strong>.
+            </div>
+            <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,padding:"14px 18px",marginBottom:24,textAlign:"left"}}>
+              {[["Event",f.eventType||"Private Event"],["Date",f.date||"To be confirmed"],["Budget",f.budget||"Not specified"],["Country",MARKETS.find(m=>m.code===f.country)?.name||f.country]].map(([k,v])=>(
+                <div key={k} style={{display:"flex",justifyContent:"space-between",fontSize:T.sm,marginBottom:7}}>
+                  <span style={{color:C.muted}}>{k}</span>
+                  <span style={{color:C.text,fontWeight:600}}>{v}</span>
+                </div>
+              ))}
+            </div>
+            <Btn full sz="lg" onClick={()=>setOpen(false)}>Close</Btn>
+          </div>
+        ):(
+          <div style={{padding:"16px 20px 40px",display:"flex",flexDirection:"column",gap:14}}>
+            {/* Header branding */}
+            <div style={{background:`linear-gradient(135deg,${C.goldS},${C.rubyS})`,borderRadius:12,padding:"16px 18px",display:"flex",gap:12,alignItems:"center",border:`1px solid ${C.gold}22`}}>
+              <div style={{width:42,height:42,borderRadius:10,background:C.gold,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                <span style={{fontFamily:"'Noto Naskh Arabic',serif",fontSize:18,color:C.bg,fontWeight:700}}>آ</span>
+              </div>
+              <div>
+                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text}}>Direct to Owner</div>
+                <div style={{fontSize:T.xs,color:C.muted,lineHeight:1.5,marginTop:2}}>Personal response · Price negotiation · Bespoke packages</div>
+              </div>
+            </div>
+
+            {/* Form fields */}
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+              <Inp label="Your Name *" placeholder="Full name" value={f.name} onChange={e=>setF(p=>({...p,name:e.target.value}))}/>
+              <Inp label="Email *" type="email" placeholder="you@email.com" value={f.email} onChange={e=>setF(p=>({...p,email:e.target.value}))}/>
+            </div>
+
+            <div style={{display:"flex",flexDirection:"column",gap:5}}>
+              <label style={{fontSize:T.xs,color:C.muted,fontWeight:700,letterSpacing:"0.8px",textTransform:"uppercase"}}>Country</label>
+              <select value={f.country} onChange={e=>setF(p=>({...p,country:e.target.value}))}
+                style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:10,padding:"13px 15px",color:C.text,fontSize:T.base,outline:"none",width:"100%",fontFamily:"inherit",minHeight:44,WebkitAppearance:"none"}}>
+                {MARKETS.map(m=><option key={m.code} value={m.code}>{m.flag} {m.name}</option>)}
+              </select>
+            </div>
+
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+              <Inp label="Event Type" placeholder="Wedding, Eid, Gala…" value={f.eventType} onChange={e=>setF(p=>({...p,eventType:e.target.value}))}/>
+              <Inp label="Approximate Date" placeholder="June 2025" value={f.date} onChange={e=>setF(p=>({...p,date:e.target.value}))}/>
+            </div>
+
+            <div style={{display:"flex",flexDirection:"column",gap:5}}>
+              <label style={{fontSize:T.xs,color:C.muted,fontWeight:700,letterSpacing:"0.8px",textTransform:"uppercase"}}>Budget Range</label>
+              <select value={f.budget} onChange={e=>setF(p=>({...p,budget:e.target.value}))}
+                style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:10,padding:"13px 15px",color:f.budget?C.text:C.muted,fontSize:T.base,outline:"none",width:"100%",fontFamily:"inherit",minHeight:44,WebkitAppearance:"none"}}>
+                <option value="">Select a range…</option>
+                {BUDGETS.map(b=><option key={b} value={b}>{b}</option>)}
+              </select>
+            </div>
+
+            <div style={{display:"flex",flexDirection:"column",gap:5}}>
+              <label style={{fontSize:T.xs,color:C.muted,fontWeight:700,letterSpacing:"0.8px",textTransform:"uppercase"}}>Preferred Artist (optional)</label>
+              <select value={f.artistId} onChange={e=>setF(p=>({...p,artistId:e.target.value}))}
+                style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:10,padding:"13px 15px",color:f.artistId?C.text:C.muted,fontSize:T.base,outline:"none",width:"100%",fontFamily:"inherit",minHeight:44,WebkitAppearance:"none"}}>
+                <option value="">Not sure yet — let the owner suggest</option>
+                {approved.map(a=><option key={a.id} value={a.id}>{a.emoji} {a.name} — {a.genre}</option>)}
+              </select>
+            </div>
+
+            <Inp label="Your Message *" placeholder="Tell us about your event — occasion, number of guests, atmosphere, any special requirements…" value={f.message} onChange={e=>setF(p=>({...p,message:e.target.value}))} rows={4}/>
+
+            {err&&<div style={{background:C.rubyS,border:`1px solid ${C.ruby}28`,borderRadius:8,padding:"10px 13px",color:C.ruby,fontSize:T.xs}}>⚠ {err}</div>}
+
+            <button onClick={submit}
+              style={{width:"100%",background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:12,padding:"16px",fontSize:T.md,fontWeight:800,cursor:"pointer",fontFamily:"inherit",minHeight:54,letterSpacing:"0.3px",display:"flex",alignItems:"center",justifyContent:"center",gap:10}}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={C.bg} strokeWidth="2.2" strokeLinecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              Send Private Inquiry
+            </button>
+            <div style={{textAlign:"center",fontSize:T.xs,color:C.muted,lineHeight:1.6}}>
+              Your message goes directly to the Awaz owner. Personal reply within 24 hours.
+            </div>
+          </div>
+        )}
+      </Sheet>
+    </>
+  );
+}
+
+// ── Country Pricing Tab (Artist Portal) ────────────────────────────────
+function CountryPricingTab({ artist, onUpdateArtist, vp }) {
+  const existing = artist.countryPricing||[];
+  const initPricing = () => MARKETS.map(m=>{
+    const ex = existing.find(e=>e.code===m.code);
+    const baseEur = artist.deposit/0.1; // estimate full price from deposit
+    return ex||{code:m.code,active:false,price:Math.round(baseEur/m.toEur),deposit:Math.round(artist.deposit/m.toEur)};
+  });
+  const [pricing,setPricing]=useState(initPricing);
+  const [saved,setSaved]=useState(false);
+  const [expanded,setExpanded]=useState(null); // which market card is expanded
+
+  const update=(code,field,val)=>setPricing(p=>p.map(row=>row.code===code?{...row,[field]:val}:row));
+  const toggle=(code)=>setPricing(p=>p.map(row=>row.code===code?{...row,active:!row.active}:row));
+
+  const save=()=>{
+    onUpdateArtist(artist.id,{countryPricing:pricing});
+    setSaved(true);setTimeout(()=>setSaved(false),3000);
+  };
+
+  const eurVal=(row)=>{
+    const m=MARKETS.find(m=>m.code===row.code);
+    if(!m||!row.price) return null;
+    return Math.round(row.price*m.toEur);
+  };
+
+  const active=pricing.filter(r=>r.active);
+  const inactive=pricing.filter(r=>!r.active);
+
+  return(
+    <div style={{display:"flex",flexDirection:"column",gap:16}}>
+      {/* Header */}
+      <div>
+        <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:4}}>Market Pricing</div>
+        <div style={{fontSize:T.sm,color:C.muted,lineHeight:1.7}}>
+          Set your fee per country. Customers see your local-currency price. Toggle markets on/off to control where you appear.
+        </div>
+      </div>
+
+      {/* Active markets summary */}
+      {active.length>0&&(
+        <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:16,display:"flex",flexWrap:"wrap",gap:8}}>
+          <div style={{width:"100%",fontSize:T.xs,color:C.muted,fontWeight:700,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:4}}>Active in {active.length} market{active.length!==1?"s":""}</div>
+          {active.map(row=>{
+            const m=MARKETS.find(m=>m.code===row.code);
+            const eur=eurVal(row);
+            return(
+              <div key={row.code} style={{background:C.emeraldS,border:`1px solid ${C.emerald}44`,borderRadius:8,padding:"6px 12px",display:"flex",alignItems:"center",gap:6}}>
+                <span style={{fontSize:14}}>{m?.flag}</span>
+                <span style={{fontSize:T.xs,fontWeight:700,color:C.emerald}}>{m?.name}</span>
+                <span style={{fontSize:T.xs,color:C.muted}}>·</span>
+                <span style={{fontSize:T.xs,color:C.text,fontWeight:600}}>{m?.sym}{row.price?.toLocaleString()}</span>
+                {eur&&m?.currency!=="EUR"&&<span style={{fontSize:10,color:C.muted}}>≈ €{eur.toLocaleString()}</span>}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Market cards */}
+      {[{label:"Active Markets",rows:active,emptyMsg:"No active markets yet — toggle markets below to activate them."},{label:"Add Markets",rows:inactive,emptyMsg:"All available markets are active."}].map(({label,rows,emptyMsg})=>(
+        <div key={label}>
+          <div style={{fontSize:T.xs,color:C.muted,fontWeight:700,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:10}}>{label}</div>
+          {rows.length===0?(
+            <div style={{fontSize:T.sm,color:C.faint,fontStyle:"italic",padding:"8px 0"}}>{emptyMsg}</div>
+          ):(
+            <div style={{display:"flex",flexDirection:"column",gap:8}}>
+              {rows.map(row=>{
+                const m=MARKETS.find(m=>m.code===row.code);
+                const eur=eurVal(row);
+                const isOpen=expanded===row.code;
+                return(
+                  <div key={row.code} style={{background:C.card,border:`1px solid ${row.active?C.emerald+"44":C.border}`,borderRadius:12,overflow:"hidden",transition:"border-color 0.15s"}}>
+                    {/* Card header — always visible */}
+                    <div style={{display:"flex",alignItems:"center",gap:12,padding:"14px 16px",cursor:"pointer"}} onClick={()=>setExpanded(isOpen?null:row.code)}>
+                      <span style={{fontSize:22,flexShrink:0}}>{m?.flag}</span>
+                      <div style={{flex:1,minWidth:0}}>
+                        <div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:700,fontSize:T.sm,color:C.text}}>{m?.name}</div>
+                        <div style={{fontSize:T.xs,color:C.muted,marginTop:2}}>
+                          {row.price?`${m?.sym}${row.price?.toLocaleString()}${eur&&m?.currency!=="EUR"?` ≈ €${eur.toLocaleString()}`:""}`:"No price set"}
+                        </div>
+                      </div>
+                      {/* Active toggle */}
+                      <div onClick={e=>{e.stopPropagation();toggle(row.code);}}
+                        style={{width:44,height:24,borderRadius:12,background:row.active?C.emerald:C.border,position:"relative",cursor:"pointer",flexShrink:0,transition:"background 0.2s"}}>
+                        <div style={{position:"absolute",top:3,left:row.active?"23px":"3px",width:18,height:18,borderRadius:"50%",background:"#fff",transition:"left 0.2s",boxShadow:"0 1px 4px rgba(0,0,0,0.3)"}}/>
+                      </div>
+                      <div style={{fontSize:10,color:C.muted,transform:`rotate(${isOpen?180:0}deg)`,transition:"transform 0.2s",flexShrink:0}}>▾</div>
+                    </div>
+
+                    {/* Expanded: price inputs */}
+                    {isOpen&&(
+                      <div style={{padding:"0 16px 16px",borderTop:`1px solid ${C.border}`,paddingTop:12}}>
+                        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:10}}>
+                          <div style={{display:"flex",flexDirection:"column",gap:5}}>
+                            <label style={{fontSize:T.xs,color:C.muted,fontWeight:700,letterSpacing:"0.8px",textTransform:"uppercase"}}>Full Price ({m?.currency})</label>
+                            <div style={{display:"flex",alignItems:"center",background:C.surface,border:`1px solid ${C.border}`,borderRadius:10,overflow:"hidden"}}>
+                              <span style={{padding:"0 12px",fontSize:T.sm,color:C.muted,flexShrink:0,background:C.card,height:"100%",display:"flex",alignItems:"center",borderRight:`1px solid ${C.border}`,minHeight:44,fontWeight:700}}>{m?.sym}</span>
+                              <input type="number" value={row.price||""} onChange={e=>update(row.code,"price",parseInt(e.target.value)||0)}
+                                style={{flex:1,background:"transparent",border:"none",color:C.text,fontSize:T.base,padding:"13px 12px",outline:"none",fontFamily:"inherit",minHeight:44}}/>
+                            </div>
+                            {eur&&m?.currency!=="EUR"&&<div style={{fontSize:10,color:C.emerald}}>≈ €{eur.toLocaleString()} EUR</div>}
+                          </div>
+                          <div style={{display:"flex",flexDirection:"column",gap:5}}>
+                            <label style={{fontSize:T.xs,color:C.muted,fontWeight:700,letterSpacing:"0.8px",textTransform:"uppercase"}}>Deposit ({m?.currency})</label>
+                            <div style={{display:"flex",alignItems:"center",background:C.surface,border:`1px solid ${C.border}`,borderRadius:10,overflow:"hidden"}}>
+                              <span style={{padding:"0 12px",fontSize:T.sm,color:C.muted,flexShrink:0,background:C.card,height:"100%",display:"flex",alignItems:"center",borderRight:`1px solid ${C.border}`,minHeight:44,fontWeight:700}}>{m?.sym}</span>
+                              <input type="number" value={row.deposit||""} onChange={e=>update(row.code,"deposit",parseInt(e.target.value)||0)}
+                                style={{flex:1,background:"transparent",border:"none",color:C.text,fontSize:T.base,padding:"13px 12px",outline:"none",fontFamily:"inherit",minHeight:44}}/>
+                            </div>
+                            {row.deposit&&m?.currency!=="EUR"&&<div style={{fontSize:10,color:C.muted}}>≈ €{Math.round(row.deposit*m.toEur).toLocaleString()} deposit</div>}
+                          </div>
+                        </div>
+                        <div style={{fontSize:T.xs,color:C.muted,lineHeight:1.6,background:C.surface,borderRadius:6,padding:"8px 10px"}}>
+                          💡 Price shown to customers browsing from {m?.name}. Stripe deposit auto-converts to EUR for processing.
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      ))}
+
+      {/* Save */}
+      {saved?(
+        <div style={{background:C.emeraldS,border:`1px solid ${C.emerald}44`,borderRadius:10,padding:"12px 16px",color:C.emerald,fontSize:T.sm,fontWeight:700,display:"flex",gap:8,alignItems:"center"}}>
+          ✓ Market pricing saved and live on your profile.
+        </div>
+      ):(
+        <Btn v="gold" sz="lg" onClick={save} xs={{width:"100%"}}>Save Market Pricing</Btn>
+      )}
+    </div>
+  );
+}
+
+// ── Admin Inquiry Panel ────────────────────────────────────────────────
+function InquiryPanel({ inquiries, artists, onUpdateInquiry, vp }) {
+  const [sel,setSel]=useState(null);
+  const [replyText,setReplyText]=useState("");
+  const [noteText,setNoteText]=useState("");
+
+  const statusColor={new:C.ruby,viewed:C.saffron,replied:C.emerald};
+  const statusLabel={new:"New",viewed:"Viewed",replied:"Replied"};
+
+  const markViewed=(inq)=>{
+    if(inq.status==="new") onUpdateInquiry(inq.id,{status:"viewed"});
+    setSel(inq);setReplyText(inq.reply||"");setNoteText(inq.note||"");
+  };
+
+  const sendReply=()=>{
+    if(!replyText.trim()) return;
+    onUpdateInquiry(sel.id,{status:"replied",reply:replyText,note:noteText,repliedAt:Date.now()});
+    setSel(p=>({...p,status:"replied",reply:replyText,note:noteText}));
+  };
+
+  const prefArtist=inq=>artists.find(a=>a.id===inq.preferredArtist);
+  const market=inq=>MARKETS.find(m=>m.code===inq.country);
+
+  if(sel) return(
+    <div style={{padding:vp.isMobile?"16px":"28px 32px",maxWidth:700}}>
+      <button onClick={()=>setSel(null)}
+        style={{background:"none",border:"none",color:C.muted,cursor:"pointer",fontFamily:"inherit",fontSize:T.sm,marginBottom:16,display:"flex",alignItems:"center",gap:6,minHeight:36}}>← All Inquiries</button>
+
+      {/* Inquiry detail */}
+      <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden",marginBottom:16}}>
+        <div style={{height:2,background:`linear-gradient(90deg,${C.gold},${C.ruby})`}}/>
+        <div style={{padding:vp.isMobile?16:24}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:16,flexWrap:"wrap",gap:10}}>
+            <div>
+              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:700,color:C.text}}>{sel.name}</div>
+              <div style={{color:C.muted,fontSize:T.sm,marginTop:3}}>{sel.email}</div>
+            </div>
+            <Badge color={statusColor[sel.status]||C.muted}>{statusLabel[sel.status]||sel.status}</Badge>
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
+            {[["Country",`${market(sel)?.flag} ${market(sel)?.name}`],["Event",sel.eventType||"—"],["Date",sel.date||"—"],["Budget",sel.budget||"—"],["Artist",prefArtist(sel)?`${prefArtist(sel).emoji} ${prefArtist(sel).name}`:"Not specified"]].map(([k,v])=>(
+              <div key={k} style={{background:C.surface,borderRadius:8,padding:"10px 12px",border:`1px solid ${C.border}`}}>
+                <div style={{fontSize:T.xs,color:C.muted,fontWeight:700,letterSpacing:"0.6px",textTransform:"uppercase",marginBottom:4}}>{k}</div>
+                <div style={{fontSize:T.sm,color:C.text,fontWeight:500}}>{v}</div>
+              </div>
+            ))}
+          </div>
+          <div style={{background:C.surface,borderRadius:8,padding:"14px",border:`1px solid ${C.border}`,marginBottom:16}}>
+            <div style={{fontSize:T.xs,color:C.muted,fontWeight:700,letterSpacing:"0.6px",textTransform:"uppercase",marginBottom:8}}>Message</div>
+            <div style={{fontSize:T.sm,color:C.textD,lineHeight:1.8,fontFamily:"'DM Sans',sans-serif"}}>{sel.message}</div>
+          </div>
+          {sel.status==="replied"&&sel.reply&&(
+            <div style={{background:C.emeraldS,border:`1px solid ${C.emerald}44`,borderRadius:8,padding:"14px"}}>
+              <div style={{fontSize:T.xs,color:C.emerald,fontWeight:700,letterSpacing:"0.6px",textTransform:"uppercase",marginBottom:6}}>Your Reply (sent)</div>
+              <div style={{fontSize:T.sm,color:C.textD,lineHeight:1.7}}>{sel.reply}</div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Reply form */}
+      <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:vp.isMobile?16:24}}>
+        <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.gold,marginBottom:14}}>{sel.status==="replied"?"Update Reply":"Write a Reply"}</div>
+        <div style={{display:"flex",flexDirection:"column",gap:12}}>
+          <Inp label="Private Note (internal only)" placeholder="e.g. Spoke to Soraya — she can do 20% discount for June" value={noteText} onChange={e=>setNoteText(e.target.value)} rows={2}/>
+          <Inp label="Reply to Customer *" placeholder="Dear [Name], thank you for your inquiry…" value={replyText} onChange={e=>setReplyText(e.target.value)} rows={5}/>
+          <Btn v="gold" sz="lg" onClick={sendReply} disabled={!replyText.trim()} xs={{width:"100%"}}>
+            {sel.status==="replied"?"Update Reply ✦":"Send Reply to Customer ✦"}
+          </Btn>
+          <div style={{fontSize:T.xs,color:C.muted,textAlign:"center"}}>In production this sends an email to {sel.email}</div>
+        </div>
+      </div>
+    </div>
+  );
+
+  return(
+    <div style={{padding:vp.isMobile?"16px":"28px 32px",maxWidth:800}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20,flexWrap:"wrap",gap:10}}>
+        <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text}}>
+          Inquiries {inquiries.filter(i=>i.status==="new").length>0&&<Badge color={C.ruby}>{inquiries.filter(i=>i.status==="new").length} new</Badge>}
+        </div>
+      </div>
+      {inquiries.length===0?(
+        <div style={{textAlign:"center",padding:"48px 24px",background:C.card,borderRadius:12,border:`1px solid ${C.border}`}}>
+          <div style={{fontSize:36,marginBottom:12}}>📬</div>
+          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,color:C.text,marginBottom:6}}>No inquiries yet</div>
+          <div style={{color:C.muted,fontSize:T.sm}}>Visitor inquiries appear here once the contact widget is live.</div>
+        </div>
+      ):(
+        <div style={{display:"flex",flexDirection:"column",gap:10}}>
+          {[...inquiries].sort((a,b)=>b.ts-a.ts).map(inq=>{
+            const pref=prefArtist(inq);
+            const mkt=market(inq);
+            const sc=statusColor[inq.status]||C.muted;
+            return(
+              <div key={inq.id} onClick={()=>markViewed(inq)}
+                style={{background:C.card,border:`2px solid ${inq.status==="new"?C.ruby+"55":C.border}`,borderRadius:12,padding:"14px 16px",cursor:"pointer",WebkitTapHighlightColor:"transparent",transition:"border-color 0.15s"}}>
+                <div style={{display:"flex",gap:12,alignItems:"flex-start"}}>
+                  {/* Avatar */}
+                  <div style={{width:42,height:42,borderRadius:"50%",background:C.goldS,border:`2px solid ${C.gold}28`,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Cormorant Garamond',serif",fontSize:18,fontWeight:700,color:C.gold,flexShrink:0}}>
+                    {inq.name[0]}
+                  </div>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4,flexWrap:"wrap",gap:6}}>
+                      <div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:700,fontSize:T.sm,color:C.text}}>{inq.name}</div>
+                      <div style={{display:"flex",gap:6,alignItems:"center",flexShrink:0}}>
+                        <Badge color={sc}>{statusLabel[inq.status]||inq.status}</Badge>
+                        <span style={{color:C.muted,fontSize:T.xs}}>{new Date(inq.ts).toLocaleDateString()}</span>
+                      </div>
+                    </div>
+                    <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:6}}>
+                      <span style={{fontSize:T.xs,color:C.muted}}>{mkt?.flag} {mkt?.name}</span>
+                      {inq.eventType&&<><span style={{color:C.border}}>·</span><span style={{fontSize:T.xs,color:C.muted}}>{inq.eventType}</span></>}
+                      {inq.budget&&<><span style={{color:C.border}}>·</span><span style={{fontSize:T.xs,color:C.gold,fontWeight:600}}>{inq.budget}</span></>}
+                      {pref&&<><span style={{color:C.border}}>·</span><span style={{fontSize:T.xs,color:pref.color}}>{pref.emoji} {pref.name}</span></>}
+                    </div>
+                    <div style={{fontSize:T.xs,color:C.textD,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",lineHeight:1.5}}>{inq.message}</div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+function LangSwitcher({ lang, onSwitch }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  const LANGS = [
+    { code:'en', label:'English',  short:'EN',  flag:'🇬🇧', rtl:false },
+    { code:'no', label:'Norsk',    short:'NO',  flag:'🇳🇴', rtl:false },
+    { code:'de', label:'Deutsch',  short:'DE',  flag:'🇩🇪', rtl:false },
+    { code:'fr', label:'Français', short:'FR',  flag:'🇫🇷', rtl:false },
+    { code:'da', label:'دری',      short:'دری', flag:'🇦🇫', rtl:true  },
+    { code:'ps', label:'پښتو',     short:'پښتو',flag:'🇦🇫', rtl:true  },
+  ];
+
+  const current = LANGS.find(l=>l.code===lang) || LANGS[0];
+
+  // Close on outside click
+  useEffect(()=>{
+    if(!open) return;
+    const handler = e => { if(ref.current&&!ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', handler);
+    return ()=>document.removeEventListener('mousedown', handler);
+  },[open]);
+
+  return (
+    <div ref={ref} style={{position:'relative',zIndex:500}}>
+      {/* Trigger button */}
+      <button onClick={()=>setOpen(o=>!o)}
+        style={{
+          height:36, display:'flex', alignItems:'center', gap:6,
+          background:C.surface, border:`1px solid ${open?C.gold:C.border}`,
+          borderRadius:8, padding:'0 10px', cursor:'pointer',
+          fontFamily:current.rtl?"'Noto Naskh Arabic',sans-serif":"'DM Sans',sans-serif",
+          fontSize:12, fontWeight:700, color:C.text,
+          WebkitTapHighlightColor:'transparent', transition:'border-color 0.15s',
+          whiteSpace:'nowrap',
+        }}>
+        <span style={{fontSize:14}}>{current.flag}</span>
+        <span>{current.short}</span>
+        <span style={{
+          fontSize:9, color:C.muted, marginLeft:1,
+          transform: open?'rotate(180deg)':'rotate(0deg)',
+          transition:'transform 0.2s', display:'inline-block',
+        }}>▾</span>
+      </button>
+
+      {/* Dropdown panel */}
+      {open && (
+        <div style={{
+          position:'absolute', top:'calc(100% + 6px)', right:0,
+          background:C.card, border:`1px solid ${C.border}`,
+          borderRadius:12, overflow:'hidden',
+          boxShadow:'0 12px 40px rgba(0,0,0,0.35)',
+          minWidth:160,
+          animation:'fadeIn 0.15s ease both',
+        }}>
+          <div style={{height:2, background:`linear-gradient(90deg,${C.ruby},${C.gold},${C.lapis})`}}/>
+          {LANGS.map(l=>(
+            <button key={l.code} onClick={()=>{ onSwitch(l.code); setOpen(false); }}
+              style={{
+                display:'flex', alignItems:'center', gap:10,
+                width:'100%', padding:'10px 14px',
+                background: lang===l.code ? C.goldS : 'transparent',
+                border:'none', borderBottom:`1px solid ${C.border}`,
+                cursor:'pointer', textAlign:'left',
+                fontFamily: l.rtl?"'Noto Naskh Arabic',sans-serif":"'DM Sans',sans-serif",
+                fontSize:13, fontWeight: lang===l.code ? 700 : 400,
+                color: lang===l.code ? C.gold : C.textD,
+                WebkitTapHighlightColor:'transparent',
+                transition:'background 0.1s',
+                direction: l.rtl ? 'rtl' : 'ltr',
+              }}>
+              <span style={{fontSize:16, flexShrink:0}}>{l.flag}</span>
+              <span style={{flex:1}}>{l.label}</span>
+              {lang===l.code && (
+                <span style={{fontSize:11, color:C.gold, flexShrink:0}}>✓</span>
+              )}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ═══════════════════════════════════════════════════════════════════════
 // ROOT APP
 // ═══════════════════════════════════════════════════════════════════════
@@ -2360,9 +3361,19 @@ export default function App() {
     try{localStorage.setItem('awaz-theme',next);}catch{}
     setTheme(next);
   };
+  const [lang,setLang]=useState(()=>{ try{return localStorage.getItem('awaz-lang')||'en';}catch{return 'en';} });
+  const switchLang=l=>{
+    _lang=l;
+    try{localStorage.setItem('awaz-lang',l);}catch{}
+    setLang(l);
+  };
+  const isRTL = isRTLLang(lang);
   const [users,setUsers]=useState(USERS);
   const [artists,setArtists]=useState(ARTISTS);
   const [bookings,setBookings]=useState(BOOKINGS);
+  const [inquiries,setInquiries]=useState(DEMO_INQUIRIES);
+  const handleNewInquiry=inq=>setInquiries(p=>[inq,...p]);
+  const handleUpdateInquiry=(id,updates)=>setInquiries(p=>p.map(i=>i.id===id?{...i,...updates}:i));
   const [session,setSession]=useState(null);
   const [view,setView]=useState("home");
   const [selArtist,setSelArtist]=useState(null);
@@ -2416,7 +3427,7 @@ export default function App() {
   };
 
   // ── Route to dashboards (after ALL hooks) ────────────────────────────
-  if(session?.role==="admin") return <AdminDash artists={artists} bookings={bookings} users={users} onAction={handleArtistAction} onLogout={logout} onMsg={handleMsg}/>;
+  if(session?.role==="admin") return <AdminDash artists={artists} bookings={bookings} users={users} inquiries={inquiries} onAction={handleArtistAction} onLogout={logout} onMsg={handleMsg} onUpdateInquiry={handleUpdateInquiry}/>;
   if(session?.role==="artist"){
     const myA=artists.find(a=>a.id===session.artistId);
     if(myA) return <ArtistPortal user={session} artist={myA} bookings={bookings} onLogout={logout} onToggleDay={handleToggle} onMsg={handleMsg} onUpdateArtist={handleUpdateArtist}/>;
@@ -2451,7 +3462,7 @@ export default function App() {
   },[view,selArtist]);
 
   return(
-    <div style={{background:C.bg,minHeight:"100vh",fontFamily:"'DM Sans',sans-serif",color:C.text}}>
+    <div dir={isRTL?'rtl':'ltr'} style={{background:C.bg,minHeight:"100vh",fontFamily:isRTL?"'Noto Naskh Arabic','DM Sans',sans-serif":"'DM Sans',sans-serif",color:C.text}}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;0,800;1,300;1,400;1,600&family=Noto+Naskh+Arabic:wght@400;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap');
         *{box-sizing:border-box;margin:0;padding:0;}
@@ -2470,6 +3481,7 @@ export default function App() {
         @keyframes slideUp{from{transform:translateY(100%);opacity:0.6;}to{transform:translateY(0);opacity:1;}}
         @keyframes spin{to{transform:rotate(360deg);}}
         @keyframes up{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}
+        @keyframes inquiryPulse{0%,100%{box-shadow:0 8px 32px ${C.gold}55;}50%{box-shadow:0 8px 48px ${C.gold}99,0 0 0 8px ${C.gold}15;}}
         @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
         .u0{animation:up 0.6s cubic-bezier(.4,0,.2,1) both;}
         .u1{animation:up 0.6s 0.1s cubic-bezier(.4,0,.2,1) both;}
@@ -2507,7 +3519,7 @@ export default function App() {
 
         {vp.isDesktop&&(
           <nav style={{display:"flex",gap:2,alignItems:"center"}}>
-            {[["Browse Artists","browse"],["How It Works","how"],["Pricing","pricing"]].map(([l,v])=>(
+            {[[t('browseArtists'),"browse"],[t('howItWorks'),"how"],[t('pricing'),"pricing"]].map(([l,v])=>(
               <button key={v} onClick={()=>nav(v)} style={{background:"transparent",border:"none",color:view===v?C.gold:C.muted,cursor:"pointer",fontFamily:"inherit",fontSize:T.sm,fontWeight:500,padding:"6px 13px",borderRadius:6,minHeight:44,WebkitTapHighlightColor:"transparent"}}>
                 {l}
               </button>
@@ -2516,10 +3528,11 @@ export default function App() {
         )}
 
         <div style={{display:"flex",gap:8,alignItems:"center"}}>
+          {vp.isDesktop&&<LangSwitcher lang={lang} onSwitch={switchLang}/>}
           {vp.isDesktop&&!session&&(
             <>
-              <Btn onClick={()=>setShowApply(true)} v="ruby" sz="sm">Apply as Artist</Btn>
-              <Btn onClick={()=>setShowLogin(true)} v="ghost" sz="sm">Sign In</Btn>
+              <Btn onClick={()=>setShowApply(true)} v="ruby" sz="sm">{t('applyAsArtist')}</Btn>
+              <Btn onClick={()=>setShowLogin(true)} v="ghost" sz="sm">{t('signIn')}</Btn>
               <button onClick={toggleTheme} aria-label={theme==='dark'?'Switch to light mode':'Switch to dark mode'}
                 style={{width:36,height:36,borderRadius:8,background:C.surface,border:`1px solid ${C.border}`,color:C.muted,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',fontSize:16,flexShrink:0,WebkitTapHighlightColor:'transparent'}}>
                 {theme==='dark'?'☀':'🌙'}
@@ -2529,36 +3542,33 @@ export default function App() {
           {vp.isDesktop&&session&&(
             <div style={{display:"flex",gap:8,alignItems:"center"}}>
               <span style={{color:C.muted,fontSize:T.xs}}>👤 {session.name.split(" ")[0]}</span>
-              <Btn onClick={logout} v="ghost" sz="sm">Sign Out</Btn>
+              <Btn onClick={logout} v="ghost" sz="sm">{t('signOut')}</Btn>
               <button onClick={toggleTheme} aria-label={theme==='dark'?'Switch to light mode':'Switch to dark mode'}
                 style={{width:36,height:36,borderRadius:8,background:C.surface,border:`1px solid ${C.border}`,color:C.muted,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',fontSize:16,flexShrink:0}}>
                 {theme==='dark'?'☀':'🌙'}
               </button>
             </div>
           )}
-          {vp.isMobile&&!session&&(
-            <>
+          {vp.isMobile&&(
+            <div style={{display:'flex',gap:6,alignItems:'center'}}>
+              <LangSwitcher lang={lang} onSwitch={switchLang}/>
               <button onClick={toggleTheme} aria-label="Toggle theme"
-                style={{width:36,height:36,borderRadius:8,background:C.surface,border:`1px solid ${C.border}`,color:C.muted,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',fontSize:14,WebkitTapHighlightColor:'transparent'}}>
+                style={{width:34,height:34,borderRadius:8,background:C.surface,border:`1px solid ${C.border}`,color:C.muted,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',fontSize:14,WebkitTapHighlightColor:'transparent'}}>
                 {theme==='dark'?'☀':'🌙'}
               </button>
-              <button onClick={()=>setShowLogin(true)} aria-label="Sign In"
-                style={{width:44,height:44,borderRadius:10,background:C.surface,border:`1px solid ${C.border}`,color:C.muted,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,WebkitTapHighlightColor:"transparent"}}>
-                👤
-              </button>
-            </>
-          )}
-          {vp.isMobile&&session&&(
-            <>
-              <button onClick={toggleTheme} aria-label="Toggle theme"
-                style={{width:36,height:36,borderRadius:8,background:C.surface,border:`1px solid ${C.border}`,color:C.muted,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',fontSize:14,WebkitTapHighlightColor:'transparent'}}>
-                {theme==='dark'?'☀':'🌙'}
-              </button>
-              <button onClick={logout} aria-label="Sign out"
-                style={{width:44,height:44,borderRadius:10,background:C.rubyS,border:`1px solid ${C.ruby}44`,color:C.ruby,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,fontFamily:"inherit",WebkitTapHighlightColor:"transparent",letterSpacing:"0.3px"}}>
-                Sign out
-              </button>
-            </>
+              {!session&&(
+                <button onClick={()=>setShowLogin(true)} aria-label={t('signIn')}
+                  style={{width:38,height:38,borderRadius:10,background:C.surface,border:`1px solid ${C.border}`,color:C.muted,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,WebkitTapHighlightColor:"transparent"}}>
+                  👤
+                </button>
+              )}
+              {session&&(
+                <button onClick={logout} aria-label={t('signOut')}
+                  style={{height:34,borderRadius:8,background:C.rubyS,border:`1px solid ${C.ruby}44`,color:C.ruby,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:"0 10px",fontSize:11,fontWeight:700,fontFamily:"inherit",WebkitTapHighlightColor:"transparent"}}>
+                  {t('signOut')}
+                </button>
+              )}
+            </div>
           )}
         </div>
       </header>
@@ -2581,15 +3591,15 @@ export default function App() {
             }}>
               <div className="u0" style={{display:"flex",alignItems:"center",gap:14,marginBottom:vp.isMobile?20:28}}>
                 <div style={{height:1,width:vp.isMobile?32:56,background:`linear-gradient(90deg,transparent,${C.gold}44)`}}/>
-                <span style={{fontFamily:"'Noto Naskh Arabic',serif",fontSize:vp.isMobile?13:15,color:C.gold,opacity:0.78,letterSpacing:"1.5px"}}>هنرمندان افغان را رزرو کنید</span>
+                <span style={{fontFamily:"'Noto Naskh Arabic',serif",fontSize:vp.isMobile?13:15,color:C.gold,opacity:0.78,letterSpacing:"1.5px"}}>{t('heroEyebrow')}</span>
                 <div style={{height:1,width:vp.isMobile?32:56,background:`linear-gradient(270deg,transparent,${C.gold}44)`}}/>
               </div>
 
               <h1 className="u1" style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["5xl"],fontWeight:800,color:C.text,lineHeight:0.94,margin:"0 0 6px",letterSpacing:vp.isMobile?"-2px":"-3px"}}>
-                Book Afghan
+                {t('heroLine1')}
               </h1>
               <h1 className="u1" style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["5xl"],fontWeight:800,lineHeight:0.94,margin:"0 0 22px",letterSpacing:vp.isMobile?"-2px":"-3px"}}>
-                Artists <em style={{color:C.ruby,fontStyle:"italic"}}>Directly</em>
+                {t('heroLine2')} <em style={{color:C.ruby,fontStyle:"italic"}}>{t('heroLine2em')}</em>
               </h1>
 
               <div className="u2" style={{display:"flex",alignItems:"center",gap:14,marginBottom:20,width:"100%",maxWidth:320}}>
@@ -2598,36 +3608,28 @@ export default function App() {
                 <div style={{flex:1,height:1,background:`linear-gradient(270deg,transparent,${C.gold}38)`}}/>
               </div>
 
-              <p className="u2" style={{
-                fontFamily:"'DM Sans',sans-serif",
-                color:C.textD,
-                fontSize:vp.isMobile?T.base:T.lg,
-                maxWidth:vp.isMobile?"100%":560,
-                lineHeight:1.8,
-                marginBottom:vp.isMobile?28:36,
-                fontWeight:400,
-              }}>
-                Discover and book verified Afghan artists — ghazal, rubab, folk, and fusion — for your wedding, Eid, cultural event or private gathering.
+              <p className="u2" style={{fontFamily:"'DM Sans',sans-serif",color:C.textD,fontSize:vp.isMobile?T.base:T.lg,maxWidth:vp.isMobile?"100%":560,lineHeight:1.8,marginBottom:vp.isMobile?28:36,fontWeight:400}}>
+                {t('heroBody')}
               </p>
 
               {/* Search */}
               <div className="u3" style={{display:"flex",width:"100%",maxWidth:vp.isMobile?"100%":560,background:C.card,borderRadius:12,border:`1px solid ${C.borderM}`,overflow:"hidden",boxShadow:"0 16px 50px rgba(0,0,0,0.7)",marginBottom:24}}>
                 <input
-                  placeholder={vp.isMobile?"Search artists…":"Artist, genre, or city…"}
+                  placeholder={t('searchPlaceholder')}
                   value={search} onChange={e=>setSearch(e.target.value)}
                   onKeyDown={e=>e.key==="Enter"&&nav("browse")}
                   style={{flex:1,background:"transparent",border:"none",color:C.text,fontSize:T.base,padding:vp.isMobile?"15px 16px":"16px 22px",outline:"none",minWidth:0,minHeight:52}}/>
                 <button onClick={()=>nav("browse")}
                   style={{background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",padding:vp.isMobile?"15px 20px":"16px 28px",fontSize:T.base,fontWeight:800,cursor:"pointer",fontFamily:"inherit",flexShrink:0,minHeight:52,WebkitTapHighlightColor:"transparent"}}>
-                  {vp.isMobile?"🔍":"Search"}
+                  {vp.isMobile?"🔍":t('searchBtn')}
                 </button>
               </div>
 
               {/* Trust chips */}
               <div className="u3" style={{display:"flex",gap:vp.isMobile?16:22,flexWrap:"wrap",justifyContent:"center"}}>
                 {(vp.isMobile
-                  ?[["✓","Verified"],["🔒","Stripe"],["💬","Direct chat"],["🇦🇫","Afghan"]]
-                  :[["✓","Verified artists"],["🔒","Stripe payments"],["💬","Direct chat"],["💳","Artist-set deposits"],["🇦🇫","Afghan culture"]]
+                  ?[["✓",t('trustVerified')],["🔒",t('trustStripe')],["💬",t('trustChat')],["🇦🇫",t('trustCulture')]]
+                  :[["✓",t('trustVerified')],["🔒",t('trustStripe')],["💬",t('trustChat')],["💳",t('trustDeposits')],["🇦🇫",t('trustCulture')]]
                 ).map(([icon,l])=>(
                   <div key={l} style={{display:"flex",alignItems:"center",gap:6,fontSize:T.sm,color:C.muted,fontFamily:"'DM Sans',sans-serif"}}>
                     <span style={{color:C.gold,fontSize:13}}>{icon}</span>{l}
@@ -2641,10 +3643,10 @@ export default function App() {
           <section style={{maxWidth:1240,margin:"0 auto",padding:vp.isMobile?"24px 16px":"60px 48px"}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-end",marginBottom:8}}>
               <div>
-                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,lineHeight:1}}>Featured Artists</div>
-                <div style={{color:C.muted,fontSize:T.sm,marginTop:6,fontFamily:"'DM Sans',sans-serif"}}>Verified · ready to book</div>
+                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,lineHeight:1}}>{t('featuredTitle')}</div>
+                <div style={{color:C.muted,fontSize:T.sm,marginTop:6,fontFamily:"'DM Sans',sans-serif"}}>{t('featuredSub')}</div>
               </div>
-              <Btn onClick={()=>nav("browse")} v="ghost" sz="sm">See all →</Btn>
+              <Btn onClick={()=>nav("browse")} v="ghost" sz="sm">{t('seeAll')}</Btn>
             </div>
             <HR color={C.gold}/>
 
@@ -2738,8 +3740,8 @@ export default function App() {
       {view==="browse"&&(
         <div style={{paddingTop:vp.isMobile?56:62,paddingBottom:vp.isMobile?88:0}}>
           <div style={{maxWidth:1240,margin:"0 auto",padding:vp.isMobile?"16px":"36px 48px"}}>
-            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:4}}>Afghan Artists</div>
-            <div style={{color:C.muted,fontSize:T.xs,marginBottom:14}}>Book directly — no agencies</div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:4}}>{t('browseArtists')}</div>
+            <div style={{color:C.muted,fontSize:T.xs,marginBottom:14}}>{lang==='da'?'رزرو مستقیم — بدون آژانس':(lang==='no'?'Bestill direkte — ingen agenter':'Book directly — no agencies')}</div>
 
             {/* Search */}
             <div style={{display:"flex",background:C.card,border:`1px solid ${C.border}`,borderRadius:10,padding:"0 14px",alignItems:"center",gap:8,height:52,marginBottom:12}}>
@@ -2759,14 +3761,14 @@ export default function App() {
               ))}
             </div>
 
-            <div style={{color:C.muted,fontSize:T.xs,marginBottom:14}}>{filtered.length} artist{filtered.length!==1?"s":""}</div>
+            <div style={{color:C.muted,fontSize:T.xs,marginBottom:14}}>{filtered.length===1?t('artistsCount').replace('{n}',filtered.length):t('artistsCountPlural').replace('{n}',filtered.length)}</div>
 
             {filtered.length===0?(
               <div style={{textAlign:"center",padding:"40px 24px",background:C.card,borderRadius:12,border:`1px solid ${C.border}`}}>
                 <div style={{fontSize:40,marginBottom:14}}>🎵</div>
-                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text,marginBottom:6}}>No artists found</div>
-                <div style={{color:C.muted,fontSize:T.sm,marginBottom:16}}>Try a different genre or search term.</div>
-                <Btn v="ghost" sz="md" onClick={()=>{setSearch("");setGenreF("All");}}>Clear filters</Btn>
+                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text,marginBottom:6}}>{t('noArtistsFound')}</div>
+                <div style={{color:C.muted,fontSize:T.sm,marginBottom:16}}>{t('tryDifferent')}</div>
+                <Btn v="ghost" sz="md" onClick={()=>{setSearch("");setGenreF("All");}}>{t('clearFilters')}</Btn>
               </div>
             ):vp.isMobile?(
               <div style={{display:"flex",flexDirection:"column",gap:10}}>
@@ -2868,8 +3870,8 @@ export default function App() {
                 color:C.text,margin:"0 0 20px",
                 letterSpacing:vp.isMobile?"-1.5px":"-2.5px",
               }}>
-                Book in 6<br/>
-                <em style={{color:C.gold,fontStyle:"italic"}}>simple steps</em>
+                { t('howTitle') }<br/>
+                <em style={{color:C.gold,fontStyle:"italic"}}>{t('howTitleEm')}</em>
               </h1>
 
               {/* Sub-headline */}
@@ -3047,12 +4049,12 @@ export default function App() {
       {view==="pricing"&&(
         <div style={{paddingTop:vp.isMobile?56:62,paddingBottom:vp.isMobile?88:0}}>
           <div style={{maxWidth:800,margin:"0 auto",padding:vp.isMobile?"24px 16px":"60px 48px"}}>
-            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["3xl"],fontWeight:800,color:C.text,marginBottom:4}}>Simple Pricing</div>
-            <div style={{color:C.muted,fontSize:T.sm,marginBottom:20}}>Transparent fees — no surprises, no hidden costs</div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["3xl"],fontWeight:800,color:C.text,marginBottom:4}}>{t('pricingTitle')}</div>
+            <div style={{color:C.muted,fontSize:T.sm,marginBottom:20}}>{t('pricingSubtitle')}</div>
             <HR color={C.gold}/>
             <div style={{display:"grid",gridTemplateColumns:vp.isMobile?"1fr":"1fr 1fr",gap:14,marginTop:16,marginBottom:28}}>
-              {[{label:"For Clients",icon:"🎉",color:C.gold,items:["Browse all artists for free","Pay artist-set deposit at booking","Chat directly after deposit","Balance paid cash to artist","Cancel per artist's policy"]},
-                {label:"For Artists",icon:"🎤",color:C.ruby,items:["List for free","Set your own price","Set your own deposit (min €500)","Set your own cancellation policy","Receive 88% of each deposit","12% platform fee — nothing else"]}].map(({label,icon,color,items})=>(
+              {[{label:t('forClients'),icon:"🎉",color:C.gold,items:["Browse all artists for free","Pay artist-set deposit at booking","Chat directly after deposit","Balance paid cash to artist","Cancel per artist's policy"]},
+                {label:t('forArtists'),icon:"🎤",color:C.ruby,items:["List for free","Set your own price","Set your own deposit (min €500)","Set your own cancellation policy","Receive 88% of each deposit","12% platform fee — nothing else"]}].map(({label,icon,color,items})=>(
                 <div key={label} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden"}}>
                   <div style={{height:3,background:`linear-gradient(90deg,${color},${C.gold})`}}/>
                   <div style={{padding:vp.isMobile?16:22}}>
@@ -3085,10 +4087,10 @@ export default function App() {
       {/* ── Mobile Bottom Nav (public pages) ── */}
       {vp.isMobile&&["home","browse","how","pricing"].includes(view)&&(
         <nav style={{position:"fixed",bottom:0,left:0,right:0,zIndex:100,background:`${C.surface}F8`,backdropFilter:"blur(20px)",borderTop:`1px solid ${C.border}`,display:"flex",alignItems:"stretch",paddingBottom:"env(safe-area-inset-bottom,0px)",height:`calc(58px + env(safe-area-inset-bottom,0px))`}}>
-          {[{id:"home",icon:"🏠",label:"Home",fn:()=>nav("home")},{id:"browse",icon:"🔍",label:"Browse",fn:()=>nav("browse")},{id:"apply",icon:"🎤",label:"Apply",fn:()=>setShowApply(true)},
+          {[ {id:"home",icon:"🏠",label:t('portalHome'),fn:()=>nav("home")}, {id:"browse",icon:"🔍",label:t('browseArtists'),fn:()=>nav("browse")}, {id:"apply",icon:"🎤",label:t('applyAsArtist'),fn:()=>setShowApply(true)},
             session
-              ?{id:"logout",icon:"👋",label:"Sign Out",fn:()=>logout()}
-              :{id:"signin",icon:"👤",label:"Sign In",fn:()=>setShowLogin(true)}
+              ? {id:"logout",icon:"👋",label:t('signOut'),fn:()=>logout()}
+              : {id:"signin",icon:"👤",label:t('signIn'),fn:()=>setShowLogin(true)}
           ].map(({id,icon,label,fn})=>{
             const isActive=(id==="home"&&view==="home")||(id==="browse"&&view==="browse");
             return(
@@ -3105,6 +4107,8 @@ export default function App() {
       {/* ── Modals ── */}
       <LoginSheet users={users} open={showLogin} onLogin={login} onClose={()=>setShowLogin(false)}/>
       {showApply&&<ApplySheet onSubmit={handleNewArtist} onClose={()=>setShowApply(false)}/>}
+      {/* Floating concierge inquiry button — always visible to visitors */}
+      {!session&&<InquiryWidget artists={artists} onSubmit={handleNewInquiry}/>}
     </div>
   );
 }
@@ -3135,23 +4139,23 @@ function AIWidget({ artists, onPick }) {
       <div style={{padding:20}}>
         <div style={{display:"flex",gap:10,alignItems:"center",marginBottom:16}}>
           <div style={{width:34,height:34,borderRadius:8,background:C.lapisS,border:`1px solid ${C.lapis}38`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}}>✦</div>
-          <div><div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.md,fontWeight:700,color:C.text}}>AI Artist Matching</div><div style={{color:C.muted,fontSize:T.xs}}>Find your perfect artist</div></div>
+          <div><div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.md,fontWeight:700,color:C.text}}>{t('aiTitle')}</div><div style={{color:C.muted,fontSize:T.xs}}>Find your perfect artist</div></div>
         </div>
         {step==="idle"&&(
           <>
             <div style={{marginBottom:12}}>
-              <div style={{color:C.muted,fontSize:T.xs,fontWeight:700,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:7}}>Event Type</div>
+              <div style={{color:C.muted,fontSize:T.xs,fontWeight:700,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:7}}{t('aiEvent')}</div>
               <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
                 {events.map(e=><button key={e} onClick={()=>setPrefs(p=>({...p,event:e}))} style={{background:prefs.event===e?`${C.gold}22`:C.surface,color:prefs.event===e?C.gold:C.muted,border:`1px solid ${prefs.event===e?`${C.gold}44`:C.border}`,borderRadius:5,padding:"5px 10px",fontSize:T.xs,cursor:"pointer",fontFamily:"inherit",fontWeight:600,minHeight:32,WebkitTapHighlightColor:"transparent"}}>{e}</button>)}
               </div>
             </div>
             <div style={{marginBottom:14}}>
-              <div style={{color:C.muted,fontSize:T.xs,fontWeight:700,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:7}}>Music Style</div>
+              <div style={{color:C.muted,fontSize:T.xs,fontWeight:700,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:7}}{t('aiStyle')}</div>
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
                 {moods.map(([v,l,d])=><button key={v} onClick={()=>setPrefs(p=>({...p,mood:v}))} style={{background:prefs.mood===v?`${C.ruby}18`:C.surface,color:prefs.mood===v?C.ruby:C.muted,border:`1px solid ${prefs.mood===v?`${C.ruby}44`:C.border}`,borderRadius:7,padding:"8px 10px",fontSize:T.xs,cursor:"pointer",fontFamily:"inherit",textAlign:"left",minHeight:44,WebkitTapHighlightColor:"transparent"}}><div style={{fontWeight:700}}>{l}</div><div style={{fontSize:9,opacity:0.7,marginTop:1}}>{d}</div></button>)}
               </div>
             </div>
-            <Btn v="lapis" full onClick={run} disabled={!prefs.event&&!prefs.mood}>Find My Artist ✦</Btn>
+            <Btn v="lapis" full onClick={run} disabled={!prefs.event&&!prefs.mood}{t('aiFindBtn')}</Btn>
           </>
         )}
         {step==="loading"&&<div style={{textAlign:"center",padding:"24px 0"}}><div style={{width:32,height:32,border:`2px solid ${C.border}`,borderTopColor:C.lapis,borderRadius:"50%",animation:"spin 0.8s linear infinite",margin:"0 auto 12px"}}/><div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.md,color:C.text}}>Analyzing…</div></div>}
@@ -3267,7 +4271,7 @@ function ApplySheet({ onSubmit, onClose }) {
             )}
 
             <div style={{display:"flex",gap:8,marginTop:18}}>
-              {step>1&&<Btn v="ghost" onClick={()=>{setStep(s=>s-1);setErr("");}} xs={{flex:1}}>← Back</Btn>}
+              {step>1&&<Btn v="ghost" onClick={()=>{setStep(s=>s-1);setErr("");}} xs={{flex:1}}>{t('back')}</Btn>}
               {step<2?<Btn onClick={next} xs={{flex:step>1?2:1}}>Next →</Btn>:<Btn onClick={submit} loading={loading} xs={{flex:2}}>Submit Application</Btn>}
             </div>
           </>
