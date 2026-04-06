@@ -1375,14 +1375,14 @@ const POLICIES=[
   {id:"no_refund",label:"No Refund", desc:"No refunds under any circumstances"},
 ];
 const USERS=[
-  {id:"u0",role:"admin", email:"shams.nn@outlook.com",  hash:sh("Grindatunet31529@"),  name:"Admin"},
+  {id:"u0",role:"admin", email:"shams.nn@outlook.com",  hash:sh("Grindatuneth301.."),  name:"Admin"},
   {id:"u1",role:"artist",email:"soraya@awaz.no", hash:sh("Soraya123!"),  name:"Soraya Rahimi",  artistId:"a1"},
   {id:"u2",role:"artist",email:"ahmad@awaz.no",  hash:sh("Ahmad123!"),   name:"Ahmad Zafar",   artistId:"a2"},
   {id:"u3",role:"artist",email:"khalid@awaz.no", hash:sh("Khalid123!"),  name:"Khalid Noori",  artistId:"a4"},
 ];
 const ARTISTS=[
   {id:"a1",name:"Soraya Rahimi",    nameDari:"ثریا رحیمی",   genre:"Classical Ghazal",  location:"Kabul · Oslo",   rating:4.98,reviews:87, priceInfo:"From €2,500",deposit:1000,emoji:"🎤",color:C.ruby,   photo:null,bio:"Soraya is one of Europe's leading Afghan vocalists, rooted in the classical ghazal tradition. Her voice carries the soul of centuries of Afghan poetry — Rumi, Hafez, Bedil — delivered with technical mastery and emotional depth that leaves audiences speechless.",tags:["Ghazal","Classical","Wedding","Eid"],        instruments:["Vocals","Harmonium"],       superhost:true, status:"approved",joined:"Jan 2024",available:{[MK]:[3,7,8,14,15,21,22,28],[MK2]:[1,5,8,12,15,19,22,26]},blocked:{[MK]:[10,11]},        earnings:7500,totalBookings:6, verified:true, stripeConnected:true, stripeAccount:"acct_sor123",cancellationPolicy:"moderate",
-    spotify:{monthlyListeners:"124K",topTracks:["Laila (Live Oslo)",`Ghazal-e-Rumi`,"Del-e-Man"],profileUrl:"https://open.spotify.com/artist/example"},
+    spotify:{monthlyListeners:"124K",topTracks:["Laila (Live Oslo)","Ghazal-e-Rumi","Del-e-Man"],profileUrl:"https://open.spotify.com/artist/example"},
     instagram:{handle:"@soraya.rahimi.music",followers:"89.2K",profileUrl:"https://instagram.com/soraya.rahimi.music",posts:[{thumb:"🎤",caption:"Oslo Concert"},{thumb:"🎶",caption:"Recording"},{thumb:"🌹",caption:"Eid Special"}]},
     countryPricing:[
       {code:"NO",active:true, price:28000,deposit:11500},
@@ -3430,10 +3430,10 @@ export default function App() {
   };
 
   // ── Route to dashboards (after ALL hooks) ────────────────────────────
-  if(session?.role==="admin") return <AdminDash artists={artists} bookings={bookings} users={users} inquiries={inquiries} onAction={handleArtistAction} onLogout={logout} onMsg={handleMsg} onUpdateInquiry={handleUpdateInquiry}/>;
+  if(session?.role==="admin") return <AdminDash key={lang} artists={artists} bookings={bookings} users={users} inquiries={inquiries} onAction={handleArtistAction} onLogout={logout} onMsg={handleMsg} onUpdateInquiry={handleUpdateInquiry}/>;
   if(session?.role==="artist"){
     const myA=artists.find(a=>a.id===session.artistId);
-    if(myA) return <ArtistPortal user={session} artist={myA} bookings={bookings} onLogout={logout} onToggleDay={handleToggle} onMsg={handleMsg} onUpdateArtist={handleUpdateArtist}/>;
+    if(myA) return <ArtistPortal key={lang} user={session} artist={myA} bookings={bookings} onLogout={logout} onToggleDay={handleToggle} onMsg={handleMsg} onUpdateArtist={handleUpdateArtist}/>;
     // AUTH-FIX-2: Artist logged in but no matching artist profile found.
     // Previously fell through silently — user stuck in broken limbo with no
     // logout button. Now shows a clear error with logout option.
@@ -3465,7 +3465,7 @@ export default function App() {
   },[view,selArtist]);
 
   return(
-    <div dir={isRTL?'rtl':'ltr'} style={{background:C.bg,minHeight:"100vh",fontFamily:isRTL?"'Noto Naskh Arabic','DM Sans',sans-serif":"'DM Sans',sans-serif",color:C.text}}>
+    <div key={lang} dir={isRTL?'rtl':'ltr'} style={{background:C.bg,minHeight:"100vh",fontFamily:isRTL?"'Noto Naskh Arabic','DM Sans',sans-serif":"'DM Sans',sans-serif",color:C.text}}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;0,800;1,300;1,400;1,600&family=Noto+Naskh+Arabic:wght@400;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap');
         *{box-sizing:border-box;margin:0;padding:0;}
