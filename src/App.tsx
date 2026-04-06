@@ -1656,7 +1656,7 @@ function LoginSheet({ users, open, onLogin, onClose }) {
           <Inp label="Password *" type="password" placeholder="At least 8 characters" value={pass} onChange={e=>setPass(e.target.value)} onKeyDown={e=>e.key==="Enter"&&doRegister()} hint="At least 8 characters"/>
         </div>
         {err&&<div style={{background:C.rubyS,border:`1px solid ${C.ruby}28`,borderRadius:8,padding:"10px 13px",color:C.ruby,fontSize:T.xs,marginBottom:12}}>⚠ {err}</div>}
-        <Btn full sz="lg" loading={loading} onClick={doRegister}{t('createAccount')}</Btn>
+        <Btn full sz="lg" loading={loading} onClick={doRegister}>{t('createAccount')}</Btn>
         <button onClick={()=>setMode("login")}
           style={{background:"none",border:"none",color:C.muted,cursor:"pointer",fontSize:T.sm,fontFamily:"inherit",width:"100%",textAlign:"center",marginTop:12,minHeight:36}}>
           {t('alreadyHaveAccount')} <span style={{color:C.gold,textDecoration:"underline"}}>{t('createAccountLink')}</span>
