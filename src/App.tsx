@@ -4144,7 +4144,7 @@ function AIWidget({ artists, onPick }) {
         {step==="idle"&&(
           <>
             <div style={{marginBottom:12}}>
-              <div style={{color:C.muted,fontSize:T.xs,fontWeight:700,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:7}}{t('aiEvent')}</div>
+              <div style={{color:C.muted,fontSize:T.xs,fontWeight:700,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:7}}>{t('aiEvent')}</div>
               <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
                 {events.map(e=><button key={e} onClick={()=>setPrefs(p=>({...p,event:e}))} style={{background:prefs.event===e?`${C.gold}22`:C.surface,color:prefs.event===e?C.gold:C.muted,border:`1px solid ${prefs.event===e?`${C.gold}44`:C.border}`,borderRadius:5,padding:"5px 10px",fontSize:T.xs,cursor:"pointer",fontFamily:"inherit",fontWeight:600,minHeight:32,WebkitTapHighlightColor:"transparent"}}>{e}</button>)}
               </div>
