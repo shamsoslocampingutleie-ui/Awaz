@@ -193,7 +193,7 @@ const TRANSLATIONS = {
     aboutTab:"About", instrumentsTab:"Instruments", socialTab:"Social",
     reviewsTab:"Reviews", policyTab:"Terms",
     howTitle:"Book in 6", howTitleEm:"simple steps",
-    howSub:"From discovery to performance — the entire booking process is designed to be fast, safe, and completely transparent.",
+    howSub:t('howSub'),
     pricingTitle:"Simple Pricing", pricingSubtitle:"Transparent fees — no surprises, no hidden costs",
     forClients:"For Clients", forArtists:"For Artists",
     footerTagline:"The premier platform for booking verified Afghan artists across Europe.",
@@ -297,6 +297,49 @@ const TRANSLATIONS = {
     watchOnTikTok:"Watch on TikTok ↗",
     applyAsArtistTitle:"Apply as Artist",
     spotifyAppLabel:"Spotify app:",
+    pricingClient1:"Browse all artists for free",
+    pricingClient2:"Pay artist-set deposit at booking",
+    pricingClient3:"Chat directly after deposit",
+    pricingClient4:"Balance paid cash to artist",
+    pricingClient5:"Cancel per artist's policy",
+    pricingArtist1:"List for free",
+    pricingArtist2:"Set your own price",
+    pricingArtist3:"Set your own deposit (min €500)",
+    pricingArtist4:"Set your own cancellation policy",
+    pricingArtist5:"Receive 88% of each deposit",
+    pricingArtist6:"12% platform fee — nothing else",
+    splitLabel1:"Artist deposit",
+    splitDesc1:"Set by artist (min €500)",
+    splitLabel2:"You receive (88%)",
+    splitDesc2:"Auto-transferred to Stripe",
+    splitLabel3:"Awaz fee (12%)",
+    splitDesc3:"Platform operations",
+    howBadge:"SIMPLE & TRANSPARENT",
+    step1Title:"Find Your Perfect Artist",
+    step1Desc:"Browse verified Afghan artists by genre, city, or occasion. Not sure where to start? Our AI matcher reads your event details and surfaces your top three — in seconds.",
+    step1Badge:"Free to browse",
+    step2Title:"Pick a Date — Instantly",
+    step2Desc:"No back-and-forth emails. Every artist keeps their calendar live. Select any open date and the system reserves it for you in real time, preventing double-bookings automatically.",
+    step2Badge:"Live availability",
+    step3Title:"Confirm in Under 2 Minutes",
+    step3Desc:"Enter your event type and contact details. The artist's cancellation policy is shown clearly before you commit — no surprises. One tap to send your request.",
+    step3Badge:"Takes 2 minutes",
+    step4Title:"Secure Your Booking via Stripe",
+    step4Desc:"Pay the artist-set deposit (minimum €500) through Stripe — the same payment infrastructure used by Amazon and Shopify. Your card details are encrypted and never stored on our servers.",
+    step4Badge:"Bank-level security",
+    step5Title:"Chat Opens the Moment You Pay",
+    step5Desc:"As soon as your deposit clears, a private direct-message channel unlocks between you and the artist. Coordinate every detail — setlist, arrival time, technical requirements — all in one place.",
+    step5Badge:"Direct messaging",
+    step6Title:"Show Up and Enjoy Everything",
+    step6Desc:"The artist performs. You pay the remaining balance in cash, directly to the artist after the concert. No platform involved — transparent, fair, and direct.",
+    step6Badge:"Cash payment",
+    depositStripe:"Deposit (Stripe)",
+    unverified:"Unverified",
+    reinstate:"Reinstate",
+    paymentModel:"PAYMENT MODEL",
+    connected:"Connected!",
+    youllReceive:"You'll receive",
+    onYourWay:"You're on your way!",
     areYouArtist:"Are you an artist?",
     buttonInstead:"button instead.",
     spotifyInstructions2:"{t('spotifyInstructions2')}",
@@ -465,6 +508,49 @@ const TRANSLATIONS = {
     watchOnTikTok:"Se på TikTok ↗",
     applyAsArtistTitle:"Søk som artist",
     spotifyAppLabel:"Spotify-appen:",
+    pricingClient1:"Se alle artister gratis",
+    pricingClient2:"Betal artistens depositum ved bestilling",
+    pricingClient3:"Chat direkte etter depositum",
+    pricingClient4:"Saldo betales kontant til artisten",
+    pricingClient5:"Avbestill etter artistens policy",
+    pricingArtist1:"List deg gratis",
+    pricingArtist2:"Sett din egen pris",
+    pricingArtist3:"Sett eget depositum (min €500)",
+    pricingArtist4:"Sett din avbestillingspolicy",
+    pricingArtist5:"Motta 88% av hvert depositum",
+    pricingArtist6:"12% plattformgebyr — ingenting annet",
+    splitLabel1:"Artistens depositum",
+    splitDesc1:"Satt av artist (min €500)",
+    splitLabel2:"Du mottar (88%)",
+    splitDesc2:"Automatisk overført til Stripe",
+    splitLabel3:"Awaz-gebyr (12%)",
+    splitDesc3:"Plattformdrift",
+    howBadge:"ENKELT OG TRANSPARENT",
+    step1Title:"Finn din perfekte artist",
+    step1Desc:"Bla gjennom verifiserte afghanske artister etter sjanger, by eller anledning. Ikke sikker på hvor du skal starte? Vår AI-matcher leser arrangementdetaljene dine og finner dine tre beste — på sekunder.",
+    step1Badge:"Gratis å bla",
+    step2Title:"Velg en dato — umiddelbart",
+    step2Desc:"Ingen e-poster frem og tilbake. Hver artist holder sin kalender live. Velg en ledig dato og systemet reserverer den for deg i sanntid.",
+    step2Badge:"Live tilgjengelighet",
+    step3Title:"Bekreft på under 2 minutter",
+    step3Desc:"Skriv inn arrangementtype og kontaktdetaljer. Artistens avbestillingspolicy vises tydelig — ingen overraskelser. Ett trykk for å sende forespørselen.",
+    step3Badge:"Tar 2 minutter",
+    step4Title:"Sikre bestillingen via Stripe",
+    step4Desc:"Betal det artistbestemte depositum (minimum €500) gjennom Stripe — den samme betalingsinfrastrukturen som Amazon og Shopify bruker.",
+    step4Badge:"Banksikerhet",
+    step5Title:"Chat åpnes øyeblikket du betaler",
+    step5Desc:"Så snart depositum er godkjent, åpnes en privat meldingskanal mellom deg og artisten. Koordiner alle detaljer på ett sted.",
+    step5Badge:"Direkte meldinger",
+    step6Title:"Møt opp og nyt alt",
+    step6Desc:"Artisten opptrer. Du betaler restbeløpet kontant, direkte til artisten etter konserten.",
+    step6Badge:"Kontantbetaling",
+    depositStripe:"Depositum (Stripe)",
+    unverified:"Uverifisert",
+    reinstate:"Gjenopprett",
+    paymentModel:"BETALINGSMODELL",
+    connected:"Tilkoblet!",
+    youllReceive:"Du vil motta",
+    onYourWay:"Du er på vei!",
     areYouArtist:"Er du en artist?",
     buttonInstead:"knappen i stedet.",
     spotifyInstructions2:"Gå til profil → tre prikker (⋯) → Del → Kopier lenke",
@@ -633,6 +719,49 @@ const TRANSLATIONS = {
     watchOnTikTok:"Auf TikTok ansehen ↗",
     applyAsArtistTitle:"Als Künstler bewerben",
     spotifyAppLabel:"Spotify-App:",
+    pricingClient1:"Alle Künstler kostenlos durchsuchen",
+    pricingClient2:"Künstler-Anzahlung bei Buchung zahlen",
+    pricingClient3:"Direkt nach Anzahlung chatten",
+    pricingClient4:"Restbetrag bar an den Künstler",
+    pricingClient5:"Stornierung gemäß Künstler-Policy",
+    pricingArtist1:"Kostenlos listen",
+    pricingArtist2:"Eigenen Preis festlegen",
+    pricingArtist3:"Eigene Anzahlung festlegen (min €500)",
+    pricingArtist4:"Eigene Stornierungsrichtlinie festlegen",
+    pricingArtist5:"88% jeder Anzahlung erhalten",
+    pricingArtist6:"12% Plattformgebühr — sonst nichts",
+    splitLabel1:"Künstler-Anzahlung",
+    splitDesc1:"Vom Künstler festgelegt (min €500)",
+    splitLabel2:"Sie erhalten (88%)",
+    splitDesc2:"Automatisch zu Stripe überwiesen",
+    splitLabel3:"Awaz-Gebühr (12%)",
+    splitDesc3:"Plattformbetrieb",
+    howBadge:"EINFACH & TRANSPARENT",
+    step1Title:"Finden Sie Ihren perfekten Künstler",
+    step1Desc:"Durchsuche verifizierte afghanische Künstler nach Genre, Stadt oder Anlass. Nicht sicher, wo du anfangen sollst? Unser KI-Matcher liest deine Veranstaltungsdetails und zeigt dir deine Top drei — in Sekunden.",
+    step1Badge:"Kostenlos durchsuchen",
+    step2Title:"Datum wählen — sofort",
+    step2Desc:"Keine E-Mails hin und her. Jeder Künstler hält seinen Kalender live. Wähle ein freies Datum und das System reserviert es in Echtzeit.",
+    step2Badge:"Live-Verfügbarkeit",
+    step3Title:"In unter 2 Minuten bestätigen",
+    step3Desc:"Gib deinen Veranstaltungstyp und Kontaktdaten ein. Die Stornierungsrichtlinie des Künstlers ist klar sichtbar — keine Überraschungen.",
+    step3Badge:"Dauert 2 Minuten",
+    step4Title:"Buchung über Stripe absichern",
+    step4Desc:"Zahle die Künstler-Anzahlung (mindestens €500) über Stripe — dieselbe Zahlungsinfrastruktur wie Amazon und Shopify.",
+    step4Badge:"Bankensicherheit",
+    step5Title:"Chat öffnet sich sofort nach Zahlung",
+    step5Desc:"Sobald deine Anzahlung bestätigt ist, öffnet sich ein privater Nachrichtenkanal. Koordiniere alle Details an einem Ort.",
+    step5Badge:"Direktnachrichten",
+    step6Title:"Erscheinen und alles genießen",
+    step6Desc:"Der Künstler tritt auf. Du zahlst den Restbetrag bar direkt nach dem Konzert.",
+    step6Badge:"Barzahlung",
+    depositStripe:"Anzahlung (Stripe)",
+    unverified:"Nicht verifiziert",
+    reinstate:"Wiederherstellen",
+    paymentModel:"ZAHLUNGSMODELL",
+    connected:"Verbunden!",
+    youllReceive:"Sie werden erhalten",
+    onYourWay:"Sie sind auf dem Weg!",
     areYouArtist:"Sind Sie ein Künstler?",
     buttonInstead:"Schaltfläche stattdessen.",
     spotifyInstructions2:"Profil → drei Punkte (⋯) → Teilen → Link kopieren",
@@ -801,6 +930,49 @@ const TRANSLATIONS = {
     watchOnTikTok:"Voir sur TikTok ↗",
     applyAsArtistTitle:"Devenir artiste",
     spotifyAppLabel:"Application Spotify :",
+    pricingClient1:"Parcourir tous les artistes gratuitement",
+    pricingClient2:"Payer l'acompte de l'artiste à la réservation",
+    pricingClient3:"Chatter directement après l'acompte",
+    pricingClient4:"Solde payé en espèces à l'artiste",
+    pricingClient5:"Annuler selon la politique de l'artiste",
+    pricingArtist1:"Inscription gratuite",
+    pricingArtist2:"Fixez votre propre prix",
+    pricingArtist3:"Fixez votre propre acompte (min €500)",
+    pricingArtist4:"Fixez votre propre politique d'annulation",
+    pricingArtist5:"Recevoir 88% de chaque acompte",
+    pricingArtist6:"12% de frais de plateforme — rien d'autre",
+    splitLabel1:"Acompte artiste",
+    splitDesc1:"Fixé par l'artiste (min €500)",
+    splitLabel2:"Vous recevez (88%)",
+    splitDesc2:"Transféré automatiquement vers Stripe",
+    splitLabel3:"Frais Awaz (12%)",
+    splitDesc3:"Opérations de la plateforme",
+    howBadge:"SIMPLE & TRANSPARENT",
+    step1Title:"Trouvez votre artiste parfait",
+    step1Desc:"Parcourez les artistes afghans vérifiés par genre, ville ou occasion. Pas sûr par où commencer ? Notre IA lit les détails de votre événement et vous présente vos trois meilleurs — en quelques secondes.",
+    step1Badge:"Gratuit à parcourir",
+    step2Title:"Choisir une date — instantanément",
+    step2Desc:"Pas d'e-mails dans tous les sens. Chaque artiste maintient son calendrier en direct. Sélectionnez une date libre et le système la réserve en temps réel.",
+    step2Badge:"Disponibilité en direct",
+    step3Title:"Confirmer en moins de 2 minutes",
+    step3Desc:"Entrez le type d'événement et vos coordonnées. La politique d'annulation de l'artiste est clairement affichée — aucune surprise.",
+    step3Badge:"Prend 2 minutes",
+    step4Title:"Sécurisez votre réservation via Stripe",
+    step4Desc:"Payez l'acompte défini par l'artiste (minimum €500) via Stripe — la même infrastructure que Amazon et Shopify.",
+    step4Badge:"Sécurité bancaire",
+    step5Title:"Le chat s'ouvre dès que vous payez",
+    step5Desc:"Dès que votre acompte est validé, un canal de messagerie privé s'ouvre. Coordonnez tous les détails en un seul endroit.",
+    step5Badge:"Messagerie directe",
+    step6Title:"Arrivez et profitez de tout",
+    step6Desc:"L'artiste se produit. Vous payez le solde restant en espèces directement à l'artiste après le concert.",
+    step6Badge:"Paiement en espèces",
+    depositStripe:"Acompte (Stripe)",
+    unverified:"Non vérifié",
+    reinstate:"Réintégrer",
+    paymentModel:"MODÈLE DE PAIEMENT",
+    connected:"Connecté !",
+    youllReceive:"Vous recevrez",
+    onYourWay:"Vous êtes en route !",
     areYouArtist:"Êtes-vous un artiste ?",
     buttonInstead:"bouton à la place.",
     spotifyInstructions2:"Profil → trois points (⋯) → Partager → Copier le lien",
@@ -970,6 +1142,49 @@ const TRANSLATIONS = {
     watchOnTikTok:"در TikTok ببینید ↗",
     applyAsArtistTitle:"درخواست هنرمند",
     spotifyAppLabel:"برنامه Spotify:",
+    pricingClient1:"همه هنرمندان را رایگان مشاهده کنید",
+    pricingClient2:"در زمان رزرو پیش‌پرداخت هنرمند را بپردازید",
+    pricingClient3:"بلافاصله پس از پیش‌پرداخت چت کنید",
+    pricingClient4:"مانده نقداً به هنرمند پرداخت می‌شود",
+    pricingClient5:"طبق سیاست هنرمند لغو کنید",
+    pricingArtist1:"رایگان ثبت‌نام کنید",
+    pricingArtist2:"قیمت خود را تعیین کنید",
+    pricingArtist3:"پیش‌پرداخت خود را تعیین کنید (حداقل €500)",
+    pricingArtist4:"سیاست لغو خود را تعیین کنید",
+    pricingArtist5:"88٪ از هر پیش‌پرداخت دریافت کنید",
+    pricingArtist6:"12٪ کارمزد پلتفرم — هیچ چیز دیگری نیست",
+    splitLabel1:"پیش‌پرداخت هنرمند",
+    splitDesc1:"توسط هنرمند تعیین شده (حداقل €500)",
+    splitLabel2:"شما دریافت می‌کنید (88٪)",
+    splitDesc2:"به صورت خودکار به Stripe منتقل می‌شود",
+    splitLabel3:"کارمزد آواز (12٪)",
+    splitDesc3:"عملیات پلتفرم",
+    howBadge:"ساده و شفاف",
+    step1Title:"هنرمند مناسب خود را پیدا کنید",
+    step1Desc:"هنرمندان تایید شده افغان را بر اساس ژانر، شهر یا مناسبت جستجو کنید. مطمئن نیستید از کجا شروع کنید؟ مطابق‌ساز هوش مصنوعی ما جزئیات رویداد شما را می‌خواند.",
+    step1Badge:"رایگان مشاهده کنید",
+    step2Title:"یک تاریخ انتخاب کنید — فوری",
+    step2Desc:"بدون ایمیل‌های رفت و برگشت. هر هنرمند تقویم خود را به‌روز نگه می‌دارد. هر تاریخ آزادی را انتخاب کنید.",
+    step2Badge:"در دسترس بودن زنده",
+    step3Title:"در کمتر از 2 دقیقه تأیید کنید",
+    step3Desc:"نوع رویداد و اطلاعات تماس خود را وارد کنید. سیاست لغو هنرمند قبل از تعهد به وضوح نشان داده می‌شود.",
+    step3Badge:"2 دقیقه طول می‌کشد",
+    step4Title:"رزرو خود را از طریق Stripe ایمن کنید",
+    step4Desc:"پیش‌پرداخت تعیین‌شده توسط هنرمند (حداقل €500) را از طریق Stripe بپردازید.",
+    step4Badge:"امنیت سطح بانک",
+    step5Title:"چت در لحظه پرداخت باز می‌شود",
+    step5Desc:"به محض تأیید پیش‌پرداخت، یک کانال پیام خصوصی بین شما و هنرمند باز می‌شود.",
+    step5Badge:"پیام مستقیم",
+    step6Title:"حاضر شوید و از همه چیز لذت ببرید",
+    step6Desc:"هنرمند اجرا می‌کند. مانده را پس از کنسرت نقداً مستقیم به هنرمند می‌پردازید.",
+    step6Badge:"پرداخت نقدی",
+    depositStripe:"پیش‌پرداخت (Stripe)",
+    unverified:"تایید نشده",
+    reinstate:"بازگردانی",
+    paymentModel:"مدل پرداخت",
+    connected:"متصل شد!",
+    youllReceive:"شما دریافت خواهید کرد",
+    onYourWay:"شما در راه هستید!",
     areYouArtist:"آیا هنرمند هستید؟",
     buttonInstead:"دکمه را به جای آن.",
     spotifyInstructions2:"به پروفایل بروید ← سه نقطه (⋯) ← اشتراک‌گذاری ← کپی لینک",
@@ -1139,6 +1354,49 @@ const TRANSLATIONS = {
     watchOnTikTok:"پر TikTok وګورئ ↗",
     applyAsArtistTitle:"د هنرمند غوښتنه",
     spotifyAppLabel:"د Spotify ایپ:",
+    pricingClient1:"ټول هنرمندان وړیا وګورئ",
+    pricingClient2:"د بکنګ پر وخت د هنرمند پیشکي ورکړئ",
+    pricingClient3:"د پیشکي وروسته مستقیم چیټ وکړئ",
+    pricingClient4:"پاتې رقم نقداً هنرمند ته ورکول کیږي",
+    pricingClient5:"د هنرمند د پالیسۍ له مخې لغوه کړئ",
+    pricingArtist1:"وړیا ثبت کړئ",
+    pricingArtist2:"خپله بیه وټاکئ",
+    pricingArtist3:"خپله پیشکي وټاکئ (لږترلږه €500)",
+    pricingArtist4:"خپله د لغو پالیسي وټاکئ",
+    pricingArtist5:"د هرې پیشکي 88٪ ترلاسه کړئ",
+    pricingArtist6:"12٪ د پلیټفارم فیس — بل هیڅ نه",
+    splitLabel1:"د هنرمند پیشکي",
+    splitDesc1:"د هنرمند لخوا ټاکل شوی (لږترلږه €500)",
+    splitLabel2:"تاسو ترلاسه کوئ (88٪)",
+    splitDesc2:"اتوماتیک Stripe ته لیږدول کیږي",
+    splitLabel3:"د آواز فیس (12٪)",
+    splitDesc3:"د پلیټفارم عملیات",
+    howBadge:"ساده او شفاف",
+    step1Title:"خپل مناسب هنرمند ومومئ",
+    step1Desc:"د ژانر، ښار یا مناسبت له مخې تایید شوي افغان هنرمندان وګورئ. د پیل لپاره ډاډه نه یاست؟ زموږ AI میچر ستاسو د پیښې جزئیات لولي.",
+    step1Badge:"وړیا وګورئ",
+    step2Title:"نیټه وټاکئ — سمدستي",
+    step2Desc:"هیڅ بریښنالیکونه نه. هر هنرمند خپل کلینډر ژوندی ساتي. هره خلاصه نیټه وټاکئ.",
+    step2Badge:"ژوندی شتون",
+    step3Title:"په 2 دقیقو کې تایید کړئ",
+    step3Desc:"د پیښې ډول او د اړیکو معلومات دننه کړئ. د هنرمند د لغو پالیسي پخوا له ژمنې وروښودل کیږي.",
+    step3Badge:"2 دقیقې وخت نیسي",
+    step4Title:"خپل بکنګ د Stripe له لارې خوندي کړئ",
+    step4Desc:"د هنرمند لخوا ټاکل شوی پیشکي (لږترلږه €500) د Stripe له لارې ورکړئ.",
+    step4Badge:"د بانک کچه امنیت",
+    step5Title:"چیټ د تادیې پر وخت خلاصیږي",
+    step5Desc:"د پیشکي تاییدیې سمدستي یو خصوصي پیغام کانال خلاصیږي.",
+    step5Badge:"مستقیم پیغام",
+    step6Title:"راشئ او د هر څه خوند واخلئ",
+    step6Desc:"هنرمند اجرا کوي. د کنسرت وروسته پاتې رقم نقداً مستقیم هنرمند ته ورکوئ.",
+    step6Badge:"نقدي تادیه",
+    depositStripe:"پیشکي (Stripe)",
+    unverified:"تایید نه شوی",
+    reinstate:"بیرته راوستل",
+    paymentModel:"د تادیې ماډل",
+    connected:"وصل شو!",
+    youllReceive:"تاسو به ترلاسه کړئ",
+    onYourWay:"تاسو پر لاره یاست!",
     areYouArtist:"ایا هنرمند یاست؟",
     buttonInstead:"تڼۍ پرځای.",
     spotifyInstructions2:"پروفایل ته لاړ شئ ← درې نقطې (⋯) ← شریکول ← لینک کاپي کړئ",
@@ -1917,7 +2175,7 @@ function StripeCheckout({ booking, artist, onSuccess, onClose }) {
 
               <div style={{background:C.surface,borderRadius:10,padding:"14px",marginBottom:14,border:`1px solid ${C.border}`}}>
                 <div style={{display:"flex",justifyContent:"space-between",marginBottom:8}}>
-                  <span style={{color:C.muted,fontSize:T.sm}}>Deposit (Stripe)</span>
+                  <span style={{color:C.muted,fontSize:T.sm}}>{t('depositStripe')}</span>
                   <span style={{color:C.gold,fontWeight:800,fontSize:T.xl,fontFamily:"'Cormorant Garamond',serif"}}>€{deposit}</span>
                 </div>
                 <div style={{display:"flex",gap:8}}>
@@ -2170,7 +2428,9 @@ function LoginSheet({ users, open, onLogin, onClose }) {
         });
       } catch(e){
         setLoading(false);
-        setErr("Connection error — please try again.");
+        // If Supabase completely fails, try demo users as fallback
+        const u=users.find(u=>u.email.toLowerCase()===email.toLowerCase()&&u.hash===sh(pass));
+        if(u){ onLogin(u); } else { setErr("Connection error — check Supabase URL in Vercel settings."); }
       }
       return;
     }
@@ -2230,7 +2490,7 @@ function LoginSheet({ users, open, onLogin, onClose }) {
           return;
         }
         if(data.user){
-          await sb.from("profiles").insert([{id:data.user.id,role:"customer",name:name.trim()}]);
+          await sb.from("profiles").upsert([{id:data.user.id,role:"customer",name:name.trim()}],{onConflict:"id"});
           onLogin({id:data.user.id,email:data.user.email,name:name.trim(),role:"customer",artistId:null});
         }
       }catch(e){setLoading(false);setErr("Registration failed — please try again.");}
@@ -2740,7 +3000,7 @@ function AdminDash({ artists, bookings, users, inquiries, onAction, onLogout, on
                         <div style={{color:C.muted,fontSize:T.xs,marginTop:2}}>{a.genre}</div>
                         <div style={{display:"flex",flexWrap:"wrap",gap:5,marginTop:6}}>
                           <Badge color={sc}>{a.status}</Badge>
-                          {a.verified?<Badge color={C.emerald}>✓ Verified</Badge>:<Badge color={C.saffron}>Unverified</Badge>}
+                          {a.verified?<Badge color={C.emerald}>✓ Verified</Badge>:<Badge color={C.saffron}>{t('unverified')}</Badge>}
                           {a.stripeConnected?<Badge color={C.lapis}>💳</Badge>:<Badge color={C.muted}>{t('noStripe')}</Badge>}
                         </div>
                       </div>
@@ -2748,7 +3008,7 @@ function AdminDash({ artists, bookings, users, inquiries, onAction, onLogout, on
                     <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
                       {a.status==="pending"&&<><Btn sz="sm" v="emerald" onClick={()=>onAction(a.id,"approved")}>✓ Approve</Btn><Btn sz="sm" v="ruby" onClick={()=>onAction(a.id,"rejected")}>✗ Reject</Btn></>}
                       {a.status==="approved"&&<Btn sz="sm" v="ruby" onClick={()=>onAction(a.id,"suspended")}>Suspend</Btn>}
-                      {a.status==="suspended"&&<Btn sz="sm" v="emerald" onClick={()=>onAction(a.id,"approved")}>Reinstate</Btn>}
+                      {a.status==="suspended"&&<Btn sz="sm" v="emerald" onClick={()=>onAction(a.id,"approved")}>{t('reinstate')}</Btn>}
                     </div>
                   </div>
                 </div>
@@ -2800,7 +3060,7 @@ function AdminDash({ artists, bookings, users, inquiries, onAction, onLogout, on
           <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:10,padding:16,marginBottom:14}}>
             <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.md,color:C.gold,fontWeight:700,marginBottom:12}}>{t('paymentSplit')}</div>
             <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
-              {[["Artist deposit","Set by artist (min €500)",C.gold],["Artist (88%)","Auto-transferred to Stripe",C.emerald],["Awaz (12%)","Platform revenue",C.lapis]].map(([l,d,c])=>(
+              {[[t('splitLabel1'),t('splitDesc1'),C.gold],[t('splitLabel2'),t('splitDesc2'),C.emerald],[t('splitLabel3'),t('splitDesc3'),C.lapis]].map(([l,d,c])=>(
                 <div key={l} style={{background:C.surface,borderRadius:8,padding:"12px",border:`1px solid ${C.border}`,borderTop:`3px solid ${c}38`}}>
                   <div style={{color:c,fontWeight:700,fontSize:T.sm,marginBottom:4}}>{l}</div>
                   <div style={{color:C.muted,fontSize:T.xs}}>{d}</div>
@@ -3004,7 +3264,7 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
 
       {tab==="calendar"&&(
         <div>
-          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:4}}>Availability</div>
+          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:4}}>{t('availabilityTitle')}</div>
           <div style={{color:C.muted,fontSize:T.sm,marginBottom:16}}>{t('tapToToggle')}</div>
           <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:vp.isMobile?16:24}}>
             <MiniCal artist={artist} editMode onToggle={(mo,yr,day)=>onToggleDay(artist.id,mo,yr,day)} bookings={bookings}/>
@@ -3349,7 +3609,7 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
                     <Badge color={C.lapis}>{POLICIES.find(p=>p.id===artist.cancellationPolicy)?.label}</Badge>
                   </div>
                   <div style={{background:C.surface,borderRadius:8,padding:"12px 14px",border:`1px solid ${C.border}`}}>
-                    <div style={{fontSize:T.xs,color:C.muted,letterSpacing:"0.8px",marginBottom:7,fontWeight:700}}>PAYMENT MODEL</div>
+                    <div style={{fontSize:T.xs,color:C.muted,letterSpacing:"0.8px",marginBottom:7,fontWeight:700}}>{t('paymentModel')}</div>
                     <div style={{fontSize:T.sm,color:C.textD,lineHeight:1.8}}>{t("youReceive")} <strong style={{color:C.emerald}}>€{Math.round(artist.deposit*0.88)}</strong> {t("from")} €{artist.deposit} {t("depositLabel")} (88%). {t("balanceCashNote")}.</div>
                   </div>
                 </>
@@ -3425,8 +3685,8 @@ function StripeConnectSheet({ artist, onConnected, onClose }) {
         {done?(
           <div style={{textAlign:"center",padding:"20px 0"}}>
             <div style={{width:52,height:52,borderRadius:"50%",background:C.emeraldS,border:`2px solid ${C.emerald}`,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 14px",fontSize:24}}>✓</div>
-            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:700,color:C.text,marginBottom:8}}>Connected!</div>
-            <div style={{color:C.muted,fontSize:T.sm,lineHeight:1.7,marginBottom:16}}>You'll receive <strong style={{color:C.gold}}>€{Math.round(artist.deposit*0.88)}</strong> from each deposit automatically.</div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:700,color:C.text,marginBottom:8}}>{t('connected')}</div>
+            <div style={{color:C.muted,fontSize:T.sm,lineHeight:1.7,marginBottom:16}}>{t('youllReceive')}<strong style={{color:C.gold}}>€{Math.round(artist.deposit*0.88)}</strong> from each deposit automatically.</div>
             <Btn v="emerald" full sz="lg" onClick={onClose}>Done</Btn>
           </div>
         ):loading?(
@@ -4276,7 +4536,7 @@ export default function App() {
             <div style={{maxWidth:1240,margin:"0 auto",padding:vp.isMobile?"28px 16px":"60px 48px",position:"relative"}}>
               <div style={{textAlign:"center",marginBottom:vp.isMobile?28:44}}>
                 <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:6}}>{t('howSectionTitle')}</div>
-                <div style={{color:C.muted,fontSize:T.sm,maxWidth:360,margin:"0 auto",lineHeight:1.5}}>Simple, transparent, secure from search to performance</div>
+                <div style={{color:C.muted,fontSize:T.sm,maxWidth:360,margin:"0 auto",lineHeight:1.5}}>{t('howSectionSub')}</div>
               </div>
               <div style={{display:"grid",gridTemplateColumns:vp.isMobile?"1fr":vp.isTablet?"repeat(3,1fr)":"repeat(5,1fr)",gap:vp.isMobile?12:16,position:"relative"}}>
                 {!vp.isMobile&&<div style={{position:"absolute",top:28,left:"10%",right:"10%",height:1,background:`linear-gradient(90deg,transparent,${C.gold}24,${C.gold}24,transparent)`}}/>}
@@ -4395,38 +4655,38 @@ export default function App() {
         const steps=[
           {
             n:"01", icon:"🔍", color:C.lapis,
-            title:"Find Your Perfect Artist",
-            desc:"Browse verified Afghan artists by genre, city, or occasion. Not sure where to start? Our AI matcher reads your event details and surfaces your top three — in seconds.",
-            badge:"Free to browse",
+            title:t('step1Title'),
+            desc:t('step1Desc'),
+            badge:t('step1Badge'),
           },
           {
             n:"02", icon:"📅", color:C.emerald,
-            title:"Pick a Date — Instantly",
-            desc:"No back-and-forth emails. Every artist keeps their calendar live. Select any open date and the system reserves it for you in real time, preventing double-bookings automatically.",
-            badge:"Live availability",
+            title:t('step2Title'),
+            desc:t('step2Desc'),
+            badge:t('step2Badge'),
           },
           {
             n:"03", icon:"📋", color:C.saffron,
-            title:"Confirm in Under 2 Minutes",
-            desc:"Enter your event type and contact details. The artist's cancellation policy is shown clearly before you commit — no surprises. One tap to send your request.",
-            badge:"Takes 2 minutes",
+            title:t('step3Title'),
+            desc:t('step3Desc'),
+            badge:t('step3Badge'),
           },
           {
             n:"04", icon:"💳", color:"#635BFF",
-            title:"Secure Your Booking via Stripe",
-            desc:"Pay the artist-set deposit (minimum €500) through Stripe — the same payment infrastructure used by Amazon and Shopify. Your card details are encrypted and never stored on our servers.",
-            badge:"Bank-level security",
+            title:t('step4Title'),
+            desc:t('step4Desc'),
+            badge:t('step4Badge'),
           },
           {
             n:"05", icon:"💬", color:C.ruby,
-            title:"Chat Opens the Moment You Pay",
-            desc:"As soon as your deposit clears, a private direct-message channel unlocks between you and the artist. Coordinate every detail — setlist, arrival time, technical requirements — all in one place.",
-            badge:"Direct messaging",
+            title:t('step5Title'),
+            desc:t('step5Desc'),
+            badge:t('step5Badge'),
           },
           {
             n:"06", icon:"🎶", color:C.gold,
-            title:"Show Up and Enjoy Everything",
-            desc:"The artist performs. You pay the remaining balance in cash, directly to the artist after the concert. No platform fees at the door. No hidden costs. Nothing between you and the music.",
+            title:t('step6Title'),
+            desc:t('step6Desc'),
             badge:"Zero hidden fees",
           },
         ];
@@ -4652,8 +4912,8 @@ export default function App() {
             <div style={{color:C.muted,fontSize:T.sm,marginBottom:20}}>{t('pricingSubtitle')}</div>
             <HR color={C.gold}/>
             <div style={{display:"grid",gridTemplateColumns:vp.isMobile?"1fr":"1fr 1fr",gap:14,marginTop:16,marginBottom:28}}>
-              {[{label:t('forClients'),icon:"🎉",color:C.gold,items:["Browse all artists for free","Pay artist-set deposit at booking","Chat directly after deposit","Balance paid cash to artist","Cancel per artist's policy"]},
-                {label:t('forArtists'),icon:"🎤",color:C.ruby,items:["List for free","Set your own price","Set your own deposit (min €500)","Set your own cancellation policy","Receive 88% of each deposit","12% platform fee — nothing else"]}].map(({label,icon,color,items})=>(
+              {[{label:t('forClients'),icon:"🎉",color:C.gold,items:[t('pricingClient1'),t('pricingClient2'),t('pricingClient3'),t('pricingClient4'),t('pricingClient5')]},
+                {label:t('forArtists'),icon:"🎤",color:C.ruby,items:[t('pricingArtist1'),t('pricingArtist2'),t('pricingArtist3'),t('pricingArtist4'),t('pricingArtist5'),t('pricingArtist6')]}].map(({label,icon,color,items})=>(
                 <div key={label} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden"}}>
                   <div style={{height:3,background:`linear-gradient(90deg,${color},${C.gold})`}}/>
                   <div style={{padding:vp.isMobile?16:22}}>
@@ -4707,7 +4967,7 @@ export default function App() {
       <LoginSheet users={users} open={showLogin} onLogin={login} onClose={()=>setShowLogin(false)}/>
       {showApply&&<ApplySheet onSubmit={handleNewArtist} onClose={()=>setShowApply(false)}/>}
       {/* Floating concierge inquiry button — always visible to visitors */}
-      {!session&&<InquiryWidget artists={artists} onSubmit={handleNewInquiry}/>}
+      {/* InquiryWidget removed */}
     </div>
   );
 }
@@ -4815,9 +5075,9 @@ function ApplySheet({ onSubmit, onClose }) {
         }]);
         // Insert profile
         if(data.user){
-          await sb.from("profiles").insert([{
+          await sb.from("profiles").upsert([{
             id:data.user.id,role:"artist",artist_id:id,name:f.name,
-          }]);
+          }],{onConflict:"id"});
         }
         setLoading(false);setDone(true);
         return;
@@ -4837,8 +5097,8 @@ function ApplySheet({ onSubmit, onClose }) {
         {done?(
           <div style={{textAlign:"center",padding:"20px 0"}}>
             <div style={{width:52,height:52,borderRadius:"50%",background:C.emeraldS,border:`2px solid ${C.emerald}`,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 14px",fontSize:22}}>✓</div>
-            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:700,color:C.text,marginBottom:8}}>You're on your way!</div>
-            <div style={{color:C.muted,fontSize:T.sm,lineHeight:1.7,marginBottom:20}}>Your profile is under review. Sign in to connect Stripe and complete verification.</div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:700,color:C.text,marginBottom:8}}>{t('onYourWay')}</div>
+            <div style={{color:C.muted,fontSize:T.sm,lineHeight:1.7,marginBottom:20}}>{t('profileUnderReview')}</div>
             <Btn full sz="lg" onClick={onClose}>Done</Btn>
           </div>
         ):(
