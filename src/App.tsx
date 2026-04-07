@@ -297,10 +297,13 @@ const TRANSLATIONS = {
     watchOnTikTok:"Watch on TikTok ↗",
     applyAsArtistTitle:"Apply as Artist",
     spotifyAppLabel:"Spotify app:",
+    areYouArtist:"Are you an artist?",
+    buttonInstead:"button instead.",
+    spotifyInstructions2:"{t('spotifyInstructions2')}",
     spotifyLinkRecognized:"Spotify link recognized",
     instagramRecognized:"Instagram profile recognized",
     howToFindLink:"How to find your link",
-    spotifyInstructions:"Spotify app: Go to your profile → three dots (⋯) → Share → Copy link to artist",
+    spotifyInstructions:"Spotify app: {t('spotifyInstructions2')}",
     artistProfileNotFound:"Artist Profile Not Found",
     noStripe:"No Stripe",
     recentBookingsLabel:"Recent Bookings",
@@ -462,6 +465,9 @@ const TRANSLATIONS = {
     watchOnTikTok:"Se på TikTok ↗",
     applyAsArtistTitle:"Søk som artist",
     spotifyAppLabel:"Spotify-appen:",
+    areYouArtist:"Er du en artist?",
+    buttonInstead:"knappen i stedet.",
+    spotifyInstructions2:"Gå til profil → tre prikker (⋯) → Del → Kopier lenke",
     spotifyLinkRecognized:"Spotify-lenke gjenkjent",
     instagramRecognized:"Instagram-profil gjenkjent",
     howToFindLink:"Slik finner du lenken",
@@ -627,6 +633,9 @@ const TRANSLATIONS = {
     watchOnTikTok:"Auf TikTok ansehen ↗",
     applyAsArtistTitle:"Als Künstler bewerben",
     spotifyAppLabel:"Spotify-App:",
+    areYouArtist:"Sind Sie ein Künstler?",
+    buttonInstead:"Schaltfläche stattdessen.",
+    spotifyInstructions2:"Profil → drei Punkte (⋯) → Teilen → Link kopieren",
     spotifyLinkRecognized:"Spotify-Link erkannt",
     instagramRecognized:"Instagram-Profil erkannt",
     howToFindLink:"So findest du deinen Link",
@@ -792,6 +801,9 @@ const TRANSLATIONS = {
     watchOnTikTok:"Voir sur TikTok ↗",
     applyAsArtistTitle:"Devenir artiste",
     spotifyAppLabel:"Application Spotify :",
+    areYouArtist:"Êtes-vous un artiste ?",
+    buttonInstead:"bouton à la place.",
+    spotifyInstructions2:"Profil → trois points (⋯) → Partager → Copier le lien",
     spotifyLinkRecognized:"Lien Spotify reconnu",
     instagramRecognized:"Profil Instagram reconnu",
     howToFindLink:"Comment trouver votre lien",
@@ -958,6 +970,9 @@ const TRANSLATIONS = {
     watchOnTikTok:"در TikTok ببینید ↗",
     applyAsArtistTitle:"درخواست هنرمند",
     spotifyAppLabel:"برنامه Spotify:",
+    areYouArtist:"آیا هنرمند هستید؟",
+    buttonInstead:"دکمه را به جای آن.",
+    spotifyInstructions2:"به پروفایل بروید ← سه نقطه (⋯) ← اشتراک‌گذاری ← کپی لینک",
     spotifyLinkRecognized:"لینک Spotify شناسایی شد",
     instagramRecognized:"پروفایل Instagram شناسایی شد",
     howToFindLink:"چگونه لینک خود را پیدا کنید",
@@ -1124,6 +1139,9 @@ const TRANSLATIONS = {
     watchOnTikTok:"پر TikTok وګورئ ↗",
     applyAsArtistTitle:"د هنرمند غوښتنه",
     spotifyAppLabel:"د Spotify ایپ:",
+    areYouArtist:"ایا هنرمند یاست؟",
+    buttonInstead:"تڼۍ پرځای.",
+    spotifyInstructions2:"پروفایل ته لاړ شئ ← درې نقطې (⋯) ← شریکول ← لینک کاپي کړئ",
     spotifyLinkRecognized:"د Spotify لینک وپیژندل شو",
     instagramRecognized:"د Instagram پروفایل وپیژندل شو",
     howToFindLink:"خپل لینک چیرې ومومئ",
@@ -2140,13 +2158,15 @@ function LoginSheet({ users, open, onLogin, onClose }) {
         }
         // Fetch profile to get role + artistId
         const {data:profile}=await sb.from("profiles").select("*").eq("id",data.user.id).single();
-        const role=profile?.role||"customer";
+        // Also check local USERS array by email as role fallback (handles admin accounts)
+        const localUser=users.find(u=>u.email.toLowerCase()===data.user.email.toLowerCase());
+        const role=profile?.role||localUser?.role||"customer";
         onLogin({
           id:data.user.id,
           email:data.user.email,
-          name:profile?.name||data.user.email,
+          name:profile?.name||localUser?.name||data.user.email,
           role,
-          artistId:profile?.artist_id||null,
+          artistId:profile?.artist_id||localUser?.artistId||null,
         });
       } catch(e){
         setLoading(false);
@@ -2242,7 +2262,7 @@ function LoginSheet({ users, open, onLogin, onClose }) {
         </button>
         <div style={{background:C.surface,borderRadius:10,padding:"12px 14px",border:`1px solid ${C.border}`,marginTop:14}}>
           <div style={{fontSize:T.xs,color:C.muted,lineHeight:1.7}}>
-            Are you an artist? Use the <button onClick={()=>{onClose();}} style={{background:"none",border:"none",color:C.gold,cursor:"pointer",fontFamily:"inherit",fontSize:T.xs,textDecoration:"underline",padding:0}}>{t('applyAsArtistTitle')}</button> button instead.
+            {t('areYouArtist')} <button onClick={()=>{onClose();}} style={{background:"none",border:"none",color:C.gold,cursor:"pointer",fontFamily:"inherit",fontSize:T.xs,textDecoration:"underline",padding:0}}>{t('applyAsArtistTitle')}</button> {t('buttonInstead')}
           </div>
         </div>
       </div>
@@ -2257,7 +2277,7 @@ function LoginSheet({ users, open, onLogin, onClose }) {
           {mode==="forgot_sent"
             ?<><div style={{fontSize:36,marginBottom:8}}>📧</div>
                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text,marginBottom:6}}>{t('emailSent2')}</div>
-               <div style={{color:C.muted,fontSize:T.sm,lineHeight:1.7,marginBottom:20}}>Check your inbox at <strong style={{color:C.gold}}>{email}</strong> for a link to reset your password.</div>
+               <div style={{color:C.muted,fontSize:T.sm,lineHeight:1.7,marginBottom:20}}>{t("checkInbox2")} <strong style={{color:C.gold}}>{email}</strong> {t("forResetLink")}</div>
                <Btn full sz="lg" onClick={()=>setMode("login")}>{t('backToSignIn2')}</Btn></>
             :<><div style={{color:C.muted,fontSize:T.sm,marginBottom:16,lineHeight:1.6}}>{t('enterYourEmail2')}</div>
                <Inp label={t('email')} type="email" placeholder="you@email.com" value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==="Enter"&&doForgot()}/>
@@ -2286,7 +2306,7 @@ function LoginSheet({ users, open, onLogin, onClose }) {
         <Btn full sz="lg" loading={loading} disabled={locked} onClick={doLogin}>{t('signIn')}</Btn>
         <button onClick={()=>setMode("forgot")}
           style={{background:"none",border:"none",color:C.muted,cursor:"pointer",fontSize:T.sm,fontFamily:"inherit",textDecoration:"underline",width:"100%",textAlign:"center",marginTop:12,minHeight:36}}>
-          Forgot password?
+          {t('forgotPassword')}
         </button>
         <div style={{height:1,background:C.border,margin:"14px 0"}}/>
         <button onClick={()=>setMode("register")}
@@ -2301,7 +2321,7 @@ function LoginSheet({ users, open, onLogin, onClose }) {
                 <span>⚠</span> Demo accounts — testing only
               </div>
               <div style={{fontSize:T.xs,color:C.muted,marginBottom:10,lineHeight:1.5}}>{t('demoNote2')}</div>
-              {[["admin@awaz.no","Admin2025!","Admin"],["soraya@awaz.no","Soraya123!","Artist"],["khalid@awaz.no","Khalid123!","Artist"]].map(([e,p,r])=>(
+              {[["shams.nn@outlook.com","Grindatuneth301..","Admin"],["soraya@awaz.no","Soraya123!","Artist"],["khalid@awaz.no","Khalid123!","Artist"]].map(([e,p,r])=>(
                 <button key={e} onClick={()=>{setEmail(e);setPass(p);setErr("");}}
                   style={{display:"flex",justifyContent:"space-between",width:"100%",background:"transparent",border:"none",borderBottom:`1px solid ${C.border}`,color:C.textD,cursor:"pointer",fontSize:T.xs,padding:"10px 0",fontFamily:"inherit",minHeight:44,WebkitTapHighlightColor:"transparent"}}>
                   <span><span style={{color:C.gold}}>→</span> {e}</span><span style={{color:C.muted}}>{r}</span>
@@ -3110,7 +3130,7 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
               <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:10,padding:"12px 14px",marginTop:12}}>
                 <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:T.sm,fontWeight:700,color:C.text,marginBottom:6}}>{t('howToFindLink')}</div>
                 <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:T.sm,color:C.textD,lineHeight:1.8}}>
-                  <strong style={{color:C.gold}}>{t('spotifyAppLabel')}</strong> Go to your profile → three dots (⋯) → Share → Copy link to artist<br/>
+                  <strong style={{color:C.gold}}>{t('spotifyAppLabel')}</strong> {t('spotifyInstructions2')}<br/>
                   <strong style={{color:C.gold}}>Browser:</strong> Go to your Spotify page → copy the URL from the address bar
                 </div>
               </div>
@@ -3330,7 +3350,7 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
                   </div>
                   <div style={{background:C.surface,borderRadius:8,padding:"12px 14px",border:`1px solid ${C.border}`}}>
                     <div style={{fontSize:T.xs,color:C.muted,letterSpacing:"0.8px",marginBottom:7,fontWeight:700}}>PAYMENT MODEL</div>
-                    <div style={{fontSize:T.sm,color:C.textD,lineHeight:1.8}}>You receive <strong style={{color:C.emerald}}>€{Math.round(artist.deposit*0.88)}</strong> from each €{artist.deposit} deposit (88%). Balance is paid <strong style={{color:C.text}}>cash directly to you</strong> after the concert.</div>
+                    <div style={{fontSize:T.sm,color:C.textD,lineHeight:1.8}}>{t("youReceive")} <strong style={{color:C.emerald}}>€{Math.round(artist.deposit*0.88)}</strong> {t("from")} €{artist.deposit} {t("depositLabel")} (88%). {t("balanceCashNote")}.</div>
                   </div>
                 </>
               )}
