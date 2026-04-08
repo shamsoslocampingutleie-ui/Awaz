@@ -297,6 +297,17 @@ const TRANSLATIONS = {
     watchOnTikTok:"Watch on TikTok ↗",
     applyAsArtistTitle:"Apply as Artist",
     spotifyAppLabel:"Spotify app:",
+    suspend:"Suspend",
+    deposit2:"Deposit",
+    balance:"Balance",
+    messages2:"Messages",
+    country:"Country",
+    message:"Message",
+    stripeLabel:"Stripe:",
+    depositLabel2:"Deposit:",
+    policyLabel:"Policy:",
+    browserLabel:"Browser:",
+    browserSpotifyDesc:"Go to your Spotify page → copy the URL from the address bar",
     pricingClient1:"Browse all artists for free",
     pricingClient2:"Pay artist-set deposit at booking",
     pricingClient3:"Chat directly after deposit",
@@ -342,11 +353,11 @@ const TRANSLATIONS = {
     onYourWay:"You're on your way!",
     areYouArtist:"Are you an artist?",
     buttonInstead:"button instead.",
-    spotifyInstructions2:"{t('spotifyInstructions2')}",
+    spotifyInstructions2:"Go to your profile → three dots (⋯) → Share → Copy link to artist",
     spotifyLinkRecognized:"Spotify link recognized",
     instagramRecognized:"Instagram profile recognized",
     howToFindLink:"How to find your link",
-    spotifyInstructions:"Spotify app: {t('spotifyInstructions2')}",
+    spotifyInstructions:"Spotify app: Go to your profile → three dots (⋯) → Share → Copy link to artist",
     artistProfileNotFound:"Artist Profile Not Found",
     noStripe:"No Stripe",
     recentBookingsLabel:"Recent Bookings",
@@ -508,6 +519,17 @@ const TRANSLATIONS = {
     watchOnTikTok:"Se på TikTok ↗",
     applyAsArtistTitle:"Søk som artist",
     spotifyAppLabel:"Spotify-appen:",
+    suspend:"Suspender",
+    deposit2:"Depositum",
+    balance:"Saldo",
+    messages2:"Meldinger",
+    country:"Land",
+    message:"Melding",
+    stripeLabel:"Stripe:",
+    depositLabel2:"Depositum:",
+    policyLabel:"Policy:",
+    browserLabel:"Nettleser:",
+    browserSpotifyDesc:"Gå til Spotify-siden din → kopier URL fra adresselinjen",
     pricingClient1:"Se alle artister gratis",
     pricingClient2:"Betal artistens depositum ved bestilling",
     pricingClient3:"Chat direkte etter depositum",
@@ -719,6 +741,17 @@ const TRANSLATIONS = {
     watchOnTikTok:"Auf TikTok ansehen ↗",
     applyAsArtistTitle:"Als Künstler bewerben",
     spotifyAppLabel:"Spotify-App:",
+    suspend:"Sperren",
+    deposit2:"Anzahlung",
+    balance:"Restbetrag",
+    messages2:"Nachrichten",
+    country:"Land",
+    message:"Nachricht",
+    stripeLabel:"Stripe:",
+    depositLabel2:"Anzahlung:",
+    policyLabel:"Richtlinie:",
+    browserLabel:"Browser:",
+    browserSpotifyDesc:"Gehe zu deiner Spotify-Seite → kopiere die URL aus der Adressleiste",
     pricingClient1:"Alle Künstler kostenlos durchsuchen",
     pricingClient2:"Künstler-Anzahlung bei Buchung zahlen",
     pricingClient3:"Direkt nach Anzahlung chatten",
@@ -930,6 +963,17 @@ const TRANSLATIONS = {
     watchOnTikTok:"Voir sur TikTok ↗",
     applyAsArtistTitle:"Devenir artiste",
     spotifyAppLabel:"Application Spotify :",
+    suspend:"Suspendre",
+    deposit2:"Acompte",
+    balance:"Solde",
+    messages2:"Messages",
+    country:"Pays",
+    message:"Message",
+    stripeLabel:"Stripe :",
+    depositLabel2:"Acompte :",
+    policyLabel:"Politique :",
+    browserLabel:"Navigateur :",
+    browserSpotifyDesc:"Allez sur votre page Spotify → copiez l'URL depuis la barre d'adresse",
     pricingClient1:"Parcourir tous les artistes gratuitement",
     pricingClient2:"Payer l'acompte de l'artiste à la réservation",
     pricingClient3:"Chatter directement après l'acompte",
@@ -1142,6 +1186,17 @@ const TRANSLATIONS = {
     watchOnTikTok:"در TikTok ببینید ↗",
     applyAsArtistTitle:"درخواست هنرمند",
     spotifyAppLabel:"برنامه Spotify:",
+    suspend:"تعلیق",
+    deposit2:"پیش‌پرداخت",
+    balance:"مانده",
+    messages2:"پیام‌ها",
+    country:"کشور",
+    message:"پیام",
+    stripeLabel:"Stripe:",
+    depositLabel2:"پیش‌پرداخت:",
+    policyLabel:"سیاست:",
+    browserLabel:"مرورگر:",
+    browserSpotifyDesc:"به صفحه Spotify خود بروید ← URL را از نوار آدرس کپی کنید",
     pricingClient1:"همه هنرمندان را رایگان مشاهده کنید",
     pricingClient2:"در زمان رزرو پیش‌پرداخت هنرمند را بپردازید",
     pricingClient3:"بلافاصله پس از پیش‌پرداخت چت کنید",
@@ -1354,6 +1409,17 @@ const TRANSLATIONS = {
     watchOnTikTok:"پر TikTok وګورئ ↗",
     applyAsArtistTitle:"د هنرمند غوښتنه",
     spotifyAppLabel:"د Spotify ایپ:",
+    suspend:"معلق کړئ",
+    deposit2:"پیشکي",
+    balance:"پاتې رقم",
+    messages2:"پیغامونه",
+    country:"هیواد",
+    message:"پیغام",
+    stripeLabel:"Stripe:",
+    depositLabel2:"پیشکي:",
+    policyLabel:"پالیسي:",
+    browserLabel:"براوزر:",
+    browserSpotifyDesc:"خپل Spotify پاڼې ته لاړ شئ ← URL د پته بار نه کاپي کړئ",
     pricingClient1:"ټول هنرمندان وړیا وګورئ",
     pricingClient2:"د بکنګ پر وخت د هنرمند پیشکي ورکړئ",
     pricingClient3:"د پیشکي وروسته مستقیم چیټ وکړئ",
@@ -2804,8 +2870,8 @@ function ProfilePage({ artist, bookings, onBack, onBookingCreated }) {
                 {selDay&&!showBook&&(
                   <div style={{background:C.surface,borderRadius:8,padding:"12px 14px",marginBottom:12,border:`1px solid ${C.border}`}}>
                     <div style={{display:"flex",justifyContent:"space-between",fontSize:T.sm,marginBottom:6}}><span style={{color:C.muted}}>Date</span><span style={{color:C.text,fontWeight:600}}>{MONTHS[selMonth]} {selDay}</span></div>
-                    <div style={{display:"flex",justifyContent:"space-between",fontSize:T.sm,marginBottom:6}}><span style={{color:C.muted}}>Deposit</span><span style={{color:C.gold,fontWeight:700}}>€{artist.deposit}</span></div>
-                    <div style={{display:"flex",justifyContent:"space-between",fontSize:T.sm}}><span style={{color:C.muted}}>Balance</span><span style={{color:C.textD}}>{t('cashAfterConcert')}</span></div>
+                    <div style={{display:"flex",justifyContent:"space-between",fontSize:T.sm,marginBottom:6}}><span style={{color:C.muted}}>{t('deposit2')}</span><span style={{color:C.gold,fontWeight:700}}>€{artist.deposit}</span></div>
+                    <div style={{display:"flex",justifyContent:"space-between",fontSize:T.sm}}><span style={{color:C.muted}}>{t('balance')}</span><span style={{color:C.textD}}>{t('cashAfterConcert')}</span></div>
                   </div>
                 )}
                 {!showBook?(
@@ -2843,7 +2909,7 @@ function ProfilePage({ artist, bookings, onBack, onBookingCreated }) {
           {selDay&&(
             <div style={{marginTop:16,background:C.surface,borderRadius:10,padding:"12px 14px",border:`1px solid ${C.border}`,marginBottom:14}}>
               <div style={{display:"flex",justifyContent:"space-between",marginBottom:5}}><span style={{color:C.muted,fontSize:T.sm}}>Date</span><span style={{color:C.text,fontWeight:600,fontSize:T.sm}}>{MONTHS[selMonth]} {selDay}</span></div>
-              <div style={{display:"flex",justifyContent:"space-between"}}><span style={{color:C.muted,fontSize:T.sm}}>Deposit</span><span style={{color:C.gold,fontWeight:700,fontSize:T.md,fontFamily:"'Cormorant Garamond',serif"}}>€{artist.deposit}</span></div>
+              <div style={{display:"flex",justifyContent:"space-between"}}><span style={{color:C.muted,fontSize:T.sm}}>{t('deposit2')}</span><span style={{color:C.gold,fontWeight:700,fontSize:T.md,fontFamily:"'Cormorant Garamond',serif"}}>€{artist.deposit}</span></div>
             </div>
           )}
           <Btn full sz="lg" disabled={!selDay} onClick={()=>{if(selDay){setShowCal(false);setShowBook(true);}}} style={{marginTop:8}}>
@@ -3007,7 +3073,7 @@ function AdminDash({ artists, bookings, users, inquiries, onAction, onLogout, on
                     </div>
                     <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
                       {a.status==="pending"&&<><Btn sz="sm" v="emerald" onClick={()=>onAction(a.id,"approved")}>✓ Approve</Btn><Btn sz="sm" v="ruby" onClick={()=>onAction(a.id,"rejected")}>✗ Reject</Btn></>}
-                      {a.status==="approved"&&<Btn sz="sm" v="ruby" onClick={()=>onAction(a.id,"suspended")}>Suspend</Btn>}
+                      {a.status==="approved"&&<Btn sz="sm" v="ruby" onClick={()=>onAction(a.id,"suspended")}>{t('suspend')}</Btn>}
                       {a.status==="suspended"&&<Btn sz="sm" v="emerald" onClick={()=>onAction(a.id,"approved")}>{t('reinstate')}</Btn>}
                     </div>
                   </div>
@@ -3050,7 +3116,7 @@ function AdminDash({ artists, bookings, users, inquiries, onAction, onLogout, on
 
       {tab==="finance"&&(
         <div>
-          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:14}}>Finance</div>
+          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:14}}>{t('finance')}</div>
           <div style={{display:"grid",gridTemplateColumns:`repeat(${vp.isMobile?2:4},1fr)`,gap:10,marginBottom:18}}>
             <SB icon="💶" label="Total Deposits"        value={`€${totalDep.toLocaleString()}`} color={C.gold}/>
             <SB icon="🏦" label="Awaz Revenue (12%)"    value={`€${awazCut}`}                   color={C.emerald}/>
@@ -3098,7 +3164,7 @@ function AdminDash({ artists, bookings, users, inquiries, onAction, onLogout, on
           <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.md,fontWeight:700,color:C.gold}}>{t('awazAdmin')}</div>
           <div style={{fontSize:T.xs,color:C.muted}}>{t('platformControl')}</div>
         </div>
-        <Btn v="ghost" sz="sm" onClick={onLogout}>Sign Out</Btn>
+        <Btn v="ghost" sz="sm" onClick={onLogout}>{t('signOut')}</Btn>
       </div>
       <div style={{paddingTop:72}}>
         {content}
@@ -3125,7 +3191,7 @@ function AdminDash({ artists, bookings, users, inquiries, onAction, onLogout, on
           </button>
         ))}
         <div style={{marginTop:"auto",padding:"16px 20px",borderTop:`1px solid ${C.border}`}}>
-          <Btn v="ghost" sz="sm" onClick={onLogout} xs={{width:"100%"}}>Sign Out</Btn>
+          <Btn v="ghost" sz="sm" onClick={onLogout} xs={{width:"100%"}}>{t('signOut')}</Btn>
         </div>
       </div>
       <div style={{flex:1,marginLeft:220,paddingTop:3,overflow:"auto"}}>{content}</div>
@@ -3307,7 +3373,7 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
 
       {tab==="messages"&&(
         <div>
-          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:14}}>Messages</div>
+          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:14}}>{t('messages2')}</div>
           {myB.filter(b=>b.chatUnlocked).length===0
             ?<div style={{textAlign:"center",padding:32,background:C.card,borderRadius:12,border:`1px solid ${C.border}`,color:C.muted,fontSize:T.sm,fontStyle:"italic"}}>{t('noChatsYet2')}</div>
             :myB.filter(b=>b.chatUnlocked).map(b=>{
@@ -3391,7 +3457,7 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
                 <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:T.sm,fontWeight:700,color:C.text,marginBottom:6}}>{t('howToFindLink')}</div>
                 <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:T.sm,color:C.textD,lineHeight:1.8}}>
                   <strong style={{color:C.gold}}>{t('spotifyAppLabel')}</strong> {t('spotifyInstructions2')}<br/>
-                  <strong style={{color:C.gold}}>Browser:</strong> Go to your Spotify page → copy the URL from the address bar
+                  <strong style={{color:C.gold}}>{t('browserLabel')}</strong> {t('browserSpotifyDesc')}
                 </div>
               </div>
 
@@ -3598,14 +3664,14 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
                   <p style={{color:C.textD,fontSize:T.sm,lineHeight:1.8,marginBottom:14,fontFamily:"'Cormorant Garamond',serif"}}>{artist.bio}</p>
                   <HR color={artist.color}/>
                   <div style={{display:"flex",flexWrap:"wrap",gap:8,alignItems:"center",marginBottom:12}}>
-                    <span style={{color:C.muted,fontSize:T.xs}}>Stripe:</span>
+                    <span style={{color:C.muted,fontSize:T.xs}}>{t('stripeLabel')}</span>
                     {artist.stripeConnected?<Badge color={C.emerald}>✓ Connected</Badge>:<><Badge color={C.ruby}>{t('notConnected')}</Badge><Btn v="stripe" sz="sm" onClick={()=>setShowStripeConnect(true)} xs={{marginLeft:4}}>Connect →</Btn></>}
                   </div>
                   <div style={{display:"flex",flexWrap:"wrap",gap:8,alignItems:"center",marginBottom:14}}>
-                    <span style={{color:C.muted,fontSize:T.xs}}>Deposit:</span>
+                    <span style={{color:C.muted,fontSize:T.xs}}>{t('depositLabel2')}</span>
                     <Badge color={C.gold}>€{artist.deposit}</Badge>
                     <span style={{color:C.muted,fontSize:T.xs}}>·</span>
-                    <span style={{color:C.muted,fontSize:T.xs}}>Policy:</span>
+                    <span style={{color:C.muted,fontSize:T.xs}}>{t('policyLabel')}</span>
                     <Badge color={C.lapis}>{POLICIES.find(p=>p.id===artist.cancellationPolicy)?.label}</Badge>
                   </div>
                   <div style={{background:C.surface,borderRadius:8,padding:"12px 14px",border:`1px solid ${C.border}`}}>
@@ -3658,7 +3724,7 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
           </button>
         ))}
         <div style={{marginTop:"auto",padding:"16px 20px",borderTop:`1px solid ${C.border}`}}>
-          <Btn v="ghost" sz="sm" onClick={onLogout} xs={{width:"100%"}}>Sign Out</Btn>
+          <Btn v="ghost" sz="sm" onClick={onLogout} xs={{width:"100%"}}>{t('signOut')}</Btn>
         </div>
       </div>
       <div style={{flex:1,marginLeft:220,paddingTop:3,overflow:"auto"}}>{content}</div>
@@ -3810,7 +3876,7 @@ function InquiryWidget({ artists, onSubmit }) {
             </div>
 
             <div style={{display:"flex",flexDirection:"column",gap:5}}>
-              <label style={{fontSize:T.xs,color:C.muted,fontWeight:700,letterSpacing:"0.8px",textTransform:"uppercase"}}>Country</label>
+              <label style={{fontSize:T.xs,color:C.muted,fontWeight:700,letterSpacing:"0.8px",textTransform:"uppercase"}}>{t('country')}</label>
               <select value={f.country} onChange={e=>setF(p=>({...p,country:e.target.value}))}
                 style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:10,padding:"13px 15px",color:C.text,fontSize:T.base,outline:"none",width:"100%",fontFamily:"inherit",minHeight:44,WebkitAppearance:"none"}}>
                 {MARKETS.map(m=><option key={m.code} value={m.code}>{m.flag} {m.name}</option>)}
@@ -4045,7 +4111,7 @@ function InquiryPanel({ inquiries, artists, onUpdateInquiry, vp }) {
             ))}
           </div>
           <div style={{background:C.surface,borderRadius:8,padding:"14px",border:`1px solid ${C.border}`,marginBottom:16}}>
-            <div style={{fontSize:T.xs,color:C.muted,fontWeight:700,letterSpacing:"0.6px",textTransform:"uppercase",marginBottom:8}}>Message</div>
+            <div style={{fontSize:T.xs,color:C.muted,fontWeight:700,letterSpacing:"0.6px",textTransform:"uppercase",marginBottom:8}}>{t('message')}</div>
             <div style={{fontSize:T.sm,color:C.textD,lineHeight:1.8,fontFamily:"'DM Sans',sans-serif"}}>{sel.message}</div>
           </div>
           {sel.status==="replied"&&sel.reply&&(
@@ -4302,7 +4368,7 @@ export default function App() {
           <div style={{color:C.muted,fontSize:14,lineHeight:1.7,marginBottom:24}}>
             You're logged in as <strong style={{color:C.gold}}>{session.name}</strong> but your artist profile could not be loaded. Please contact support or sign out and try again.
           </div>
-          <Btn v="ghost" sz="lg" onClick={logout} xs={{width:"100%"}}>Sign Out</Btn>
+          <Btn v="ghost" sz="lg" onClick={logout} xs={{width:"100%"}}>{t('signOut')}</Btn>
         </div>
       </div>
     );
@@ -4687,7 +4753,7 @@ export default function App() {
             n:"06", icon:"🎶", color:C.gold,
             title:t('step6Title'),
             desc:t('step6Desc'),
-            badge:"Zero hidden fees",
+            badge:t('step6Badge'),
           },
         ];
 
