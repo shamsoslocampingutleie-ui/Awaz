@@ -193,7 +193,7 @@ const TRANSLATIONS = {
     aboutTab:"About", instrumentsTab:"Instruments", socialTab:"Social",
     reviewsTab:"Reviews", policyTab:"Terms",
     howTitle:"Book in 6", howTitleEm:"simple steps",
-    howSub:t('howSub'),
+    howSub:"From discovery to performance — the entire booking process is designed to be fast, safe, and completely transparent.",
     pricingTitle:"Simple Pricing", pricingSubtitle:"Transparent fees — no surprises, no hidden costs",
     forClients:"For Clients", forArtists:"For Artists",
     footerTagline:"The premier platform for booking verified Afghan artists across Europe.",
