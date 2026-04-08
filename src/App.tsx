@@ -4351,7 +4351,19 @@ export default function App() {
     setView(v);setMenuOpen(false);
   };
 
-  // ── Route to dashboards (after ALL hooks) ────────────────────────────
+  // ── Page title updates (MUST be before early returns — React Rules of Hooks) ──
+  useEffect(()=>{
+    const titles={
+      home:"Awaz · آواز — Book Afghan Artists",
+      browse:"Browse Artists · Awaz",
+      how:"How It Works · Awaz",
+      pricing:"Pricing · Awaz",
+      profile:selArtist?`${selArtist.name} · Awaz`:"Artist · Awaz",
+    };
+    document.title=titles[view]||"Awaz · آواز";
+  },[view,selArtist]);
+
+    // ── Route to dashboards (after ALL hooks) ────────────────────────────
   if(session?.role==="admin") return <AdminDash key={lang} artists={artists} bookings={bookings} users={users} inquiries={inquiries} onAction={handleArtistAction} onLogout={logout} onMsg={handleMsg} onUpdateInquiry={handleUpdateInquiry}/>;
   if(session?.role==="artist"){
     const myA=artists.find(a=>a.id===session.artistId);
@@ -4374,17 +4386,7 @@ export default function App() {
     );
   }
 
-  // ── Page title updates on view change ────────────────────────────────
-  useEffect(()=>{
-    const titles={
-      home:"Awaz · آواز — Book Afghan Artists",
-      browse:"Browse Artists · Awaz",
-      how:"How It Works · Awaz",
-      pricing:"Pricing · Awaz",
-      profile:selArtist?`${selArtist.name} · Awaz`:"Artist · Awaz",
-    };
-    document.title=titles[view]||"Awaz · آواز";
-  },[view,selArtist]);
+
 
   return(
     <div key={lang} dir={isRTL?'rtl':'ltr'} style={{background:C.bg,minHeight:"100vh",fontFamily:isRTL?"'Noto Naskh Arabic','DM Sans',sans-serif":"'DM Sans',sans-serif",color:C.text}}>
