@@ -4671,7 +4671,7 @@ export default function App() {
             {/* Search */}
             <div style={{display:"flex",background:C.card,border:`1px solid ${C.border}`,borderRadius:10,padding:"0 14px",alignItems:"center",gap:8,height:52,marginBottom:12}}>
               <span style={{color:C.muted,fontSize:16}}>🔍</span>
-              <input {...{placeholder:t('searchArtists')}} value={search} onChange={e=>setSearch(e.target.value)}
+              <input placeholder={t('searchArtists')} value={search} onChange={e=>setSearch(e.target.value)}
                 style={{flex:1,background:"transparent",border:"none",color:C.text,fontSize:T.base,outline:"none",height:"100%",minWidth:0}}/>
               {search&&<button onClick={()=>setSearch("")} aria-label="Fjern søk" style={{background:"none",border:"none",color:C.muted,cursor:"pointer",fontSize:20,lineHeight:1,flexShrink:0,minWidth:32,minHeight:32,WebkitTapHighlightColor:"transparent"}}>×</button>}
             </div>
