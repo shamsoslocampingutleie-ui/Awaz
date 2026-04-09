@@ -4604,10 +4604,11 @@ export default function App() {
 
 
   return(
-    <div key={lang} dir={isRTL?'rtl':'ltr'} style={{background:C.bg,minHeight:"100vh",fontFamily:isRTL?"'Noto Naskh Arabic','DM Sans',sans-serif":"'DM Sans',sans-serif",color:C.text}}>
+    <div key={lang} dir={isRTL?'rtl':'ltr'} translate="no" style={{background:C.bg,minHeight:"100vh",fontFamily:isRTL?"'Noto Naskh Arabic','DM Sans',sans-serif":"'DM Sans',sans-serif",color:C.text}}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;0,800;1,300;1,400;1,600&family=Noto+Naskh+Arabic:wght@400;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap');
         *{box-sizing:border-box;margin:0;padding:0;}
+        .notranslate{transform:translateZ(0);}
         html{
           -webkit-text-size-adjust:100%;text-size-adjust:100%;
           -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
@@ -4737,10 +4738,10 @@ export default function App() {
                 <div style={{height:1,width:vp.isMobile?32:56,background:`linear-gradient(270deg,transparent,${C.gold}44)`}}/>
               </div>
 
-              <h1 className="u1" style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["5xl"],fontWeight:800,color:C.text,lineHeight:0.94,margin:"0 0 6px",letterSpacing:vp.isMobile?"-2px":"-3px"}}>
+              <h1 className="u1" translate="no" style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["5xl"],fontWeight:800,color:C.text,lineHeight:0.94,margin:"0 0 6px",letterSpacing:vp.isMobile?"-2px":"-3px"}}>
                 {t('heroLine1')}
               </h1>
-              <h1 className="u1" style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["5xl"],fontWeight:800,lineHeight:0.94,margin:"0 0 22px",letterSpacing:vp.isMobile?"-2px":"-3px"}}>
+              <h1 className="u1" translate="no" style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["5xl"],fontWeight:800,color:C.text,lineHeight:0.94,margin:"0 0 22px",letterSpacing:vp.isMobile?"-2px":"-3px",background:"transparent"}}>
                 {t('heroLine2')} <em style={{color:C.ruby,fontStyle:"italic"}}>{t('heroLine2em')}</em>
               </h1>
 
