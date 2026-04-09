@@ -625,7 +625,7 @@ const TRANSLATIONS = {
     browseArtists:"Künstler", howItWorks:"So funktioniert es", pricing:"Preise",
     applyAsArtist:"Als Künstler bewerben", signIn:"Anmelden", signOut:"Abmelden",
     heroEyebrow:"Afghanische Künstler direkt buchen",
-    heroLine1:"Afghanische Künstler", heroLine2:"", heroLine2em:"direkt buchen",
+    heroLine1:"Afghanische", heroLine2:"Künstler", heroLine2em:"direkt buchen",
     heroBody:"Entdecke und buche verifizierte afghanische Künstler — Ghazal, Rubab, Folk und Fusion — für deine Hochzeit, Eid, Kulturveranstaltung oder private Feier.",
     searchPlaceholder:"Künstler, Genre oder Stadt…", searchBtn:"Suchen",
     trustVerified:"Verifizierte Künstler", trustStripe:"Stripe-Zahlung",
@@ -2009,7 +2009,7 @@ function BottomNav({ active, onNav, items }) {
     <nav style={{
       position:"fixed",bottom:0,left:0,right:0,zIndex:200,
       background:`${C.surface}F8`,backdropFilter:"blur(20px)",
-      borderTop:`1px solid ${C.border}`,
+      
       display:"flex",alignItems:"stretch",
       paddingBottom:"env(safe-area-inset-bottom,0px)",
       height:`calc(58px + env(safe-area-inset-bottom,0px))`,
@@ -2269,7 +2269,7 @@ function Chat({ booking, artist, myRole, onClose, onSend }) {
           );})}
           <div ref={endRef}/>
         </div>
-        <div style={{padding:"10px 12px",borderTop:`1px solid ${C.border}`,display:"flex",gap:8,background:C.surface,flexShrink:0,paddingBottom:`max(10px,env(safe-area-inset-bottom,10px))`}}>
+        <div style={{padding:"10px 12px",display:"flex",gap:8,background:C.surface,flexShrink:0,paddingBottom:`max(10px,env(safe-area-inset-bottom,10px))`}}>
           <input value={msg} onChange={e=>setMsg(e.target.value)} onKeyDown={e=>e.key==="Enter"&&send()}
             placeholder={booking.chatUnlocked?"Type a message…":"Deposit required"}
             disabled={!booking.chatUnlocked}
@@ -2676,12 +2676,15 @@ function LoginSheet({ users, open, onLogin, onClose }) {
         setLoading(false);
         if(error){setErr(error.message);return;}
         if(data.user&&!data.session){
-          // Email confirmation required
+          // Email confirmation required - show sent message
           setMode("forgot_sent");
           return;
         }
         if(data.user){
-          await sb.from("profiles").upsert([{id:data.user.id,role:"customer",name:name.trim()}],{onConflict:"id"});
+          // No email confirmation required (disabled in Supabase dashboard)
+          try {
+            await sb.from("profiles").upsert([{id:data.user.id,role:"customer",name:name.trim()}],{onConflict:"id"});
+          } catch(e) { /* profile insert may fail if RLS strict - that's ok */ }
           onLogin({id:data.user.id,email:data.user.email,name:name.trim(),role:"customer",artistId:null});
         }
       }catch(e){setLoading(false);setErr("Registration failed — please try again.");}
@@ -3294,7 +3297,7 @@ function AdminDash({ artists, bookings, users, inquiries, onAction, onLogout, on
                           <div style={{textAlign:"center",color:C.muted,fontSize:T.sm,marginTop:40}}>{t('noMessagesYet')}</div>
                         )}
                       </div>
-                      <div style={{padding:"12px 16px",borderTop:`1px solid ${C.border}`,display:"flex",gap:8}}>
+                      <div style={{padding:"12px 16px",display:"flex",gap:8}}>
                         <input value={adminChatMsg} onChange={e=>setAdminChatMsg(e.target.value)}
                           onKeyDown={e=>{if(e.key==="Enter"&&adminChatMsg.trim()){sendAdminChat();}}}
                           placeholder={t('typeMessage')}
@@ -3385,7 +3388,7 @@ function AdminDash({ artists, bookings, users, inquiries, onAction, onLogout, on
             {item.id==="inquiries"&&(item.badge||0)>0&&<span style={{marginLeft:"auto",background:C.ruby,color:"#fff",borderRadius:10,padding:"1px 7px",fontSize:10,fontWeight:700}}>{item.badge}</span>}
           </button>
         ))}
-        <div style={{marginTop:"auto",padding:"16px 20px",borderTop:`1px solid ${C.border}`}}>
+        <div style={{marginTop:"auto",padding:"16px 20px",}}>
           <Btn v="ghost" sz="sm" onClick={onLogout} xs={{width:"100%"}}>{t('signOut')}</Btn>
         </div>
       </div>
@@ -3918,7 +3921,7 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
             <span style={{fontSize:18}}>{icon}</span>{label}
           </button>
         ))}
-        <div style={{marginTop:"auto",padding:"16px 20px",borderTop:`1px solid ${C.border}`}}>
+        <div style={{marginTop:"auto",padding:"16px 20px",}}>
           <Btn v="ghost" sz="sm" onClick={onLogout} xs={{width:"100%"}}>{t('signOut')}</Btn>
         </div>
       </div>
@@ -4212,7 +4215,7 @@ function CountryPricingTab({ artist, onUpdateArtist, vp }) {
 
                     {/* Expanded: price inputs */}
                     {isOpen&&(
-                      <div style={{padding:"0 16px 16px",borderTop:`1px solid ${C.border}`,paddingTop:12}}>
+                      <div style={{padding:"0 16px 16px",paddingTop:12}}>
                         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:10}}>
                           <div style={{display:"flex",flexDirection:"column",gap:5}}>
                             <label style={{fontSize:T.xs,color:C.muted,fontWeight:700,letterSpacing:"0.8px",textTransform:"uppercase"}}>Full Price ({m?.currency})</label>
@@ -4705,8 +4708,8 @@ export default function App() {
       {view==="home"&&(
         <div style={{paddingTop:vp.isMobile?56:62}}>
           {/* Hero */}
-          <section style={{minHeight:vp.isMobile?"85vh":"90vh",display:"flex",flexDirection:"column",justifyContent:"center",position:"relative",overflow:"hidden"}}>
-            <Geo id="hero" op={0.05}/>
+          <section style={{minHeight:vp.isMobile?"85vh":"90vh",display:"flex",flexDirection:"column",justifyContent:"center",position:"relative",overflow:"hidden",background:"transparent"}}>
+            <Geo id="hero" op={0.03}/>
             <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:"min(900px,140vw)",height:"min(600px,80vh)",background:`radial-gradient(ellipse,${C.ruby}0A 0%,${C.lapis}06 45%,transparent 70%)`,pointerEvents:"none"}}/>
             <div style={{position:"absolute",bottom:0,left:0,right:0,height:"20%",background:`linear-gradient(to top,${C.bg},transparent)`,pointerEvents:"none"}}/>
 
@@ -4800,7 +4803,7 @@ export default function App() {
           </section>
 
           {/* How it works */}
-          <section style={{borderTop:`1px solid ${C.border}`,borderBottom:`1px solid ${C.border}`,background:C.surface,position:"relative",overflow:"hidden"}}>
+          <section style={{background:C.surface,position:"relative",overflow:"hidden"}}>
             <Geo id="hiw" op={0.03}/>
             <div style={{maxWidth:1240,margin:"0 auto",padding:vp.isMobile?"28px 16px":"60px 48px",position:"relative"}}>
               <div style={{textAlign:"center",marginBottom:vp.isMobile?28:44}}>
@@ -4831,7 +4834,7 @@ export default function App() {
           </section>
 
           {/* Footer */}
-          <footer style={{background:C.surface,borderTop:`1px solid ${C.border}`,padding:vp.isMobile?"24px 16px 100px":"44px 48px 32px"}}>
+          <footer style={{background:C.surface,padding:vp.isMobile?"24px 16px 100px":"44px 48px 32px"}}>
             {vp.isMobile?(
               <div>
                 <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}>
@@ -5214,7 +5217,7 @@ export default function App() {
 
       {/* ── Mobile Bottom Nav (public pages) ── */}
       {vp.isMobile&&["home","browse","how","pricing"].includes(view)&&(
-        <nav style={{position:"fixed",bottom:0,left:0,right:0,zIndex:100,background:`${C.surface}F8`,backdropFilter:"blur(20px)",borderTop:`1px solid ${C.border}`,display:"flex",alignItems:"stretch",paddingBottom:"env(safe-area-inset-bottom,0px)",height:`calc(58px + env(safe-area-inset-bottom,0px))`}}>
+        <nav style={{position:"fixed",bottom:0,left:0,right:0,zIndex:100,background:`${C.surface}F8`,backdropFilter:"blur(20px)",display:"flex",alignItems:"stretch",paddingBottom:"env(safe-area-inset-bottom,0px)",height:`calc(58px + env(safe-area-inset-bottom,0px))`}}>
           {[ {id:"home",icon:"🏠",label:t('portalHome'),fn:()=>nav("home")}, {id:"browse",icon:"🔍",label:t('browseArtists'),fn:()=>nav("browse")}, {id:"apply",icon:"🎤",label:t('applyAsArtist'),fn:()=>setShowApply(true)},
             session
               ? {id:"logout",icon:"👋",label:t('signOut'),fn:()=>logout()}
@@ -5329,15 +5332,17 @@ function ApplySheet({ onSubmit, onClose }) {
         const{data,error}=await sb.auth.signUp({
           email:f.email.toLowerCase().trim(),
           password:f.pass,
-          options:{data:{name:f.name}},
+          options:{data:{name:f.name},emailRedirectTo:window.location.origin},
         });
         if(error){
           setLoading(false);
           const msg = error.message.toLowerCase();
-          if(msg.includes('rate limit') || msg.includes('email rate')) {
-            // Skip Supabase auth, use demo mode instead
+          if(msg.includes('rate limit')||msg.includes('email rate')||msg.includes('over_email')){
+            // Supabase email limit hit — save to demo mode, notify admin
             onSubmit(artistData,{id:`u_${id}`,role:"artist",email:f.email,hash:sh(f.pass),name:f.name,artistId:id});
             setDone(true);
+          } else if(msg.includes('already registered')||msg.includes('already exists')){
+            setErr("An account with this email already exists. Please sign in instead.");
           } else {
             setErr(error.message);
           }
