@@ -3074,7 +3074,7 @@ function ProfilePage({ artist, bookings, onBack, onBookingCreated }) {
 }
 
 // ── Admin Dashboard ────────────────────────────────────────────────────
-function AdminDash({ artists, bookings, users, inquiries, onAction, onLogout, onMsg, onUpdateInquiry }) {
+function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction, onLogout, onMsg, onUpdateInquiry }) {
   const vp=useViewport();
   const [tab,setTab]=useState("overview");
   const [adminChatArtist,setAdminChatArtist]=useState(null);
@@ -3171,9 +3171,20 @@ function AdminDash({ artists, bookings, users, inquiries, onAction, onLogout, on
                       </div>
                     </div>
                     <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}}>
-                      <span style={{color:b.depositPaid?C.emerald:C.ruby,fontSize:T.xs}}>Deposit {b.depositPaid?"✓":"✗"}</span>
+                      <span style={{color:b.depositPaid?C.emerald:C.ruby,fontSize:T.xs,fontWeight:700}}>{t('depositLabel')} {b.depositPaid?"✓":"✗"}</span>
                       <span style={{color:C.muted,fontSize:T.xs}}>·</span>
                       <span style={{color:b.chatUnlocked?C.emerald:C.muted,fontSize:T.xs}}>Chat {b.chatUnlocked?"open":"locked"}</span>
+                      {b.depositPaid&&(
+                        <button onClick={()=>{
+                          if(window.confirm(`Refund deposit to ${b.customerName}?`)){
+                            setBookings(p=>p.map(bk=>bk.id===b.id?{...bk,depositPaid:false,refunded:true}:bk));
+                            alert(`Refund initiated for ${b.customerName}. Process via Stripe dashboard.`);
+                          }
+                        }} style={{background:C.rubyS,border:`1px solid ${C.ruby}44`,color:C.ruby,borderRadius:6,padding:"2px 8px",fontSize:10,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>
+                          {t('refund')}
+                        </button>
+                      )}
+                      {b.refunded&&<span style={{color:C.muted,fontSize:10,fontWeight:700}}>REFUNDED</span>}
                       <button onClick={()=>setChat(b)} style={{marginLeft:"auto",width:36,height:36,borderRadius:8,background:C.surface,border:`1px solid ${C.border}`,fontSize:16,cursor:"pointer",WebkitTapHighlightColor:"transparent"}}>💬</button>
                     </div>
                   </div>
@@ -4568,7 +4579,7 @@ export default function App() {
   },[view,selArtist]);
 
     // ── Route to dashboards (after ALL hooks) ────────────────────────────
-  if(session?.role==="admin") return <AdminDash key={lang} artists={artists} bookings={bookings} users={users} inquiries={inquiries} onAction={handleArtistAction} onLogout={logout} onMsg={handleMsg} onUpdateInquiry={handleUpdateInquiry}/>;
+  if(session?.role==="admin") return <AdminDash key={lang} artists={artists} bookings={bookings} setBookings={setBookings} users={users} inquiries={inquiries} onAction={handleArtistAction} onLogout={logout} onMsg={handleMsg} onUpdateInquiry={handleUpdateInquiry}/>;
   if(session?.role==="artist"){
     const myA=artists.find(a=>a.id===session.artistId);
     if(myA) return <ArtistPortal key={lang} user={session} artist={myA} bookings={bookings} onLogout={logout} onToggleDay={handleToggle} onMsg={handleMsg} onUpdateArtist={handleUpdateArtist}/>;
