@@ -2137,15 +2137,34 @@ const Sel = ({ label, value, onChange, options }) => (
 );
 
 // ── Photo upload ──────────────────────────────────────────────────────
-function PhotoUpload({ photo, onPhoto, color, emoji, size=80 }) {
+function PhotoUpload({ photo, onPhoto, color, emoji, size=80, artistId="" }) {
   const ref = useRef();
-  const handle = e => {
-    const f = e.target.files?.[0];
-    if (!f) return;
-    if (f.size > 5*1024*1024) { alert("Max 5MB"); return; }
+  const [uploading, setUploading] = useState(false);
+  const handle = async e => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5*1024*1024) { alert("Max 5MB"); return; }
+    // Try Supabase Storage first, fall back to base64
+    if (HAS_SUPA && artistId) {
+      try {
+        setUploading(true);
+        const sb = await getSupabase();
+        const ext = file.name.split('.').pop();
+        const path = `artists/${artistId}/photo.${ext}`;
+        const { error } = await sb.storage.from('artist-photos').upload(path, file, { upsert: true });
+        if (!error) {
+          const { data } = sb.storage.from('artist-photos').getPublicUrl(path);
+          onPhoto(data.publicUrl);
+          setUploading(false);
+          return;
+        }
+      } catch(e) { /* fall through to base64 */ }
+      setUploading(false);
+    }
+    // Fallback: local base64
     const r = new FileReader();
     r.onload = ev => onPhoto(ev.target.result);
-    r.readAsDataURL(f);
+    r.readAsDataURL(file);
   };
   return (
     <div style={{position:"relative",width:size,height:size,cursor:"pointer",flexShrink:0}} onClick={()=>ref.current?.click()}>
@@ -2153,7 +2172,7 @@ function PhotoUpload({ photo, onPhoto, color, emoji, size=80 }) {
       <div style={{width:size,height:size,borderRadius:size*0.16,background:`${color}18`,border:`2px solid ${color}55`,overflow:"hidden",display:"flex",alignItems:"center",justifyContent:"center",fontSize:size*0.44}}>
         {photo?<img src={photo} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/>:emoji}
       </div>
-      <div style={{position:"absolute",bottom:-3,right:-3,width:24,height:24,borderRadius:"50%",background:C.gold,border:`2px solid ${C.bg}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:12}}>📷</div>
+      <div style={{position:"absolute",bottom:-3,right:-3,width:24,height:24,borderRadius:"50%",background:C.gold,border:`2px solid ${C.bg}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:12}}>{uploading?"⏳":"📷"}</div>
     </div>
   );
 }
@@ -3454,9 +3473,22 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
     {id:"social",  icon:"🎵",label:t('portalSocial')},
   ];
 
-  const saveEdit=()=>{
-    onUpdateArtist(artist.id,{bio:editF.bio,priceInfo:editF.priceInfo,deposit:parseInt(editF.deposit)||1000,cancellationPolicy:editF.cancellationPolicy});
+  const saveEdit=async()=>{
+    const updates={bio:editF.bio,priceInfo:editF.priceInfo,deposit:parseInt(editF.deposit)||1000,cancellationPolicy:editF.cancellationPolicy};
+    onUpdateArtist(artist.id,updates);
     setEditing(false);
+    // Persist to Supabase
+    if(HAS_SUPA){
+      try{
+        const sb=await getSupabase();
+        if(sb) await sb.from("artists").update({
+          bio:updates.bio,
+          price_info:updates.priceInfo,
+          deposit:updates.deposit,
+          cancellation_policy:updates.cancellationPolicy,
+        }).eq("id",artist.id);
+      }catch(e){console.warn("Supabase artist update failed:",e);}
+    }
   };
 
   const saveSocial=()=>{
@@ -3488,6 +3520,16 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
     onUpdateArtist(artist.id,{spotify:newSpotify,instagram:newInstagram,youtube:newYoutube,tiktok:newTiktok});
     setSocialSaved(true);
     setTimeout(()=>setSocialSaved(false),3500);
+    if(HAS_SUPA){
+      getSupabase().then(sb=>{
+        if(sb) sb.from("artists").update({
+          spotify_data:newSpotify,
+          instagram_data:newInstagram,
+          youtube_data:newYoutube,
+          tiktok_data:newTiktok,
+        }).eq("id",artist.id);
+      });
+    }
   };
 
   const content=(
@@ -4518,6 +4560,48 @@ export default function App() {
   const [menuOpen,setMenuOpen]=useState(false);
 
   const genres=["All","Ghazal","Herati","Mast","Pashto","Logari","Qarsak","Rubab","Tabla","Classical","Folk","Pop","Fusion","Sufi"];
+
+  // ── Hydrate from Supabase on mount ───────────────────────────────────
+  useEffect(()=>{
+    if(!HAS_SUPA)return;
+    (async()=>{
+      const sb=await getSupabase();
+      if(!sb)return;
+      // Load approved artists
+      const{data:artistRows}=await sb.from("artists").select("*").eq("status","approved");
+      if(artistRows&&artistRows.length>0){
+        setArtists(prev=>{
+          const supaIds=new Set(artistRows.map(a=>a.id));
+          // Keep demo artists not in Supabase, merge with Supabase artists
+          const demo=prev.filter(a=>!supaIds.has(a.id));
+          const supa=artistRows.map(a=>({
+            id:a.id,name:a.name,nameDari:a.name_dari||"",
+            genre:a.genre||"",location:a.location||"",
+            rating:a.rating||0,reviews:a.reviews||0,
+            priceInfo:a.price_info||"On request",
+            deposit:a.deposit||1000,
+            emoji:a.emoji||"🎤",color:a.color||C.gold,
+            photo:a.photo||null,bio:a.bio||"",
+            tags:a.tags||[],instruments:a.instruments||[],
+            superhost:a.superhost||false,
+            status:a.status,joined:a.joined_date||"",
+            available:a.available||{},blocked:a.blocked||{},
+            earnings:a.earnings||0,totalBookings:a.total_bookings||0,
+            verified:a.verified||false,
+            stripeConnected:a.stripe_connected||false,
+            stripeAccount:a.stripe_account||null,
+            cancellationPolicy:a.cancellation_policy||"moderate",
+            spotify:a.spotify_data||null,
+            instagram:a.instagram_data||null,
+            youtube:a.youtube_data||null,
+            tiktok:a.tiktok_data||null,
+            countryPricing:a.country_pricing||[],
+          }));
+          return[...demo,...supa];
+        });
+      }
+    })();
+  },[]);
   const approved=useMemo(()=>artists.filter(a=>a.status==="approved"),[artists]);
   const filtered=useMemo(()=>approved.filter(a=>{
     const ms=!search||a.name.toLowerCase().includes(search.toLowerCase())||a.genre.toLowerCase().includes(search.toLowerCase())||a.tags.some(t=>t.toLowerCase().includes(search.toLowerCase()));
@@ -4548,9 +4632,41 @@ export default function App() {
     return{...a,available:{...a.available,[k]:[...av,day]}};
   }));
   const handleUpdateArtist=(id,updates)=>{setArtists(p=>p.map(a=>a.id===id?{...a,...updates}:a));if(selArtist?.id===id)setSelArtist(p=>p?{...p,...updates}:p);};
-  const handleNewBooking=b=>setBookings(p=>[...p,b]);
+  const handleNewBooking=async b=>{
+    setBookings(p=>[...p,b]);
+    if(HAS_SUPA){
+      try{
+        const sb=await getSupabase();
+        if(sb) await sb.from("bookings").insert([{
+          id:b.id,
+          artist_id:b.artistId,
+          customer_name:b.customerName,
+          customer_email:b.customerEmail,
+          date:b.date,
+          event_type:b.eventType||"",
+          notes:b.notes||"",
+          deposit:b.deposit,
+          status:b.status||"pending",
+          paid:b.paid||false,
+          country:b.country||"NO",
+          messages:b.messages||[],
+        }]);
+      }catch(e){console.warn("Supabase booking insert failed:",e);}
+    }
+  };
   const handleNewArtist=(a,u)=>{setArtists(p=>[...p,a]);setUsers(p=>[...p,u]);};
-  const handleMsg=(bid,m)=>setBookings(p=>p.map(b=>b.id===bid?{...b,messages:[...(b.messages||[]),m]}:b));
+  const handleMsg=(bid,m)=>{
+    setBookings(p=>p.map(b=>{
+      if(b.id!==bid)return b;
+      const msgs=[...(b.messages||[]),m];
+      if(HAS_SUPA){
+        getSupabase().then(sb=>{
+          if(sb) sb.from("bookings").update({messages:msgs}).eq("id",bid);
+        });
+      }
+      return{...b,messages:msgs};
+    }));
+  };
 
   // ── ALL HOOKS MUST BE DECLARED BEFORE ANY CONDITIONAL RETURN ─────────
   // AUTH-FIX-1: prevView was previously declared AFTER conditional returns,
