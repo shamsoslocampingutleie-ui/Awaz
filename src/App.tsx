@@ -3096,284 +3096,424 @@ function ProfilePage({ artist, bookings, onBack, onBookingCreated }) {
 function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction, onLogout, onMsg, onUpdateInquiry }) {
   const vp=useViewport();
   const [tab,setTab]=useState("overview");
+  const [chat,setChat]=useState(null);
   const [adminChatArtist,setAdminChatArtist]=useState(null);
   const [adminChatMsg,setAdminChatMsg]=useState("");
   const [adminChats,setAdminChats]=useState({});
+  const [artistFilter,setArtistFilter]=useState("all"); // all|pending|approved|suspended
+  const [searchQ,setSearchQ]=useState("");
+
   const sendAdminChat=()=>{
     if(!adminChatArtist||!adminChatMsg.trim())return;
-    const msg={from:"admin",text:adminChatMsg.trim(),time:new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})};
+    const msg={from:"admin",text:adminChatMsg.trim(),time:new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})};
     setAdminChats(p=>({...p,[adminChatArtist.id]:[...(p[adminChatArtist.id]||[]),msg]}));
     setAdminChatMsg("");
   };
-  const [chat,setChat]=useState(null);
 
-  const confirmed=bookings.filter(b=>b.status==="confirmed").length;
-  const pendingPay=bookings.filter(b=>b.status==="pending_payment").length;
-  const pendingApp=artists.filter(a=>a.status==="pending").length;
-  const totalDep=bookings.filter(b=>b.depositPaid).reduce((s,b)=>s+b.deposit,0);
-  const awazCut=Math.round(totalDep*0.12);
+  // Stats
+  const totalRevenue   = bookings.filter(b=>b.depositPaid).reduce((s,b)=>s+b.deposit,0);
+  const awazRevenue    = Math.round(totalRevenue*0.12);
+  const confirmedBooks = bookings.filter(b=>b.status==="confirmed").length;
+  const pendingBooks   = bookings.filter(b=>b.status==="pending_payment"||b.status==="pending").length;
+  const pendingArtists = artists.filter(a=>a.status==="pending").length;
+  const approvedArtists= artists.filter(a=>a.status==="approved").length;
+  const newInquiries   = inquiries.filter(i=>i.status==="new").length;
 
   const navItems=[
-    {id:"overview",icon:"📊",label:t('platformOverview')},
-    {id:"chat",    icon:"💬",label:t('adminChat')},
-    {id:"inquiries",icon:"📬",label:"Inquiries",badge:inquiries.filter(i=>i.status==="new").length},
-    {id:"bookings",icon:"📅",label:t('allBookings')},
-    {id:"artists", icon:"🎤",label:t('allArtists')},
-    {id:"messages",icon:"💬",label:t('portalMessages')},
-    {id:"finance", icon:"💶",label:t('finance')},
+    {id:"overview",  icon:"📊", label:"Overview"},
+    {id:"artists",   icon:"🎤", label:"Artists",  badge:pendingArtists},
+    {id:"bookings",  icon:"📅", label:"Bookings"},
+    {id:"inquiries", icon:"📬", label:"Inquiries", badge:newInquiries},
+    {id:"messages",  icon:"💬", label:"Messages"},
+    {id:"chat",      icon:"✉️",  label:"Direct Chat"},
+    {id:"finance",   icon:"💶", label:"Finance"},
   ];
 
-  const SB=({icon,label,value,color=C.gold})=>(
-    <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:10,padding:vp.isMobile?"14px":"18px 22px",borderTop:`3px solid ${color}44`}}>
-      <div style={{fontSize:20,marginBottom:6}}>{icon}</div>
-      <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:vp.isMobile?T.xl:T["2xl"],fontWeight:800,color,lineHeight:1}}>{value}</div>
-      <div style={{fontSize:T.xs,color:C.muted,marginTop:4,lineHeight:1.3}}>{label}</div>
+  // Filtered artists
+  const filteredArtists = artists.filter(a=>{
+    const matchFilter = artistFilter==="all" || a.status===artistFilter;
+    const matchSearch = !searchQ || a.name.toLowerCase().includes(searchQ.toLowerCase()) || a.genre.toLowerCase().includes(searchQ.toLowerCase());
+    return matchFilter && matchSearch;
+  });
+
+  // Stat card component
+  const StatCard=({icon,label,value,sub,color=C.gold,onClick})=>(
+    <div onClick={onClick} style={{
+      background:C.card,border:`1px solid ${C.border}`,borderRadius:12,
+      padding:"18px 20px",cursor:onClick?"pointer":"default",
+      transition:"border-color 0.15s",
+      borderTop:`3px solid ${color}`,
+      display:"flex",flexDirection:"column",gap:4,
+    }}>
+      <div style={{fontSize:22}}>{icon}</div>
+      <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:800,color,lineHeight:1.1}}>{value}</div>
+      <div style={{fontSize:T.xs,fontWeight:700,color:C.text,letterSpacing:"0.3px"}}>{label}</div>
+      {sub&&<div style={{fontSize:T.xs,color:C.muted}}>{sub}</div>}
     </div>
   );
 
-  const content=(
-    <div style={{padding:vp.isMobile?"16px":"28px 32px",maxWidth:1080}}>
+  // Section header
+  const SectionHeader=({title,action})=>(
+    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
+      <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text}}>{title}</div>
+      {action}
+    </div>
+  );
+
+  // Artist row
+  const ArtistRow=({a})=>{
+    const sc=a.status==="approved"?C.emerald:a.status==="pending"?C.saffron:C.ruby;
+    const bookCount=bookings.filter(b=>b.artistId===a.id).length;
+    const earnings=bookings.filter(b=>b.artistId===a.id&&b.depositPaid).reduce((s,b)=>s+b.deposit,0);
+    return(
+      <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden",marginBottom:10}}>
+        <div style={{height:2,background:`linear-gradient(90deg,${a.color},${C.gold}44)`}}/>
+        <div style={{padding:"14px 16px"}}>
+          <div style={{display:"flex",gap:12,alignItems:"flex-start",marginBottom:10}}>
+            <div style={{width:48,height:48,borderRadius:10,background:`${a.color}15`,border:`2px solid ${a.color}40`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0,overflow:"hidden"}}>
+              {a.photo?<img src={a.photo} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/>:a.emoji}
+            </div>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap",marginBottom:3}}>
+                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.md,fontWeight:700,color:C.text}}>{a.name}</div>
+                {a.nameDari&&<div style={{fontFamily:"'Noto Naskh Arabic',serif",fontSize:T.xs,color:C.muted}}>{a.nameDari}</div>}
+              </div>
+              <div style={{color:C.muted,fontSize:T.xs,marginBottom:6}}>{a.genre} · {a.location}</div>
+              <div style={{display:"flex",flexWrap:"wrap",gap:4}}>
+                <span style={{background:`${sc}18`,color:sc,border:`1px solid ${sc}44`,borderRadius:4,padding:"1px 7px",fontSize:10,fontWeight:700}}>{a.status.toUpperCase()}</span>
+                {a.verified&&<span style={{background:`${C.emerald}18`,color:C.emerald,border:`1px solid ${C.emerald}44`,borderRadius:4,padding:"1px 7px",fontSize:10,fontWeight:700}}>✓ VERIFIED</span>}
+                {a.stripeConnected&&<span style={{background:`${C.lapis}18`,color:C.lapis,border:`1px solid ${C.lapis}44`,borderRadius:4,padding:"1px 7px",fontSize:10,fontWeight:700}}>💳 STRIPE</span>}
+              </div>
+            </div>
+            <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:2,flexShrink:0}}>
+              <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:800,color:C.gold,fontSize:T.md}}>€{earnings.toLocaleString()}</div>
+              <div style={{color:C.muted,fontSize:T.xs}}>{bookCount} bookings</div>
+            </div>
+          </div>
+          <div style={{display:"flex",gap:7,flexWrap:"wrap",borderTop:`1px solid ${C.border}`,paddingTop:10}}>
+            {a.status==="pending"&&(
+              <>
+                <button onClick={()=>onAction(a.id,"approved")} style={{background:C.emerald,color:"#fff",border:"none",borderRadius:7,padding:"6px 14px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>✓ Approve</button>
+                <button onClick={()=>onAction(a.id,"rejected")} style={{background:C.rubyS,color:C.ruby,border:`1px solid ${C.ruby}44`,borderRadius:7,padding:"6px 14px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>✗ Reject</button>
+              </>
+            )}
+            {a.status==="approved"&&(
+              <button onClick={()=>onAction(a.id,"suspended")} style={{background:C.rubyS,color:C.ruby,border:`1px solid ${C.ruby}44`,borderRadius:7,padding:"6px 14px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>Suspend</button>
+            )}
+            {a.status==="suspended"&&(
+              <button onClick={()=>onAction(a.id,"approved")} style={{background:C.emeraldS,color:C.emerald,border:`1px solid ${C.emerald}44`,borderRadius:7,padding:"6px 14px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>Reinstate</button>
+            )}
+            {!a.verified&&(
+              <button onClick={()=>onAction(a.id,"verify")} style={{background:C.lapisS,color:C.lapis,border:`1px solid ${C.lapis}44`,borderRadius:7,padding:"6px 14px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>✦ Verify</button>
+            )}
+            <button onClick={()=>{setAdminChatArtist(a);setTab("chat");}} style={{background:C.surface,color:C.muted,border:`1px solid ${C.border}`,borderRadius:7,padding:"6px 14px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit",marginLeft:"auto"}}>💬 Message</button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const pageContent=(
+    <div style={{maxWidth:1000,padding:vp.isMobile?"16px":"24px 32px"}}>
+
+      {/* ── OVERVIEW ── */}
       {tab==="overview"&&(
         <div>
-          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:14}}>{t('platformOverview2')}</div>
-          <div style={{display:"grid",gridTemplateColumns:`repeat(${vp.isMobile?2:3},1fr)`,gap:10,marginBottom:20}}>
-            <SB icon="💶" label="Deposits Collected" value={`€${totalDep.toLocaleString()}`} color={C.gold}/>
-            <SB icon="🏦" label="Awaz Revenue (12%)" value={`€${awazCut}`}                   color={C.emerald}/>
-            <SB icon="📅" label="Confirmed Bookings" value={confirmed}                        color={C.lapis}/>
-            <SB icon="⏳" label="Awaiting Deposit"   value={pendingPay}                       color={C.saffron}/>
-            <SB icon="🔍" label="Pending Review"     value={pendingApp}                       color={C.ruby}/>
-            <SB icon="🎤" label="Active Artists"     value={artists.filter(a=>a.status==="approved").length} color={C.lavender}/>
+          <SectionHeader title="Platform Overview"/>
+          <div style={{display:"grid",gridTemplateColumns:`repeat(${vp.isMobile?2:3},1fr)`,gap:10,marginBottom:24}}>
+            <StatCard icon="💶" label="Total Deposits"     value={`€${totalRevenue.toLocaleString()}`} sub="Stripe collected"   color={C.gold}/>
+            <StatCard icon="🏦" label="Awaz Revenue (12%)" value={`€${awazRevenue.toLocaleString()}`}  sub="Platform cut"       color={C.emerald}/>
+            <StatCard icon="✅" label="Confirmed Bookings" value={confirmedBooks}                       sub="This month"         color={C.lapis}/>
+            <StatCard icon="⏳" label="Pending Bookings"   value={pendingBooks}                         sub="Awaiting action"    color={C.saffron} onClick={()=>setTab("bookings")}/>
+            <StatCard icon="🎤" label="Active Artists"     value={approvedArtists}                      sub={`${pendingArtists} pending review`} color={C.ruby} onClick={()=>setTab("artists")}/>
+            <StatCard icon="📬" label="New Inquiries"      value={newInquiries}                         sub="Unread"             color={C.lavender} onClick={()=>setTab("inquiries")}/>
           </div>
-          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text,marginBottom:12}}>{t('recentBookings')}</div>
-          {bookings.slice(0,4).map(b=>{
+
+          {/* Pending artists alert */}
+          {pendingArtists>0&&(
+            <div onClick={()=>setTab("artists")} style={{background:`${C.saffron}10`,border:`1px solid ${C.saffron}44`,borderRadius:10,padding:"12px 16px",marginBottom:20,cursor:"pointer",display:"flex",alignItems:"center",gap:10}}>
+              <span style={{fontSize:18}}>⚠️</span>
+              <div>
+                <div style={{fontWeight:700,color:C.saffron,fontSize:T.sm}}>{pendingArtists} artist{pendingArtists>1?"s":""} awaiting review</div>
+                <div style={{color:C.muted,fontSize:T.xs}}>Click to review and approve →</div>
+              </div>
+            </div>
+          )}
+
+          {/* Recent bookings */}
+          <SectionHeader title="Recent Bookings" action={<button onClick={()=>setTab("bookings")} style={{background:"none",border:"none",color:C.gold,cursor:"pointer",fontSize:T.xs,fontWeight:700,fontFamily:"inherit"}}>View all →</button>}/>
+          {bookings.length===0?(
+            <div style={{textAlign:"center",padding:"32px",background:C.card,borderRadius:12,border:`1px solid ${C.border}`,color:C.muted,fontSize:T.sm}}>No bookings yet</div>
+          ):bookings.slice(0,5).map(b=>{
             const art=artists.find(a=>a.id===b.artistId);
-            const sc=b.status==="confirmed"?C.emerald:b.status==="completed"?C.lapis:C.saffron;
+            const sc=b.status==="confirmed"?C.emerald:b.status==="completed"?C.lapis:b.status==="pending_payment"?C.saffron:C.muted;
             return(
-              <div key={b.id} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:10,padding:"12px 14px",display:"flex",gap:10,alignItems:"center",marginBottom:8}}>
-                <div style={{fontSize:20,flexShrink:0}}>{art?.emoji}</div>
+              <div key={b.id} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:10,padding:"12px 16px",display:"flex",gap:12,alignItems:"center",marginBottom:8}}>
+                <div style={{width:36,height:36,borderRadius:8,background:`${art?.color||C.gold}15`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>{art?.emoji||"🎤"}</div>
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{fontWeight:600,color:C.text,fontSize:T.sm,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{b.customerName} → {art?.name}</div>
-                  <div style={{color:C.muted,fontSize:T.xs,marginTop:2}}>{b.event} · {b.date}</div>
+                  <div style={{color:C.muted,fontSize:T.xs,marginTop:1}}>{b.eventType||b.event} · {b.date}</div>
                 </div>
-                <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:4,flexShrink:0}}>
-                  <Badge color={sc}>{b.status.replace(/_/g," ")}</Badge>
-                  <span style={{color:C.gold,fontWeight:700,fontSize:T.sm,fontFamily:"'Cormorant Garamond',serif"}}>€{b.deposit}</span>
-                </div>
-                <button onClick={()=>setChat(b)} style={{width:36,height:36,borderRadius:8,background:C.surface,border:`1px solid ${C.border}`,fontSize:16,cursor:"pointer",flexShrink:0,WebkitTapHighlightColor:"transparent"}}>💬</button>
+                <span style={{background:`${sc}18`,color:sc,border:`1px solid ${sc}44`,borderRadius:4,padding:"2px 8px",fontSize:10,fontWeight:700,flexShrink:0}}>{(b.status||"pending").replace(/_/g," ").toUpperCase()}</span>
+                <span style={{color:C.gold,fontWeight:700,fontSize:T.sm,fontFamily:"'Cormorant Garamond',serif",flexShrink:0}}>€{b.deposit}</span>
+                <button onClick={()=>setChat(b)} style={{width:32,height:32,borderRadius:7,background:C.surface,border:`1px solid ${C.border}`,fontSize:14,cursor:"pointer",flexShrink:0}}>💬</button>
               </div>
             );
           })}
         </div>
       )}
 
-      {tab==="bookings"&&(
-        <div>
-          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:14}}>{t('allBookings2')}</div>
-          <div style={{display:"flex",flexDirection:"column",gap:10}}>
-            {bookings.map(b=>{
-              const art=artists.find(a=>a.id===b.artistId);
-              const sc=b.status==="confirmed"?C.emerald:b.status==="completed"?C.lapis:b.status==="pending_payment"?C.saffron:C.muted;
-              return(
-                <div key={b.id} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:10,overflow:"hidden"}}>
-                  <div style={{height:2,background:`linear-gradient(90deg,${art?.color||C.gold},${C.gold})`}}/>
-                  <div style={{padding:"12px 14px"}}>
-                    <div style={{display:"flex",gap:10,alignItems:"flex-start",marginBottom:8}}>
-                      <div style={{fontSize:22,flexShrink:0}}>{art?.emoji}</div>
-                      <div style={{flex:1,minWidth:0}}>
-                        <div style={{fontWeight:600,color:C.text,fontSize:T.sm}}>{b.customerName}</div>
-                        <div style={{color:art?.color,fontSize:T.xs,fontFamily:"'Cormorant Garamond',serif",fontWeight:700}}>{art?.name}</div>
-                        <div style={{color:C.muted,fontSize:T.xs,marginTop:2}}>{b.event} · {b.date}</div>
-                      </div>
-                      <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:4,flexShrink:0}}>
-                        <Badge color={sc}>{b.status.replace(/_/g," ")}</Badge>
-                        <span style={{color:C.gold,fontWeight:700,fontFamily:"'Cormorant Garamond',serif",fontSize:T.md}}>€{b.deposit}</span>
-                      </div>
-                    </div>
-                    <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}}>
-                      <span style={{color:b.depositPaid?C.emerald:C.ruby,fontSize:T.xs,fontWeight:700}}>{t('depositLabel')} {b.depositPaid?"✓":"✗"}</span>
-                      <span style={{color:C.muted,fontSize:T.xs}}>·</span>
-                      <span style={{color:b.chatUnlocked?C.emerald:C.muted,fontSize:T.xs}}>Chat {b.chatUnlocked?"open":"locked"}</span>
-                      {b.depositPaid&&(
-                        <button onClick={()=>{
-                          if(window.confirm(`Refund deposit to ${b.customerName}?`)){
-                            setBookings(p=>p.map(bk=>bk.id===b.id?{...bk,depositPaid:false,refunded:true}:bk));
-                            alert(`Refund initiated for ${b.customerName}. Process via Stripe dashboard.`);
-                          }
-                        }} style={{background:C.rubyS,border:`1px solid ${C.ruby}44`,color:C.ruby,borderRadius:6,padding:"2px 8px",fontSize:10,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>
-                          {t('refund')}
-                        </button>
-                      )}
-                      {b.refunded&&<span style={{color:C.muted,fontSize:10,fontWeight:700}}>REFUNDED</span>}
-                      <button onClick={()=>setChat(b)} style={{marginLeft:"auto",width:36,height:36,borderRadius:8,background:C.surface,border:`1px solid ${C.border}`,fontSize:16,cursor:"pointer",WebkitTapHighlightColor:"transparent"}}>💬</button>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
+      {/* ── ARTISTS ── */}
       {tab==="artists"&&(
         <div>
-          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:14}}>
-            Artists {pendingApp>0&&<Badge color={C.ruby}>{pendingApp} pending</Badge>}
+          <SectionHeader title={`Artists (${filteredArtists.length})`} action={
+            pendingArtists>0&&<span style={{background:`${C.ruby}18`,color:C.ruby,border:`1px solid ${C.ruby}44`,borderRadius:6,padding:"3px 10px",fontSize:T.xs,fontWeight:700}}>{pendingArtists} pending</span>
+          }/>
+          {/* Filters */}
+          <div style={{display:"flex",gap:8,marginBottom:16,flexWrap:"wrap"}}>
+            <input value={searchQ} onChange={e=>setSearchQ(e.target.value)} placeholder="Search artists…"
+              style={{flex:1,minWidth:160,background:C.card,border:`1px solid ${C.border}`,borderRadius:8,padding:"8px 12px",color:C.text,fontSize:T.sm,outline:"none",fontFamily:"inherit"}}/>
+            {["all","pending","approved","suspended"].map(f=>(
+              <button key={f} onClick={()=>setArtistFilter(f)} style={{background:artistFilter===f?C.gold:C.card,color:artistFilter===f?C.bg:C.muted,border:`1px solid ${artistFilter===f?C.gold:C.border}`,borderRadius:8,padding:"8px 14px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap",textTransform:"capitalize"}}>{f}</button>
+            ))}
           </div>
-          <div style={{display:"flex",flexDirection:"column",gap:10}}>
-            {artists.map(a=>{
-              const sc=a.status==="approved"?C.emerald:a.status==="pending"?C.saffron:C.ruby;
-              return(
-                <div key={a.id} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:10,overflow:"hidden"}}>
-                  <div style={{height:2,background:`linear-gradient(90deg,${a.color},${C.gold})`}}/>
-                  <div style={{padding:"12px 14px"}}>
-                    <div style={{display:"flex",gap:10,alignItems:"flex-start",marginBottom:10}}>
-                      {a.photo?<img src={a.photo} alt="" style={{width:44,height:44,borderRadius:8,objectFit:"cover",flexShrink:0}}/>:
-                        <div style={{width:44,height:44,borderRadius:8,background:`${a.color}15`,border:`2px solid ${a.color}40`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>{a.emoji}</div>}
-                      <div style={{flex:1,minWidth:0}}>
-                        <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.md,fontWeight:700,color:C.text}}>{a.name}</div>
-                        <div style={{color:C.muted,fontSize:T.xs,marginTop:2}}>{a.genre}</div>
-                        <div style={{display:"flex",flexWrap:"wrap",gap:5,marginTop:6}}>
-                          <Badge color={sc}>{a.status}</Badge>
-                          {a.verified?<Badge color={C.emerald}>✓ Verified</Badge>:<Badge color={C.saffron}>{t('unverified')}</Badge>}
-                          {a.stripeConnected?<Badge color={C.lapis}>💳</Badge>:<Badge color={C.muted}>{t('noStripe')}</Badge>}
-                        </div>
-                      </div>
-                    </div>
-                    <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-                      {a.status==="pending"&&<><Btn sz="sm" v="emerald" onClick={()=>onAction(a.id,"approved")}>✓ Approve</Btn><Btn sz="sm" v="ruby" onClick={()=>onAction(a.id,"rejected")}>✗ Reject</Btn></>}
-                      {a.status==="approved"&&<Btn sz="sm" v="ruby" onClick={()=>onAction(a.id,"suspended")}>{t('suspend')}</Btn>}
-                  {!a.verified&&<Btn sz="sm" v="emerald" onClick={()=>onAction(a.id,"verify")}>{t('verifyArtist')}</Btn>}
-                  {a.verified&&<span style={{color:C.emerald,fontSize:T.xs,fontWeight:700}}>✓ {t('verified2')}</span>}
-                      {a.status==="suspended"&&<Btn sz="sm" v="emerald" onClick={()=>onAction(a.id,"approved")}>{t('reinstate')}</Btn>}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          {filteredArtists.length===0?(
+            <div style={{textAlign:"center",padding:"32px",background:C.card,borderRadius:12,border:`1px solid ${C.border}`,color:C.muted}}>No artists match filters</div>
+          ):filteredArtists.map(a=><ArtistRow key={a.id} a={a}/>)}
         </div>
       )}
 
-      {tab==="messages"&&(
+      {/* ── BOOKINGS ── */}
+      {tab==="bookings"&&(
         <div>
-          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:14}}>{t('allConversations2')}</div>
-          <div style={{display:"flex",flexDirection:"column",gap:8}}>
-            {bookings.map(b=>{
-              const art=artists.find(a=>a.id===b.artistId);
-              const last=b.messages?.[b.messages.length-1];
-              return(
-                <div key={b.id} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:10,padding:"12px 14px",display:"flex",gap:10,alignItems:"center",cursor:"pointer",minHeight:64,WebkitTapHighlightColor:"transparent"}} onClick={()=>setChat(b)}>
-                  <div style={{fontSize:20,flexShrink:0}}>{art?.emoji}</div>
-                  <div style={{flex:1,minWidth:0}}>
-                    <div style={{fontWeight:600,color:C.text,fontSize:T.sm,marginBottom:2}}>{b.customerName} ↔ {art?.name}</div>
-                    {last?<div style={{color:C.muted,fontSize:T.xs,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{last.text}</div>
-                         :<div style={{color:C.muted,fontSize:T.xs,fontStyle:"italic"}}>{t('noMessages')}</div>}
+          <SectionHeader title={`All Bookings (${bookings.length})`}/>
+          {bookings.length===0?(
+            <div style={{textAlign:"center",padding:"40px",background:C.card,borderRadius:12,border:`1px solid ${C.border}`,color:C.muted}}>No bookings yet</div>
+          ):bookings.map(b=>{
+            const art=artists.find(a=>a.id===b.artistId);
+            const sc=b.status==="confirmed"?C.emerald:b.status==="completed"?C.lapis:b.status==="pending_payment"?C.saffron:C.muted;
+            return(
+              <div key={b.id} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden",marginBottom:10}}>
+                <div style={{height:2,background:`linear-gradient(90deg,${art?.color||C.gold},${C.gold}44)`}}/>
+                <div style={{padding:"14px 16px"}}>
+                  <div style={{display:"flex",gap:12,alignItems:"flex-start",marginBottom:10}}>
+                    <div style={{width:40,height:40,borderRadius:8,background:`${art?.color||C.gold}15`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>{art?.emoji||"🎤"}</div>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{fontWeight:600,color:C.text,fontSize:T.sm}}>{b.customerName}</div>
+                      <div style={{color:art?.color||C.muted,fontSize:T.xs,fontFamily:"'Cormorant Garamond',serif",fontWeight:700}}>{art?.name||"Unknown artist"}</div>
+                      <div style={{color:C.muted,fontSize:T.xs,marginTop:2}}>{b.eventType||b.event||"Event"} · {b.date}</div>
+                    </div>
+                    <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:4,flexShrink:0}}>
+                      <span style={{background:`${sc}18`,color:sc,border:`1px solid ${sc}44`,borderRadius:4,padding:"2px 8px",fontSize:10,fontWeight:700}}>{(b.status||"pending").replace(/_/g," ").toUpperCase()}</span>
+                      <span style={{color:C.gold,fontWeight:700,fontFamily:"'Cormorant Garamond',serif",fontSize:T.md}}>€{b.deposit}</span>
+                    </div>
                   </div>
-                  <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:4,flexShrink:0}}>
-                    <Badge color={b.chatUnlocked?C.emerald:C.ruby}>{b.chatUnlocked?"Open":"Locked"}</Badge>
-                    <span style={{color:C.muted,fontSize:T.xs}}>{b.messages?.length||0} msgs</span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {tab==="inquiries"&&(
-        <InquiryPanel inquiries={inquiries} artists={artists} onUpdateInquiry={onUpdateInquiry} vp={vp}/>
-      )}
-
-      
-          {tab==="chat"&&(
-            <div>
-              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:4}}>{t('adminChat')}</div>
-              <div style={{color:C.muted,fontSize:T.xs,marginBottom:20}}>{t('adminChatWith')}</div>
-              <div style={{display:"grid",gridTemplateColumns:vp.isMobile?"1fr":"1fr 2fr",gap:16,height:500}}>
-                {/* Artist list */}
-                <div style={{background:C.card,borderRadius:12,border:`1px solid ${C.border}`,overflow:"auto"}}>
-                  {artists.map(a=>(
-                    <button key={a.id} onClick={()=>setAdminChatArtist(a)}
-                      style={{width:"100%",display:"flex",gap:10,alignItems:"center",padding:"12px 14px",background:adminChatArtist?.id===a.id?C.goldS:"transparent",border:"none",borderBottom:`1px solid ${C.border}`,cursor:"pointer",textAlign:"left",WebkitTapHighlightColor:"transparent"}}>
-                      <div style={{width:36,height:36,borderRadius:8,background:`${a.color}20`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>{a.photo?<img src={a.photo} alt="" style={{width:36,height:36,borderRadius:8,objectFit:"cover"}}/>:a.emoji}</div>
-                      <div style={{flex:1,minWidth:0}}>
-                        <div style={{fontWeight:700,color:C.text,fontSize:T.sm,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{a.name}</div>
-                        <div style={{color:a.status==="approved"?C.emerald:C.muted,fontSize:T.xs}}>{a.status}</div>
-                      </div>
+                  <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center",borderTop:`1px solid ${C.border}`,paddingTop:10}}>
+                    <span style={{color:b.depositPaid?C.emerald:C.ruby,fontSize:T.xs,fontWeight:700,display:"flex",alignItems:"center",gap:4}}>
+                      <span>{b.depositPaid?"✓":"✗"}</span> Deposit {b.depositPaid?"paid":"pending"}
+                    </span>
+                    <span style={{color:C.border}}>·</span>
+                    <span style={{color:b.chatUnlocked?C.emerald:C.muted,fontSize:T.xs}}>Chat {b.chatUnlocked?"unlocked":"locked"}</span>
+                    {b.depositPaid&&!b.refunded&&(
+                      <button onClick={()=>{
+                        if(window.confirm(`Refund €${b.deposit} deposit to ${b.customerName}?`)){
+                          setBookings(p=>p.map(bk=>bk.id===b.id?{...bk,depositPaid:false,refunded:true,status:"refunded"}:bk));
+                          alert(`Refund initiated. Process via Stripe dashboard for booking ${b.id}.`);
+                        }
+                      }} style={{background:C.rubyS,color:C.ruby,border:`1px solid ${C.ruby}44`,borderRadius:6,padding:"4px 10px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>
+                        ↩ Refund
+                      </button>
+                    )}
+                    {b.refunded&&<span style={{color:C.ruby,fontSize:T.xs,fontWeight:700,background:C.rubyS,border:`1px solid ${C.ruby}44`,borderRadius:4,padding:"2px 8px"}}>REFUNDED</span>}
+                    <button onClick={()=>setChat(b)} style={{marginLeft:"auto",display:"flex",alignItems:"center",gap:5,background:C.surface,color:C.muted,border:`1px solid ${C.border}`,borderRadius:7,padding:"6px 12px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>
+                      💬 Chat
                     </button>
-                  ))}
-                </div>
-                {/* Chat panel */}
-                <div style={{background:C.card,borderRadius:12,border:`1px solid ${C.border}`,display:"flex",flexDirection:"column"}}>
-                  {adminChatArtist?(
-                    <>
-                      <div style={{padding:"14px 16px",borderBottom:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:10}}>
-                        <div style={{fontSize:20}}>{adminChatArtist.emoji}</div>
-                        <div>
-                          <div style={{fontWeight:700,color:C.text,fontSize:T.sm}}>{adminChatArtist.name}</div>
-                          <div style={{color:C.muted,fontSize:T.xs}}>{adminChatArtist.genre}</div>
-                        </div>
-                      </div>
-                      <div style={{flex:1,overflow:"auto",padding:"14px 16px",display:"flex",flexDirection:"column",gap:8}}>
-                        {(adminChats[adminChatArtist.id]||[]).map((msg,i)=>(
-                          <div key={i} style={{display:"flex",justifyContent:msg.from==="admin"?"flex-end":"flex-start"}}>
-                            <div style={{maxWidth:"75%",background:msg.from==="admin"?C.goldS:C.surface,borderRadius:10,padding:"8px 12px",border:`1px solid ${msg.from==="admin"?C.gold+"44":C.border}`}}>
-                              <div style={{color:C.text,fontSize:T.sm,lineHeight:1.5}}>{msg.text}</div>
-                              <div style={{color:C.muted,fontSize:10,marginTop:3}}>{msg.time}</div>
-                            </div>
-                          </div>
-                        ))}
-                        {!(adminChats[adminChatArtist.id]||[]).length&&(
-                          <div style={{textAlign:"center",color:C.muted,fontSize:T.sm,marginTop:40}}>{t('noMessagesYet')}</div>
-                        )}
-                      </div>
-                      <div style={{padding:"12px 16px",display:"flex",gap:8}}>
-                        <input value={adminChatMsg} onChange={e=>setAdminChatMsg(e.target.value)}
-                          onKeyDown={e=>{if(e.key==="Enter"&&adminChatMsg.trim()){sendAdminChat();}}}
-                          placeholder={t('typeMessage')}
-                          style={{flex:1,background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,padding:"10px 14px",color:C.text,fontSize:T.sm,outline:"none",fontFamily:"inherit"}}/>
-                        <Btn onClick={sendAdminChat} disabled={!adminChatMsg.trim()} sz="sm">→</Btn>
-                      </div>
-                    </>
-                  ):(
-                    <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",color:C.muted,fontSize:T.sm}}>{t('adminChatWith')}</div>
-                  )}
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
-{tab==="finance"&&(
+            );
+          })}
+        </div>
+      )}
+
+      {/* ── INQUIRIES ── */}
+      {tab==="inquiries"&&(
         <div>
-          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:14}}>{t('finance')}</div>
-          <div style={{display:"grid",gridTemplateColumns:`repeat(${vp.isMobile?2:4},1fr)`,gap:10,marginBottom:18}}>
-            <SB icon="💶" label="Total Deposits"        value={`€${totalDep.toLocaleString()}`} color={C.gold}/>
-            <SB icon="🏦" label="Awaz Revenue (12%)"    value={`€${awazCut}`}                   color={C.emerald}/>
-            <SB icon="🎤" label="Artist Share (88%)"    value={`€${totalDep-awazCut}`}          color={C.lapis}/>
-            <SB icon="⏳" label="Pending"               value={`€${bookings.filter(b=>!b.depositPaid).reduce((s,b)=>s+b.deposit,0)}`} color={C.saffron}/>
+          <SectionHeader title={`Inquiries (${inquiries.length})`} action={newInquiries>0&&<span style={{background:`${C.ruby}18`,color:C.ruby,border:`1px solid ${C.ruby}44`,borderRadius:6,padding:"3px 10px",fontSize:T.xs,fontWeight:700}}>{newInquiries} new</span>}/>
+          {inquiries.length===0?(
+            <div style={{textAlign:"center",padding:"40px",background:C.card,borderRadius:12,border:`1px solid ${C.border}`}}>
+              <div style={{fontSize:36,marginBottom:12}}>📬</div>
+              <div style={{color:C.muted,fontSize:T.sm}}>No inquiries yet</div>
+            </div>
+          ):inquiries.map(inq=>(
+            <div key={inq.id} style={{background:C.card,border:`1px solid ${inq.status==="new"?C.gold:C.border}`,borderRadius:12,padding:"16px",marginBottom:10}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
+                <div>
+                  <div style={{fontWeight:700,color:C.text,fontSize:T.sm}}>{inq.name}</div>
+                  <div style={{color:C.muted,fontSize:T.xs}}>{inq.email} · {inq.country}</div>
+                </div>
+                <span style={{background:inq.status==="new"?`${C.gold}18`:`${C.muted}18`,color:inq.status==="new"?C.gold:C.muted,border:`1px solid ${inq.status==="new"?C.gold:C.border}44`,borderRadius:4,padding:"2px 8px",fontSize:10,fontWeight:700}}>{inq.status.toUpperCase()}</span>
+              </div>
+              <div style={{color:C.textD,fontSize:T.sm,lineHeight:1.6,marginBottom:10,padding:"10px 12px",background:C.surface,borderRadius:8}}>{inq.notes||inq.eventType}</div>
+              {inq.reply?(
+                <div style={{borderTop:`1px solid ${C.border}`,paddingTop:10}}>
+                  <div style={{fontSize:T.xs,color:C.emerald,fontWeight:700,marginBottom:4}}>Your reply:</div>
+                  <div style={{color:C.textD,fontSize:T.sm}}>{inq.reply}</div>
+                </div>
+              ):(
+                <button onClick={()=>{
+                  const reply=window.prompt("Reply to this inquiry:");
+                  if(reply?.trim()) onUpdateInquiry(inq.id,{reply:reply.trim(),status:"replied"});
+                }} style={{background:C.goldS,color:C.gold,border:`1px solid ${C.gold}44`,borderRadius:8,padding:"8px 16px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>
+                  ✦ Reply
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* ── MESSAGES ── */}
+      {tab==="messages"&&(
+        <div>
+          <SectionHeader title="All Conversations"/>
+          {bookings.filter(b=>b.messages?.length>0).length===0?(
+            <div style={{textAlign:"center",padding:"40px",background:C.card,borderRadius:12,border:`1px solid ${C.border}`,color:C.muted}}>No conversations yet</div>
+          ):bookings.filter(b=>b.messages?.length>0).map(b=>{
+            const art=artists.find(a=>a.id===b.artistId);
+            const last=b.messages[b.messages.length-1];
+            return(
+              <div key={b.id} onClick={()=>setChat(b)} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:"14px 16px",marginBottom:8,cursor:"pointer",display:"flex",gap:12,alignItems:"center"}}>
+                <div style={{width:40,height:40,borderRadius:8,background:`${art?.color||C.gold}15`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>{art?.emoji||"🎤"}</div>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontWeight:600,color:C.text,fontSize:T.sm}}>{b.customerName} ↔ {art?.name}</div>
+                  <div style={{color:C.muted,fontSize:T.xs,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginTop:2}}>{last?.text}</div>
+                </div>
+                <span style={{color:C.muted,fontSize:T.xs,flexShrink:0}}>{b.messages.length} msgs</span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* ── DIRECT CHAT ── */}
+      {tab==="chat"&&(
+        <div>
+          <SectionHeader title="Direct Chat with Artists"/>
+          <div style={{display:"grid",gridTemplateColumns:vp.isMobile?"1fr":"280px 1fr",gap:16,height:vp.isMobile?"auto":520}}>
+            {/* Artist list */}
+            <div style={{background:C.card,borderRadius:12,border:`1px solid ${C.border}`,overflow:"auto"}}>
+              <div style={{padding:"10px 14px",borderBottom:`1px solid ${C.border}`,fontSize:T.xs,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.8px"}}>Artists</div>
+              {artists.map(a=>(
+                <button key={a.id} onClick={()=>setAdminChatArtist(a)} style={{
+                  width:"100%",display:"flex",gap:10,alignItems:"center",
+                  padding:"12px 14px",
+                  background:adminChatArtist?.id===a.id?C.goldS:"transparent",
+                  border:"none",borderBottom:`1px solid ${C.border}`,
+                  cursor:"pointer",textAlign:"left",fontFamily:"inherit",
+                  WebkitTapHighlightColor:"transparent",
+                }}>
+                  <div style={{width:32,height:32,borderRadius:7,background:`${a.color}20`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>{a.emoji}</div>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontWeight:600,color:C.text,fontSize:T.sm,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{a.name}</div>
+                    <div style={{color:C.muted,fontSize:T.xs}}>{a.status}</div>
+                  </div>
+                  {(adminChats[a.id]||[]).length>0&&<span style={{width:6,height:6,borderRadius:"50%",background:C.gold,flexShrink:0}}/>}
+                </button>
+              ))}
+            </div>
+            {/* Chat panel */}
+            <div style={{background:C.card,borderRadius:12,border:`1px solid ${C.border}`,display:"flex",flexDirection:"column",minHeight:vp.isMobile?300:520}}>
+              {adminChatArtist?(
+                <>
+                  <div style={{padding:"12px 16px",borderBottom:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:10}}>
+                    <div style={{fontSize:20}}>{adminChatArtist.emoji}</div>
+                    <div>
+                      <div style={{fontWeight:700,color:C.text,fontSize:T.sm}}>{adminChatArtist.name}</div>
+                      <div style={{color:C.muted,fontSize:T.xs}}>{adminChatArtist.genre}</div>
+                    </div>
+                  </div>
+                  <div style={{flex:1,overflow:"auto",padding:"14px 16px",display:"flex",flexDirection:"column",gap:8}}>
+                    {(adminChats[adminChatArtist.id]||[]).map((msg,i)=>(
+                      <div key={i} style={{display:"flex",justifyContent:msg.from==="admin"?"flex-end":"flex-start"}}>
+                        <div style={{maxWidth:"75%",background:msg.from==="admin"?C.goldS:C.surface,borderRadius:10,padding:"8px 12px",border:`1px solid ${msg.from==="admin"?C.gold+"44":C.border}`}}>
+                          <div style={{color:C.text,fontSize:T.sm,lineHeight:1.5}}>{msg.text}</div>
+                          <div style={{color:C.muted,fontSize:10,marginTop:3,textAlign:"right"}}>{msg.time}</div>
+                        </div>
+                      </div>
+                    ))}
+                    {!(adminChats[adminChatArtist.id]||[]).length&&(
+                      <div style={{textAlign:"center",color:C.muted,fontSize:T.sm,marginTop:60,opacity:0.7}}>Start the conversation</div>
+                    )}
+                  </div>
+                  <div style={{padding:"12px 16px",borderTop:`1px solid ${C.border}`,display:"flex",gap:8}}>
+                    <input value={adminChatMsg} onChange={e=>setAdminChatMsg(e.target.value)}
+                      onKeyDown={e=>{if(e.key==="Enter"&&adminChatMsg.trim()) sendAdminChat();}}
+                      placeholder="Type a message…"
+                      style={{flex:1,background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,padding:"10px 14px",color:C.text,fontSize:T.sm,outline:"none",fontFamily:"inherit"}}/>
+                    <button onClick={sendAdminChat} disabled={!adminChatMsg.trim()} style={{background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:8,padding:"10px 16px",fontWeight:700,cursor:adminChatMsg.trim()?"pointer":"not-allowed",opacity:adminChatMsg.trim()?1:0.4,fontFamily:"inherit",fontSize:T.sm}}>→</button>
+                  </div>
+                </>
+              ):(
+                <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:10,color:C.muted}}>
+                  <div style={{fontSize:32}}>💬</div>
+                  <div style={{fontSize:T.sm}}>Select an artist to message</div>
+                </div>
+              )}
+            </div>
           </div>
-          <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:10,padding:16,marginBottom:14}}>
-            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.md,color:C.gold,fontWeight:700,marginBottom:12}}>{t('paymentSplit')}</div>
-            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
-              {[[t('splitLabel1'),t('splitDesc1'),C.gold],[t('splitLabel2'),t('splitDesc2'),C.emerald],[t('splitLabel3'),t('splitDesc3'),C.lapis]].map(([l,d,c])=>(
-                <div key={l} style={{background:C.surface,borderRadius:8,padding:"12px",border:`1px solid ${C.border}`,borderTop:`3px solid ${c}38`}}>
-                  <div style={{color:c,fontWeight:700,fontSize:T.sm,marginBottom:4}}>{l}</div>
-                  <div style={{color:C.muted,fontSize:T.xs}}>{d}</div>
+        </div>
+      )}
+
+      {/* ── FINANCE ── */}
+      {tab==="finance"&&(
+        <div>
+          <SectionHeader title="Finance Overview"/>
+          <div style={{display:"grid",gridTemplateColumns:`repeat(${vp.isMobile?1:2},1fr)`,gap:12,marginBottom:24}}>
+            <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:"20px"}}>
+              <div style={{fontSize:T.xs,color:C.muted,fontWeight:700,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:12}}>Revenue Breakdown</div>
+              {[
+                ["Total Deposits (Stripe)", `€${totalRevenue.toLocaleString()}`, C.gold],
+                ["Awaz Platform Fee (12%)", `€${awazRevenue.toLocaleString()}`, C.emerald],
+                ["Artist Payouts (88%)", `€${(totalRevenue - awazRevenue).toLocaleString()}`, C.lapis],
+              ].map(([label, value, color])=>(
+                <div key={label} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 0",borderBottom:`1px solid ${C.border}`}}>
+                  <div style={{color:C.textD,fontSize:T.sm}}>{label}</div>
+                  <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:800,color,fontSize:T.md}}>{value}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:"20px"}}>
+              <div style={{fontSize:T.xs,color:C.muted,fontWeight:700,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:12}}>Booking Stats</div>
+              {[
+                ["Total Bookings",     bookings.length,                                                      C.text],
+                ["Paid Deposits",      bookings.filter(b=>b.depositPaid).length,                             C.emerald],
+                ["Confirmed Events",   confirmedBooks,                                                        C.lapis],
+                ["Refunds Issued",     bookings.filter(b=>b.refunded).length,                                C.ruby],
+                ["Avg. Deposit",       bookings.length?`€${Math.round(totalRevenue/(bookings.filter(b=>b.depositPaid).length||1))}`:"-", C.gold],
+              ].map(([label, value, color])=>(
+                <div key={label} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 0",borderBottom:`1px solid ${C.border}`}}>
+                  <div style={{color:C.textD,fontSize:T.sm}}>{label}</div>
+                  <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:800,color,fontSize:T.md}}>{value}</div>
                 </div>
               ))}
             </div>
           </div>
-          {artists.filter(a=>a.earnings>0).map(a=>{
-            const cut=Math.round(a.earnings*0.12),pct=totalDep?Math.round((a.earnings/totalDep)*100):0;
+          {/* Per-artist breakdown */}
+          <div style={{fontSize:T.xs,color:C.muted,fontWeight:700,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:12}}>Artist Revenue</div>
+          {artists.filter(a=>a.status==="approved").map(a=>{
+            const deps=bookings.filter(b=>b.artistId===a.id&&b.depositPaid).reduce((s,b)=>s+b.deposit,0);
+            if(!deps)return null;
             return(
-              <div key={a.id} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:8,padding:"12px 14px",display:"flex",gap:10,alignItems:"center",marginBottom:8}}>
-                <div style={{fontSize:18,flexShrink:0}}>{a.emoji}</div>
-                <div style={{flex:1,minWidth:0}}>
-                  <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.sm,fontWeight:700,color:C.text,marginBottom:4}}>{a.name}</div>
-                  <div style={{height:4,borderRadius:2,overflow:"hidden",background:C.border}}><div style={{height:"100%",width:`${pct}%`,background:`linear-gradient(90deg,${a.color},${C.gold})`}}/></div>
+              <div key={a.id} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:10,padding:"12px 16px",marginBottom:8,display:"flex",gap:12,alignItems:"center"}}>
+                <div style={{fontSize:20}}>{a.emoji}</div>
+                <div style={{flex:1}}>
+                  <div style={{fontWeight:600,color:C.text,fontSize:T.sm}}>{a.name}</div>
+                  <div style={{color:C.muted,fontSize:T.xs}}>{bookings.filter(b=>b.artistId===a.id).length} bookings</div>
                 </div>
-                <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:2,flexShrink:0,fontSize:T.xs}}>
-                  <span style={{color:C.gold,fontWeight:700}}>€{a.earnings}</span>
-                  <span style={{color:C.emerald}}>→ €{a.earnings-cut}</span>
+                <div style={{textAlign:"right"}}>
+                  <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:800,color:C.gold,fontSize:T.md}}>€{deps.toLocaleString()}</div>
+                  <div style={{color:C.muted,fontSize:T.xs}}>→ €{Math.round(deps*0.88).toLocaleString()} to artist</div>
                 </div>
               </div>
             );
@@ -3383,50 +3523,76 @@ function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction,
     </div>
   );
 
-  // Mobile: stacked with bottom nav
-  if (vp.isMobile) return(
-    <div style={{minHeight:"100vh",background:C.bg,paddingBottom:88}}>
+  // ── Mobile layout ──
+  if(vp.isMobile) return(
+    <div style={{minHeight:"100vh",background:C.bg,paddingBottom:90,width:"100%"}}>
       <div style={{height:3,background:`linear-gradient(90deg,${C.ruby},${C.gold},${C.lapis})`,position:"fixed",top:0,left:0,right:0,zIndex:300}}/>
       <div style={{position:"fixed",top:3,left:0,right:0,zIndex:200,background:`${C.surface}F8`,backdropFilter:"blur(20px)",borderBottom:`1px solid ${C.border}`,padding:"12px 16px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
         <div>
-          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.md,fontWeight:700,color:C.gold}}>{t('awazAdmin')}</div>
-          <div style={{fontSize:T.xs,color:C.muted}}>{t('platformControl')}</div>
+          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.md,fontWeight:700,color:C.gold}}>Awaz Admin</div>
+          <div style={{fontSize:T.xs,color:C.muted}}>Platform Control</div>
         </div>
-        <Btn v="ghost" sz="sm" onClick={onLogout}>{t('signOut')}</Btn>
+        <button onClick={onLogout} style={{background:C.surface,border:`1px solid ${C.border}`,color:C.muted,borderRadius:8,padding:"7px 14px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>{t('signOut')}</button>
       </div>
-      <div style={{paddingTop:72}}>
-        {content}
-      </div>
+      <div style={{paddingTop:72}}>{pageContent}</div>
       <BottomNav active={tab} onNav={setTab} items={navItems}/>
       {chat&&<Chat booking={chat} artist={artists.find(a=>a.id===chat.artistId)} myRole="admin" onClose={()=>setChat(null)} onSend={onMsg}/>}
     </div>
   );
 
-  // Desktop: sidebar layout
+  // ── Desktop layout ──
   return(
-    <div style={{minHeight:"100vh",background:C.bg,display:"flex"}}>
+    <div style={{minHeight:"100vh",background:C.bg,display:"flex",width:"100%"}}>
       <div style={{height:3,background:`linear-gradient(90deg,${C.ruby},${C.gold},${C.lapis})`,position:"fixed",top:0,left:0,right:0,zIndex:200}}/>
-      <div style={{width:220,background:C.surface,borderRight:`1px solid ${C.border}`,padding:"40px 0 24px",display:"flex",flexDirection:"column",position:"fixed",top:3,bottom:0,zIndex:100,overflowY:"auto"}}>
-        <div style={{padding:"0 20px 20px",borderBottom:`1px solid ${C.border}`,marginBottom:14}}>
-          <div style={{fontFamily:"'Noto Naskh Arabic',serif",fontSize:18,color:C.gold,marginBottom:3}}>آواز</div>
-          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:15,fontWeight:700,color:C.text}}>{t('adminPanel')}</div>
+      {/* Sidebar */}
+      <aside style={{width:240,background:C.surface,borderRight:`1px solid ${C.border}`,padding:"0",display:"flex",flexDirection:"column",position:"fixed",top:3,bottom:0,zIndex:100,overflowY:"auto"}}>
+        {/* Logo */}
+        <div style={{padding:"24px 20px 20px",borderBottom:`1px solid ${C.border}`}}>
+          <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:6}}>
+            <div style={{fontFamily:"'Noto Naskh Arabic',serif",fontSize:20,color:C.gold}}>آواز</div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:16,fontWeight:700,color:C.text}}>Awaz</div>
+          </div>
+          <div style={{fontSize:T.xs,color:C.muted,fontWeight:600,letterSpacing:"0.5px"}}>Admin Dashboard</div>
         </div>
-        {navItems.map((item)=>(
-          <button key={item.id} onClick={()=>setTab(item.id)} style={{display:"flex",gap:10,alignItems:"center",padding:"12px 20px",background:tab===item.id?C.goldS:"transparent",color:tab===item.id?C.gold:C.muted,border:"none",cursor:"pointer",fontFamily:"inherit",fontSize:T.sm,fontWeight:tab===item.id?700:400,borderLeft:`3px solid ${tab===item.id?C.gold:"transparent"}`,width:"100%",textAlign:"left",minHeight:48,WebkitTapHighlightColor:"transparent"}}>
-            <span style={{fontSize:18}}>{item.icon}</span>{item.label}
-            {item.id==="artists"&&pendingApp>0&&<span style={{marginLeft:"auto",background:C.ruby,color:"#fff",borderRadius:10,padding:"1px 7px",fontSize:10,fontWeight:700}}>{pendingApp}</span>}
-            {item.id==="inquiries"&&(item.badge||0)>0&&<span style={{marginLeft:"auto",background:C.ruby,color:"#fff",borderRadius:10,padding:"1px 7px",fontSize:10,fontWeight:700}}>{item.badge}</span>}
-          </button>
-        ))}
-        <div style={{marginTop:"auto",padding:"16px 20px",}}>
-          <Btn v="ghost" sz="sm" onClick={onLogout} xs={{width:"100%"}}>{t('signOut')}</Btn>
+        {/* Nav */}
+        <nav style={{flex:1,padding:"12px 0"}}>
+          {navItems.map(item=>(
+            <button key={item.id} onClick={()=>setTab(item.id)} style={{
+              display:"flex",gap:12,alignItems:"center",
+              padding:"10px 20px",width:"100%",
+              background:tab===item.id?C.goldS:"transparent",
+              color:tab===item.id?C.gold:C.muted,
+              border:"none",cursor:"pointer",
+              fontFamily:"inherit",fontSize:T.sm,
+              fontWeight:tab===item.id?700:400,
+              borderLeft:`3px solid ${tab===item.id?C.gold:"transparent"}`,
+              textAlign:"left",minHeight:44,
+              transition:"all 0.1s",
+              WebkitTapHighlightColor:"transparent",
+            }}>
+              <span style={{fontSize:16,flexShrink:0}}>{item.icon}</span>
+              <span style={{flex:1}}>{item.label}</span>
+              {(item.badge||0)>0&&(
+                <span style={{background:C.ruby,color:"#fff",borderRadius:10,padding:"1px 7px",fontSize:10,fontWeight:700,flexShrink:0}}>{item.badge}</span>
+              )}
+            </button>
+          ))}
+        </nav>
+        {/* User */}
+        <div style={{padding:"16px 20px",borderTop:`1px solid ${C.border}`}}>
+          <div style={{fontSize:T.xs,color:C.muted,marginBottom:10,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>Admin</div>
+          <button onClick={onLogout} style={{width:"100%",background:C.surface,border:`1px solid ${C.border}`,color:C.muted,borderRadius:8,padding:"9px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>Sign Out</button>
         </div>
-      </div>
-      <div style={{flex:1,marginLeft:220,paddingTop:3,overflow:"auto"}}>{content}</div>
+      </aside>
+      {/* Main content */}
+      <main style={{flex:1,marginLeft:240,paddingTop:3,overflow:"auto"}}>
+        {pageContent}
+      </main>
       {chat&&<Chat booking={chat} artist={artists.find(a=>a.id===chat.artistId)} myRole="admin" onClose={()=>setChat(null)} onSend={onMsg}/>}
     </div>
   );
 }
+
 
 // ── Artist Portal ──────────────────────────────────────────────────────
 function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, onUpdateArtist }) {
@@ -4568,7 +4734,9 @@ export default function App() {
       const sb=await getSupabase();
       if(!sb)return;
       // Load approved artists
-      const{data:artistRows}=await sb.from("artists").select("*").eq("status","approved");
+      // Load all artists for admin, only approved for public
+      const isAdmin=false; // will be overridden if admin
+      const{data:artistRows}=await sb.from("artists").select("*");
       if(artistRows&&artistRows.length>0){
         setArtists(prev=>{
           const supaIds=new Set(artistRows.map(a=>a.id));
@@ -4699,6 +4867,39 @@ export default function App() {
   if(session?.role==="artist"){
     const myA=artists.find(a=>a.id===session.artistId);
     if(myA) return <ArtistPortal key={lang} user={session} artist={myA} bookings={bookings} onLogout={logout} onToggleDay={handleToggle} onMsg={handleMsg} onUpdateArtist={handleUpdateArtist}/>;
+    // Artist in Supabase but not in local state — fetch and add
+    if(session.artistId&&HAS_SUPA&&!artists.find(a=>a.id===session.artistId)){
+      getSupabase().then(sb=>{
+        if(!sb)return;
+        sb.from("artists").select("*").eq("id",session.artistId).single().then(({data:a})=>{
+          if(a) setArtists(p=>[...p,{
+            id:a.id,name:a.name,nameDari:a.name_dari||"",
+            genre:a.genre||"",location:a.location||"",
+            rating:a.rating||0,reviews:a.reviews||0,
+            priceInfo:a.price_info||"On request",
+            deposit:a.deposit||1000,
+            emoji:a.emoji||"🎤",color:a.color||C.ruby,
+            photo:a.photo||null,bio:a.bio||"",
+            tags:Array.isArray(a.tags)?a.tags:[],
+            instruments:Array.isArray(a.instruments)?a.instruments:[],
+            superhost:a.superhost||false,
+            status:a.status||"pending",
+            joined:a.joined_date||"",
+            available:a.available||{},blocked:a.blocked||{},
+            earnings:a.earnings||0,totalBookings:a.total_bookings||0,
+            verified:a.verified||false,
+            stripeConnected:a.stripe_connected||false,
+            stripeAccount:a.stripe_account||null,
+            cancellationPolicy:a.cancellation_policy||"moderate",
+            spotify:a.spotify_data||null,
+            instagram:a.instagram_data||null,
+            youtube:a.youtube_data||null,
+            tiktok:a.tiktok_data||null,
+            countryPricing:a.country_pricing||[],
+          }]);
+        });
+      });
+    }
     // AUTH-FIX-2: Artist logged in but no matching artist profile found.
     // Previously fell through silently — user stuck in broken limbo with no
     // logout button. Now shows a clear error with logout option.
@@ -4722,20 +4923,22 @@ export default function App() {
   return(
     <div key={lang} dir={isRTL?'rtl':'ltr'} translate="no" style={{background:C.bg,minHeight:"100vh",width:"100%",overflowX:"hidden",fontFamily:isRTL?"'Noto Naskh Arabic','DM Sans',sans-serif":"'DM Sans',sans-serif",color:C.text}}>
       <style>{`
-        :root{margin:0;padding:0;}
-        html{margin:0;padding:0;overflow-x:hidden;}
-        body{margin:0!important;padding:0!important;overflow-x:hidden;}
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;0,800;1,300;1,400;1,600&family=Noto+Naskh+Arabic:wght@400;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap');
-        *{box-sizing:border-box;margin:0;padding:0;}
-        .notranslate{transform:translateZ(0);}
-        html{
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+        :root{margin:0;padding:0;}
+        html,body{
+          margin:0!important;padding:0!important;
+          width:100%;max-width:100%;
+          overflow-x:hidden;
+          background:${C.bg};
           -webkit-text-size-adjust:100%;text-size-adjust:100%;
           -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
           text-rendering:optimizeLegibility;
           scroll-behavior:smooth;
         }
-        html,body{margin:0;padding:0;width:100%;overflow-x:hidden;background:${C.bg};}
         body{line-height:1.6;}
+        #root{width:100%;overflow-x:hidden;}
+        .notranslate{transform:translateZ(0);}
         input,textarea,button,select{font-family:'DM Sans',sans-serif;-webkit-appearance:none;}
         ::selection{background:rgba(200,168,74,0.25);color:#EDE4CE;}
         ::-webkit-scrollbar{width:3px;height:3px;}
@@ -5496,6 +5699,16 @@ function ApplySheet({ onSubmit, onClose }) {
             id:data.user.id,role:"artist",artist_id:id,name:f.name,
           }],{onConflict:"id"});
         }
+        // CRITICAL: Also update local state so admin sees new artist immediately
+        // and so artist can access their portal after login
+        onSubmit(artistData,{
+          id:data.user?.id||`u_${id}`,
+          role:"artist",
+          email:f.email,
+          hash:sh(f.pass),
+          name:f.name,
+          artistId:id,
+        });
         setLoading(false);setDone(true);
         return;
       }catch(e){setLoading(false);setErr("Registration failed — please try again.");return;}
