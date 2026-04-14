@@ -4720,8 +4720,11 @@ export default function App() {
 
 
   return(
-    <div key={lang} dir={isRTL?'rtl':'ltr'} translate="no" style={{background:C.bg,minHeight:"100vh",fontFamily:isRTL?"'Noto Naskh Arabic','DM Sans',sans-serif":"'DM Sans',sans-serif",color:C.text}}>
+    <div key={lang} dir={isRTL?'rtl':'ltr'} translate="no" style={{background:C.bg,minHeight:"100vh",width:"100%",overflowX:"hidden",fontFamily:isRTL?"'Noto Naskh Arabic','DM Sans',sans-serif":"'DM Sans',sans-serif",color:C.text}}>
       <style>{`
+        :root{margin:0;padding:0;}
+        html{margin:0;padding:0;overflow-x:hidden;}
+        body{margin:0!important;padding:0!important;overflow-x:hidden;}
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;0,800;1,300;1,400;1,600&family=Noto+Naskh+Arabic:wght@400;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap');
         *{box-sizing:border-box;margin:0;padding:0;}
         .notranslate{transform:translateZ(0);}
@@ -4731,6 +4734,7 @@ export default function App() {
           text-rendering:optimizeLegibility;
           scroll-behavior:smooth;
         }
+        html,body{margin:0;padding:0;width:100%;overflow-x:hidden;background:${C.bg};}
         body{line-height:1.6;}
         input,textarea,button,select{font-family:'DM Sans',sans-serif;-webkit-appearance:none;}
         ::selection{background:rgba(200,168,74,0.25);color:#EDE4CE;}
