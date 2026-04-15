@@ -1692,6 +1692,8 @@ function SpotifyEmbed({ artistId, profileUrl }) {
   };
 
   useEffect(() => () => clearTimeout(timerRef.current), []);
+  // Auto-load when artistId is available
+  useEffect(() => { if (artistId && status === "idle") tryLoad(); }, [artistId]);
 
   if (!artistId) return null;
 
@@ -2244,11 +2246,41 @@ function MiniCal({ artist, onSelect, selDay, selMonth, selYear, editMode, onTogg
 // ── Chat ──────────────────────────────────────────────────────────────
 function Chat({ booking, artist, myRole, onClose, onSend }) {
   const [msg,setMsg]=useState("");
+  // Re-sync msgs whenever booking.messages changes (admin sends, artist receives)
   const [msgs,setMsgs]=useState(booking.messages||[]);
+  const prevLen=useRef((booking.messages||[]).length);
   const ref=useRef(null);
   const endRef=useRef(null);
+  
+  // Sync when parent booking updates (polling or real-time push)
+  useEffect(()=>{
+    const incoming=booking.messages||[];
+    if(incoming.length!==prevLen.current){
+      setMsgs(incoming);
+      prevLen.current=incoming.length;
+    }
+  },[booking.messages]);
+
+  // Poll Supabase every 5s for new messages when chat is open
+  useEffect(()=>{
+    if(!HAS_SUPA)return;
+    const interval=setInterval(async()=>{
+      try{
+        const sb=await getSupabase();
+        if(!sb)return;
+        const{data}=await sb.from("bookings").select("messages").eq("id",booking.id).single();
+        if(data?.messages&&data.messages.length!==(booking.messages||[]).length){
+          setMsgs(data.messages);
+          prevLen.current=data.messages.length;
+        }
+      }catch(e){}
+    },5000);
+    return()=>clearInterval(interval);
+  },[booking.id]);
+
   useEffect(()=>{endRef.current?.scrollIntoView({behavior:"auto"});},[]);
   useEffect(()=>{endRef.current?.scrollIntoView({behavior:"smooth"});},[msgs]);
+
   const send=()=>{
     if(!msg.trim()||!booking.chatUnlocked)return;
     const m={from:myRole,text:msg.trim(),time:new Date().toLocaleTimeString("en",{hour:"2-digit",minute:"2-digit"})};
@@ -2790,7 +2822,7 @@ function LoginSheet({ users, open, onLogin, onClose }) {
           <>
             <HR color={C.border} my={16}/>
             <div style={{background:C.surface,borderRadius:10,padding:"14px",border:`1px solid ${C.border}`}}>
-              <div style={{fontSize:T.xs,color:C.saffron,fontWeight:700,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:6,display:"flex",alignItems:"center",gap:6}}>
+              <div style={{fontSize:T.xs,color:C.muted,fontWeight:700,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:6,display:"flex",alignItems:"center",gap:6}}>
                 <span>⚠</span> Demo accounts — testing only
               </div>
               <div style={{fontSize:T.xs,color:C.muted,marginBottom:10,lineHeight:1.5}}>{t('demoNote2')}</div>
@@ -3105,8 +3137,31 @@ function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction,
 
   const sendAdminChat=()=>{
     if(!adminChatArtist||!adminChatMsg.trim())return;
-    const msg={from:"admin",text:adminChatMsg.trim(),time:new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})};
+    const msgText=adminChatMsg.trim();
+    const msg={from:"admin",text:msgText,time:new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})};
+    // Store in local adminChats state for display
     setAdminChats(p=>({...p,[adminChatArtist.id]:[...(p[adminChatArtist.id]||[]),msg]}));
+    // Also persist to Supabase under a special admin-artist conversation key
+    if(HAS_SUPA){
+      getSupabase().then(sb=>{
+        if(!sb)return;
+        const convId=`admin_${adminChatArtist.id}`;
+        // Try to update existing, insert if not exists
+        sb.from("bookings").select("id,messages").eq("id",convId).single().then(({data})=>{
+          const msgs=[...(data?.messages||[]),msg];
+          if(data){
+            sb.from("bookings").update({messages:msgs}).eq("id",convId);
+          } else {
+            sb.from("bookings").insert([{
+              id:convId,artist_id:adminChatArtist.id,
+              customer_name:"Awaz Admin",customer_email:"admin@awaz.no",
+              status:"admin_chat",chat_unlocked:true,paid:false,deposit:0,
+              messages:[msg],
+            }]);
+          }
+        });
+      });
+    }
     setAdminChatMsg("");
   };
 
@@ -3146,7 +3201,7 @@ function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction,
       display:"flex",flexDirection:"column",gap:4,
     }}>
       <div style={{fontSize:22}}>{icon}</div>
-      <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:800,color,lineHeight:1.1}}>{value}</div>
+      <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:800,color:C.text,lineHeight:1.1}}>{value}</div>
       <div style={{fontSize:T.xs,fontWeight:700,color:C.text,letterSpacing:"0.3px"}}>{label}</div>
       {sub&&<div style={{fontSize:T.xs,color:C.muted}}>{sub}</div>}
     </div>
@@ -3182,7 +3237,7 @@ function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction,
               <div style={{display:"flex",flexWrap:"wrap",gap:4}}>
                 <span style={{background:`${sc}18`,color:sc,border:`1px solid ${sc}44`,borderRadius:4,padding:"1px 7px",fontSize:10,fontWeight:700}}>{a.status.toUpperCase()}</span>
                 {a.verified&&<span style={{background:`${C.emerald}18`,color:C.emerald,border:`1px solid ${C.emerald}44`,borderRadius:4,padding:"1px 7px",fontSize:10,fontWeight:700}}>✓ VERIFIED</span>}
-                {a.stripeConnected&&<span style={{background:`${C.lapis}18`,color:C.lapis,border:`1px solid ${C.lapis}44`,borderRadius:4,padding:"1px 7px",fontSize:10,fontWeight:700}}>💳 STRIPE</span>}
+                {a.stripeConnected&&<span style={{background:`${C.lapis}18`,color:C.text,border:`1px solid ${C.border}`,borderRadius:4,padding:"1px 7px",fontSize:10,fontWeight:700}}>💳 STRIPE</span>}
               </div>
             </div>
             <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:2,flexShrink:0}}>
@@ -3204,7 +3259,7 @@ function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction,
               <button onClick={()=>onAction(a.id,"approved")} style={{background:C.emeraldS,color:C.emerald,border:`1px solid ${C.emerald}44`,borderRadius:7,padding:"6px 14px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>Reinstate</button>
             )}
             {!a.verified&&(
-              <button onClick={()=>onAction(a.id,"verify")} style={{background:C.lapisS,color:C.lapis,border:`1px solid ${C.lapis}44`,borderRadius:7,padding:"6px 14px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>✦ Verify</button>
+              <button onClick={()=>onAction(a.id,"verify")} style={{background:C.lapisS,color:C.text,border:`1px solid ${C.border}`,borderRadius:7,padding:"6px 14px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>✦ Verify</button>
             )}
             <button onClick={()=>{setAdminChatArtist(a);setTab("chat");}} style={{background:C.surface,color:C.muted,border:`1px solid ${C.border}`,borderRadius:7,padding:"6px 14px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit",marginLeft:"auto"}}>💬 Message</button>
           </div>
@@ -3255,7 +3310,7 @@ function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction,
                   <div style={{color:C.muted,fontSize:T.xs,marginTop:1}}>{b.eventType||b.event} · {b.date}</div>
                 </div>
                 <span style={{background:`${sc}18`,color:sc,border:`1px solid ${sc}44`,borderRadius:4,padding:"2px 8px",fontSize:10,fontWeight:700,flexShrink:0}}>{(b.status||"pending").replace(/_/g," ").toUpperCase()}</span>
-                <span style={{color:C.gold,fontWeight:700,fontSize:T.sm,fontFamily:"'Cormorant Garamond',serif",flexShrink:0}}>€{b.deposit}</span>
+                <span style={{color:C.text,fontWeight:700,fontSize:T.sm,fontFamily:"'Cormorant Garamond',serif",flexShrink:0}}>€{b.deposit}</span>
                 <button onClick={()=>setChat(b)} style={{width:32,height:32,borderRadius:7,background:C.surface,border:`1px solid ${C.border}`,fontSize:14,cursor:"pointer",flexShrink:0}}>💬</button>
               </div>
             );
@@ -3300,12 +3355,12 @@ function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction,
                     <div style={{width:40,height:40,borderRadius:8,background:`${art?.color||C.gold}15`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>{art?.emoji||"🎤"}</div>
                     <div style={{flex:1,minWidth:0}}>
                       <div style={{fontWeight:600,color:C.text,fontSize:T.sm}}>{b.customerName}</div>
-                      <div style={{color:art?.color||C.muted,fontSize:T.xs,fontFamily:"'Cormorant Garamond',serif",fontWeight:700}}>{art?.name||"Unknown artist"}</div>
+                      <div style={{color:C.muted,fontSize:T.xs,fontWeight:600}}>{art?.name||"Unknown artist"}</div>
                       <div style={{color:C.muted,fontSize:T.xs,marginTop:2}}>{b.eventType||b.event||"Event"} · {b.date}</div>
                     </div>
                     <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:4,flexShrink:0}}>
                       <span style={{background:`${sc}18`,color:sc,border:`1px solid ${sc}44`,borderRadius:4,padding:"2px 8px",fontSize:10,fontWeight:700}}>{(b.status||"pending").replace(/_/g," ").toUpperCase()}</span>
-                      <span style={{color:C.gold,fontWeight:700,fontFamily:"'Cormorant Garamond',serif",fontSize:T.md}}>€{b.deposit}</span>
+                      <span style={{color:C.text,fontWeight:700,fontFamily:"'Cormorant Garamond',serif",fontSize:T.md}}>€{b.deposit}</span>
                     </div>
                   </div>
                   <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center",borderTop:`1px solid ${C.border}`,paddingTop:10}}>
@@ -3473,9 +3528,9 @@ function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction,
             <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:"20px"}}>
               <div style={{fontSize:T.xs,color:C.muted,fontWeight:700,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:12}}>Revenue Breakdown</div>
               {[
-                ["Total Deposits (Stripe)", `€${totalRevenue.toLocaleString()}`, C.gold],
-                ["Awaz Platform Fee (12%)", `€${awazRevenue.toLocaleString()}`, C.emerald],
-                ["Artist Payouts (88%)", `€${(totalRevenue - awazRevenue).toLocaleString()}`, C.lapis],
+                ["Total Deposits (Stripe)", `€${totalRevenue.toLocaleString()}`, C.text],
+                ["Awaz Platform Fee (12%)", `€${awazRevenue.toLocaleString()}`, C.text],
+                ["Artist Payouts (88%)", `€${(totalRevenue - awazRevenue).toLocaleString()}`, C.text],
               ].map(([label, value, color])=>(
                 <div key={label} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 0",borderBottom:`1px solid ${C.border}`}}>
                   <div style={{color:C.textD,fontSize:T.sm}}>{label}</div>
@@ -3604,6 +3659,7 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
   const [editF,setEditF]=useState({
     bio:artist.bio,
     priceInfo:artist.priceInfo,
+    currency:artist.currency||"EUR",
     deposit:String(artist.deposit),
     cancellationPolicy:artist.cancellationPolicy,
   });
@@ -3640,7 +3696,7 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
   ];
 
   const saveEdit=async()=>{
-    const updates={bio:editF.bio,priceInfo:editF.priceInfo,deposit:parseInt(editF.deposit)||1000,cancellationPolicy:editF.cancellationPolicy};
+    const updates={bio:editF.bio,priceInfo:editF.priceInfo,currency:editF.currency||"EUR",deposit:parseInt(editF.deposit)||1000,cancellationPolicy:editF.cancellationPolicy};
     onUpdateArtist(artist.id,updates);
     setEditing(false);
     // Persist to Supabase
@@ -3659,7 +3715,10 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
 
   const saveSocial=()=>{
     setSocialErr("");
-    if(socialF.spotifyUrl&&!socialF.spotifyUrl.includes("spotify")){setSocialErr("Spotify link looks invalid — make sure it contains 'spotify.com'.");return;}
+    if(socialF.spotifyUrl){
+      const testId=parseSpotifyArtistId(socialF.spotifyUrl);
+      if(!testId){setSocialErr("Spotify link not recognized. Please use the format: open.spotify.com/artist/... or copy from Spotify app → Share → Copy link to Artist.");return;}
+    }
     if(socialF.youtubeUrl&&!socialF.youtubeUrl.includes("youtube")&&!socialF.youtubeUrl.includes("youtu.be")){setSocialErr("YouTube link looks invalid.");return;}
 
     const newSpotify=socialF.spotifyUrl?{
@@ -3720,8 +3779,8 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
             </div>
           )}
           <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10,marginBottom:16}}>
-            {[["💶",`Earnings (88%)`,`€${depositsIn}`,C.gold],["📅","Bookings",myB.length,artist.color],["💬","Active Chats",myB.filter(b=>b.chatUnlocked).length,C.lavender],["⭐","Rating",artist.reviews>0?artist.rating:"—",C.saffron]].map(([icon,label,value,color])=>(
-              <div key={label} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:10,padding:"14px",borderTop:`3px solid ${color}38`}}>
+            {[["💶",`Earnings (88%)`,`€${depositsIn}`,C.gold],["📅","Bookings",myB.length,C.gold],["💬","Active Chats",myB.filter(b=>b.chatUnlocked).length,C.gold],["⭐","Rating",artist.reviews>0?artist.rating:"—",C.gold]].map(([icon,label,value,color])=>(
+              <div key={label} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:10,padding:"14px",borderTop:`3px solid ${C.border}38`}}>
                 <div style={{fontSize:18,marginBottom:5}}>{icon}</div>
                 <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:800,color,lineHeight:1}}>{value}</div>
                 <div style={{fontSize:T.xs,color:C.muted,marginTop:4}}>{label}</div>
@@ -3778,7 +3837,7 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
                     </div>
                     <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
                       <Badge color={sc}>{b.status.replace(/_/g," ")}</Badge>
-                      <span style={{color:C.gold,fontWeight:700,fontFamily:"'Cormorant Garamond',serif",fontSize:T.md}}>€{b.deposit}</span>
+                      <span style={{color:C.text,fontWeight:700,fontFamily:"'Cormorant Garamond',serif",fontSize:T.md}}>€{b.deposit}</span>
                       <button onClick={()=>setChat(b)} style={{width:36,height:36,borderRadius:8,background:C.surface,border:`1px solid ${C.border}`,fontSize:16,cursor:"pointer",WebkitTapHighlightColor:"transparent"}}>{b.chatUnlocked?"💬":"🔒"}</button>
                     </div>
                   </div>
@@ -4068,7 +4127,11 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
                 <div style={{display:"flex",flexDirection:"column",gap:11}}>
                   <Inp label="Bio" value={editF.bio} onChange={e=>setEditF(f=>({...f,bio:e.target.value}))} rows={4} placeholder="Tell clients about yourself…"/>
                   <Inp label="Starting Price" value={editF.priceInfo} onChange={e=>setEditF(f=>({...f,priceInfo:e.target.value}))} placeholder="From €2,500"/>
-                  <Inp label="Deposit Amount (€)" type="number" value={editF.deposit} onChange={e=>setEditF(f=>({...f,deposit:e.target.value}))} hint="Minimum €500"/>
+                  <div style={{display:"flex",gap:8}}>
+                    <Inp label="Deposit Amount" type="number" value={editF.deposit} onChange={e=>setEditF(f=>({...f,deposit:e.target.value}))} hint="Min €500"/>
+                    <Sel label="Currency" value={editF.currency||"EUR"} onChange={e=>setEditF(f=>({...f,currency:e.target.value}))}
+                      options={[["EUR","€ EUR"],["NOK","kr NOK"],["SEK","kr SEK"],["DKK","kr DKK"],["GBP","£ GBP"],["USD","$ USD"],["CHF","Fr CHF"],["AED","AED"],["AUD","A$"]]}/>
+                  </div>
                   <Sel label="Cancellation Policy" value={editF.cancellationPolicy} onChange={e=>setEditF(f=>({...f,cancellationPolicy:e.target.value}))}
                     options={POLICIES.map(p=>[p.id,`${p.label} — ${p.desc}`])}/>
                   <div style={{display:"flex",gap:8}}>
@@ -4093,7 +4156,7 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
                   </div>
                   <div style={{background:C.surface,borderRadius:8,padding:"12px 14px",border:`1px solid ${C.border}`}}>
                     <div style={{fontSize:T.xs,color:C.muted,letterSpacing:"0.8px",marginBottom:7,fontWeight:700}}>{t('paymentModel')}</div>
-                    <div style={{fontSize:T.sm,color:C.textD,lineHeight:1.8}}>{t("youReceive")} <strong style={{color:C.emerald}}>€{Math.round(artist.deposit*0.88)}</strong> {t("from")} €{artist.deposit} {t("depositLabel")} (88%). {t("balanceCashNote")}.</div>
+                    <div style={{fontSize:T.sm,color:C.textD,lineHeight:1.8}}>{t("youReceive")} <strong style={{color:C.text}}>€{Math.round(artist.deposit*0.88)}</strong> {t("from")} €{artist.deposit} {t("depositLabel")} (88%). {t("balanceCashNote")}.</div>
                   </div>
                 </>
               )}
