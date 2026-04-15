@@ -3391,42 +3391,6 @@ function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction,
         </div>
       )}
 
-      {/* ── INQUIRIES ── */}
-      {tab==="inquiries"&&(
-        <div>
-          <SectionHeader title={`Inquiries (${inquiries.length})`} action={newInquiries>0&&<span style={{background:`${C.ruby}18`,color:C.ruby,border:`1px solid ${C.ruby}44`,borderRadius:6,padding:"3px 10px",fontSize:T.xs,fontWeight:700}}>{newInquiries} new</span>}/>
-          {inquiries.length===0?(
-            <div style={{textAlign:"center",padding:"40px",background:C.card,borderRadius:12,border:`1px solid ${C.border}`}}>
-              <div style={{fontSize:36,marginBottom:12}}>📬</div>
-              <div style={{color:C.muted,fontSize:T.sm}}>No inquiries yet</div>
-            </div>
-          ):inquiries.map(inq=>(
-            <div key={inq.id} style={{background:C.card,border:`1px solid ${inq.status==="new"?C.gold:C.border}`,borderRadius:12,padding:"16px",marginBottom:10}}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
-                <div>
-                  <div style={{fontWeight:700,color:C.text,fontSize:T.sm}}>{inq.name}</div>
-                  <div style={{color:C.muted,fontSize:T.xs}}>{inq.email} · {inq.country}</div>
-                </div>
-                <span style={{background:inq.status==="new"?`${C.gold}18`:`${C.muted}18`,color:inq.status==="new"?C.gold:C.muted,border:`1px solid ${inq.status==="new"?C.gold:C.border}44`,borderRadius:4,padding:"2px 8px",fontSize:10,fontWeight:700}}>{inq.status.toUpperCase()}</span>
-              </div>
-              <div style={{color:C.textD,fontSize:T.sm,lineHeight:1.6,marginBottom:10,padding:"10px 12px",background:C.surface,borderRadius:8}}>{inq.notes||inq.eventType}</div>
-              {inq.reply?(
-                <div style={{borderTop:`1px solid ${C.border}`,paddingTop:10}}>
-                  <div style={{fontSize:T.xs,color:C.emerald,fontWeight:700,marginBottom:4}}>Your reply:</div>
-                  <div style={{color:C.textD,fontSize:T.sm}}>{inq.reply}</div>
-                </div>
-              ):(
-                <button onClick={()=>{
-                  const reply=window.prompt("Reply to this inquiry:");
-                  if(reply?.trim()) onUpdateInquiry(inq.id,{reply:reply.trim(),status:"replied"});
-                }} style={{background:C.goldS,color:C.gold,border:`1px solid ${C.gold}44`,borderRadius:8,padding:"8px 16px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>
-                  ✦ Reply
-                </button>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
 
       {/* ── MESSAGES ── */}
       {tab==="messages"&&(
@@ -4780,6 +4744,7 @@ export default function App() {
   const handleNewInquiry=inq=>setInquiries(p=>[inq,...p]);
   const handleUpdateInquiry=(id,updates)=>setInquiries(p=>p.map(i=>i.id===id?{...i,...updates}:i));
   const [session,setSession]=useState(null);
+  const [appReady,setAppReady]=useState(!HAS_SUPA); // true immediately if no Supabase
   const [view,setView]=useState("home");
   const [selArtist,setSelArtist]=useState(null);
   const [showLogin,setShowLogin]=useState(false);
@@ -4790,20 +4755,53 @@ export default function App() {
 
   const genres=["All","Ghazal","Herati","Mast","Pashto","Logari","Qarsak","Rubab","Tabla","Classical","Folk","Pop","Fusion","Sufi"];
 
-  // ── Hydrate from Supabase on mount ───────────────────────────────────
+  // ── Supabase initialisation: session restore + data hydration ─────────
   useEffect(()=>{
-    if(!HAS_SUPA)return;
+    if(!HAS_SUPA){setAppReady(true);return;}
+    let unsub=null;
     (async()=>{
       const sb=await getSupabase();
-      if(!sb)return;
-      // Load approved artists
-      // Load all artists for admin, only approved for public
-      const isAdmin=false; // will be overridden if admin
+      if(!sb){setAppReady(true);return;}
+
+      // ── 1. Restore session from Supabase auth (persists across refreshes) ──
+      const{data:{session:existingSession}}=await sb.auth.getSession();
+      if(existingSession?.user){
+        const{data:profile}=await sb.from("profiles").select("*").eq("id",existingSession.user.id).single();
+        const localUser=USERS.find(u=>u.email?.toLowerCase()===existingSession.user.email?.toLowerCase());
+        const role=profile?.role||localUser?.role||"customer";
+        setSession({
+          id:existingSession.user.id,
+          email:existingSession.user.email,
+          name:profile?.name||existingSession.user.email,
+          role,
+          artistId:profile?.artist_id||localUser?.artistId||null,
+        });
+      }
+
+      // ── 2. Subscribe to future auth changes (login/logout) ──
+      const{data:{subscription}}=sb.auth.onAuthStateChange(async(_event,supaSession)=>{
+        if(supaSession?.user){
+          const{data:profile}=await sb.from("profiles").select("*").eq("id",supaSession.user.id).single();
+          const localUser=USERS.find(u=>u.email?.toLowerCase()===supaSession.user.email?.toLowerCase());
+          const role=profile?.role||localUser?.role||"customer";
+          setSession({
+            id:supaSession.user.id,
+            email:supaSession.user.email,
+            name:profile?.name||supaSession.user.email,
+            role,
+            artistId:profile?.artist_id||localUser?.artistId||null,
+          });
+        } else {
+          setSession(null);
+        }
+      });
+      unsub=subscription;
+
+      // ── 3. Load all artists from Supabase ──
       const{data:artistRows}=await sb.from("artists").select("*");
-      if(artistRows&&artistRows.length>0){
+      if(artistRows?.length>0){
         setArtists(prev=>{
           const supaIds=new Set(artistRows.map(a=>a.id));
-          // Keep demo artists not in Supabase, merge with Supabase artists
           const demo=prev.filter(a=>!supaIds.has(a.id));
           const supa=artistRows.map(a=>({
             id:a.id,name:a.name,nameDari:a.name_dari||"",
@@ -4811,11 +4809,12 @@ export default function App() {
             rating:a.rating||0,reviews:a.reviews||0,
             priceInfo:a.price_info||"On request",
             deposit:a.deposit||1000,
-            emoji:a.emoji||"🎤",color:a.color||C.gold,
+            emoji:a.emoji||"🎤",color:a.color||C.ruby,
             photo:a.photo||null,bio:a.bio||"",
-            tags:a.tags||[],instruments:a.instruments||[],
+            tags:Array.isArray(a.tags)?a.tags:[],
+            instruments:Array.isArray(a.instruments)?a.instruments:[],
             superhost:a.superhost||false,
-            status:a.status,joined:a.joined_date||"",
+            status:a.status||"pending",joined:a.joined_date||"",
             available:a.available||{},blocked:a.blocked||{},
             earnings:a.earnings||0,totalBookings:a.total_bookings||0,
             verified:a.verified||false,
@@ -4827,11 +4826,35 @@ export default function App() {
             youtube:a.youtube_data||null,
             tiktok:a.tiktok_data||null,
             countryPricing:a.country_pricing||[],
+            currency:a.currency||"EUR",
           }));
           return[...demo,...supa];
         });
       }
+
+      // ── 4. Load bookings ──
+      const{data:bookingRows}=await sb.from("bookings").select("*").neq("status","admin_chat");
+      if(bookingRows?.length>0){
+        setBookings(prev=>{
+          const supaIds=new Set(bookingRows.map(b=>b.id));
+          const local=prev.filter(b=>!supaIds.has(b.id));
+          const supa=bookingRows.map(b=>({
+            id:b.id,artistId:b.artist_id,
+            customerName:b.customer_name,customerEmail:b.customer_email,
+            date:b.date,eventType:b.event_type||b.event||"",
+            notes:b.notes||"",deposit:b.deposit||0,
+            status:b.status||"pending",depositPaid:b.paid||false,
+            chatUnlocked:b.chat_unlocked||b.paid||false,
+            country:b.country||"NO",
+            messages:Array.isArray(b.messages)?b.messages:[],
+          }));
+          return[...local,...supa];
+        });
+      }
+
+      setAppReady(true);
     })();
+    return()=>{ unsub?.unsubscribe(); };
   },[]);
   const approved=useMemo(()=>artists.filter(a=>a.status==="approved"),[artists]);
   const filtered=useMemo(()=>approved.filter(a=>{
@@ -4926,43 +4949,26 @@ export default function App() {
   },[view,selArtist]);
 
     // ── Route to dashboards (after ALL hooks) ────────────────────────────
+  if(!appReady&&session?.role==="admin") return(
+    <div style={{minHeight:"100vh",background:C.bg,display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:16}}>
+      <div style={{fontFamily:"'Noto Naskh Arabic',serif",fontSize:32,color:C.gold}}>آواز</div>
+      <div style={{color:C.muted,fontSize:T.sm}}>Loading admin data…</div>
+      <div style={{width:40,height:40,border:`3px solid ${C.border}`,borderTopColor:C.gold,borderRadius:"50%",animation:"spin 0.8s linear infinite"}}/>
+    </div>
+  );
   if(session?.role==="admin") return <AdminDash key={lang} artists={artists} bookings={bookings} setBookings={setBookings} users={users} inquiries={inquiries} onAction={handleArtistAction} onLogout={logout} onMsg={handleMsg} onUpdateInquiry={handleUpdateInquiry}/>;
   if(session?.role==="artist"){
     const myA=artists.find(a=>a.id===session.artistId);
     if(myA) return <ArtistPortal key={lang} user={session} artist={myA} bookings={bookings} onLogout={logout} onToggleDay={handleToggle} onMsg={handleMsg} onUpdateArtist={handleUpdateArtist}/>;
-    // Artist in Supabase but not in local state — fetch and add
-    if(session.artistId&&HAS_SUPA&&!artists.find(a=>a.id===session.artistId)){
-      getSupabase().then(sb=>{
-        if(!sb)return;
-        sb.from("artists").select("*").eq("id",session.artistId).single().then(({data:a})=>{
-          if(a) setArtists(p=>[...p,{
-            id:a.id,name:a.name,nameDari:a.name_dari||"",
-            genre:a.genre||"",location:a.location||"",
-            rating:a.rating||0,reviews:a.reviews||0,
-            priceInfo:a.price_info||"On request",
-            deposit:a.deposit||1000,
-            emoji:a.emoji||"🎤",color:a.color||C.ruby,
-            photo:a.photo||null,bio:a.bio||"",
-            tags:Array.isArray(a.tags)?a.tags:[],
-            instruments:Array.isArray(a.instruments)?a.instruments:[],
-            superhost:a.superhost||false,
-            status:a.status||"pending",
-            joined:a.joined_date||"",
-            available:a.available||{},blocked:a.blocked||{},
-            earnings:a.earnings||0,totalBookings:a.total_bookings||0,
-            verified:a.verified||false,
-            stripeConnected:a.stripe_connected||false,
-            stripeAccount:a.stripe_account||null,
-            cancellationPolicy:a.cancellation_policy||"moderate",
-            spotify:a.spotify_data||null,
-            instagram:a.instagram_data||null,
-            youtube:a.youtube_data||null,
-            tiktok:a.tiktok_data||null,
-            countryPricing:a.country_pricing||[],
-          }]);
-        });
-      });
-    }
+    // Wait for hydration — avoid race condition on page refresh
+    if(!appReady) return(
+      <div style={{minHeight:"100vh",background:C.bg,display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:16,fontFamily:"'DM Sans',sans-serif"}}>
+        <div style={{fontFamily:"'Noto Naskh Arabic',serif",fontSize:32,color:C.gold}}>آواز</div>
+        <div style={{color:C.muted,fontSize:T.sm}}>Loading your dashboard…</div>
+        <div style={{width:36,height:36,border:`3px solid ${C.border}`,borderTopColor:C.gold,borderRadius:"50%",animation:"spin 0.8s linear infinite"}}/>
+        <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+      </div>
+    );
     // AUTH-FIX-2: Artist logged in but no matching artist profile found.
     // Previously fell through silently — user stuck in broken limbo with no
     // logout button. Now shows a clear error with logout option.
