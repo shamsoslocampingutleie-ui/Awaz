@@ -1,0 +1,13 @@
+{
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Content-Security-Policy",
+          "value": "frame-src 'self' open.spotify.com www.youtube.com player.vimeo.com"
+        }
+      ]
+    }
+  ]
+}
