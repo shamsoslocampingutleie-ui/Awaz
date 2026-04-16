@@ -29,43 +29,61 @@ if (typeof window !== "undefined") {
   }, true);
 }
 
-// ── Supabase client ───────────────────────────────────────────────────
-const SUPA_URL  = import.meta.env.VITE_SUPABASE_URL  || "";
-const SUPA_KEY  = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
+// ── Supabase clients ─────────────────────────────────────────────────
+const SUPA_URL = import.meta.env.VITE_SUPABASE_URL  || "";
+const SUPA_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
+const HAS_SUPA = !!(SUPA_URL && SUPA_KEY);
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-let supabase: any = null;
+let _supabase: any = null;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let _supabaseReg: any = null;
 
+// Main client — persists session, has onAuthStateChange listener
 async function getSupabase() {
-  if (supabase) return supabase;
+  if (_supabase) return _supabase;
   if (!SUPA_URL || !SUPA_KEY) return null;
   try {
-    // DYNAMIC import — Supabase lastes LAZY, etter at error-handleren
-    // over er registrert. Dette forhindrer at vendor.js-feilen oppstår
-    // før noe kan fange den.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { createClient } = await import("@supabase/supabase-js") as any;
-    supabase = createClient(SUPA_URL, SUPA_KEY, {
+    _supabase = createClient(SUPA_URL, SUPA_KEY, {
       auth: {
-        persistSession:     true,
-        autoRefreshToken:   true,
-        detectSessionInUrl: true,
-        storageKey:         "awaz-auth-v1",
-        // Bypass BroadcastChannel-låsen — viktigste enkeltfiks
+        persistSession: true, autoRefreshToken: true,
+        detectSessionInUrl: true, storageKey: "awaz-auth-v1",
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         lock: (_n: any, _t: any, fn: any) => fn(),
       },
     });
-    return supabase;
+    return _supabase;
   } catch { return null; }
 }
 
-const HAS_SUPA = !!(SUPA_URL && SUPA_KEY);
+// Registration client — does NOT persist session, does NOT fire main app listeners.
+// Used exclusively in ApplySheet so registering a new artist never disrupts
+// the current user's session (admin stays logged in).
+async function getSupabaseReg() {
+  if (_supabaseReg) return _supabaseReg;
+  if (!SUPA_URL || !SUPA_KEY) return null;
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { createClient } = await import("@supabase/supabase-js") as any;
+    _supabaseReg = createClient(SUPA_URL, SUPA_KEY, {
+      auth: {
+        persistSession: false,   // ← do NOT store this session to localStorage
+        autoRefreshToken: false,
+        detectSessionInUrl: false,
+        storageKey: "awaz-reg-tmp", // separate key = no conflict with main client
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        lock: (_n: any, _t: any, fn: any) => fn(),
+      },
+    });
+    return _supabaseReg;
+  } catch { return null; }
+}
 
 // ── Module-level flag: prevents onAuthStateChange from clearing the
 // admin session when ApplySheet signs out the newly created artist.
 // Set to true just before signOut(), reset after event fires.
-let _applyArtistSignOut = false;
 
 /* ═══════════════════════════════════════════════════════════════════════
    AWAZ  ·  آواز  ·  Afghan Artist Booking Platform
@@ -2705,18 +2723,26 @@ function LoginSheet({ users, open, onLogin, onClose }) {
           });
           return;
         }
-        // Fetch profile to get role + artistId
-        const {data:profile}=await sb.from("profiles").select("*").eq("id",data.user.id).single();
-        // Also check local USERS array by email as role fallback (handles admin accounts)
-        const localUser=users.find(u=>u.email.toLowerCase()===data.user.email.toLowerCase());
-        const role=profile?.role||localUser?.role||"customer";
-        onLogin({
-          id:data.user.id,
-          email:data.user.email,
-          name:profile?.name||localUser?.name||data.user.email,
-          role,
-          artistId:profile?.artist_id||localUser?.artistId||null,
-        });
+        // ── Admin check first — hardcoded, no DB needed ─────────────────
+        const loginEmail=data.user.email?.toLowerCase()||"";
+        const hardcodedUser=users.find(u=>u.email?.toLowerCase()===loginEmail);
+        if(hardcodedUser?.role==="admin"){
+          setLoading(false);
+          onLogin({id:data.user.id,email:data.user.email,name:hardcodedUser.name||"Admin",role:"admin",artistId:null});
+        } else {
+          // Non-admin: fetch profile for role + artistId
+          const {data:profile}=await sb.from("profiles").select("*").eq("id",data.user.id).single();
+          const role=profile?.role||"customer";
+          const artistId=profile?.artist_id||null;
+          setLoading(false);
+          onLogin({
+            id:data.user.id,
+            email:data.user.email,
+            name:profile?.name||data.user.email,
+            role,
+            artistId,
+          });
+        }
       } catch(e){
         setLoading(false);
         // If Supabase completely fails, try demo users as fallback
@@ -4961,57 +4987,153 @@ function AppInner() {
       // ── 1. Restore session from Supabase auth (persists across refreshes) ──
       const{data:{session:existingSession}}=await sb.auth.getSession();
       if(existingSession?.user){
+        const email=existingSession.user.email?.toLowerCase()||"";
+        // Admin check first — hardcoded, no DB needed
+        const hardcoded=USERS.find(u=>u.email?.toLowerCase()===email);
+        if(hardcoded?.role==="admin"){
+          setSession({
+            id:existingSession.user.id,
+            email:existingSession.user.email,
+            name:hardcoded.name||"Admin",
+            role:"admin",
+            artistId:null,
+          });
+          // Skip straight to appReady — no artist profile load needed
+        } else {
         const{data:profile}=await sb.from("profiles").select("*").eq("id",existingSession.user.id).single();
-        const localUser=USERS.find(u=>u.email?.toLowerCase()===existingSession.user.email?.toLowerCase());
-        const role=profile?.role||localUser?.role||"customer";
+        const role=profile?.role||"customer";
+        const artistId=profile?.artist_id||null;
+
+        // On refresh: if artist, pre-load their profile into artists array
+        // so ArtistPortal renders immediately without a loading spinner
+        if(role==="artist"&&artistId){
+          try{
+            const{data:aRow}=await sb.from("artists").select("*").eq("id",artistId).single();
+            if(aRow){
+              const mapped={
+                id:aRow.id,name:aRow.name,nameDari:aRow.name_dari||"",
+                genre:aRow.genre||"",location:aRow.location||"",
+                rating:aRow.rating||0,reviews:aRow.reviews||0,
+                priceInfo:aRow.price_info||"On request",
+                deposit:aRow.deposit||1000,
+                emoji:aRow.emoji||"🎤",color:aRow.color||"#A82C38",
+                photo:aRow.photo||null,bio:aRow.bio||"",
+                tags:Array.isArray(aRow.tags)?aRow.tags:[],
+                instruments:Array.isArray(aRow.instruments)?aRow.instruments:[],
+                superhost:aRow.superhost||false,
+                status:aRow.status||"pending",joined:aRow.joined_date||"",
+                available:aRow.available||{},blocked:aRow.blocked||{},
+                earnings:aRow.earnings||0,totalBookings:aRow.total_bookings||0,
+                verified:aRow.verified||false,
+                stripeConnected:aRow.stripe_connected||false,
+                stripeAccount:aRow.stripe_account||null,
+                cancellationPolicy:aRow.cancellation_policy||"moderate",
+                spotify:aRow.spotify_data||null,
+                instagram:aRow.instagram_data||null,
+                youtube:aRow.youtube_data||null,
+                tiktok:aRow.tiktok_data||null,
+                countryPricing:aRow.country_pricing||[],
+                currency:aRow.currency||"EUR",
+              };
+              setArtists(prev=>{
+                if(prev.find(x=>x.id===aRow.id))
+                  return prev.map(x=>x.id===aRow.id?{...x,...mapped}:x);
+                return[...prev,mapped];
+              });
+            }
+          }catch(e2){console.warn("Artist profile restore failed:",e2);}
+        }
+
         setSession({
           id:existingSession.user.id,
           email:existingSession.user.email,
           name:profile?.name||existingSession.user.email,
           role,
-          artistId:profile?.artist_id||localUser?.artistId||null,
+          artistId,
         });
+        } // end else (non-admin)
       }
 
       // ── 2. Subscribe to future auth changes (login/logout) ──
-      // IMPORTANT: The callback is async. Supabase does NOT await it, so any
-      // thrown error becomes an Uncaught (in promise) that can crash React 18.
-      // Wrap everything inside its own try/catch to keep errors contained.
-      //
-      // ADMIN PROTECTION: When an admin uses the ApplySheet to create a new
-      // artist account, Supabase fires SIGNED_IN with the new artist's session.
-      // We must not replace the admin's session in that case.
-      // Solution: if current session is admin and new role is NOT admin, ignore.
+      // Kept simple and clean: just reflect Supabase's auth state into React.
+      // Admin protection is handled at the source (ApplySheet uses a separate
+      // Supabase client so it never touches this client's session).
       const{data:{subscription}}=sb.auth.onAuthStateChange(async(_event,supaSession)=>{
         try{
           if(supaSession?.user){
-            const{data:profile}=await sb.from("profiles").select("*").eq("id",supaSession.user.id).single();
-            const localUser=USERS.find(u=>u.email?.toLowerCase()===supaSession.user.email?.toLowerCase());
-            const role=profile?.role||localUser?.role||"customer";
-            // ── CRITICAL: Do not replace admin session with artist/customer session.
-            // This happens when admin registers a new artist via ApplySheet —
-            // signUp() fires onAuthStateChange with the new user's credentials.
-            setSession(prev=>{
-              if(prev?.role==="admin" && role!=="admin"){
-                // Admin is currently logged in and a non-admin signed in elsewhere
-                // (ApplySheet). Keep admin logged in, ignore this event.
-                return prev;
-              }
-              return{
+            const email=supaSession.user.email?.toLowerCase()||"";
+
+            // ── STEP 1: Check hardcoded USERS first (admin accounts).
+            // This is the most reliable check — no DB roundtrip needed.
+            // Admin role is NEVER overridden by the profiles table.
+            const hardcodedUser=USERS.find(u=>u.email?.toLowerCase()===email);
+            if(hardcodedUser?.role==="admin"){
+              setSession({
                 id:supaSession.user.id,
                 email:supaSession.user.email,
-                name:profile?.name||supaSession.user.email,
-                role,
-                artistId:profile?.artist_id||localUser?.artistId||null,
-              };
+                name:hardcodedUser.name||"Admin",
+                role:"admin",
+                artistId:null,
+              });
+              return;
+            }
+
+            // ── STEP 2: Non-admin — fetch profile from DB ────────────────
+            const{data:profile}=await sb.from("profiles").select("*")
+              .eq("id",supaSession.user.id).single();
+            const role=profile?.role||"customer";
+            const artistId=profile?.artist_id||null;
+
+            // ── STEP 3: If artist, load their profile into artists array ──
+            // Without this, ArtistPortal can't find the artist after login.
+            if(role==="artist"&&artistId){
+              try{
+                const{data:aRow}=await sb.from("artists").select("*").eq("id",artistId).single();
+                if(aRow){
+                  const mapped={
+                    id:aRow.id,name:aRow.name,nameDari:aRow.name_dari||"",
+                    genre:aRow.genre||"",location:aRow.location||"",
+                    rating:aRow.rating||0,reviews:aRow.reviews||0,
+                    priceInfo:aRow.price_info||"On request",
+                    deposit:aRow.deposit||1000,
+                    emoji:aRow.emoji||"🎤",color:aRow.color||"#A82C38",
+                    photo:aRow.photo||null,bio:aRow.bio||"",
+                    tags:Array.isArray(aRow.tags)?aRow.tags:[],
+                    instruments:Array.isArray(aRow.instruments)?aRow.instruments:[],
+                    superhost:aRow.superhost||false,
+                    status:aRow.status||"pending",joined:aRow.joined_date||"",
+                    available:aRow.available||{},blocked:aRow.blocked||{},
+                    earnings:aRow.earnings||0,totalBookings:aRow.total_bookings||0,
+                    verified:aRow.verified||false,
+                    stripeConnected:aRow.stripe_connected||false,
+                    stripeAccount:aRow.stripe_account||null,
+                    cancellationPolicy:aRow.cancellation_policy||"moderate",
+                    spotify:aRow.spotify_data||null,
+                    instagram:aRow.instagram_data||null,
+                    youtube:aRow.youtube_data||null,
+                    tiktok:aRow.tiktok_data||null,
+                    countryPricing:aRow.country_pricing||[],
+                    currency:aRow.currency||"EUR",
+                  };
+                  setArtists(prev=>{
+                    if(prev.find(x=>x.id===aRow.id))
+                      return prev.map(x=>x.id===aRow.id?{...x,...mapped}:x);
+                    return[...prev,mapped];
+                  });
+                }
+              }catch(e2){console.warn("Artist profile fetch:",e2);}
+            }
+
+            setSession({
+              id:supaSession.user.id,
+              email:supaSession.user.email,
+              name:profile?.name||supaSession.user.email,
+              role,
+              artistId,
             });
           } else {
-            // No user session — clear UNLESS this is the ApplySheet cleanup signOut.
-            if(_applyArtistSignOut){
-              _applyArtistSignOut=false; // always reset
-              return; // keep current session (admin stays logged in)
-            }
-            setSession(null);
+            // Only clear session on explicit sign-out — not token refresh etc.
+            if(_event==="SIGNED_OUT") setSession(null);
           }
         }catch(e){console.warn("Auth state change error:",e);}
       });
@@ -5206,46 +5328,10 @@ function AppInner() {
         <div style={{width:36,height:36,border:`3px solid ${C.border}`,borderTopColor:C.gold,borderRadius:"50%",animation:"spin 0.8s linear infinite"}}/>
       </div>
     );
-    // appReady but artist not in local state — try fetching directly from Supabase
-    // This handles the case where the artist was created AFTER the initial data load
-    if(HAS_SUPA&&session.artistId){
-      getSupabase().then(sb=>{
-        if(!sb)return;
-        sb.from("artists").select("*").eq("id",session.artistId).single().then(({data:a})=>{
-          if(a){
-            handleUpdateArtist(a.id,{
-              id:a.id,name:a.name,nameDari:a.name_dari||"",
-              genre:a.genre||"",location:a.location||"",
-              rating:a.rating||0,reviews:a.reviews||0,
-              priceInfo:a.price_info||"On request",
-              deposit:a.deposit||1000,
-              emoji:a.emoji||"🎤",color:a.color||"#A82C38",
-              photo:a.photo||null,bio:a.bio||"",
-              tags:Array.isArray(a.tags)?a.tags:[],
-              instruments:Array.isArray(a.instruments)?a.instruments:[],
-              superhost:a.superhost||false,
-              status:a.status||"pending",
-              available:a.available||{},blocked:a.blocked||{},
-              verified:a.verified||false,
-              stripeConnected:a.stripe_connected||false,
-              cancellationPolicy:a.cancellation_policy||"moderate",
-            });
-            // Also add to artists array if not there
-            setArtists(prev=>{
-              if(prev.find(x=>x.id===a.id))return prev;
-              return[...prev,{id:a.id,name:a.name,genre:a.genre||"",status:a.status||"pending",emoji:a.emoji||"🎤",color:a.color||"#A82C38",deposit:a.deposit||1000,rating:0,reviews:0,priceInfo:a.price_info||"On request",photo:null,bio:a.bio||"",tags:[],instruments:[],available:{},blocked:{},earnings:0,totalBookings:0,verified:false,stripeConnected:false,cancellationPolicy:"moderate",location:a.location||"",joined:a.joined_date||"",nameDari:a.name_dari||""}];
-            });
-          }
-        });
-      });
-      return(
-        <div style={{minHeight:"100vh",background:C.bg,display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:16,fontFamily:"'DM Sans',sans-serif"}}>
-          <div style={{fontFamily:"'Noto Naskh Arabic',serif",fontSize:32,color:C.gold}}>آواز</div>
-          <div style={{color:C.muted,fontSize:T.sm}}>Loading your dashboard…</div>
-          <div style={{width:36,height:36,border:`3px solid ${C.border}`,borderTopColor:C.gold,borderRadius:"50%",animation:"spin 0.8s linear infinite"}}/>
-        </div>
-      );
-    }
+    // Artist is logged in but their profile isn't in local state yet.
+    // onAuthStateChange / getSession above will have already triggered a fetch
+    // and called setArtists — this spinner shows briefly while that resolves.
+    // We do NOT call getSupabase() here (that would be a side-effect in render).
     // AUTH-FIX-2: Artist logged in but no matching artist profile found.
     // Previously fell through silently — user stuck in broken limbo with no
     // logout button. Now shows a clear error with logout option.
@@ -6007,71 +6093,62 @@ function ApplySheet({ onSubmit, onClose }) {
     const artistData={id,name:f.name,nameDari:f.nameDari||"",genre:f.genre,location:f.location||"—",rating:0,reviews:0,priceInfo:f.priceInfo||"On request",deposit:parseInt(f.deposit)||1000,emoji:emojis[Math.floor(Math.random()*emojis.length)],color:cols[Math.floor(Math.random()*cols.length)],photo:null,bio:f.bio||"",tags:f.tags.split(",").map(t=>t.trim()).filter(Boolean),instruments:f.instruments.split(",").map(t=>t.trim()).filter(Boolean),superhost:false,status:"pending",joined:MONTHS[NOW.getMonth()]+" "+NOW.getFullYear(),available:{[MK]:[]},blocked:{[MK]:[]},earnings:0,totalBookings:0,verified:false,stripeConnected:false,stripeAccount:null,cancellationPolicy:f.cancellationPolicy};
 
     // ── Supabase signup ───────────────────────────────────────────────
+    // KEY: Use a SEPARATE temporary Supabase client for registration.
+    // This ensures the main client's session (admin/visitor) is NEVER affected.
     if(HAS_SUPA){
       try{
-        const sb=await getSupabase();
-        const{data,error}=await sb.auth.signUp({
+        const{createClient:cc}=await import("@supabase/supabase-js");
+        const regSb=cc(SUPA_URL,SUPA_KEY,{
+          auth:{persistSession:false,storageKey:"awaz-reg-temp",lock:(_n,_t,fn)=>fn()}
+        });
+        const{data,error}=await regSb.auth.signUp({
           email:f.email.toLowerCase().trim(),
           password:f.pass,
           options:{data:{name:f.name},emailRedirectTo:window.location.origin},
         });
         if(error){
           setLoading(false);
-          const msg = error.message.toLowerCase();
-          if(msg.includes('rate limit')||msg.includes('email rate')||msg.includes('over_email')){
-            // Supabase email limit hit — save to demo mode, notify admin
-            onSubmit(artistData,{id:`u_${id}`,role:"artist",email:f.email,hash:sh(f.pass),name:f.name,artistId:id});
+          const msg=error.message.toLowerCase();
+          if(msg.includes("rate limit")||msg.includes("email rate")||msg.includes("over_email")){
+            onSubmit(artistData,{id:`u_${id}`,role:"artist",email:f.email,hash:sh(f.pass),name:f.name,artistId:id},false);
             setDone(true);
-          } else if(msg.includes('already registered')||msg.includes('already exists')){
+          } else if(msg.includes("already registered")||msg.includes("already exists")){
             setErr("An account with this email already exists. Please sign in instead.");
           } else {
             setErr(error.message);
           }
           return;
         }
-        // Insert artist row
-        await sb.from("artists").insert([{
-          id,name:f.name,name_dari:f.nameDari||"",genre:f.genre,
-          location:f.location||"—",bio:f.bio||"",price_info:f.priceInfo||"On request",
-          deposit:parseInt(f.deposit)||1000,
-          emoji:artistData.emoji,color:artistData.color,
-          tags:artistData.tags,instruments:artistData.instruments,
-          status:"pending",cancellation_policy:f.cancellationPolicy,
-          joined_date:MONTHS[NOW.getMonth()]+" "+NOW.getFullYear(),
-        }]);
-        // Insert profile
-        if(data.user){
-          await sb.from("profiles").upsert([{
-            id:data.user.id,role:"artist",artist_id:id,name:f.name,
-          }],{onConflict:"id"});
+        // Use main client (with admin/anon session) to insert data
+        const mainSb=await getSupabase();
+        if(mainSb){
+          await mainSb.from("artists").insert([{
+            id,name:f.name,name_dari:f.nameDari||"",genre:f.genre,
+            location:f.location||"—",bio:f.bio||"",price_info:f.priceInfo||"On request",
+            deposit:parseInt(f.deposit)||1000,
+            emoji:artistData.emoji,color:artistData.color,
+            tags:artistData.tags,instruments:artistData.instruments,
+            status:"pending",cancellation_policy:f.cancellationPolicy,
+            joined_date:MONTHS[NOW.getMonth()]+" "+NOW.getFullYear(),
+          }]).catch(e=>console.warn("Artist insert:",e?.message));
+          if(data.user){
+            await mainSb.from("profiles").upsert([{
+              id:data.user.id,role:"artist",artist_id:id,name:f.name,
+            }],{onConflict:"id"}).catch(e=>console.warn("Profile insert:",e?.message));
+          }
         }
-        // CRITICAL: Also update local state so admin sees new artist immediately.
-        // Pass autoLogin=true only when Supabase has an active session (email
-        // confirmation is disabled in the Supabase project settings).
-        // When email confirmation IS required, data.session is null and the
-        // artist will need to confirm their email before logging in.
-        // ── Clear the newly created artist's session from Supabase storage.
-        // Without this, page reload would restore the artist's session instead of admin.
-        // We set _applyArtistSignOut=true so onAuthStateChange ignores the SIGNED_OUT
-        // event and keeps the current user (admin or visitor) logged in.
-        if(data.session){
-          _applyArtistSignOut=true;
-          try{ await sb.auth.signOut(); }catch(e){ _applyArtistSignOut=false; }
-          // Backup reset in case onAuthStateChange never fires (e.g. network error)
-          setTimeout(()=>{ _applyArtistSignOut=false; },3000);
-        }
+        // NOTE: No signOut() on regSb — with persistSession:false there is
+        // no session to clear, and calling signOut() could broadcast a
+        // SIGNED_OUT event that would clear the main app's session (admin).
         onSubmit(artistData,{
-          id:data.user?.id||`u_${id}`,
-          role:"artist",
-          email:f.email,
-          hash:sh(f.pass),
-          name:f.name,
-          artistId:id,
-        }, false); // always false — artist logs in manually
-        setLoading(false);
-        setDone(true);
-        return;
-      }catch(e){setLoading(false);setErr("Registration failed — please try again.");return;}
+          id:data.user?.id||`u_${id}`,role:"artist",
+          email:f.email,hash:sh(f.pass),name:f.name,artistId:id,
+        },false);
+        setLoading(false);setDone(true);return;
+      }catch(e){
+        console.error("Registration error:",e);
+        setLoading(false);setErr("Registration failed — please try again.");return;
+      }
     }
 
     // ── Demo fallback ─────────────────────────────────────────────────
