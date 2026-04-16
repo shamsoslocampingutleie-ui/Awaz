@@ -1,17 +1,20 @@
 import React, { useState, useRef, useEffect, useMemo } from "react";
-import { createClient } from "@supabase/supabase-js";
+// ⚠️  @supabase/supabase-js er IKKE importert statisk her.
+// Statisk import legger Supabase i vendor.js som evalueres FØR
+// error-handleren nedenfor er registrert. Det betyr at Supabase
+// kan kaste "No Listener: tabs:outgoing.message.ready" før noe
+// kan fange det → hvit skjerm.
+// Løsning: dynamic import inne i getSupabase() — lastes kun ved behov,
+// etter at error-handleren er aktiv.
 
 // ═══════════════════════════════════════════════════════════════════════
-// CRITICAL: Global error suppressor — must run BEFORE React mounts.
-// Supabase v2 uses BroadcastChannel tab-locking for auth sync. In certain
-// browser/timing conditions it throws "No Listener: tabs:outgoing.message.ready"
-// as an Uncaught (in promise). In React 18 concurrent mode this can prevent
-// the entire app from rendering (blank white screen).
-// This handler intercepts and kills the error before React ever sees it.
+// STEG 1 — Global error suppressor (kjører ved modul-load, før alt annet)
+// Fanger Supabase tab-lock feil og stopper dem fra å nå React 18
+// concurrent mode scheduler som ellers unmounter render-treet.
+// capture:true = kjører absolutt først, stopImmediatePropagation = ingen
+// annen handler (inkl. React) ser hendelsen.
 // ═══════════════════════════════════════════════════════════════════════
 if (typeof window !== "undefined") {
-  // capture:true = kjører FØR React sin handler
-  // stopImmediatePropagation = React ser det ALDRI
   window.addEventListener("unhandledrejection", (e: PromiseRejectionEvent) => {
     const msg: string = e?.reason?.message ?? String(e?.reason ?? "");
     if (
@@ -23,40 +26,40 @@ if (typeof window !== "undefined") {
       e.preventDefault();
       e.stopImmediatePropagation();
     }
-  }, true); // ← capture phase
+  }, true);
 }
 
-
 // ── Supabase client ───────────────────────────────────────────────────
-// Reads env vars injected by Vite (VITE_ prefix required)
 const SUPA_URL  = import.meta.env.VITE_SUPABASE_URL  || "";
 const SUPA_KEY  = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
 
-// Use the npm-bundled Supabase package (NOT a dynamic CDN import).
-// A CDN import would create a second Supabase instance alongside the
-// Vite-bundled one, causing "No Listener: tabs:outgoing.message.ready".
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let supabase: any = null;
+
 async function getSupabase() {
   if (supabase) return supabase;
   if (!SUPA_URL || !SUPA_KEY) return null;
   try {
+    // DYNAMIC import — Supabase lastes LAZY, etter at error-handleren
+    // over er registrert. Dette forhindrer at vendor.js-feilen oppstår
+    // før noe kan fange den.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { createClient } = await import("@supabase/supabase-js") as any;
     supabase = createClient(SUPA_URL, SUPA_KEY, {
       auth: {
         persistSession:     true,
         autoRefreshToken:   true,
         detectSessionInUrl: true,
-        storageKey:         'awaz-auth-v1',
-        // CRITICAL: Override the BroadcastChannel lock that Supabase uses to
-        // sync auth across tabs. Without this, it throws
-        // "No Listener: tabs:outgoing.message.ready" which in React 18
-        // concurrent mode can unmount the entire tree (blank screen).
-        lock: (_n: string, _t: number, fn: () => Promise<unknown>) => fn(),
+        storageKey:         "awaz-auth-v1",
+        // Bypass BroadcastChannel-låsen — viktigste enkeltfiks
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        lock: (_n: any, _t: any, fn: any) => fn(),
       },
     });
     return supabase;
   } catch { return null; }
 }
+
 const HAS_SUPA = !!(SUPA_URL && SUPA_KEY);
 
 /* ═══════════════════════════════════════════════════════════════════════
