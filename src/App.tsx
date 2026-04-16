@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { createClient } from "@supabase/supabase-js";
 
 // ── Supabase client ───────────────────────────────────────────────────
@@ -9,12 +9,25 @@ const SUPA_KEY  = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
 // Use the npm-bundled Supabase package (NOT a dynamic CDN import).
 // A CDN import would create a second Supabase instance alongside the
 // Vite-bundled one, causing "No Listener: tabs:outgoing.message.ready".
-let supabase: ReturnType<typeof createClient> | null = null;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let supabase: any = null;
 async function getSupabase() {
   if (supabase) return supabase;
   if (!SUPA_URL || !SUPA_KEY) return null;
   try {
-    supabase = createClient(SUPA_URL, SUPA_KEY);
+    supabase = createClient(SUPA_URL, SUPA_KEY, {
+      auth: {
+        persistSession:     true,
+        autoRefreshToken:   true,
+        detectSessionInUrl: true,
+        storageKey:         'awaz-auth-v1',
+        // CRITICAL: Override the BroadcastChannel lock that Supabase uses to
+        // sync auth across tabs. Without this, it throws
+        // "No Listener: tabs:outgoing.message.ready" which in React 18
+        // concurrent mode can unmount the entire tree (blank screen).
+        lock: (_n: string, _t: number, fn: () => Promise<unknown>) => fn(),
+      },
+    });
     return supabase;
   } catch { return null; }
 }
@@ -4720,10 +4733,48 @@ function LangSwitcher({ lang, onSwitch }) {
   );
 }
 
+
+// ── Global Error Boundary ──────────────────────────────────────────────
+// Catches any render-time errors that would otherwise produce a blank screen.
+// Shows a visible fallback with a reload button instead of nothing.
+class ErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { error: Error | null }
+> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { error: null };
+  }
+  static getDerivedStateFromError(error: Error) {
+    return { error };
+  }
+  render() {
+    if (this.state.error) {
+      return (
+        <div style={{minHeight:"100vh",background:"#07060B",display:"flex",alignItems:"center",justifyContent:"center",padding:24,fontFamily:"'DM Sans',sans-serif"}}>
+          <div style={{background:"#141220",border:"1px solid #201D2E",borderRadius:16,padding:32,maxWidth:420,width:"100%",textAlign:"center"}}>
+            <div style={{fontSize:40,marginBottom:16}}>⚠️</div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:22,fontWeight:700,color:"#EDE4CE",marginBottom:8}}>Something went wrong</div>
+            <div style={{color:"#8A7D68",fontSize:14,lineHeight:1.7,marginBottom:24,wordBreak:"break-word"}}>
+              {this.state.error?.message || "An unexpected error occurred."}
+            </div>
+            <button
+              onClick={()=>window.location.reload()}
+              style={{background:"linear-gradient(135deg,#C8A84A,#A87820)",color:"#07060B",border:"none",borderRadius:10,padding:"13px 28px",fontSize:15,fontWeight:800,cursor:"pointer",fontFamily:"inherit"}}>
+              Reload Page
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 // ═══════════════════════════════════════════════════════════════════════
 // ROOT APP
 // ═══════════════════════════════════════════════════════════════════════
-export default function App() {
+function AppInner() {
   const vp=useViewport();
   const [theme,setTheme]=useState(()=>{ try{return localStorage.getItem('awaz-theme')||'dark';}catch{return 'dark';} });
   const toggleTheme=()=>{
@@ -4782,21 +4833,26 @@ export default function App() {
       }
 
       // ── 2. Subscribe to future auth changes (login/logout) ──
+      // IMPORTANT: The callback is async. Supabase does NOT await it, so any
+      // thrown error becomes an Uncaught (in promise) that can crash React 18.
+      // Wrap everything inside its own try/catch to keep errors contained.
       const{data:{subscription}}=sb.auth.onAuthStateChange(async(_event,supaSession)=>{
-        if(supaSession?.user){
-          const{data:profile}=await sb.from("profiles").select("*").eq("id",supaSession.user.id).single();
-          const localUser=USERS.find(u=>u.email?.toLowerCase()===supaSession.user.email?.toLowerCase());
-          const role=profile?.role||localUser?.role||"customer";
-          setSession({
-            id:supaSession.user.id,
-            email:supaSession.user.email,
-            name:profile?.name||supaSession.user.email,
-            role,
-            artistId:profile?.artist_id||localUser?.artistId||null,
-          });
-        } else {
-          setSession(null);
-        }
+        try{
+          if(supaSession?.user){
+            const{data:profile}=await sb.from("profiles").select("*").eq("id",supaSession.user.id).single();
+            const localUser=USERS.find(u=>u.email?.toLowerCase()===supaSession.user.email?.toLowerCase());
+            const role=profile?.role||localUser?.role||"customer";
+            setSession({
+              id:supaSession.user.id,
+              email:supaSession.user.email,
+              name:profile?.name||supaSession.user.email,
+              role,
+              artistId:profile?.artist_id||localUser?.artistId||null,
+            });
+          } else {
+            setSession(null);
+          }
+        }catch(e){console.warn("Auth state change error:",e);}
       });
       unsub=subscription;
 
@@ -5843,5 +5899,14 @@ function ApplySheet({ onSubmit, onClose }) {
         )}
       </div>
     </Sheet>
+  );
+}
+
+// ── Root export — wraps everything in ErrorBoundary ─────────────────
+export default function App() {
+  return (
+    <ErrorBoundary>
+      <AppInner />
+    </ErrorBoundary>
   );
 }
