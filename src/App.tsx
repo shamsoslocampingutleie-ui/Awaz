@@ -2689,11 +2689,12 @@ function LoginSheet({ users, open, onLogin, onClose }) {
           const role=dbUser?.role||profile?.role||"customer";
           const name=dbUser?.name||profile?.name||data.user.email;
 
-          // For artist: get artistId from profiles table or find in artist_profiles
-          let artistId=profile?.artist_id||null;
-          if(role==="artist"&&!artistId){
+          // Always fetch artistId directly from artist_profiles
+          let artistId=null;
+          if(role==="artist"){
             const{data:ap}=await sb.from("artist_profiles").select("id").eq("user_id",data.user.id).single();
             if(ap) artistId=ap.id;
+            else artistId=profile?.artist_id||null;
           }
 
           setLoading(false);
@@ -5088,10 +5089,12 @@ function AppInner() {
         const{data:dbUser}=await sb.from("users").select("*").eq("id",existingSession.user.id).single();
         const{data:profile}=await sb.from("profiles").select("*").eq("id",existingSession.user.id).single();
         const role=dbUser?.role||profile?.role||"customer";
-        let artistId=profile?.artist_id||null;
-        if(role==="artist"&&!artistId){
+        // Always fetch artistId directly from artist_profiles
+        let artistId=null;
+        if(role==="artist"){
           const{data:ap}=await sb.from("artist_profiles").select("id").eq("user_id",existingSession.user.id).single();
           if(ap) artistId=ap.id;
+          else artistId=profile?.artist_id||null;
         }
 
         // On refresh: if artist, pre-load their profile into artists array
@@ -5173,11 +5176,13 @@ function AppInner() {
             const{data:profile}=await sb.from("profiles").select("*").eq("id",supaSession.user.id).single();
             const role=dbUser?.role||profile?.role||"customer";
 
-            // Get artistId from profiles or artist_profiles
-            let artistId=profile?.artist_id||null;
-            if(role==="artist"&&!artistId){
+            // Always fetch artistId directly from artist_profiles by user_id
+            // This is more reliable than reading artist_id from profiles table
+            let artistId=null;
+            if(role==="artist"){
               const{data:ap}=await sb.from("artist_profiles").select("id").eq("user_id",supaSession.user.id).single();
               if(ap) artistId=ap.id;
+              else artistId=profile?.artist_id||null;
             }
 
             // ── STEP 3: If artist, load their profile into artists array ──
@@ -6185,7 +6190,8 @@ function ApplySheet({ onSubmit, onClose }) {
   const submit=async()=>{
     setLoading(true);setErr("");
     const emojis=["🎤","🪕","🎶","🎸","🪘","🎷","🎹"],cols=[C.ruby,C.lapis,C.emerald,C.saffron,C.gold,C.lavender];
-    const id=`a${Date.now()}`;
+    // Use UUID so it matches artists.id column type in Supabase
+    const id=crypto.randomUUID();
     const artistData={id,name:f.name,nameDari:f.nameDari||"",genre:f.genre,location:f.location||"—",rating:0,reviews:0,priceInfo:f.priceInfo||"On request",deposit:parseInt(f.deposit)||1000,emoji:emojis[Math.floor(Math.random()*emojis.length)],color:cols[Math.floor(Math.random()*cols.length)],photo:null,bio:f.bio||"",tags:f.tags.split(",").map(t=>t.trim()).filter(Boolean),instruments:f.instruments.split(",").map(t=>t.trim()).filter(Boolean),superhost:false,status:"pending",joined:MONTHS[NOW.getMonth()]+" "+NOW.getFullYear(),available:{[MK]:[]},blocked:{[MK]:[]},earnings:0,totalBookings:0,verified:false,stripeConnected:false,stripeAccount:null,cancellationPolicy:f.cancellationPolicy};
 
     // ── Supabase signup ───────────────────────────────────────────────
@@ -6220,55 +6226,62 @@ function ApplySheet({ onSubmit, onClose }) {
         if(data.user){
           const mainSb=await getSupabase();
           if(mainSb){
-            // 1. Insert into artist_profiles (new schema)
-            try{
-              const{error:apErr}=await mainSb.from("artist_profiles").insert({
-                user_id:   data.user.id,
-                name:      f.name,
-                name_dari: f.nameDari||"",
-                genre:     f.genre,
-                location:  f.location||"",
-                bio:       f.bio||"",
-                price_info:f.priceInfo||"On request",
-                deposit:   parseInt(f.deposit)||1000,
-                emoji:     artistData.emoji,
-                color:     artistData.color,
-                tags:      artistData.tags,
-                instruments:artistData.instruments,
-                cancellation_policy:f.cancellationPolicy,
-              });
-              if(apErr) console.warn("artist_profiles:",apErr.message);
-            }catch(e){console.warn("artist_profiles insert failed:",e);}
+            // ── Insert all data for new artist ────────────────────────────
+            // Order matters: artists first (profiles has FK to artists)
 
-            // 2. Insert into old "artists" table (fallback)
+            // 1. Insert into artists table (main table the app reads from)
             try{
-              await mainSb.from("artists").insert([{
-                id,name:f.name,name_dari:f.nameDari||"",genre:f.genre,
-                location:f.location||"—",bio:f.bio||"",price_info:f.priceInfo||"On request",
-                deposit:parseInt(f.deposit)||1000,
-                emoji:artistData.emoji,color:artistData.color,
-                tags:artistData.tags,instruments:artistData.instruments,
-                status:"pending",cancellation_policy:f.cancellationPolicy,
-                joined_date:MONTHS[NOW.getMonth()]+" "+NOW.getFullYear(),
+              const{error:aErr}=await mainSb.from("artists").insert([{
+                id,                                          // UUID
+                name:          f.name,
+                name_dari:     f.nameDari||"",
+                genre:         f.genre,
+                location:      f.location||"—",
+                bio:           f.bio||"",
+                price_info:    f.priceInfo||"On request",
+                deposit:       parseInt(f.deposit)||1000,
+                emoji:         artistData.emoji,
+                color:         artistData.color,
+                tags:          artistData.tags,
+                instruments:   artistData.instruments,
+                status:        "pending",
+                cancellation_policy: f.cancellationPolicy,
+                joined_date:   MONTHS[NOW.getMonth()]+" "+NOW.getFullYear(),
               }]);
-            }catch(e){}
+              if(aErr) console.warn("artists insert:",aErr.message);
+            }catch(e){console.warn("artists insert failed:",e);}
 
-            // 3. Upsert users table
+            // 2. Upsert profiles (links auth user → artist via artist_id)
+            try{
+              const{error:pErr}=await mainSb.from("profiles").upsert([{
+                id:        data.user.id,
+                role:      "artist",
+                artist_id: id,           // UUID matching artists.id
+                name:      f.name,
+              }],{onConflict:"id"});
+              if(pErr) console.warn("profiles upsert:",pErr.message);
+            }catch(e){console.warn("profiles upsert failed:",e);}
+
+            // 3. Upsert users table (role + approval status)
             try{
               await mainSb.from("users").upsert({
-                id:         data.user.id,
-                email:      f.email.toLowerCase().trim(),
-                name:       f.name,
-                role:       "artist",
-                is_approved:false,
+                id:          data.user.id,
+                email:       f.email.toLowerCase().trim(),
+                name:        f.name,
+                role:        "artist",
+                is_approved: false,
               },{onConflict:"id"});
             }catch(e){}
 
-            // 4. Upsert profiles table (old schema fallback)
+            // 4. Also insert into artist_profiles (new schema, non-critical)
             try{
-              await mainSb.from("profiles").upsert([{
-                id:data.user.id,role:"artist",artist_id:id,name:f.name,
-              }],{onConflict:"id"});
+              await mainSb.from("artist_profiles").insert({
+                user_id: data.user.id,
+                name:    f.name,
+                genre:   f.genre,
+                bio:     f.bio||"",
+                deposit: parseInt(f.deposit)||1000,
+              });
             }catch(e){}
           }
         }
