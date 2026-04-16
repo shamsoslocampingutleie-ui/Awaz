@@ -3732,7 +3732,8 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
     bio:artist.bio,
     priceInfo:artist.priceInfo,
     currency:artist.currency||"EUR",
-    deposit:String(artist.deposit),
+    deposit:String(Math.max(500, artist.deposit||500)),
+    country:artist.country||"NO",
     cancellationPolicy:artist.cancellationPolicy,
   });
 
@@ -3771,7 +3772,8 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
   ];
 
   const saveEdit=async()=>{
-    const updates={bio:editF.bio,priceInfo:editF.priceInfo,currency:editF.currency||"EUR",deposit:parseInt(editF.deposit)||1000,cancellationPolicy:editF.cancellationPolicy};
+    const dep=Math.max(500,parseInt(editF.deposit)||500);
+    const updates={bio:editF.bio,priceInfo:editF.priceInfo,currency:editF.currency||"EUR",deposit:dep,country:editF.country||"NO",cancellationPolicy:editF.cancellationPolicy};
     onUpdateArtist(artist.id,updates);
     setEditing(false);
     // Persist to Supabase
@@ -4364,9 +4366,11 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
                   <Inp label="Bio" value={editF.bio} onChange={e=>setEditF(f=>({...f,bio:e.target.value}))} rows={4} placeholder="Tell clients about yourself…"/>
                   <Inp label="Starting Price" value={editF.priceInfo} onChange={e=>setEditF(f=>({...f,priceInfo:e.target.value}))} placeholder="From €2,500"/>
                   <div style={{display:"flex",gap:8}}>
-                    <Inp label="Deposit Amount" type="number" value={editF.deposit} onChange={e=>setEditF(f=>({...f,deposit:e.target.value}))} hint="Min €500"/>
+                    <Inp label="Deposit (min €500)" type="number" value={editF.deposit} onChange={e=>setEditF(f=>({...f,deposit:String(Math.max(500,parseInt(e.target.value)||500))}))} hint="Customers pay this at booking — minimum €500"/>
                     <Sel label="Currency" value={editF.currency||"EUR"} onChange={e=>setEditF(f=>({...f,currency:e.target.value}))}
                       options={[["EUR","€ EUR"],["NOK","kr NOK"],["SEK","kr SEK"],["DKK","kr DKK"],["GBP","£ GBP"],["USD","$ USD"],["CHF","Fr CHF"],["AED","AED"],["AUD","A$"]]}/>
+                    <Sel label="Your Country" value={editF.country||"NO"} onChange={e=>setEditF(f=>({...f,country:e.target.value}))}
+                      options={[["NO","Norway 🇳🇴"],["SE","Sweden 🇸🇪"],["DK","Denmark 🇩🇰"],["DE","Germany 🇩🇪"],["NL","Netherlands 🇳🇱"],["BE","Belgium 🇧🇪"],["FR","France 🇫🇷"],["GB","United Kingdom 🇬🇧"],["CH","Switzerland 🇨🇭"],["AT","Austria 🇦🇹"],["FI","Finland 🇫🇮"],["US","United States 🇺🇸"],["CA","Canada 🇨🇦"],["AU","Australia 🇦🇺"],["AE","UAE 🇦🇪"],["AF","Afghanistan 🇦🇫"],["OTHER","Other"]]}/>
                   </div>
                   <Sel label="Cancellation Policy" value={editF.cancellationPolicy} onChange={e=>setEditF(f=>({...f,cancellationPolicy:e.target.value}))}
                     options={POLICIES.map(p=>[p.id,`${p.label} — ${p.desc}`])}/>
@@ -6270,11 +6274,11 @@ function AIWidget({ artists, onPick }) {
 // ── Apply as Artist Sheet ─────────────────────────────────────────────
 function ApplySheet({ onSubmit, onClose }) {
   const [step,setStep]=useState(1);
-  const [f,setF]=useState({name:"",nameDari:"",email:"",pass:"",pass2:"",genre:"",location:"",priceInfo:"",deposit:"1000",bio:"",instruments:"",tags:"",cancellationPolicy:"moderate"});
+  const [f,setF]=useState({name:"",nameDari:"",email:"",pass:"",pass2:"",genre:"",country:"NO",location:"",currency:"EUR",priceInfo:"",deposit:"500",bio:"",instruments:"",tags:"",cancellationPolicy:"moderate"});
   const [err,setErr]=useState(""),[done,setDone]=useState(false),[loading,setLoading]=useState(false);
 
   const v1=()=>{if(!f.name)return"Name required.";if(!f.email||!f.email.includes("@"))return"Valid email required.";if(f.pass.length<8)return"Password: 8+ chars.";if(!/[A-Z]/.test(f.pass))return"Need 1 uppercase.";if(!/[0-9]/.test(f.pass))return"Need 1 number.";if(f.pass!==f.pass2)return"Passwords don't match.";return null;};
-  const v2=()=>{if(!f.genre)return"Genre required.";return null;};
+  const v2=()=>{if(!f.genre)return"Genre required.";if(parseInt(f.deposit)<500)return"Minimum deposit is €500.";return null;};
 
   const next=()=>{const e=step===1?v1():v2();if(e){setErr(e);return;}setErr("");setStep(s=>s+1);};
   const submit=async()=>{
@@ -6282,7 +6286,8 @@ function ApplySheet({ onSubmit, onClose }) {
     const emojis=["🎤","🪕","🎶","🎸","🪘","🎷","🎹"],cols=[C.ruby,C.lapis,C.emerald,C.saffron,C.gold,C.lavender];
     // Use UUID so it matches artists.id column type in Supabase
     const id=crypto.randomUUID();
-    const artistData={id,name:f.name,nameDari:f.nameDari||"",genre:f.genre,location:f.location||"—",rating:0,reviews:0,priceInfo:f.priceInfo||"On request",deposit:parseInt(f.deposit)||1000,emoji:emojis[Math.floor(Math.random()*emojis.length)],color:cols[Math.floor(Math.random()*cols.length)],photo:null,bio:f.bio||"",tags:f.tags.split(",").map(t=>t.trim()).filter(Boolean),instruments:f.instruments.split(",").map(t=>t.trim()).filter(Boolean),superhost:false,status:"pending",joined:MONTHS[NOW.getMonth()]+" "+NOW.getFullYear(),available:{[MK]:[]},blocked:{[MK]:[]},earnings:0,totalBookings:0,verified:false,stripeConnected:false,stripeAccount:null,cancellationPolicy:f.cancellationPolicy};
+    const depositAmt=Math.max(500,parseInt(f.deposit)||500);
+    const artistData={id,name:f.name,nameDari:f.nameDari||"",genre:f.genre,location:f.location||"—",country:f.country||"NO",currency:f.currency||"EUR",rating:0,reviews:0,priceInfo:f.priceInfo||"On request",deposit:depositAmt,emoji:emojis[Math.floor(Math.random()*emojis.length)],color:cols[Math.floor(Math.random()*cols.length)],photo:null,bio:f.bio||"",tags:f.tags.split(",").map(t=>t.trim()).filter(Boolean),instruments:f.instruments.split(",").map(t=>t.trim()).filter(Boolean),superhost:false,status:"pending",joined:MONTHS[NOW.getMonth()]+" "+NOW.getFullYear(),available:{[MK]:[]},blocked:{[MK]:[]},earnings:0,totalBookings:0,verified:false,stripeConnected:false,stripeAccount:null,cancellationPolicy:f.cancellationPolicy};
 
     // ── Supabase signup ───────────────────────────────────────────────
     // KEY: Use a SEPARATE temporary Supabase client for registration.
@@ -6318,15 +6323,18 @@ function ApplySheet({ onSubmit, onClose }) {
           const authId = data.user.id;
 
           // 1. Insert into artists table
+          const depositFinal = Math.max(500, parseInt(f.deposit)||500);
           const{error:aErr}=await regSb.from("artists").insert([{
-            id:                  authId,   // use auth UUID as artist ID
+            id:                  authId,
             name:                f.name,
             name_dari:           f.nameDari||"",
             genre:               f.genre,
             location:            f.location||"—",
+            country:             f.country||"NO",
+            currency:            f.currency||"EUR",
             bio:                 f.bio||"",
             price_info:          f.priceInfo||"On request",
-            deposit:             parseInt(f.deposit)||1000,
+            deposit:             depositFinal,
             emoji:               artistData.emoji,
             color:               artistData.color,
             tags:                artistData.tags,
@@ -6432,9 +6440,13 @@ function ApplySheet({ onSubmit, onClose }) {
               <div style={{display:"flex",flexDirection:"column",gap:12}}>
                 <Sel label="Genre / Style *" value={f.genre} onChange={e=>setF(p=>({...p,genre:e.target.value}))}
                 options={[["","Select genre…"],["Ghazal","Ghazal — Classical vocal"],["Herati","Herati — Western Afghan folk"],["Mast","Mast — Dance & celebratory"],["Pashto","Pashto — Pashtun traditional"],["Logari","Logari — Southern Afghan"],["Qarsak","Qarsak — Party & wedding"],["Rubab","Rubab — Instrumental"],["Tabla","Tabla — Percussion"],["Sufi","Sufi — Devotional"],["Classical","Classical Afghan"],["Folk","Afghan Folk"],["Pop","Afghan Pop"],["Fusion","Afghan Fusion"],["Other","Other / Mixed"]]}/>
-                <Inp label="Location" placeholder="Kabul · Oslo" value={f.location} onChange={e=>setF(p=>({...p,location:e.target.value}))}/>
+                <Inp label="Location / City" placeholder="Oslo, Norway" value={f.location} onChange={e=>setF(p=>({...p,location:e.target.value}))}/>
+                <Sel label="Country" value={f.country} onChange={e=>setF(p=>({...p,country:e.target.value}))}
+                  options={[["NO","Norway 🇳🇴"],["SE","Sweden 🇸🇪"],["DK","Denmark 🇩🇰"],["DE","Germany 🇩🇪"],["NL","Netherlands 🇳🇱"],["BE","Belgium 🇧🇪"],["FR","France 🇫🇷"],["GB","United Kingdom 🇬🇧"],["CH","Switzerland 🇨🇭"],["AT","Austria 🇦🇹"],["FI","Finland 🇫🇮"],["US","United States 🇺🇸"],["CA","Canada 🇨🇦"],["AU","Australia 🇦🇺"],["AE","UAE 🇦🇪"],["AF","Afghanistan 🇦🇫"],["PK","Pakistan 🇵🇰"],["IR","Iran 🇮🇷"],["TR","Turkey 🇹🇷"],["OTHER","Other"]]}/>
+                <Sel label="Preferred Currency (you get paid in this)" value={f.currency} onChange={e=>setF(p=>({...p,currency:e.target.value}))}
+                  options={[["EUR","€ Euro (recommended)"],["NOK","kr Norwegian Krone"],["SEK","kr Swedish Krone"],["DKK","kr Danish Krone"],["GBP","£ British Pound"],["CHF","Fr Swiss Franc"],["USD","$ US Dollar"],["AED","د.إ UAE Dirham"]]}/>
                 <Inp label="Starting Price" placeholder="From €2,500" value={f.priceInfo} onChange={e=>setF(p=>({...p,priceInfo:e.target.value}))}/>
-                <Inp label="Deposit Amount (€)" type="number" value={f.deposit} onChange={e=>setF(p=>({...p,deposit:e.target.value}))} hint="Minimum €500"/>
+                <Inp label="Minimum Deposit (€ equivalent)" type="number" value={f.deposit} onChange={e=>setF(p=>({...p,deposit:e.target.value}))} hint="Minimum €500 — customers pay this when booking"/>
                 <Inp label="Instruments (comma-separated)" placeholder="Vocals, Harmonium" value={f.instruments} onChange={e=>setF(p=>({...p,instruments:e.target.value}))}/>
                 <Inp label="Tags (comma-separated)" placeholder="Ghazal, Wedding, Eid" value={f.tags} onChange={e=>setF(p=>({...p,tags:e.target.value}))}/>
                 <Sel label="Cancellation Policy" value={f.cancellationPolicy} onChange={e=>setF(p=>({...p,cancellationPolicy:e.target.value}))}
