@@ -5326,11 +5326,32 @@ function AppInner() {
       }
     }
   };
-  const handleArtistAction=(id,action)=>{
-    if(action==="verify") {
+  const handleArtistAction=async(id,action)=>{
+    if(action==="verify"){
       setArtists(p=>p.map(a=>a.id===id?{...a,verified:true}:a));
+      if(HAS_SUPA){
+        const sb=await getSupabase();
+        if(sb) await sb.from("artists").update({verified:true}).eq("id",id);
+      }
     } else {
+      // Update local state immediately
       setArtists(p=>p.map(a=>a.id===id?{...a,status:action}:a));
+      if(HAS_SUPA){
+        const sb=await getSupabase();
+        if(sb){
+          // Update artists.status
+          await sb.from("artists").update({status:action}).eq("id",id);
+          // CRITICAL: also update users.is_approved so artist can access dashboard
+          const isApproved = action==="approved";
+          await sb.from("users")
+            .update({role:"artist", is_approved:isApproved})
+            .eq("id",id); // artists.id = users.id (same UUID from trigger)
+          // Also update profiles.role
+          await sb.from("profiles")
+            .update({role:"artist"})
+            .eq("id",id);
+        }
+      }
     }
   };
   const handleToggle=(aid,month,year,day)=>setArtists(p=>p.map(a=>{
@@ -5432,7 +5453,8 @@ function AppInner() {
   if(session?.role==="admin") return <AdminDash key={lang} artists={artists} bookings={bookings} setBookings={setBookings} users={users} inquiries={inquiries} onAction={handleArtistAction} onLogout={logout} onMsg={handleMsg} onUpdateInquiry={handleUpdateInquiry}/>;
   if(session?.role==="artist"){
     const myA=artists.find(a=>a.id===session.artistId);
-    if(myA) return <ArtistPortal key={lang} user={session} artist={myA} bookings={bookings} onLogout={logout} onToggleDay={handleToggle} onMsg={handleMsg} onUpdateArtist={handleUpdateArtist}/>;
+    // Only show dashboard if artist is approved by admin
+    if(myA && myA.status==="approved") return <ArtistPortal key={lang} user={session} artist={myA} bookings={bookings} onLogout={logout} onToggleDay={handleToggle} onMsg={handleMsg} onUpdateArtist={handleUpdateArtist}/>;
     // Wait for hydration — avoid race condition on page refresh
     if(!appReady) return(
       <div style={{minHeight:"100vh",background:C.bg,display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:16,fontFamily:"'DM Sans',sans-serif"}}>
@@ -5477,18 +5499,42 @@ function AppInner() {
           });
       });
     }
-    // AUTH-FIX-2: Artist logged in but no matching artist profile found.
-    // Previously fell through silently — user stuck in broken limbo with no
-    // logout button. Now shows a clear error with logout option.
+    // Artist logged in but profile not loaded yet — check if pending approval
+    // Show appropriate screen based on what we know
+    const pendingArtist = artists.find(a => a.id === session.artistId);
+    const isPending = !pendingArtist || pendingArtist?.status === "pending";
+
     return(
       <div style={{minHeight:"100vh",background:C.bg,display:"flex",alignItems:"center",justifyContent:"center",padding:24,fontFamily:"'DM Sans',sans-serif"}}>
-        <style>{`@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;0,800&family=DM+Sans:wght@400;500;700&display=swap');*{box-sizing:border-box;margin:0;padding:0;}`}</style>
-        <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:16,padding:32,maxWidth:400,width:"100%",textAlign:"center"}}>
-          <div style={{fontSize:40,marginBottom:16}}>⚠️</div>
-          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:22,fontWeight:700,color:C.text,marginBottom:8}}>{t('artistProfileNotFound')}</div>
-          <div style={{color:C.muted,fontSize:14,lineHeight:1.7,marginBottom:24}}>
-            You're logged in as <strong style={{color:C.gold}}>{session.name}</strong> but your artist profile could not be loaded. Please contact support or sign out and try again.
-          </div>
+        <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:16,padding:32,maxWidth:420,width:"100%",textAlign:"center"}}>
+          <div style={{fontFamily:"'Noto Naskh Arabic',serif",fontSize:28,color:C.gold,marginBottom:16}}>آواز</div>
+          {isPending ? (
+            <>
+              <div style={{fontSize:44,marginBottom:16}}>⏳</div>
+              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:22,fontWeight:700,color:C.text,marginBottom:12}}>
+                Profile Under Review
+              </div>
+              <div style={{color:C.muted,fontSize:14,lineHeight:1.8,marginBottom:8}}>
+                Welcome, <strong style={{color:C.gold}}>{session.name}</strong>!
+              </div>
+              <div style={{color:C.muted,fontSize:13,lineHeight:1.8,marginBottom:24}}>
+                Your artist profile has been submitted and is being reviewed by the Awaz team. You'll get full access to your dashboard once approved — typically within 24–48 hours.
+              </div>
+              <div style={{background:"rgba(196,120,32,0.08)",border:`1px solid ${C.saffron}33`,borderRadius:10,padding:"12px 16px",marginBottom:24,fontSize:12,color:C.textD,lineHeight:1.7}}>
+                💡 Make sure you've confirmed your email address if required.
+              </div>
+            </>
+          ) : (
+            <>
+              <div style={{fontSize:40,marginBottom:16}}>⚠️</div>
+              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:22,fontWeight:700,color:C.text,marginBottom:8}}>
+                Profile Not Found
+              </div>
+              <div style={{color:C.muted,fontSize:14,lineHeight:1.7,marginBottom:24}}>
+                Logged in as <strong style={{color:C.gold}}>{session.name}</strong> but your profile could not be loaded. Please sign out and try again.
+              </div>
+            </>
+          )}
           <Btn v="ghost" sz="lg" onClick={logout} xs={{width:"100%"}}>{t('signOut')}</Btn>
         </div>
       </div>
@@ -6332,29 +6378,20 @@ function ApplySheet({ onSubmit, onClose }) {
         // NOTE: No signOut() on regSb — with persistSession:false there is
         // no session to clear, and calling signOut() could broadcast a
         // SIGNED_OUT event that would clear the main app's session (admin).
-        // ── AUTO-LOGIN after successful registration ──────────────────
-        // Use the auth user's UUID as artistId (matches artists.id set by trigger)
+        // Registration successful — add to local state but do NOT auto-login.
+        // Admin must approve first. Artist sees "pending" screen.
         const authUserId = data.user?.id || `u_${id}`;
-        const finalArtistId = authUserId; // trigger sets artists.id = user.id
+        const finalArtistId = authUserId;
+        const finalArtistData = { ...artistData, id: finalArtistId, status: "pending" };
 
-        // Update artistData to use the correct UUID
-        const finalArtistData = {
-          ...artistData,
-          id: finalArtistId,
-          status: "approved", // trigger may set pending, but we show dashboard immediately
-        };
-
-        // Submit adds artist to local state
         onSubmit(finalArtistData, {
-          id:      authUserId,
-          role:    "artist",
-          email:   f.email,
-          hash:    sh(f.pass),
-          name:    f.name,
-          artistId:finalArtistId,
-        }, true); // ← autoLogin=TRUE — sends artist straight to dashboard
+          id: authUserId, role: "artist",
+          email: f.email, hash: sh(f.pass),
+          name: f.name, artistId: finalArtistId,
+        }, false); // autoLogin=FALSE — must wait for admin approval
 
         setLoading(false);
+        setDone(true);
         return;
       }catch(e){
         console.error("Registration error:",e);
