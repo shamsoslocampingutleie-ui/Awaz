@@ -1,17 +1,19 @@
 import { useState, useRef, useEffect, useMemo } from "react";
+import { createClient } from "@supabase/supabase-js";
 
 // ── Supabase client ───────────────────────────────────────────────────
 // Reads env vars injected by Vite (VITE_ prefix required)
 const SUPA_URL  = import.meta.env.VITE_SUPABASE_URL  || "";
 const SUPA_KEY  = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
 
-// Lazy-load Supabase so the app still works without it (demo mode)
-let supabase = null;
+// Use the npm-bundled Supabase package (NOT a dynamic CDN import).
+// A CDN import would create a second Supabase instance alongside the
+// Vite-bundled one, causing "No Listener: tabs:outgoing.message.ready".
+let supabase: ReturnType<typeof createClient> | null = null;
 async function getSupabase() {
   if (supabase) return supabase;
   if (!SUPA_URL || !SUPA_KEY) return null;
   try {
-    const { createClient } = await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
     supabase = createClient(SUPA_URL, SUPA_KEY);
     return supabase;
   } catch { return null; }
