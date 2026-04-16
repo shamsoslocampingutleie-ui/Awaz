@@ -6248,22 +6248,53 @@ function ApplySheet({ onSubmit, onClose }) {
           }
           return;
         }
-        // Use main client (with admin/anon session) to insert data
-        const mainSb=await getSupabase();
-        if(mainSb){
-          await mainSb.from("artists").insert([{
-            id,name:f.name,name_dari:f.nameDari||"",genre:f.genre,
-            location:f.location||"—",bio:f.bio||"",price_info:f.priceInfo||"On request",
-            deposit:parseInt(f.deposit)||1000,
-            emoji:artistData.emoji,color:artistData.color,
-            tags:artistData.tags,instruments:artistData.instruments,
-            status:"pending",cancellation_policy:f.cancellationPolicy,
-            joined_date:MONTHS[NOW.getMonth()]+" "+NOW.getFullYear(),
-          }]).catch(e=>console.warn("Artist insert:",e?.message));
-          if(data.user){
+        // Insert into correct tables using the authenticated user's session
+        // artist_profiles uses user_id (uuid from auth), not a custom id
+        if(data.user){
+          const mainSb=await getSupabase();
+          if(mainSb){
+            // 1. Insert into artist_profiles (new schema)
+            const{error:apErr}=await mainSb.from("artist_profiles").insert({
+              user_id:   data.user.id,
+              name:      f.name,
+              name_dari: f.nameDari||"",
+              genre:     f.genre,
+              location:  f.location||"",
+              bio:       f.bio||"",
+              price_info:f.priceInfo||"On request",
+              deposit:   parseInt(f.deposit)||1000,
+              emoji:     artistData.emoji,
+              color:     artistData.color,
+              tags:      artistData.tags,
+              instruments:artistData.instruments,
+              cancellation_policy:f.cancellationPolicy,
+            });
+            if(apErr) console.warn("artist_profiles insert:",apErr.message);
+
+            // 2. Try inserting into old "artists" table too (fallback for existing schema)
+            await mainSb.from("artists").insert([{
+              id,name:f.name,name_dari:f.nameDari||"",genre:f.genre,
+              location:f.location||"—",bio:f.bio||"",price_info:f.priceInfo||"On request",
+              deposit:parseInt(f.deposit)||1000,
+              emoji:artistData.emoji,color:artistData.color,
+              tags:artistData.tags,instruments:artistData.instruments,
+              status:"pending",cancellation_policy:f.cancellationPolicy,
+              joined_date:MONTHS[NOW.getMonth()]+" "+NOW.getFullYear(),
+            }]).catch(()=>{}); // silent — may not exist
+
+            // 3. Upsert users table (role + approval)
+            await mainSb.from("users").upsert({
+              id:         data.user.id,
+              email:      f.email.toLowerCase().trim(),
+              name:       f.name,
+              role:       "artist",
+              is_approved:false,
+            },{onConflict:"id"}).catch(()=>{});
+
+            // 4. Upsert profiles table (old schema)
             await mainSb.from("profiles").upsert([{
               id:data.user.id,role:"artist",artist_id:id,name:f.name,
-            }],{onConflict:"id"}).catch(e=>console.warn("Profile insert:",e?.message));
+            }],{onConflict:"id"}).catch(()=>{});
           }
         }
         // NOTE: No signOut() on regSb — with persistSession:false there is
