@@ -2730,15 +2730,26 @@ function LoginSheet({ users, open, onLogin, onClose }) {
           setLoading(false);
           onLogin({id:data.user.id,email:data.user.email,name:hardcodedUser.name||"Admin",role:"admin",artistId:null});
         } else {
-          // Non-admin: fetch profile for role + artistId
+          // Check users table first (new schema), then profiles (old schema)
+          const {data:dbUser}=await sb.from("users").select("*").eq("id",data.user.id).single();
           const {data:profile}=await sb.from("profiles").select("*").eq("id",data.user.id).single();
-          const role=profile?.role||"customer";
-          const artistId=profile?.artist_id||null;
+
+          // users table takes priority over profiles table
+          const role=dbUser?.role||profile?.role||"customer";
+          const name=dbUser?.name||profile?.name||data.user.email;
+
+          // For artist: get artistId from profiles table or find in artist_profiles
+          let artistId=profile?.artist_id||null;
+          if(role==="artist"&&!artistId){
+            const{data:ap}=await sb.from("artist_profiles").select("id").eq("user_id",data.user.id).single();
+            if(ap) artistId=ap.id;
+          }
+
           setLoading(false);
           onLogin({
             id:data.user.id,
             email:data.user.email,
-            name:profile?.name||data.user.email,
+            name,
             role,
             artistId,
           });
@@ -5129,9 +5140,15 @@ function AppInner() {
           });
           // Skip straight to appReady — no artist profile load needed
         } else {
+        // Check users table first (new schema), then profiles (old schema)
+        const{data:dbUser}=await sb.from("users").select("*").eq("id",existingSession.user.id).single();
         const{data:profile}=await sb.from("profiles").select("*").eq("id",existingSession.user.id).single();
-        const role=profile?.role||"customer";
-        const artistId=profile?.artist_id||null;
+        const role=dbUser?.role||profile?.role||"customer";
+        let artistId=profile?.artist_id||null;
+        if(role==="artist"&&!artistId){
+          const{data:ap}=await sb.from("artist_profiles").select("id").eq("user_id",existingSession.user.id).single();
+          if(ap) artistId=ap.id;
+        }
 
         // On refresh: if artist, pre-load their profile into artists array
         // so ArtistPortal renders immediately without a loading spinner
@@ -5207,11 +5224,17 @@ function AppInner() {
               return;
             }
 
-            // ── STEP 2: Non-admin — fetch profile from DB ────────────────
-            const{data:profile}=await sb.from("profiles").select("*")
-              .eq("id",supaSession.user.id).single();
-            const role=profile?.role||"customer";
-            const artistId=profile?.artist_id||null;
+            // ── STEP 2: Non-admin — check users table first, then profiles
+            const{data:dbUser}=await sb.from("users").select("*").eq("id",supaSession.user.id).single();
+            const{data:profile}=await sb.from("profiles").select("*").eq("id",supaSession.user.id).single();
+            const role=dbUser?.role||profile?.role||"customer";
+
+            // Get artistId from profiles or artist_profiles
+            let artistId=profile?.artist_id||null;
+            if(role==="artist"&&!artistId){
+              const{data:ap}=await sb.from("artist_profiles").select("id").eq("user_id",supaSession.user.id).single();
+              if(ap) artistId=ap.id;
+            }
 
             // ── STEP 3: If artist, load their profile into artists array ──
             // Without this, ArtistPortal can't find the artist after login.
