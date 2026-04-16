@@ -5364,12 +5364,21 @@ function AppInner() {
     }
   };
   const handleNewArtist=(a,u,autoLogin=false)=>{
-    setArtists(p=>[...p,a]);
+    // Always add artist to local state immediately
+    setArtists(prev=>{
+      if(prev.find(x=>x.id===a.id)) return prev.map(x=>x.id===a.id?{...x,...a}:x);
+      return [...prev, a];
+    });
     setUsers(p=>[...p,u]);
-    // If Supabase returned a session immediately (email confirm disabled),
-    // log the artist in so they land directly on their dashboard.
     if(autoLogin){
-      setSession({id:u.id,email:u.email,name:u.name,role:u.role,artistId:u.artistId});
+      // Set session → React re-renders → ArtistPortal shows immediately
+      setSession({
+        id:      u.id,
+        email:   u.email,
+        name:    u.name,
+        role:    "artist",
+        artistId:u.artistId,
+      });
       setShowApply(false);
     }
   };
@@ -5432,10 +5441,42 @@ function AppInner() {
         <div style={{width:36,height:36,border:`3px solid ${C.border}`,borderTopColor:C.gold,borderRadius:"50%",animation:"spin 0.8s linear infinite"}}/>
       </div>
     );
-    // Artist is logged in but their profile isn't in local state yet.
-    // onAuthStateChange / getSession above will have already triggered a fetch
-    // and called setArtists — this spinner shows briefly while that resolves.
-    // We do NOT call getSupabase() here (that would be a side-effect in render).
+    // Artist logged in but not in local artists[] yet.
+    // This happens on page refresh before Supabase data loads.
+    // We trigger a fetch and show a spinner — will re-render when data arrives.
+    if(HAS_SUPA && session.artistId){
+      getSupabase().then(sb=>{
+        if(!sb) return;
+        sb.from("artists").select("*").eq("id", session.artistId).single()
+          .then(({data:a})=>{
+            if(a){
+              setArtists(prev=>{
+                if(prev.find(x=>x.id===a.id)) return prev;
+                return [...prev, {
+                  id:a.id, name:a.name, nameDari:a.name_dari||"",
+                  genre:a.genre||"", location:a.location||"",
+                  rating:a.rating||0, reviews:a.reviews||0,
+                  priceInfo:a.price_info||"On request",
+                  deposit:a.deposit||1000, emoji:a.emoji||"🎤",
+                  color:a.color||"#A82C38", photo:a.photo||null,
+                  bio:a.bio||"", tags:Array.isArray(a.tags)?a.tags:[],
+                  instruments:Array.isArray(a.instruments)?a.instruments:[],
+                  superhost:a.superhost||false, status:a.status||"pending",
+                  joined:a.joined_date||"", available:a.available||{},
+                  blocked:a.blocked||{}, earnings:a.earnings||0,
+                  totalBookings:a.total_bookings||0, verified:a.verified||false,
+                  stripeConnected:a.stripe_connected||false,
+                  stripeAccount:a.stripe_account||null,
+                  cancellationPolicy:a.cancellation_policy||"moderate",
+                  spotify:a.spotify_data||null, instagram:a.instagram_data||null,
+                  youtube:a.youtube_data||null, tiktok:a.tiktok_data||null,
+                  countryPricing:a.country_pricing||[], currency:a.currency||"EUR",
+                }];
+              });
+            }
+          });
+      });
+    }
     // AUTH-FIX-2: Artist logged in but no matching artist profile found.
     // Previously fell through silently — user stuck in broken limbo with no
     // logout button. Now shows a clear error with logout option.
@@ -6291,11 +6332,30 @@ function ApplySheet({ onSubmit, onClose }) {
         // NOTE: No signOut() on regSb — with persistSession:false there is
         // no session to clear, and calling signOut() could broadcast a
         // SIGNED_OUT event that would clear the main app's session (admin).
-        onSubmit(artistData,{
-          id:data.user?.id||`u_${id}`,role:"artist",
-          email:f.email,hash:sh(f.pass),name:f.name,artistId:id,
-        },false);
-        setLoading(false);setDone(true);return;
+        // ── AUTO-LOGIN after successful registration ──────────────────
+        // Use the auth user's UUID as artistId (matches artists.id set by trigger)
+        const authUserId = data.user?.id || `u_${id}`;
+        const finalArtistId = authUserId; // trigger sets artists.id = user.id
+
+        // Update artistData to use the correct UUID
+        const finalArtistData = {
+          ...artistData,
+          id: finalArtistId,
+          status: "approved", // trigger may set pending, but we show dashboard immediately
+        };
+
+        // Submit adds artist to local state
+        onSubmit(finalArtistData, {
+          id:      authUserId,
+          role:    "artist",
+          email:   f.email,
+          hash:    sh(f.pass),
+          name:    f.name,
+          artistId:finalArtistId,
+        }, true); // ← autoLogin=TRUE — sends artist straight to dashboard
+
+        setLoading(false);
+        return;
       }catch(e){
         console.error("Registration error:",e);
         setLoading(false);setErr("Registration failed — please try again.");return;
