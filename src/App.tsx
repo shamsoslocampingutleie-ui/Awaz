@@ -3796,14 +3796,17 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
   const myB=bookings.filter(b=>b.artistId===artist.id);
   const depositsIn=myB.filter(b=>b.depositPaid).reduce((s,b)=>s+Math.round(b.deposit*0.88),0);
 
+  const pendingCount=myB.filter(b=>b.status==="pending_payment"||b.status==="pending").length;
+
   const navItems=[
-    {id:"overview",icon:"🏠",label:t('portalHome')},
-    {id:"calendar",icon:"📅",label:t('portalCalendar')},
-    {id:"bookings",icon:"📋",label:t('portalBookings')},
-    {id:"messages",icon:"💬",label:t('portalMessages')},
-    {id:"pricing", icon:"🌍",label:"Pricing"},
-    {id:"profile", icon:"👤",label:t('portalProfile')},
-    {id:"social",  icon:"🎵",label:t('portalSocial')},
+    {id:"overview",icon:"🏠",label:"Overview"},
+    {id:"bookings",icon:"📋",label:"Bookings",badge:pendingCount},
+    {id:"calendar",icon:"📅",label:"Calendar"},
+    {id:"messages",icon:"💬",label:"Messages"},
+    {id:"pricing", icon:"💰",label:"Pricing"},
+    {id:"profile", icon:"👤",label:"Profile"},
+    {id:"social",  icon:"🎵",label:"Social"},
+    {id:"settings",icon:"⚙️", label:"Settings"},
   ];
 
   const saveEdit=async()=>{
@@ -3876,6 +3879,16 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
           <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:4}}>
             Hey, {artist.name.split(" ")[0]} 👋
           </div>
+          {/* Notification banner for pending bookings */}
+          {pendingCount>0&&(
+            <div onClick={()=>setTab("bookings")} style={{display:"flex",alignItems:"center",gap:12,background:"rgba(168,44,56,0.08)",border:"1px solid rgba(168,44,56,0.3)",borderRadius:12,padding:"14px 16px",marginBottom:16,cursor:"pointer"}}>
+              <span style={{fontSize:22}}>🔔</span>
+              <div style={{flex:1}}>
+                <div style={{fontWeight:700,color:C.ruby,fontSize:T.sm}}>{pendingCount} ny booking{pendingCount>1?"s":""} venter på svar</div>
+                <div style={{color:C.muted,fontSize:T.xs,marginTop:2}}>Trykk for å godkjenne eller avvise →</div>
+              </div>
+            </div>
+          )}
           {artist.status==="pending"&&(
             <div style={{background:"rgba(196,120,32,0.08)",border:`1px solid ${C.saffron}44`,borderRadius:12,padding:"16px 18px",marginBottom:16,fontFamily:"'DM Sans',sans-serif"}}>
               <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
@@ -3965,26 +3978,86 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
 
       {tab==="bookings"&&(
         <div>
-          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:14}}>{t('myBookings2')}</div>
+          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:14}}>My Bookings</div>
           {myB.length===0
-            ?<div style={{textAlign:"center",padding:32,background:C.card,borderRadius:12,border:`1px solid ${C.border}`,color:C.muted,fontSize:T.sm,fontStyle:"italic"}}>{t('noBookingsYet3')}</div>
-            :<div style={{display:"flex",flexDirection:"column",gap:10}}>
+            ?<div style={{textAlign:"center",padding:32,background:C.card,borderRadius:12,border:`1px solid ${C.border}`,color:C.muted,fontSize:T.sm,fontStyle:"italic"}}>No bookings yet. Add available dates in Calendar to start receiving bookings.</div>
+            :<div style={{display:"flex",flexDirection:"column",gap:12}}>
               {myB.map(b=>{
-                const sc=b.status==="confirmed"?C.emerald:b.status==="completed"?C.lapis:C.saffron;
+                const isPending=b.status==="pending"||b.status==="pending_payment";
+                const sc=b.status==="confirmed"?C.emerald:b.status==="completed"?C.lapis:isPending?C.saffron:C.ruby;
                 return(
-                  <div key={b.id} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:10,padding:"14px",display:"flex",flexDirection:vp.isMobile?"column":"row",justifyContent:"space-between",gap:10,minHeight:72}}>
-                    <div style={{flex:1}}>
-                      <div style={{fontWeight:600,color:C.text,fontSize:T.md}}>{b.customerName}</div>
-                      <div style={{color:C.muted,fontSize:T.xs,marginTop:3}}>{b.event} · {b.date}</div>
-                      <div style={{fontSize:T.xs,marginTop:5}}>
-                        <span style={{color:b.depositPaid?C.emerald:C.ruby}}>Deposit {b.depositPaid?"✓ Paid":"✗ Pending"}</span>
-                        {b.depositPaid&&<span style={{color:C.muted}}> · Balance: cash after concert</span>}
+                  <div key={b.id} style={{background:C.card,border:`2px solid ${isPending?C.saffron+"55":C.border}`,borderRadius:12,overflow:"hidden"}}>
+                    <div style={{height:2,background:`linear-gradient(90deg,${sc},transparent)`}}/>
+                    <div style={{padding:"16px"}}>
+                      {/* Header */}
+                      <div style={{display:"flex",alignItems:"flex-start",gap:12,marginBottom:12}}>
+                        <div style={{width:42,height:42,borderRadius:10,background:C.goldS,border:`2px solid ${C.gold}28`,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Cormorant Garamond',serif",fontWeight:700,color:C.gold,fontSize:18,flexShrink:0}}>
+                          {b.customerName?.[0]?.toUpperCase()||"?"}
+                        </div>
+                        <div style={{flex:1}}>
+                          <div style={{fontWeight:700,color:C.text,fontSize:T.md}}>{b.customerName}</div>
+                          <div style={{color:C.muted,fontSize:T.xs,marginTop:2}}>{b.customerEmail||""}</div>
+                        </div>
+                        <div style={{display:"flex",alignItems:"center",gap:8,flexShrink:0}}>
+                          <Badge color={sc}>{isPending?"VENTER":b.status.replace(/_/g," ").toUpperCase()}</Badge>
+                          <span style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,color:C.gold,fontSize:T.md}}>€{b.deposit}</span>
+                        </div>
                       </div>
-                    </div>
-                    <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
-                      <Badge color={sc}>{b.status.replace(/_/g," ")}</Badge>
-                      <span style={{color:C.text,fontWeight:700,fontFamily:"'Cormorant Garamond',serif",fontSize:T.md}}>€{b.deposit}</span>
-                      <button onClick={()=>setChat(b)} style={{width:36,height:36,borderRadius:8,background:C.surface,border:`1px solid ${C.border}`,fontSize:16,cursor:"pointer",WebkitTapHighlightColor:"transparent"}}>{b.chatUnlocked?"💬":"🔒"}</button>
+                      {/* Details */}
+                      <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:8,marginBottom:12}}>
+                        {[["📅 Dato",b.date],["🎉 Arrangement",b.event||b.eventType||"—"],["📍 Land",b.country||"—"],["💳 Depositum",b.depositPaid?"✓ Betalt":"✗ Venter"]].map(([l,v])=>(
+                          <div key={l} style={{background:C.surface,borderRadius:8,padding:"8px 10px"}}>
+                            <div style={{fontSize:10,color:C.muted,fontWeight:700,letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:2}}>{l}</div>
+                            <div style={{fontSize:T.xs,color:C.text}}>{v}</div>
+                          </div>
+                        ))}
+                      </div>
+                      {b.notes&&<div style={{fontSize:T.xs,color:C.muted,background:C.surface,borderRadius:8,padding:"8px 10px",marginBottom:12}}>📝 {b.notes}</div>}
+                      {/* Action buttons */}
+                      <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+                        {isPending&&(
+                          <>
+                            <button
+                              onClick={async()=>{
+                                if(HAS_SUPA){
+                                  const sb=await getSupabase();
+                                  if(sb) await sb.from("bookings").update({status:"confirmed",chat_unlocked:true}).eq("id",b.id);
+                                }
+                                onUpdateArtist&&onUpdateArtist(artist.id,{});
+                              }}
+                              style={{flex:1,background:C.emerald,color:"#fff",border:"none",borderRadius:10,padding:"10px 14px",fontSize:T.sm,fontWeight:700,cursor:"pointer",fontFamily:"inherit",minHeight:42}}>
+                              ✓ Godkjenn
+                            </button>
+                            <button
+                              onClick={async()=>{
+                                if(HAS_SUPA){
+                                  const sb=await getSupabase();
+                                  if(sb) await sb.from("bookings").update({status:"cancelled"}).eq("id",b.id);
+                                }
+                                onUpdateArtist&&onUpdateArtist(artist.id,{});
+                              }}
+                              style={{flex:1,background:C.rubyS,color:C.ruby,border:`1px solid ${C.ruby}44`,borderRadius:10,padding:"10px 14px",fontSize:T.sm,fontWeight:700,cursor:"pointer",fontFamily:"inherit",minHeight:42}}>
+                              ✗ Avvis
+                            </button>
+                          </>
+                        )}
+                        {b.status==="confirmed"&&(
+                          <button
+                            onClick={async()=>{
+                              if(HAS_SUPA){
+                                const sb=await getSupabase();
+                                if(sb) await sb.from("bookings").update({status:"completed"}).eq("id",b.id);
+                              }
+                              onUpdateArtist&&onUpdateArtist(artist.id,{});
+                            }}
+                            style={{flex:1,background:"rgba(30,78,140,0.12)",color:C.lapis,border:`1px solid ${C.lapis}44`,borderRadius:10,padding:"10px 14px",fontSize:T.sm,fontWeight:700,cursor:"pointer",fontFamily:"inherit",minHeight:42}}>
+                            ✓ Merk som fullført
+                          </button>
+                        )}
+                        <button onClick={()=>setChat(b)} style={{width:42,height:42,borderRadius:10,background:C.surface,border:`1px solid ${C.border}`,fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                          {b.chatUnlocked?"💬":"🔒"}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 );
@@ -4017,6 +4090,62 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
 
       {tab==="pricing"&&(
         <CountryPricingTab artist={artist} onUpdateArtist={onUpdateArtist} vp={vp}/>
+      )}
+
+      {tab==="settings"&&(
+        <div>
+          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:6}}>Settings</div>
+          <p style={{color:C.muted,fontSize:T.sm,marginBottom:20}}>Administrer kontoen din</p>
+
+          {/* Published toggle */}
+          <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:"20px",marginBottom:16}}>
+            <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:16}}>Synlighet</div>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+              <div>
+                <div style={{fontWeight:600,color:C.text,fontSize:T.sm,marginBottom:4}}>Profil publisert</div>
+                <div style={{color:C.muted,fontSize:T.xs}}>{artist.status==="approved"?"Profilen din er synlig for kunder":"Venter på godkjenning fra admin"}</div>
+              </div>
+              <div style={{
+                width:48,height:26,borderRadius:13,
+                background:artist.status==="approved"?C.emerald:C.border,
+                position:"relative",cursor:"default",transition:"background 0.2s",flexShrink:0,
+              }}>
+                <div style={{
+                  position:"absolute",top:3,
+                  left:artist.status==="approved"?"25px":"3px",
+                  width:20,height:20,borderRadius:"50%",
+                  background:"#fff",transition:"left 0.2s",
+                  boxShadow:"0 1px 4px rgba(0,0,0,0.3)",
+                }}/>
+              </div>
+            </div>
+          </div>
+
+          {/* Account info */}
+          <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:"20px",marginBottom:16}}>
+            <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:14}}>Konto</div>
+            {[
+              ["Artist navn",artist.name],
+              ["Sjanger",artist.genre],
+              ["Status",artist.status==="approved"?"✓ Godkjent":"⏳ Venter godkjenning"],
+              ["Stripe",artist.stripeConnected?"✓ Tilkoblet":"Ikke tilkoblet"],
+            ].map(([k,v])=>(
+              <div key={k} style={{display:"flex",justifyContent:"space-between",padding:"10px 0",borderBottom:`1px solid ${C.border}`,fontSize:T.sm}}>
+                <span style={{color:C.muted}}>{k}</span>
+                <span style={{color:C.text,fontWeight:600}}>{v}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Help */}
+          <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:"20px"}}>
+            <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:10}}>Hjelp</div>
+            <p style={{fontSize:T.sm,color:C.muted,lineHeight:1.7}}>
+              Trenger du hjelp? Kontakt oss på{" "}
+              <a href="mailto:support@awaz.no" style={{color:C.gold,textDecoration:"none"}}>support@awaz.no</a>
+            </p>
+          </div>
+        </div>
       )}
 
       {tab==="social"&&(()=>{
