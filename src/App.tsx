@@ -4760,6 +4760,7 @@ export default function App() {
     if(!HAS_SUPA){setAppReady(true);return;}
     let unsub=null;
     (async()=>{
+      try{
       const sb=await getSupabase();
       if(!sb){setAppReady(true);return;}
 
@@ -4853,8 +4854,12 @@ export default function App() {
       }
 
       setAppReady(true);
+      }catch(err){
+        console.error("Supabase init error:",err);
+        setAppReady(true); // Always unblock the app even if Supabase fails
+      }
     })();
-    return()=>{ unsub?.unsubscribe(); };
+    return()=>{ try{unsub?.unsubscribe();}catch{} };
   },[]);
   const approved=useMemo(()=>artists.filter(a=>a.status==="approved"),[artists]);
   const filtered=useMemo(()=>approved.filter(a=>{
@@ -4966,7 +4971,6 @@ export default function App() {
         <div style={{fontFamily:"'Noto Naskh Arabic',serif",fontSize:32,color:C.gold}}>آواز</div>
         <div style={{color:C.muted,fontSize:T.sm}}>Loading your dashboard…</div>
         <div style={{width:36,height:36,border:`3px solid ${C.border}`,borderTopColor:C.gold,borderRadius:"50%",animation:"spin 0.8s linear infinite"}}/>
-        <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
       </div>
     );
     // AUTH-FIX-2: Artist logged in but no matching artist profile found.
