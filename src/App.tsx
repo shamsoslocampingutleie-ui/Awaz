@@ -10,17 +10,20 @@ import { createClient } from "@supabase/supabase-js";
 // This handler intercepts and kills the error before React ever sees it.
 // ═══════════════════════════════════════════════════════════════════════
 if (typeof window !== "undefined") {
+  // capture:true = kjører FØR React sin handler
+  // stopImmediatePropagation = React ser det ALDRI
   window.addEventListener("unhandledrejection", (e: PromiseRejectionEvent) => {
     const msg: string = e?.reason?.message ?? String(e?.reason ?? "");
     if (
-      msg.includes("No Listener: tabs:") ||
-      msg.includes("tabs:outgoing.message.ready") ||
+      msg.includes("No Listener") ||
+      msg.includes("tabs:outgoing") ||
       msg.includes("TabsLock") ||
-      msg.includes("No Listener")
+      msg.includes("BroadcastChannel")
     ) {
       e.preventDefault();
+      e.stopImmediatePropagation();
     }
-  });
+  }, true); // ← capture phase
 }
 
 
