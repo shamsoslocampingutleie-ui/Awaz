@@ -2689,12 +2689,12 @@ function LoginSheet({ users, open, onLogin, onClose }) {
           const role=dbUser?.role||profile?.role||"customer";
           const name=dbUser?.name||profile?.name||data.user.email;
 
-          // Always fetch artistId directly from artist_profiles
-          let artistId=null;
-          if(role==="artist"){
-            const{data:ap}=await sb.from("artist_profiles").select("id").eq("user_id",data.user.id).single();
-            if(ap) artistId=ap.id;
-            else artistId=profile?.artist_id||null;
+          // artistId must match artists.id (the table ArtistPortal reads from)
+          // profiles.artist_id is set by the trigger to equal artists.id
+          let artistId=profile?.artist_id||null;
+          if(!artistId && role==="artist"){
+            // Fallback: use the user's own ID (trigger sets artists.id = user.id)
+            artistId=data.user.id;
           }
 
           setLoading(false);
@@ -5090,12 +5090,9 @@ function AppInner() {
         const{data:profile}=await sb.from("profiles").select("*").eq("id",existingSession.user.id).single();
         const role=dbUser?.role||profile?.role||"customer";
         // Always fetch artistId directly from artist_profiles
-        let artistId=null;
-        if(role==="artist"){
-          const{data:ap}=await sb.from("artist_profiles").select("id").eq("user_id",existingSession.user.id).single();
-          if(ap) artistId=ap.id;
-          else artistId=profile?.artist_id||null;
-        }
+        // artistId must match artists.id — trigger sets both to user's UUID
+        let artistId=profile?.artist_id||null;
+        if(!artistId && role==="artist") artistId=existingSession.user.id;
 
         // On refresh: if artist, pre-load their profile into artists array
         // so ArtistPortal renders immediately without a loading spinner
@@ -5178,12 +5175,9 @@ function AppInner() {
 
             // Always fetch artistId directly from artist_profiles by user_id
             // This is more reliable than reading artist_id from profiles table
-            let artistId=null;
-            if(role==="artist"){
-              const{data:ap}=await sb.from("artist_profiles").select("id").eq("user_id",supaSession.user.id).single();
-              if(ap) artistId=ap.id;
-              else artistId=profile?.artist_id||null;
-            }
+            // artistId must match artists.id — trigger sets both to user's UUID
+            let artistId=profile?.artist_id||null;
+            if(!artistId && role==="artist") artistId=supaSession.user.id;
 
             // ── STEP 3: If artist, load their profile into artists array ──
             // Without this, ArtistPortal can't find the artist after login.
