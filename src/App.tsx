@@ -1,6 +1,29 @@
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import { createClient } from "@supabase/supabase-js";
 
+// ═══════════════════════════════════════════════════════════════════════
+// CRITICAL: Global error suppressor — must run BEFORE React mounts.
+// Supabase v2 uses BroadcastChannel tab-locking for auth sync. In certain
+// browser/timing conditions it throws "No Listener: tabs:outgoing.message.ready"
+// as an Uncaught (in promise). In React 18 concurrent mode this can prevent
+// the entire app from rendering (blank white screen).
+// This handler intercepts and kills the error before React ever sees it.
+// ═══════════════════════════════════════════════════════════════════════
+if (typeof window !== "undefined") {
+  window.addEventListener("unhandledrejection", (e: PromiseRejectionEvent) => {
+    const msg: string = e?.reason?.message ?? String(e?.reason ?? "");
+    if (
+      msg.includes("No Listener: tabs:") ||
+      msg.includes("tabs:outgoing.message.ready") ||
+      msg.includes("TabsLock") ||
+      msg.includes("No Listener")
+    ) {
+      e.preventDefault();
+    }
+  });
+}
+
+
 // ── Supabase client ───────────────────────────────────────────────────
 // Reads env vars injected by Vite (VITE_ prefix required)
 const SUPA_URL  = import.meta.env.VITE_SUPABASE_URL  || "";
