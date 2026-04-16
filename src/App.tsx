@@ -62,6 +62,11 @@ async function getSupabase() {
 
 const HAS_SUPA = !!(SUPA_URL && SUPA_KEY);
 
+// ── Module-level flag: prevents onAuthStateChange from clearing the
+// admin session when ApplySheet signs out the newly created artist.
+// Set to true just before signOut(), reset after event fires.
+let _applyArtistSignOut = false;
+
 /* ═══════════════════════════════════════════════════════════════════════
    AWAZ  ·  آواز  ·  Afghan Artist Booking Platform
    Mobile-first · Apple HIG · Airbnb UX · Stripe precision
@@ -3214,9 +3219,52 @@ function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction,
   const awazRevenue    = Math.round(totalRevenue*0.12);
   const confirmedBooks = bookings.filter(b=>b.status==="confirmed").length;
   const pendingBooks   = bookings.filter(b=>b.status==="pending_payment"||b.status==="pending").length;
-  const pendingArtists = artists.filter(a=>a.status==="pending").length;
-  const approvedArtists= artists.filter(a=>a.status==="approved").length;
+  // ── Hooks first (React rules) ─────────────────────────────────────────
+  const [refreshing,setRefreshing]=useState(false);
+  const [localArtists,setLocalArtists]=useState(null);
+  // Use refreshed list if available, otherwise use prop artists
+  const displayArtists=localArtists||artists;
+
+  // Stats — computed after displayArtists is defined
+  const pendingArtists = displayArtists.filter(a=>a.status==="pending").length;
+  const approvedArtists= displayArtists.filter(a=>a.status==="approved").length;
   const newInquiries   = inquiries.filter(i=>i.status==="new").length;
+
+  const refreshArtists=async()=>{
+    if(!HAS_SUPA||refreshing)return;
+    setRefreshing(true);
+    try{
+      const sb=await getSupabase();
+      if(!sb){setRefreshing(false);return;}
+      const{data:rows}=await sb.from("artists").select("*");
+      if(rows?.length>0){
+        const mapped=rows.map(a=>({
+          id:a.id,name:a.name,nameDari:a.name_dari||"",
+          genre:a.genre||"",location:a.location||"",
+          rating:a.rating||0,reviews:a.reviews||0,
+          priceInfo:a.price_info||"On request",
+          deposit:a.deposit||1000,
+          emoji:a.emoji||"🎤",color:a.color||"#A82C38",
+          photo:a.photo||null,bio:a.bio||"",
+          tags:Array.isArray(a.tags)?a.tags:[],
+          instruments:Array.isArray(a.instruments)?a.instruments:[],
+          superhost:a.superhost||false,
+          status:a.status||"pending",joined:a.joined_date||"",
+          available:a.available||{},blocked:a.blocked||{},
+          earnings:a.earnings||0,totalBookings:a.total_bookings||0,
+          verified:a.verified||false,
+          stripeConnected:a.stripe_connected||false,
+          stripeAccount:a.stripe_account||null,
+          cancellationPolicy:a.cancellation_policy||"moderate",
+          spotify:a.spotify_data||null,instagram:a.instagram_data||null,
+          youtube:a.youtube_data||null,tiktok:a.tiktok_data||null,
+          countryPricing:a.country_pricing||[],currency:a.currency||"EUR",
+        }));
+        setLocalArtists(mapped);
+      }
+    }catch(e){console.warn("Refresh failed:",e);}
+    setRefreshing(false);
+  };
 
   const navItems=[
     {id:"overview",  icon:"📊", label:"Overview"},
@@ -3228,8 +3276,8 @@ function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction,
     {id:"finance",   icon:"💶", label:"Finance"},
   ];
 
-  // Filtered artists
-  const filteredArtists = artists.filter(a=>{
+  // Filtered artists — uses refreshed list if available
+  const filteredArtists = displayArtists.filter(a=>{
     const matchFilter = artistFilter==="all" || a.status===artistFilter;
     const matchSearch = !searchQ || a.name.toLowerCase().includes(searchQ.toLowerCase()) || a.genre.toLowerCase().includes(searchQ.toLowerCase());
     return matchFilter && matchSearch;
@@ -3381,7 +3429,12 @@ function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction,
       {tab==="artists"&&(
         <div>
           <SectionHeader title={`Artists (${filteredArtists.length})`} action={
-            pendingArtists>0&&<span style={{background:`${C.ruby}18`,color:C.ruby,border:`1px solid ${C.ruby}44`,borderRadius:6,padding:"3px 10px",fontSize:T.xs,fontWeight:700}}>{pendingArtists} pending</span>
+            <div style={{display:"flex",gap:8,alignItems:"center"}}>
+              {pendingArtists>0&&<span style={{background:`${C.ruby}18`,color:C.ruby,border:`1px solid ${C.ruby}44`,borderRadius:6,padding:"3px 10px",fontSize:T.xs,fontWeight:700}}>{pendingArtists} pending</span>}
+              <button onClick={refreshArtists} disabled={refreshing} style={{background:C.surface,color:refreshing?C.muted:C.gold,border:`1px solid ${C.border}`,borderRadius:7,padding:"5px 12px",fontSize:T.xs,fontWeight:700,cursor:refreshing?"wait":"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:5}}>
+                {refreshing?"⟳ Loading…":"⟳ Refresh"}
+              </button>
+            </div>
           }/>
           {/* Filters */}
           <div style={{display:"flex",gap:8,marginBottom:16,flexWrap:"wrap"}}>
@@ -4245,7 +4298,7 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
             <div style={{fontSize:9,color:artist.color,textTransform:"uppercase",fontWeight:700}}>{t('artistPortal')}</div>
           </div>
         </div>
-        <Btn v="ghost" sz="sm" onClick={onLogout}>Out</Btn>
+        <Btn v="ghost" sz="sm" onClick={onLogout}>{t('signOut')}</Btn>
       </div>
       <div style={{paddingTop:68}}>{content}</div>
       <BottomNav active={tab} onNav={setTab} items={navItems}/>
@@ -4924,20 +4977,40 @@ function AppInner() {
       // IMPORTANT: The callback is async. Supabase does NOT await it, so any
       // thrown error becomes an Uncaught (in promise) that can crash React 18.
       // Wrap everything inside its own try/catch to keep errors contained.
+      //
+      // ADMIN PROTECTION: When an admin uses the ApplySheet to create a new
+      // artist account, Supabase fires SIGNED_IN with the new artist's session.
+      // We must not replace the admin's session in that case.
+      // Solution: if current session is admin and new role is NOT admin, ignore.
       const{data:{subscription}}=sb.auth.onAuthStateChange(async(_event,supaSession)=>{
         try{
           if(supaSession?.user){
             const{data:profile}=await sb.from("profiles").select("*").eq("id",supaSession.user.id).single();
             const localUser=USERS.find(u=>u.email?.toLowerCase()===supaSession.user.email?.toLowerCase());
             const role=profile?.role||localUser?.role||"customer";
-            setSession({
-              id:supaSession.user.id,
-              email:supaSession.user.email,
-              name:profile?.name||supaSession.user.email,
-              role,
-              artistId:profile?.artist_id||localUser?.artistId||null,
+            // ── CRITICAL: Do not replace admin session with artist/customer session.
+            // This happens when admin registers a new artist via ApplySheet —
+            // signUp() fires onAuthStateChange with the new user's credentials.
+            setSession(prev=>{
+              if(prev?.role==="admin" && role!=="admin"){
+                // Admin is currently logged in and a non-admin signed in elsewhere
+                // (ApplySheet). Keep admin logged in, ignore this event.
+                return prev;
+              }
+              return{
+                id:supaSession.user.id,
+                email:supaSession.user.email,
+                name:profile?.name||supaSession.user.email,
+                role,
+                artistId:profile?.artist_id||localUser?.artistId||null,
+              };
             });
           } else {
+            // No user session — clear UNLESS this is the ApplySheet cleanup signOut.
+            if(_applyArtistSignOut){
+              _applyArtistSignOut=false; // always reset
+              return; // keep current session (admin stays logged in)
+            }
             setSession(null);
           }
         }catch(e){console.warn("Auth state change error:",e);}
@@ -5016,11 +5089,16 @@ function AppInner() {
 
   const login=u=>{setSession(u);setShowLogin(false);};
   const logout=async()=>{
-    if(HAS_SUPA){
-      const sb=await getSupabase();
-      if(sb) await sb.auth.signOut();
-    }
+    // Always clear local session first — prevents blank screen if signOut throws
     setSession(null);
+    if(HAS_SUPA){
+      try{
+        const sb=await getSupabase();
+        if(sb) await sb.auth.signOut();
+      }catch(e){
+        console.warn("Supabase signOut error (session already cleared locally):",e);
+      }
+    }
   };
   const handleArtistAction=(id,action)=>{
     if(action==="verify") {
@@ -5128,6 +5206,46 @@ function AppInner() {
         <div style={{width:36,height:36,border:`3px solid ${C.border}`,borderTopColor:C.gold,borderRadius:"50%",animation:"spin 0.8s linear infinite"}}/>
       </div>
     );
+    // appReady but artist not in local state — try fetching directly from Supabase
+    // This handles the case where the artist was created AFTER the initial data load
+    if(HAS_SUPA&&session.artistId){
+      getSupabase().then(sb=>{
+        if(!sb)return;
+        sb.from("artists").select("*").eq("id",session.artistId).single().then(({data:a})=>{
+          if(a){
+            handleUpdateArtist(a.id,{
+              id:a.id,name:a.name,nameDari:a.name_dari||"",
+              genre:a.genre||"",location:a.location||"",
+              rating:a.rating||0,reviews:a.reviews||0,
+              priceInfo:a.price_info||"On request",
+              deposit:a.deposit||1000,
+              emoji:a.emoji||"🎤",color:a.color||"#A82C38",
+              photo:a.photo||null,bio:a.bio||"",
+              tags:Array.isArray(a.tags)?a.tags:[],
+              instruments:Array.isArray(a.instruments)?a.instruments:[],
+              superhost:a.superhost||false,
+              status:a.status||"pending",
+              available:a.available||{},blocked:a.blocked||{},
+              verified:a.verified||false,
+              stripeConnected:a.stripe_connected||false,
+              cancellationPolicy:a.cancellation_policy||"moderate",
+            });
+            // Also add to artists array if not there
+            setArtists(prev=>{
+              if(prev.find(x=>x.id===a.id))return prev;
+              return[...prev,{id:a.id,name:a.name,genre:a.genre||"",status:a.status||"pending",emoji:a.emoji||"🎤",color:a.color||"#A82C38",deposit:a.deposit||1000,rating:0,reviews:0,priceInfo:a.price_info||"On request",photo:null,bio:a.bio||"",tags:[],instruments:[],available:{},blocked:{},earnings:0,totalBookings:0,verified:false,stripeConnected:false,cancellationPolicy:"moderate",location:a.location||"",joined:a.joined_date||"",nameDari:a.name_dari||""}];
+            });
+          }
+        });
+      });
+      return(
+        <div style={{minHeight:"100vh",background:C.bg,display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:16,fontFamily:"'DM Sans',sans-serif"}}>
+          <div style={{fontFamily:"'Noto Naskh Arabic',serif",fontSize:32,color:C.gold}}>آواز</div>
+          <div style={{color:C.muted,fontSize:T.sm}}>Loading your dashboard…</div>
+          <div style={{width:36,height:36,border:`3px solid ${C.border}`,borderTopColor:C.gold,borderRadius:"50%",animation:"spin 0.8s linear infinite"}}/>
+        </div>
+      );
+    }
     // AUTH-FIX-2: Artist logged in but no matching artist profile found.
     // Previously fell through silently — user stuck in broken limbo with no
     // logout button. Now shows a clear error with logout option.
@@ -5932,7 +6050,16 @@ function ApplySheet({ onSubmit, onClose }) {
         // confirmation is disabled in the Supabase project settings).
         // When email confirmation IS required, data.session is null and the
         // artist will need to confirm their email before logging in.
-        const hasSession = !!data.session;
+        // ── Clear the newly created artist's session from Supabase storage.
+        // Without this, page reload would restore the artist's session instead of admin.
+        // We set _applyArtistSignOut=true so onAuthStateChange ignores the SIGNED_OUT
+        // event and keeps the current user (admin or visitor) logged in.
+        if(data.session){
+          _applyArtistSignOut=true;
+          try{ await sb.auth.signOut(); }catch(e){ _applyArtistSignOut=false; }
+          // Backup reset in case onAuthStateChange never fires (e.g. network error)
+          setTimeout(()=>{ _applyArtistSignOut=false; },3000);
+        }
         onSubmit(artistData,{
           id:data.user?.id||`u_${id}`,
           role:"artist",
@@ -5940,9 +6067,9 @@ function ApplySheet({ onSubmit, onClose }) {
           hash:sh(f.pass),
           name:f.name,
           artistId:id,
-        }, hasSession);
+        }, false); // always false — artist logs in manually
         setLoading(false);
-        if(!hasSession) setDone(true); // show confirmation screen if email needed
+        setDone(true);
         return;
       }catch(e){setLoading(false);setErr("Registration failed — please try again.");return;}
     }
@@ -5959,10 +6086,26 @@ function ApplySheet({ onSubmit, onClose }) {
       <div style={{padding:"16px 20px 32px"}}>
         {done?(
           <div style={{textAlign:"center",padding:"20px 0"}}>
-            <div style={{width:52,height:52,borderRadius:"50%",background:C.emeraldS,border:`2px solid ${C.emerald}`,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 14px",fontSize:22}}>✓</div>
-            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:700,color:C.text,marginBottom:8}}>{t('onYourWay')}</div>
-            <div style={{color:C.muted,fontSize:T.sm,lineHeight:1.7,marginBottom:20}}>{t('profileUnderReview')}</div>
-            <Btn full sz="lg" onClick={onClose}>Done</Btn>
+            <div style={{width:56,height:56,borderRadius:"50%",background:C.emeraldS,border:`2px solid ${C.emerald}`,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 16px",fontSize:24}}>✓</div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:700,color:C.text,marginBottom:8}}>Account created!</div>
+            <div style={{background:C.surface,borderRadius:10,padding:"14px 16px",marginBottom:16,textAlign:"left",border:`1px solid ${C.border}`}}>
+              <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:8}}>Next steps</div>
+              {[
+                ["1","Check your email and confirm your account (if required)"],
+                ["2","Come back and click Sign In"],
+                ["3","Log in with the email and password you just created"],
+                ["4","Your dashboard will open automatically"],
+              ].map(([n,l])=>(
+                <div key={n} style={{display:"flex",gap:10,alignItems:"flex-start",marginBottom:7}}>
+                  <div style={{width:20,height:20,borderRadius:"50%",background:C.goldS,border:`1px solid ${C.gold}44`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:800,color:C.gold,flexShrink:0}}>{n}</div>
+                  <span style={{fontSize:T.xs,color:C.textD,lineHeight:1.5}}>{l}</span>
+                </div>
+              ))}
+            </div>
+            <div style={{background:C.rubyS,border:`1px solid ${C.ruby}28`,borderRadius:8,padding:"10px 14px",marginBottom:16,fontSize:T.xs,color:C.textD,lineHeight:1.6}}>
+              ⏳ Your profile is <strong style={{color:C.saffron}}>pending review</strong>. The Awaz team will approve it within 24–48 hours.
+            </div>
+            <Btn full sz="lg" onClick={onClose}>Close & Sign In →</Btn>
           </div>
         ):(
           <>
