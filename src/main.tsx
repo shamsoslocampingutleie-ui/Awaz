@@ -1,4 +1,4 @@
-// Stopper Supabase lock-feil før React starter
+// 👇 NY KODE ØVERST
 window.addEventListener("error", (event) => {
   if (
     event?.message?.includes("LockManager") ||
@@ -8,3 +8,13 @@ window.addEventListener("error", (event) => {
     console.warn("Suppressed error:", event.message);
   }
 });
+
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App";
+
+ReactDOM.createRoot(document.getElementById("root")!).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
