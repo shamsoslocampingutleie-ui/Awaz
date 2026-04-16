@@ -2519,50 +2519,11 @@ const POLICIES=[
   {id:"no_refund",label:"No Refund", desc:"No refunds under any circumstances"},
 ];
 const USERS=[
-  {id:"u0",role:"admin", email:"shams.nn@outlook.com",  hash:sh("Grindatuneth301.."),  name:"Admin"},
-  {id:"u1",role:"artist",email:"soraya@awaz.no", hash:sh("Soraya123!"),  name:"Soraya Rahimi",  artistId:"a1"},
-  {id:"u2",role:"artist",email:"ahmad@awaz.no",  hash:sh("Ahmad123!"),   name:"Ahmad Zafar",   artistId:"a2"},
-  {id:"u3",role:"artist",email:"khalid@awaz.no", hash:sh("Khalid123!"),  name:"Khalid Noori",  artistId:"a4"},
+  // Only real admin — all other users come from Supabase
+  {id:"u0",role:"admin", email:"shams.nn@outlook.com", hash:sh("Grindatuneth301.."), name:"Admin"},
 ];
 const ARTISTS=[
-  {id:"a1",name:"Soraya Rahimi",    nameDari:"ثریا رحیمی",   genre:"Classical Ghazal",  location:"Kabul · Oslo",   rating:4.98,reviews:87, priceInfo:"From €2,500",deposit:1000,emoji:"🎤",color:C.ruby,   photo:null,bio:"Soraya is one of Europe's leading Afghan vocalists, rooted in the classical ghazal tradition. Her voice carries the soul of centuries of Afghan poetry — Rumi, Hafez, Bedil — delivered with technical mastery and emotional depth that leaves audiences speechless.",tags:["Ghazal","Classical","Wedding","Eid"],        instruments:["Vocals","Harmonium"],       superhost:true, status:"approved",joined:"Jan 2024",available:{[MK]:[3,7,8,14,15,21,22,28],[MK2]:[1,5,8,12,15,19,22,26]},blocked:{[MK]:[10,11]},        earnings:7500,totalBookings:6, verified:true, stripeConnected:true, stripeAccount:"acct_sor123",cancellationPolicy:"moderate",
-    spotify:{monthlyListeners:"124K",topTracks:["Laila (Live Oslo)","Ghazal-e-Rumi","Del-e-Man"],profileUrl:"https://open.spotify.com/artist/example"},
-    instagram:{handle:"@soraya.rahimi.music",followers:"89.2K",profileUrl:"https://instagram.com/soraya.rahimi.music",posts:[{thumb:"🎤",caption:"Oslo Concert"},{thumb:"🎶",caption:"Recording"},{thumb:"🌹",caption:"Eid Special"}]},
-    countryPricing:[
-      {code:"NO",active:true, price:28000,deposit:11500},
-      {code:"SE",active:true, price:26000,deposit:10500},
-      {code:"DE",active:true, price:2500, deposit:1000},
-      {code:"GB",active:true, price:2200, deposit:900},
-      {code:"NL",active:false,price:2500, deposit:1000},
-      {code:"US",active:false,price:2800, deposit:1100},
-    ],
-  },
-  {id:"a2",name:"Ahmad Zafar",      nameDari:"احمد ظفر",      genre:"Rubab · Traditional",location:"Kandahar · Bergen",rating:4.93,reviews:52, priceInfo:"From €1,800",deposit:800, emoji:"🪕",color:C.lapis, photo:null,bio:"A virtuoso of the rubab — Afghanistan's national instrument. Ahmad has dedicated 20 years mastering both the Kabuli and Herati styles. His performances bridge generations, carrying the sound of ancient Afghanistan into every concert hall in Europe.",tags:["Rubab","Traditional","Festival"],               instruments:["Rubab","Tabla"],            superhost:false,status:"approved",joined:"Mar 2024",available:{[MK]:[2,9,16,22,23,29],[MK2]:[3,6,10,14,17,21]},blocked:{[MK]:[13]},           earnings:3600,totalBookings:4, verified:true, stripeConnected:true, stripeAccount:"acct_ahm456",cancellationPolicy:"flexible",
-    spotify:{monthlyListeners:"41K",topTracks:["Rubab Raga No. 1","Herati Saz","Safar"],profileUrl:"https://open.spotify.com/artist/example"},
-    instagram:{handle:"@ahmad.rubab",followers:"22.8K",profileUrl:"https://instagram.com/ahmad.rubab",posts:[{thumb:"🪕",caption:"Studio"},{thumb:"🎵",caption:"Bergen"},{thumb:"🏔",caption:"Afghanistan"}]},
-    countryPricing:[
-      {code:"NO",active:true, price:20700,deposit:9200},
-      {code:"SE",active:true, price:19000,deposit:8500},
-      {code:"DE",active:true, price:1800, deposit:800},
-      {code:"GB",active:false,price:1600, deposit:700},
-    ],
-  },
-  {id:"a3",name:"Mariam & Ensemble",nameDari:"مریم و گروه",   genre:"Afghan Folk",        location:"Herat · London", rating:5.0, reviews:41, priceInfo:"From €4,000",deposit:1200,emoji:"🎶",color:C.emerald,photo:null,bio:"A six-piece ensemble specializing in Herati folk music. Their sound blends dutaar, dohol, and haunting vocals that transport audiences to the valleys of western Afghanistan.",tags:["Folk","Ensemble","Wedding","Eid","Cultural"],   instruments:["Dutaar","Dohol","Tula"],    superhost:true, status:"pending", joined:"Nov 2024",available:{[MK]:[5,12,19,25,26]},                                         blocked:{[MK]:[]},             earnings:0,   totalBookings:0, verified:false,stripeConnected:false,stripeAccount:null,cancellationPolicy:"moderate",
-    spotify:null,
-    instagram:{handle:"@mariam.ensemble",followers:"11.4K",profileUrl:"https://instagram.com/mariam.ensemble",posts:[{thumb:"🎶",caption:"Rehearsal"},{thumb:"🌸",caption:"Herat"},{thumb:"👥",caption:"Ensemble"}]},
-  },
-  {id:"a4",name:"Khalid Noori",     nameDari:"خالد نوری",    genre:"Modern Afghan Pop",  location:"Oslo · Stockholm",rating:4.85,reviews:118,priceInfo:"From €2,200",deposit:1000,emoji:"🎸",color:C.saffron,photo:null,bio:"Khalid blends Afghan melody with contemporary pop production. With hundreds of thousands of followers and sell-out shows across Scandinavia, he is the defining voice of the Afghan diaspora generation.",tags:["Pop","Modern","Concert","Festival"],             instruments:["Guitar","Keyboard","Vocals"],superhost:false,status:"approved",joined:"Jun 2024",available:{[MK]:[4,10,17,18,24,25],[MK2]:[2,7,11,15,18,22]},blocked:{[MK]:[12]},          earnings:4400,totalBookings:5, verified:true, stripeConnected:true, stripeAccount:"acct_kha789",cancellationPolicy:"strict",
-    spotify:{monthlyListeners:"318K",topTracks:["Watan (My Homeland)","Oslo Nights","Dil Ba Dil"],profileUrl:"https://open.spotify.com/artist/example"},
-    instagram:{handle:"@khalidnoori",followers:"204K",profileUrl:"https://instagram.com/khalidnoori",posts:[{thumb:"🎸",caption:"Tour 2025"},{thumb:"🎤",caption:"Stockholm"},{thumb:"🌙",caption:"New Single"}]},
-  },
-  {id:"a5",name:"Fatima Qaderi",    nameDari:"فاطمه قادری",  genre:"Tabla · Percussion", location:"Mazar · Amsterdam",rating:4.96,reviews:33, priceInfo:"From €1,500",deposit:800, emoji:"🪘",color:C.gold,  photo:null,bio:"One of very few female tabla virtuosos in Europe. Fatima trained at the Kabul Conservatory under maestro Ustad Rahimi. Her performances are simultaneously meditative and explosive — a rare combination that leaves audiences transformed.",tags:["Tabla","Percussion","Classical"],               instruments:["Tabla","Zerbaghali"],       superhost:true, status:"approved",joined:"Feb 2024",available:{[MK]:[6,7,13,20,21,27],[MK2]:[4,8,11,15,18,22]},blocked:{[MK]:[]},             earnings:3000,totalBookings:3, verified:true, stripeConnected:false,stripeAccount:null,cancellationPolicy:"flexible",
-    spotify:{monthlyListeners:"28K",topTracks:["Tabla Meditation","Mazar-e-Sharif","Zerbaghali Solo"],profileUrl:"https://open.spotify.com/artist/example"},
-    instagram:{handle:"@fatima.tabla",followers:"34.1K",profileUrl:"https://instagram.com/fatima.tabla",posts:[{thumb:"🪘",caption:"Amsterdam"},{thumb:"🎵",caption:"Concert"},{thumb:"🌟",caption:"Masterclass"}]},
-  },
-  {id:"a6",name:"Rustam & Band",    nameDari:"رستم و باند",  genre:"Afghan Jazz Fusion",  location:"Kabul · Berlin",  rating:4.88,reviews:29, priceInfo:"From €3,000",deposit:1200,emoji:"🎷",color:C.lavender,photo:null,bio:"Europe's only Afghan jazz-fusion ensemble. Rustam weaves maqam scales through jazz harmony, drawing on influences from Miles Davis to Ahmad Shah Massoud's favourite composers. Profoundly Afghan, undeniably universal.",tags:["Jazz","Fusion","Concert","Corporate"],          instruments:["Saxophone","Rubab","Bass"], superhost:false,status:"pending", joined:"Dec 2024",available:{[MK]:[2,9,16,23,30]},                                           blocked:{[MK]:[]},             earnings:0,   totalBookings:0, verified:false,stripeConnected:false,stripeAccount:null,cancellationPolicy:"moderate",
-    spotify:{monthlyListeners:"19K",topTracks:["Kabul Jazz","Maqam Minor","Silk Road"],profileUrl:"https://open.spotify.com/artist/example"},
-    instagram:{handle:"@rustamband",followers:"8.7K",profileUrl:"https://instagram.com/rustamband",posts:[{thumb:"🎷",caption:"Berlin"},{thumb:"🎺",caption:"Jazz Festival"},{thumb:"🌐",caption:"World Tour"}]},
-  },
+  // Demo artists removed — all artists load from Supabase
 ];
 // ── Global markets — diaspora-relevant countries with EUR conversion ──
 const MARKETS=[
@@ -2601,18 +2562,8 @@ const MARKETS=[
 ];
 
 // ── Demo inquiries (owner inbox) ──────────────────────────────────────
-const DEMO_INQUIRIES=[
-  {id:"i1",name:"Farid Ahmadzai",email:"farid@email.com",country:"NO",eventType:"Wedding Reception",date:"June 2025",budget:"€2,500–5,000",preferredArtist:"a1",message:"We are planning a 200-person wedding in Oslo and would love Soraya Rahimi. Is there any flexibility on the price if we book two nights?",status:"new",ts:Date.now()-3600000},
-  {id:"i2",name:"Zainab Hussain",email:"zainab@email.com",country:"GB",eventType:"Cultural Gala",date:"August 2025",budget:"€5,000+",preferredArtist:"",message:"We represent the Afghan Cultural Society of London. We are organising our annual gala and are interested in multiple artists. Please contact us to discuss a package deal.",status:"viewed",ts:Date.now()-86400000},
-  {id:"i3",name:"Omar Karimi",email:"omar@gmail.com",country:"DE",eventType:"Eid Celebration",date:"March 2025",budget:"€1,000–2,500",preferredArtist:"a4",message:"Small private Eid party, approx 60 guests in Berlin. Very interested in Khalid Noori. What is the minimum booking fee?",status:"replied",reply:"Thank you Omar! We have spoken to Khalid and he can offer a special rate for intimate events. Will send details shortly.",ts:Date.now()-172800000},
-];
-const DEMO_BOOKINGS=[
-  {id:"b1",artistId:"a1",customerName:"Nasrin Ahmadi",  customerEmail:"nasrin@email.com", date:`${MONTHS[NOW.getMonth()]} 7, ${NOW.getFullYear()}`, event:"Wedding Reception",   deposit:1000,depositPaid:true, status:"confirmed", chatUnlocked:true, messages:[{from:"customer",text:"So excited for the big day!",time:"10:30"},{from:"artist",text:"It will be absolutely unforgettable.",time:"10:45"},{from:"customer",text:"Can we add a Dari folk song?",time:"11:00"},{from:"artist",text:"Of course! I'll prepare Laila specially.",time:"11:12"}]},
-  {id:"b2",artistId:"a2",customerName:"Jamshid Karimi", customerEmail:"jamshid@email.com",date:`${MONTHS[NOW.getMonth()]} 9, ${NOW.getFullYear()}`, event:"Eid Celebration",     deposit:800, depositPaid:true, status:"completed",  chatUnlocked:true, messages:[{from:"customer",text:"Thank you for the amazing performance!",time:"21:00"},{from:"artist",text:"Eid Mubarak to you and your family!",time:"21:20"}]},
-  {id:"b3",artistId:"a4",customerName:"Layla Mansouri", customerEmail:"layla@email.com",  date:`${MONTHS[NOW.getMonth()]} 10, ${NOW.getFullYear()}`,event:"Corporate Gala",       deposit:1000,depositPaid:false,status:"pending_payment",chatUnlocked:false,messages:[]},
-  {id:"b4",artistId:"a1",customerName:"Omar Safi",      customerEmail:"omar@email.com",   date:`${MONTHS[NOW.getMonth()]} 14, ${NOW.getFullYear()}`,event:"Birthday Celebration", deposit:1000,depositPaid:true, status:"confirmed", chatUnlocked:true, messages:[{from:"artist",text:"Looking forward to your celebration!",time:"09:00"},{from:"customer",text:"Can we discuss the setlist?",time:"09:30"}]},
-  {id:"b5",artistId:"a4",customerName:"Fawad Noor",     customerEmail:"fawad@email.com",  date:`${MONTHS[NOW.getMonth()]} 17, ${NOW.getFullYear()}`,event:"Cultural Festival",    deposit:1000,depositPaid:true, status:"confirmed", chatUnlocked:true, messages:[{from:"customer",text:"Need you on stage by 7pm.",time:"14:00"},{from:"artist",text:"Confirmed, soundcheck at 5pm.",time:"14:20"}]},
-];
+const DEMO_INQUIRIES=[];
+const DEMO_BOOKINGS=[];
 
 // ── Artist card ───────────────────────────────────────────────────────
 function ArtistCard({ artist, onClick, compact=false }) {
@@ -2911,14 +2862,7 @@ function LoginSheet({ users, open, onLogin, onClose }) {
               <div style={{fontSize:T.xs,color:C.muted,fontWeight:700,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:6,display:"flex",alignItems:"center",gap:6}}>
                 <span>⚠</span> Demo accounts — testing only
               </div>
-              <div style={{fontSize:T.xs,color:C.muted,marginBottom:10,lineHeight:1.5}}>{t('demoNote2')}</div>
-              {[["shams.nn@outlook.com","Grindatuneth301..","Admin"],["soraya@awaz.no","Soraya123!","Artist"],["khalid@awaz.no","Khalid123!","Artist"]].map(([e,p,r])=>(
-                <button key={e} onClick={()=>{setEmail(e);setPass(p);setErr("");}}
-                  style={{display:"flex",justifyContent:"space-between",width:"100%",background:"transparent",border:"none",borderBottom:`1px solid ${C.border}`,color:C.textD,cursor:"pointer",fontSize:T.xs,padding:"10px 0",fontFamily:"inherit",minHeight:44,WebkitTapHighlightColor:"transparent"}}>
-                  <span><span style={{color:C.gold}}>→</span> {e}</span><span style={{color:C.muted}}>{r}</span>
-                </button>
-              ))}
-            </div>
+                          </div>
           </>
         )}
       </div>
