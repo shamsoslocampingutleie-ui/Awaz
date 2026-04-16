@@ -6311,84 +6311,66 @@ function ApplySheet({ onSubmit, onClose }) {
           }
           return;
         }
-        // Insert into correct tables using the authenticated user's session
-        // artist_profiles uses user_id (uuid from auth), not a custom id
+        // ── Save to Supabase using the NEW USER's session (regSb) ──────
+        // CRITICAL: We must use regSb (not mainSb) for inserts because
+        // RLS policies check auth.uid() — only the new user can insert their own data.
         if(data.user){
-          const mainSb=await getSupabase();
-          if(mainSb){
-            // ── Insert all data for new artist ────────────────────────────
-            // Order matters: artists first (profiles has FK to artists)
+          const authId = data.user.id;
 
-            // 1. Insert into artists table (main table the app reads from)
-            try{
-              const{error:aErr}=await mainSb.from("artists").insert([{
-                id,                                          // UUID
-                name:          f.name,
-                name_dari:     f.nameDari||"",
-                genre:         f.genre,
-                location:      f.location||"—",
-                bio:           f.bio||"",
-                price_info:    f.priceInfo||"On request",
-                deposit:       parseInt(f.deposit)||1000,
-                emoji:         artistData.emoji,
-                color:         artistData.color,
-                tags:          artistData.tags,
-                instruments:   artistData.instruments,
-                status:        "pending",
-                cancellation_policy: f.cancellationPolicy,
-                joined_date:   MONTHS[NOW.getMonth()]+" "+NOW.getFullYear(),
-              }]);
-              if(aErr) console.warn("artists insert:",aErr.message);
-            }catch(e){console.warn("artists insert failed:",e);}
+          // 1. Insert into artists table
+          const{error:aErr}=await regSb.from("artists").insert([{
+            id:                  authId,   // use auth UUID as artist ID
+            name:                f.name,
+            name_dari:           f.nameDari||"",
+            genre:               f.genre,
+            location:            f.location||"—",
+            bio:                 f.bio||"",
+            price_info:          f.priceInfo||"On request",
+            deposit:             parseInt(f.deposit)||1000,
+            emoji:               artistData.emoji,
+            color:               artistData.color,
+            tags:                artistData.tags,
+            instruments:         artistData.instruments,
+            status:              "pending",
+            cancellation_policy: f.cancellationPolicy,
+            joined_date:         MONTHS[NOW.getMonth()]+" "+NOW.getFullYear(),
+          }]);
+          if(aErr) console.warn("artists insert error:",aErr.message);
 
-            // 2. Upsert profiles (links auth user → artist via artist_id)
-            try{
-              const{error:pErr}=await mainSb.from("profiles").upsert([{
-                id:        data.user.id,
-                role:      "artist",
-                artist_id: id,           // UUID matching artists.id
-                name:      f.name,
-              }],{onConflict:"id"});
-              if(pErr) console.warn("profiles upsert:",pErr.message);
-            }catch(e){console.warn("profiles upsert failed:",e);}
+          // 2. Upsert profiles — artist_id = same UUID as artists.id
+          const{error:pErr}=await regSb.from("profiles").upsert([{
+            id:        authId,
+            role:      "artist",
+            artist_id: authId,   // same UUID — no FK mismatch
+            name:      f.name,
+          }],{onConflict:"id"});
+          if(pErr) console.warn("profiles upsert error:",pErr.message);
 
-            // 3. Upsert users table (role + approval status)
-            try{
-              await mainSb.from("users").upsert({
-                id:          data.user.id,
-                email:       f.email.toLowerCase().trim(),
-                name:        f.name,
-                role:        "artist",
-                is_approved: false,
-              },{onConflict:"id"});
-            }catch(e){}
+          // 3. Upsert users table
+          const{error:uErr}=await regSb.from("users").upsert({
+            id:          authId,
+            email:       f.email.toLowerCase().trim(),
+            name:        f.name,
+            role:        "artist",
+            is_approved: false,
+          },{onConflict:"id"});
+          if(uErr) console.warn("users upsert error:",uErr.message);
 
-            // 4. Also insert into artist_profiles (new schema, non-critical)
-            try{
-              await mainSb.from("artist_profiles").insert({
-                user_id: data.user.id,
-                name:    f.name,
-                genre:   f.genre,
-                bio:     f.bio||"",
-                deposit: parseInt(f.deposit)||1000,
-              });
-            }catch(e){}
-          }
+          // Update artistData to use the correct UUID
+          Object.assign(artistData, { id: authId });
         }
         // NOTE: No signOut() on regSb — with persistSession:false there is
         // no session to clear, and calling signOut() could broadcast a
         // SIGNED_OUT event that would clear the main app's session (admin).
-        // Registration successful — add to local state but do NOT auto-login.
-        // Admin must approve first. Artist sees "pending" screen.
+        // Registration complete — show pending screen.
+        // artistData.id was updated to authId above via Object.assign
         const authUserId = data.user?.id || `u_${id}`;
-        const finalArtistId = authUserId;
-        const finalArtistData = { ...artistData, id: finalArtistId, status: "pending" };
 
-        onSubmit(finalArtistData, {
+        onSubmit(artistData, {
           id: authUserId, role: "artist",
           email: f.email, hash: sh(f.pass),
-          name: f.name, artistId: finalArtistId,
-        }, false); // autoLogin=FALSE — must wait for admin approval
+          name: f.name, artistId: authUserId,
+        }, false); // wait for admin approval
 
         setLoading(false);
         setDone(true);
