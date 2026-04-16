@@ -2055,7 +2055,7 @@ function BottomNav({ active, onNav, items }) {
     <nav style={{
       position:"fixed",bottom:0,left:0,right:0,zIndex:200,
       background:`${C.surface}F8`,backdropFilter:"blur(20px)",
-      
+      borderTop:`1px solid ${C.border}`,
       display:"flex",alignItems:"stretch",
       paddingBottom:"env(safe-area-inset-bottom,0px)",
       height:`calc(58px + env(safe-area-inset-bottom,0px))`,
@@ -3328,14 +3328,29 @@ function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction,
             <StatCard icon="📬" label="New Inquiries"      value={newInquiries}                         sub="Unread"             color={C.lavender} onClick={()=>setTab("inquiries")}/>
           </div>
 
-          {/* Pending artists alert */}
-          {pendingArtists>0&&(
-            <div onClick={()=>setTab("artists")} style={{background:`${C.saffron}10`,border:`1px solid ${C.saffron}44`,borderRadius:10,padding:"12px 16px",marginBottom:20,cursor:"pointer",display:"flex",alignItems:"center",gap:10}}>
-              <span style={{fontSize:18}}>⚠️</span>
-              <div>
-                <div style={{fontWeight:700,color:C.saffron,fontSize:T.sm}}>{pendingArtists} artist{pendingArtists>1?"s":""} awaiting review</div>
-                <div style={{color:C.muted,fontSize:T.xs}}>Click to review and approve →</div>
-              </div>
+          {/* Action alerts */}
+          {(pendingArtists>0||newInquiries>0)&&(
+            <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:20}}>
+              {pendingArtists>0&&(
+                <div onClick={()=>setTab("artists")} style={{background:`${C.saffron}10`,border:`1px solid ${C.saffron}44`,borderRadius:10,padding:"12px 16px",cursor:"pointer",display:"flex",alignItems:"center",gap:10}}>
+                  <span style={{fontSize:18}}>⚠️</span>
+                  <div style={{flex:1}}>
+                    <div style={{fontWeight:700,color:C.saffron,fontSize:T.sm}}>{pendingArtists} artist{pendingArtists>1?"s":""} awaiting review</div>
+                    <div style={{color:C.muted,fontSize:T.xs}}>Approve or reject to activate their profile →</div>
+                  </div>
+                  <span style={{fontSize:T.xs,color:C.saffron,fontWeight:700}}>→</span>
+                </div>
+              )}
+              {newInquiries>0&&(
+                <div onClick={()=>setTab("inquiries")} style={{background:`${C.lavender}10`,border:`1px solid ${C.lavender}44`,borderRadius:10,padding:"12px 16px",cursor:"pointer",display:"flex",alignItems:"center",gap:10}}>
+                  <span style={{fontSize:18}}>📬</span>
+                  <div style={{flex:1}}>
+                    <div style={{fontWeight:700,color:C.lavender,fontSize:T.sm}}>{newInquiries} new inquiry{newInquiries>1?"ies":""}</div>
+                    <div style={{color:C.muted,fontSize:T.xs}}>Private booking inquiries waiting for your reply →</div>
+                  </div>
+                  <span style={{fontSize:T.xs,color:C.lavender,fontWeight:700}}>→</span>
+                </div>
+              )}
             </div>
           )}
 
@@ -3413,6 +3428,15 @@ function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction,
                     </span>
                     <span style={{color:C.border}}>·</span>
                     <span style={{color:b.chatUnlocked?C.emerald:C.muted,fontSize:T.xs}}>Chat {b.chatUnlocked?"unlocked":"locked"}</span>
+                    {b.depositPaid&&b.status!=="confirmed"&&!b.refunded&&(
+                      <button onClick={()=>setBookings(p=>p.map(bk=>bk.id===b.id?{...bk,status:"confirmed"}:bk))}
+                        style={{background:C.emeraldS,color:C.emerald,border:`1px solid ${C.emerald}44`,borderRadius:6,padding:"4px 10px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>
+                        ✓ Confirm
+                      </button>
+                    )}
+                    {b.status==="confirmed"&&(
+                      <span style={{color:C.emerald,fontSize:T.xs,fontWeight:700}}>✓ Confirmed</span>
+                    )}
                     {b.depositPaid&&!b.refunded&&(
                       <button onClick={()=>{
                         if(window.confirm(`Refund €${b.deposit} deposit to ${b.customerName}?`)){
@@ -3773,11 +3797,46 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
           <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:4}}>
             Hey, {artist.name.split(" ")[0]} 👋
           </div>
-          {artist.status==="pending"&&<div style={{background:"rgba(196,120,32,0.08)",border:`1px solid ${C.saffron}38`,borderRadius:10,padding:"12px 14px",marginBottom:12,fontSize:T.sm,color:C.textD,fontFamily:"'DM Sans',sans-serif"}}>⏳ <strong style={{color:C.saffron}}>{t('pendingApproval')}</strong> — 24–48 hours to review.</div>}
+          {artist.status==="pending"&&(
+            <div style={{background:"rgba(196,120,32,0.08)",border:`1px solid ${C.saffron}44`,borderRadius:12,padding:"16px 18px",marginBottom:16,fontFamily:"'DM Sans',sans-serif"}}>
+              <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
+                <span style={{fontSize:18}}>⏳</span>
+                <span style={{fontWeight:700,color:C.saffron,fontSize:T.sm}}>Profile under review — 24–48 hours</span>
+              </div>
+              <div style={{fontSize:T.xs,color:C.textD,marginBottom:12,lineHeight:1.6}}>
+                While you wait, complete your profile to get approved faster and attract more clients.
+              </div>
+              <div style={{display:"flex",flexDirection:"column",gap:7}}>
+                {[
+                  [!!artist.bio,"Add bio",()=>setTab("profile")],
+                  [!!artist.spotify||!!artist.instagram,"Add Spotify / Instagram",()=>setTab("social")],
+                  [(artist.available?.[MK]||[]).length>0,"Set available dates",()=>setTab("calendar")],
+                  [!!artist.priceInfo&&artist.priceInfo!=="On request","Set your price",()=>setTab("profile")],
+                ].map(([done,label,go])=>(
+                  <div key={label} style={{display:"flex",alignItems:"center",gap:10,cursor:done?"default":"pointer"}} onClick={done?undefined:go}>
+                    <div style={{width:20,height:20,borderRadius:"50%",background:done?C.emeraldS:C.surface,border:`1px solid ${done?C.emerald:C.border}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,flexShrink:0}}>
+                      {done?"✓":"→"}
+                    </div>
+                    <span style={{fontSize:T.xs,color:done?C.emerald:C.textD,textDecoration:done?"none":"underline"}}>{label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {artist.status==="approved"&&artist.stripeConnected&&(
+            <div style={{background:C.emeraldS,border:`1px solid ${C.emerald}44`,borderRadius:10,padding:"10px 14px",marginBottom:12,display:"flex",alignItems:"center",gap:8,fontSize:T.sm,fontFamily:"'DM Sans',sans-serif"}}>
+              <span style={{fontSize:16}}>🎉</span>
+              <span style={{color:C.emerald,fontWeight:700}}>Profile approved and Stripe connected</span>
+              <span style={{color:C.muted,fontSize:T.xs}}>— you're ready to receive bookings</span>
+            </div>
+          )}
           {!artist.stripeConnected&&artist.status==="approved"&&(
-            <div style={{background:"rgba(99,91,255,0.08)",border:"1px solid rgba(99,91,255,0.28)",borderRadius:10,padding:"12px 14px",marginBottom:12,fontSize:T.sm,color:C.textD,fontFamily:"'DM Sans',sans-serif",display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,flexWrap:"wrap"}}>
-              <span>💳 <strong style={{color:"#8B83FF"}}>{t('connectStripe')}</strong> to receive deposits</span>
-              <Btn v="stripe" sz="sm" onClick={()=>setShowStripeConnect(true)}>Connect →</Btn>
+            <div style={{background:"rgba(99,91,255,0.10)",border:"2px solid rgba(99,91,255,0.35)",borderRadius:12,padding:"14px 16px",marginBottom:12,fontSize:T.sm,color:C.textD,fontFamily:"'DM Sans',sans-serif",display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,flexWrap:"wrap"}}>
+              <div>
+                <div style={{fontWeight:700,color:"#8B83FF",marginBottom:3}}>💳 Connect Stripe to get paid</div>
+                <div style={{fontSize:T.xs,color:C.muted}}>Required to receive deposits from bookings</div>
+              </div>
+              <Btn v="stripe" sz="sm" onClick={()=>setShowStripeConnect(true)}>Connect now →</Btn>
             </div>
           )}
           {!artist.spotify&&!artist.instagram&&artist.status==="approved"&&(
@@ -3787,7 +3846,7 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
             </div>
           )}
           <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10,marginBottom:16}}>
-            {[["💶",`Earnings (88%)`,`€${depositsIn}`,C.gold],["📅","Bookings",myB.length,C.gold],["💬","Active Chats",myB.filter(b=>b.chatUnlocked).length,C.gold],["⭐","Rating",artist.reviews>0?artist.rating:"—",C.gold]].map(([icon,label,value,color])=>(
+            {[["💶",`Earnings (88%)`,`${artist.currency==="EUR"?"€":artist.currency==="NOK"||artist.currency==="SEK"||artist.currency==="DKK"?"kr":artist.currency==="GBP"?"£":artist.currency==="USD"?"$":"€"}${depositsIn}`,C.gold],["📅","Bookings",myB.length,C.gold],["💬","Active Chats",myB.filter(b=>b.chatUnlocked).length,C.gold],["⭐","Rating",artist.reviews>0?artist.rating:"—",C.gold]].map(([icon,label,value,color])=>(
               <div key={label} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:10,padding:"14px",borderTop:`3px solid ${C.border}38`}}>
                 <div style={{fontSize:18,marginBottom:5}}>{icon}</div>
                 <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:800,color,lineHeight:1}}>{value}</div>
@@ -5000,7 +5059,16 @@ function AppInner() {
       }catch(e){console.warn("Supabase booking insert failed:",e);}
     }
   };
-  const handleNewArtist=(a,u)=>{setArtists(p=>[...p,a]);setUsers(p=>[...p,u]);};
+  const handleNewArtist=(a,u,autoLogin=false)=>{
+    setArtists(p=>[...p,a]);
+    setUsers(p=>[...p,u]);
+    // If Supabase returned a session immediately (email confirm disabled),
+    // log the artist in so they land directly on their dashboard.
+    if(autoLogin){
+      setSession({id:u.id,email:u.email,name:u.name,role:u.role,artistId:u.artistId});
+      setShowApply(false);
+    }
+  };
   const handleMsg=(bid,m)=>{
     setBookings(p=>p.map(b=>{
       if(b.id!==bid)return b;
@@ -5298,7 +5366,7 @@ function AppInner() {
           </section>
 
           {/* How it works */}
-          <section style={{background:C.surface,position:"relative",overflow:"hidden"}}>
+          <section style={{background:C.bg,borderTop:`1px solid ${C.border}`,position:"relative",overflow:"hidden"}}>
             <Geo id="hiw" op={0.03}/>
             <div style={{maxWidth:1240,margin:"0 auto",padding:vp.isMobile?"28px 16px":"60px 48px",position:"relative"}}>
               <div style={{textAlign:"center",marginBottom:vp.isMobile?28:44}}>
@@ -5329,7 +5397,7 @@ function AppInner() {
           </section>
 
           {/* Footer */}
-          <footer style={{background:C.surface,padding:vp.isMobile?"24px 16px 100px":"44px 48px 32px"}}>
+          <footer style={{background:C.bg,borderTop:`1px solid ${C.border}`,padding:vp.isMobile?"24px 16px 100px":"44px 48px 32px"}}>
             {vp.isMobile?(
               <div>
                 <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}>
@@ -5859,8 +5927,12 @@ function ApplySheet({ onSubmit, onClose }) {
             id:data.user.id,role:"artist",artist_id:id,name:f.name,
           }],{onConflict:"id"});
         }
-        // CRITICAL: Also update local state so admin sees new artist immediately
-        // and so artist can access their portal after login
+        // CRITICAL: Also update local state so admin sees new artist immediately.
+        // Pass autoLogin=true only when Supabase has an active session (email
+        // confirmation is disabled in the Supabase project settings).
+        // When email confirmation IS required, data.session is null and the
+        // artist will need to confirm their email before logging in.
+        const hasSession = !!data.session;
         onSubmit(artistData,{
           id:data.user?.id||`u_${id}`,
           role:"artist",
@@ -5868,8 +5940,9 @@ function ApplySheet({ onSubmit, onClose }) {
           hash:sh(f.pass),
           name:f.name,
           artistId:id,
-        });
-        setLoading(false);setDone(true);
+        }, hasSession);
+        setLoading(false);
+        if(!hasSession) setDone(true); // show confirmation screen if email needed
         return;
       }catch(e){setLoading(false);setErr("Registration failed — please try again.");return;}
     }
