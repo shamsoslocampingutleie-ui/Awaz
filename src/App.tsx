@@ -2685,8 +2685,13 @@ function LoginSheet({ users, open, onLogin, onClose }) {
           const {data:dbUser}=await sb.from("users").select("*").eq("id",data.user.id).single();
           const {data:profile}=await sb.from("profiles").select("*").eq("id",data.user.id).single();
 
-          // users table takes priority over profiles table
-          const role=dbUser?.role||profile?.role||"customer";
+          // profiles.role takes priority for artist (registration sets this directly)
+          // users.role is set by trigger and may be 'user' if metadata was missing
+          const role=
+            (profile?.role==="artist" ? "artist" : null) ||
+            dbUser?.role ||
+            profile?.role ||
+            "customer";
           const name=dbUser?.name||profile?.name||data.user.email;
 
           // artistId must match artists.id (the table ArtistPortal reads from)
@@ -5171,7 +5176,11 @@ function AppInner() {
             // ── STEP 2: Non-admin — check users table first, then profiles
             const{data:dbUser}=await sb.from("users").select("*").eq("id",supaSession.user.id).single();
             const{data:profile}=await sb.from("profiles").select("*").eq("id",supaSession.user.id).single();
-            const role=dbUser?.role||profile?.role||"customer";
+            const role=
+              (profile?.role==="artist" ? "artist" : null) ||
+              dbUser?.role ||
+              profile?.role ||
+              "customer";
 
             // Always fetch artistId directly from artist_profiles by user_id
             // This is more reliable than reading artist_id from profiles table
@@ -6200,7 +6209,7 @@ function ApplySheet({ onSubmit, onClose }) {
         const{data,error}=await regSb.auth.signUp({
           email:f.email.toLowerCase().trim(),
           password:f.pass,
-          options:{data:{name:f.name},emailRedirectTo:window.location.origin},
+          options:{data:{name:f.name, role:"artist"},emailRedirectTo:window.location.origin},
         });
         if(error){
           setLoading(false);
