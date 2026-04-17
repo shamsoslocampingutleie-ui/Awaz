@@ -3201,6 +3201,10 @@ function SectionHeader({title,action=null,subtitle=null}:{title:any;action?:any;
 function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction, onLogout, onMsg, onUpdateInquiry }) {
   const vp=useViewport();
   const [tab,setTab]=useState("overview");
+  const [selInq,setSelInq]=useState(null);
+  const [replyText,setReplyText]=useState("");
+  const [replySent,setReplySent]=useState(false);
+  const [sendingReply,setSendingReply]=useState(false);
   const [localAdminMsgs,setLocalAdminMsgs]=React.useState([]);
   const [artistReplyMsg,setArtistReplyMsg]=React.useState("");
   const [chat,setChat]=useState(null);
@@ -3568,179 +3572,117 @@ function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction,
       )}
 
       {/* ── DIRECT CHAT ── */}
-      {tab==="inquiries"&&(()=>{
-        const [selInq,setSelInq]=React.useState(null);
-        const [replyText,setReplyText]=React.useState("");
-        const [replySent,setReplySent]=React.useState(false);
-        const [sending,setSending]=React.useState(false);
+      {tab==="inquiries"&&(
+        <div>
+          <SectionHeader title={`Inquiries (${inquiries.length})`}/>
 
-        const sendReply=async()=>{
-          if(!selInq||!replyText.trim()) return;
-          setSending(true);
-          const updated={...selInq,status:"replied",reply:replyText.trim()};
-          onUpdateInquiry(selInq.id,{status:"replied",reply:replyText.trim()});
-          // Save reply to Supabase
-          if(HAS_SUPA){
-            const sb=await getSupabase();
-            if(sb){
-              await sb.from("inquiries").update({
-                status:"replied",
-                reply:replyText.trim(),
-              }).eq("id",selInq.id);
-            }
-          }
-          setSending(false);
-          setReplySent(true);
-          setTimeout(()=>setReplySent(false),3000);
-          setSelInq(updated);
-          setReplyText("");
-        };
+          {inquiries.length===0?(
+            <div style={{textAlign:"center",padding:"60px 20px",background:C.card,borderRadius:12,border:`1px solid ${C.border}`}}>
+              <div style={{fontSize:40,marginBottom:12}}>📬</div>
+              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,color:C.text,marginBottom:8}}>No inquiries yet</div>
+              <div style={{color:C.muted,fontSize:T.sm}}>Customer inquiries will appear here once the contact widget is live on the site.</div>
+            </div>
+          ):(
+            <div style={{display:"grid",gridTemplateColumns:vp.isMobile?"1fr":"320px 1fr",gap:16,minHeight:520}}>
 
-        const markRead=async(inq)=>{
-          if(inq.status!=="new") return;
-          onUpdateInquiry(inq.id,{status:"read"});
-          if(HAS_SUPA){
-            const sb=await getSupabase();
-            if(sb) await sb.from("inquiries").update({status:"read"}).eq("id",inq.id);
-          }
-        };
-
-        const sorted=[...inquiries].sort((a,b)=>b.ts-a.ts);
-
-        return(
-          <div>
-            <SectionHeader title={`Inquiries (${inquiries.length})`}/>
-
-            {inquiries.length===0?(
-              <div style={{textAlign:"center",padding:"60px 20px",background:C.card,borderRadius:12,border:`1px solid ${C.border}`}}>
-                <div style={{fontSize:40,marginBottom:12}}>📬</div>
-                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,color:C.text,marginBottom:8}}>No inquiries yet</div>
-                <div style={{color:C.muted,fontSize:T.sm}}>Customer inquiries will appear here. Make sure the inquiry widget is visible on the public site.</div>
-              </div>
-            ):(
-              <div style={{display:"grid",gridTemplateColumns:vp.isMobile?"1fr":"320px 1fr",gap:16,minHeight:520}}>
-
-                {/* ── Inbox list ── */}
-                <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,overflow:"auto",maxHeight:620}}>
-                  {sorted.map(inq=>{
-                    const isNew=inq.status==="new";
-                    const isSel=selInq?.id===inq.id;
-                    return(
-                      <div key={inq.id} onClick={()=>{setSelInq(inq);setReplyText("");setReplySent(false);markRead(inq);}}
-                        style={{padding:"14px 16px",borderBottom:`1px solid ${C.border}`,cursor:"pointer",
-                          background:isSel?C.goldS:isNew?"rgba(200,168,74,0.04)":"transparent",
-                          borderLeft:`3px solid ${isSel?C.gold:isNew?C.gold+"66":"transparent"}`,
-                          transition:"background 0.15s"}}>
-                        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
-                          <div style={{fontWeight:700,color:C.text,fontSize:T.sm}}>{inq.name}</div>
-                          <div style={{display:"flex",gap:6,alignItems:"center"}}>
-                            {isNew&&<span style={{background:C.ruby,color:"#fff",borderRadius:6,fontSize:9,fontWeight:800,padding:"2px 6px"}}>NEW</span>}
-                            {inq.status==="replied"&&<span style={{background:C.emeraldS,color:C.emerald,borderRadius:6,fontSize:9,fontWeight:800,padding:"2px 6px"}}>REPLIED</span>}
-                            <span style={{color:C.faint,fontSize:10}}>{new Date(inq.ts).toLocaleDateString()}</span>
-                          </div>
-                        </div>
-                        <div style={{color:C.muted,fontSize:T.xs,marginBottom:3}}>{inq.email} · {inq.country}</div>
-                        <div style={{color:C.textD,fontSize:T.xs,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:"100%"}}>
-                          {inq.eventType&&<span style={{color:C.gold,fontWeight:600}}>{inq.eventType} · </span>}
-                          {inq.message}
+              {/* ── Inbox list ── */}
+              <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,overflow:"auto",maxHeight:620}}>
+                {[...inquiries].sort((a,b)=>b.ts-a.ts).map(inq=>{
+                  const isNew=inq.status==="new";
+                  const isSel=selInq?.id===inq.id;
+                  return(
+                    <div key={inq.id} onClick={async()=>{
+                      setSelInq(inq);setReplyText("");setReplySent(false);
+                      if(inq.status==="new"){
+                        onUpdateInquiry(inq.id,{status:"read"});
+                        if(HAS_SUPA){const sb=await getSupabase();if(sb)await sb.from("inquiries").update({status:"read"}).eq("id",inq.id);}
+                      }
+                    }}
+                      style={{padding:"14px 16px",borderBottom:`1px solid ${C.border}`,cursor:"pointer",
+                        background:isSel?C.goldS:isNew?"rgba(200,168,74,0.04)":"transparent",
+                        borderLeft:`3px solid ${isSel?C.gold:isNew?C.gold+"66":"transparent"}`,transition:"background 0.15s"}}>
+                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
+                        <div style={{fontWeight:700,color:C.text,fontSize:T.sm}}>{inq.name}</div>
+                        <div style={{display:"flex",gap:6,alignItems:"center"}}>
+                          {isNew&&<span style={{background:C.ruby,color:"#fff",borderRadius:6,fontSize:9,fontWeight:800,padding:"2px 6px"}}>NEW</span>}
+                          {inq.status==="replied"&&<span style={{background:C.emeraldS,color:C.emerald,borderRadius:6,fontSize:9,fontWeight:800,padding:"2px 6px"}}>REPLIED</span>}
+                          <span style={{color:C.faint,fontSize:10}}>{new Date(inq.ts).toLocaleDateString()}</span>
                         </div>
                       </div>
-                    );
-                  })}
-                </div>
-
-                {/* ── Detail + Reply ── */}
-                <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,display:"flex",flexDirection:"column"}}>
-                  {selInq?(
-                    <>
-                      {/* Header */}
-                      <div style={{padding:"16px 20px",borderBottom:`1px solid ${C.border}`,display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
-                        <div>
-                          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:700,color:C.text}}>{selInq.name}</div>
-                          <div style={{color:C.muted,fontSize:T.xs,marginTop:2}}>{selInq.email} · {selInq.country}</div>
-                        </div>
-                        <span style={{
-                          background:selInq.status==="replied"?C.emeraldS:selInq.status==="new"?C.rubyS:C.surface,
-                          color:selInq.status==="replied"?C.emerald:selInq.status==="new"?C.ruby:C.muted,
-                          border:`1px solid ${selInq.status==="replied"?C.emerald+"44":selInq.status==="new"?C.ruby+"44":C.border}`,
-                          borderRadius:8,fontSize:T.xs,fontWeight:700,padding:"4px 10px",textTransform:"uppercase"
-                        }}>{selInq.status}</span>
+                      <div style={{color:C.muted,fontSize:T.xs,marginBottom:3}}>{inq.email} · {inq.country}</div>
+                      <div style={{color:C.textD,fontSize:T.xs,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
+                        {inq.eventType&&<span style={{color:C.gold,fontWeight:600}}>{inq.eventType} · </span>}{inq.message}
                       </div>
-
-                      {/* Inquiry details */}
-                      <div style={{padding:"16px 20px",flex:1,overflow:"auto"}}>
-                        {/* Info grid */}
-                        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:16}}>
-                          {[
-                            ["📅 Event Date", selInq.date||"—"],
-                            ["🎉 Event Type", selInq.eventType||"—"],
-                            ["💶 Budget",     selInq.budget||"—"],
-                            ["📍 Country",    selInq.country||"—"],
-                          ].filter(([,v])=>v!=="—").map(([k,v])=>(
-                            <div key={k} style={{background:C.surface,borderRadius:8,padding:"10px 12px",border:`1px solid ${C.border}`}}>
-                              <div style={{color:C.muted,fontSize:10,fontWeight:700,letterSpacing:"0.6px",textTransform:"uppercase",marginBottom:3}}>{k}</div>
-                              <div style={{color:C.text,fontSize:T.sm,fontWeight:600}}>{v}</div>
-                            </div>
-                          ))}
-                        </div>
-
-                        {/* Message */}
-                        <div style={{background:C.surface,borderRadius:10,padding:"14px 16px",border:`1px solid ${C.border}`,marginBottom:16}}>
-                          <div style={{color:C.muted,fontSize:10,fontWeight:700,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:8}}>MESSAGE</div>
-                          <div style={{color:C.text,fontSize:T.sm,lineHeight:1.8,whiteSpace:"pre-wrap"}}>{selInq.message||"No message provided."}</div>
-                        </div>
-
-                        {/* Previous reply */}
-                        {selInq.reply&&(
-                          <div style={{background:C.emeraldS,border:`1px solid ${C.emerald}33`,borderRadius:10,padding:"14px 16px",marginBottom:16}}>
-                            <div style={{color:C.emerald,fontSize:10,fontWeight:700,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:8}}>✓ YOUR REPLY</div>
-                            <div style={{color:C.text,fontSize:T.sm,lineHeight:1.8,whiteSpace:"pre-wrap"}}>{selInq.reply}</div>
-                          </div>
-                        )}
-
-                        {/* Reply box */}
-                        {replySent?(
-                          <div style={{background:C.emeraldS,border:`1px solid ${C.emerald}44`,borderRadius:10,padding:"14px 16px",textAlign:"center",color:C.emerald,fontWeight:700}}>
-                            ✓ Reply sent!
-                          </div>
-                        ):(
-                          <div>
-                            <div style={{color:C.muted,fontSize:10,fontWeight:700,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:8}}>
-                              {selInq.reply?"SEND ANOTHER REPLY":"REPLY TO INQUIRY"}
-                            </div>
-                            <textarea
-                              value={replyText}
-                              onChange={e=>setReplyText(e.target.value)}
-                              placeholder={`Hi ${selInq.name.split(" ")[0]}, thank you for your inquiry…`}
-                              rows={4}
-                              style={{width:"100%",background:C.surface,border:`1px solid ${C.border}`,borderRadius:10,padding:"12px 14px",color:C.text,fontSize:T.sm,fontFamily:"inherit",resize:"vertical",outline:"none",lineHeight:1.7,boxSizing:"border-box"}}
-                            />
-                            <button
-                              onClick={sendReply}
-                              disabled={!replyText.trim()||sending}
-                              style={{marginTop:10,width:"100%",background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:10,padding:"12px",fontWeight:800,fontSize:T.sm,cursor:replyText.trim()?"pointer":"not-allowed",opacity:replyText.trim()?1:0.5,fontFamily:"inherit"}}>
-                              {sending?"Sending…":"Send Reply →"}
-                            </button>
-                            <div style={{color:C.faint,fontSize:11,marginTop:6,textAlign:"center"}}>
-                              Note: email delivery requires SMTP setup in Supabase
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </>
-                  ):(
-                    <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:10,color:C.muted}}>
-                      <div style={{fontSize:36}}>📬</div>
-                      <div style={{fontSize:T.sm}}>Select an inquiry to view details</div>
                     </div>
-                  )}
-                </div>
+                  );
+                })}
               </div>
-            )}
-          </div>
-        );
-      })()}
 
+              {/* ── Detail + Reply ── */}
+              <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,display:"flex",flexDirection:"column"}}>
+                {selInq?(
+                  <>
+                    <div style={{padding:"16px 20px",borderBottom:`1px solid ${C.border}`,display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+                      <div>
+                        <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:700,color:C.text}}>{selInq.name}</div>
+                        <div style={{color:C.muted,fontSize:T.xs,marginTop:2}}>{selInq.email} · {selInq.country}</div>
+                      </div>
+                      <span style={{background:selInq.status==="replied"?C.emeraldS:selInq.status==="new"?C.rubyS:C.surface,color:selInq.status==="replied"?C.emerald:selInq.status==="new"?C.ruby:C.muted,border:`1px solid ${selInq.status==="replied"?C.emerald+"44":selInq.status==="new"?C.ruby+"44":C.border}`,borderRadius:8,fontSize:T.xs,fontWeight:700,padding:"4px 10px",textTransform:"uppercase"}}>{selInq.status}</span>
+                    </div>
+                    <div style={{padding:"16px 20px",flex:1,overflow:"auto"}}>
+                      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:16}}>
+                        {[["📅 Date",selInq.date||"—"],["🎉 Event",selInq.eventType||"—"],["💶 Budget",selInq.budget||"—"],["📍 Country",selInq.country||"—"]].filter(([,v])=>v!=="—").map(([k,v])=>(
+                          <div key={k} style={{background:C.surface,borderRadius:8,padding:"10px 12px",border:`1px solid ${C.border}`}}>
+                            <div style={{color:C.muted,fontSize:10,fontWeight:700,letterSpacing:"0.6px",textTransform:"uppercase",marginBottom:3}}>{k}</div>
+                            <div style={{color:C.text,fontSize:T.sm,fontWeight:600}}>{v}</div>
+                          </div>
+                        ))}
+                      </div>
+                      <div style={{background:C.surface,borderRadius:10,padding:"14px 16px",border:`1px solid ${C.border}`,marginBottom:16}}>
+                        <div style={{color:C.muted,fontSize:10,fontWeight:700,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:8}}>MESSAGE</div>
+                        <div style={{color:C.text,fontSize:T.sm,lineHeight:1.8,whiteSpace:"pre-wrap"}}>{selInq.message||"No message."}</div>
+                      </div>
+                      {selInq.reply&&(
+                        <div style={{background:C.emeraldS,border:`1px solid ${C.emerald}33`,borderRadius:10,padding:"14px 16px",marginBottom:16}}>
+                          <div style={{color:C.emerald,fontSize:10,fontWeight:700,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:8}}>✓ YOUR REPLY</div>
+                          <div style={{color:C.text,fontSize:T.sm,lineHeight:1.8,whiteSpace:"pre-wrap"}}>{selInq.reply}</div>
+                        </div>
+                      )}
+                      {replySent?(
+                        <div style={{background:C.emeraldS,border:`1px solid ${C.emerald}44`,borderRadius:10,padding:"14px 16px",textAlign:"center",color:C.emerald,fontWeight:700}}>✓ Reply saved!</div>
+                      ):(
+                        <div>
+                          <div style={{color:C.muted,fontSize:10,fontWeight:700,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:8}}>{selInq.reply?"SEND ANOTHER REPLY":"REPLY"}</div>
+                          <textarea value={replyText} onChange={e=>setReplyText(e.target.value)}
+                            placeholder={`Hi ${selInq.name.split(" ")[0]}, thank you for your inquiry…`}
+                            rows={4} style={{width:"100%",background:C.surface,border:`1px solid ${C.border}`,borderRadius:10,padding:"12px 14px",color:C.text,fontSize:T.sm,fontFamily:"inherit",resize:"vertical",outline:"none",lineHeight:1.7,boxSizing:"border-box"}}/>
+                          <button onClick={async()=>{
+                            if(!replyText.trim()||sendingReply) return;
+                            setSendingReply(true);
+                            onUpdateInquiry(selInq.id,{status:"replied",reply:replyText.trim()});
+                            if(HAS_SUPA){const sb=await getSupabase();if(sb)await sb.from("inquiries").update({status:"replied",reply:replyText.trim()}).eq("id",selInq.id);}
+                            setSelInq(s=>({...s,status:"replied",reply:replyText.trim()}));
+                            setSendingReply(false);setReplySent(true);setReplyText("");
+                            setTimeout(()=>setReplySent(false),3000);
+                          }} disabled={!replyText.trim()||sendingReply}
+                            style={{marginTop:10,width:"100%",background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:10,padding:"12px",fontWeight:800,fontSize:T.sm,cursor:replyText.trim()?"pointer":"not-allowed",opacity:replyText.trim()?1:0.5,fontFamily:"inherit"}}>
+                            {sendingReply?"Saving…":"Save Reply →"}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </>
+                ):(
+                  <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:10,color:C.muted}}>
+                    <div style={{fontSize:36}}>📬</div>
+                    <div style={{fontSize:T.sm}}>Select an inquiry to view</div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
       {tab==="chat"&&(
         <div>
           <SectionHeader title="Direct Chat with Artists"/>
@@ -4837,6 +4779,8 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
     </div>
   );
 
+
+
   // Load messages from chat_messages table when Messages tab opens
   React.useEffect(()=>{
     if(tab !== "messages" || !HAS_SUPA) return;
@@ -4882,8 +4826,6 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
     load();
     return ()=>{ cancelled = true; };
   },[tab, artist.id]);
-
-
   return(
     <div style={{minHeight:"100vh",background:C.bg,display:"flex"}}>
       <div style={{height:3,background:`linear-gradient(90deg,${artist.color},${C.gold},${artist.color})`,position:"fixed",top:0,left:0,right:0,zIndex:200}}/>
