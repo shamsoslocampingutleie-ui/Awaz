@@ -3182,9 +3182,23 @@ function ProfilePage({ artist, bookings, onBack, onBookingCreated }) {
 }
 
 // ── Admin Dashboard ────────────────────────────────────────────────────
+// ── Global SectionHeader ────────────────────────────────────────────────────
+function SectionHeader({title,action=null,subtitle=null}:{title:any;action?:any;subtitle?:any}){
+  return(
+    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
+      <div>
+        <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.35rem",fontWeight:700,color:"var(--awaz-text,#EDE4CE)"}}>{title}</div>
+        {subtitle&&<div style={{color:"var(--awaz-muted,#8A7D68)",fontSize:"0.8rem",marginTop:2}}>{subtitle}</div>}
+      </div>
+      {action&&<div>{action}</div>}
+    </div>
+  );
+}
+
 function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction, onLogout, onMsg, onUpdateInquiry }) {
   const vp=useViewport();
   const [tab,setTab]=useState("overview");
+  const [localAdminMsgs,setLocalAdminMsgs]=React.useState([]);
   const [chat,setChat]=useState(null);
   const [adminChatArtist,setAdminChatArtist]=useState(null);
   const [adminChatMsg,setAdminChatMsg]=useState("");
@@ -3308,12 +3322,8 @@ function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction,
   );
 
   // Section header
-  const SectionHeader=({title,action})=>(
-    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
-      <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text}}>{title}</div>
-      {action}
-    </div>
-  );
+  // SectionHeader is now global (defined above)
+
 
   // Artist row
   const ArtistRow=({a})=>{
@@ -3527,7 +3537,7 @@ function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction,
           <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:16}}>{t('messages2')||"Messages"}</div>
 
           {/* Admin messages shown first */}
-          {myB.filter(b=>b.status==="admin_chat"&&b.messages?.length>0).map(b=>(
+          {[...localAdminMsgs,...myB.filter(b=>b.status==="admin_chat")].filter((b,i,arr)=>arr.findIndex(x=>x.id===b.id)===i&&b.messages?.length>0).map(b=>(
             <div key={b.id} onClick={()=>setChat(b)}
               style={{background:`linear-gradient(135deg,${C.goldS},${C.card})`,border:`1px solid ${C.gold}44`,borderRadius:12,padding:"14px 16px",marginBottom:12,cursor:"pointer",display:"flex",gap:12,alignItems:"center"}}>
               <div style={{width:40,height:40,borderRadius:"50%",background:C.goldS,border:`2px solid ${C.gold}44`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>👑</div>
@@ -3541,7 +3551,7 @@ function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction,
             </div>
           ))}
 
-          {myB.filter(b=>b.status!=="admin_chat"&&b.messages?.length>0).length===0&&myB.filter(b=>b.status==="admin_chat").length===0?(
+          {myB.filter(b=>b.status!=="admin_chat"&&b.messages?.length>0).length===0&&localAdminMsgs.length===0&&myB.filter(b=>b.status==="admin_chat").length===0?(
             <div style={{textAlign:"center",padding:"40px",background:C.card,borderRadius:12,border:`1px solid ${C.border}`,color:C.muted}}>No conversations yet</div>
           ):myB.filter(b=>b.status!=="admin_chat"&&b.messages?.length>0).map(b=>{
             const art=artists.find(a=>a.id===b.artistId);
@@ -4045,7 +4055,21 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
         <div>
           <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:14}}>My Bookings</div>
           {myB.length===0
-            ?<div style={{textAlign:"center",padding:32,background:C.card,borderRadius:12,border:`1px solid ${C.border}`,color:C.muted,fontSize:T.sm,fontStyle:"italic"}}>No bookings yet. Add available dates in Calendar to start receiving bookings.</div>
+            ?<div>
+              {(!artist.genre||!artist.bio||!artist.spotify)&&(
+                <div style={{background:`linear-gradient(135deg,rgba(200,168,74,0.06),${C.card})`,border:`1px solid ${C.gold}33`,borderRadius:12,padding:"18px 20px",marginBottom:12}}>
+                  <div style={{fontWeight:700,color:C.gold,fontSize:T.sm,marginBottom:4}}>⭐ Complete your profile to get bookings</div>
+                  <div style={{color:C.muted,fontSize:T.xs,marginBottom:12}}>Artists with complete profiles get 3× more views</div>
+                  <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+                    {!artist.genre&&<button onClick={()=>setTab("profile")} style={{background:C.card,border:`1px solid ${C.gold}44`,borderRadius:8,padding:"7px 14px",color:C.gold,fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit",minHeight:34}}>+ Add Genre</button>}
+                    {!artist.bio&&<button onClick={()=>setTab("profile")} style={{background:C.card,border:`1px solid ${C.gold}44`,borderRadius:8,padding:"7px 14px",color:C.gold,fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit",minHeight:34}}>+ Add Bio</button>}
+                    {!artist.spotify&&<button onClick={()=>setTab("social")} style={{background:C.card,border:`1px solid ${C.gold}44`,borderRadius:8,padding:"7px 14px",color:C.gold,fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit",minHeight:34}}>+ Add Spotify</button>}
+                    <button onClick={()=>setTab("calendar")} style={{background:C.card,border:`1px solid ${C.emerald}44`,borderRadius:8,padding:"7px 14px",color:C.emerald,fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit",minHeight:34}}>+ Add Available Dates</button>
+                  </div>
+                </div>
+              )}
+              <div style={{textAlign:"center",padding:24,background:C.card,borderRadius:12,border:`1px solid ${C.border}`,color:C.muted,fontSize:T.sm,fontStyle:"italic"}}>No bookings yet — add available dates to start getting discovered!</div>
+            </div>
             :<div style={{display:"flex",flexDirection:"column",gap:12}}>
               {myB.map(b=>{
                 const isPending=b.status==="pending"||b.status==="pending_payment";
@@ -4546,6 +4570,38 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
     </div>
   );
 
+  // Fetch admin messages when Messages tab opens
+  React.useEffect(()=>{
+    if(tab !== "messages" || !HAS_SUPA) return;
+    getSupabase().then(sb=>{
+      if(!sb) return;
+      sb.from("bookings")
+        .select("*")
+        .eq("status","admin_chat")
+        .eq("artist_id", artist.id)
+        .then(({data})=>{
+          if(!data?.length) return;
+          const mapped = data.map(b=>({
+            id:b.id, artistId:b.artist_id,
+            customerName:"Awaz Admin", customerEmail:"admin@awaz.no",
+            date:"", event:"Admin Message", deposit:0,
+            status:"admin_chat", depositPaid:false,
+            chatUnlocked:true, messages:b.messages||[], country:"",
+          }));
+          // Add to bookings if not already there
+          mapped.forEach(adminMsg=>{
+            const exists = bookings.find(b=>b.id===adminMsg.id);
+            if(!exists) {
+              // We can't directly set bookings here (no setter prop)
+              // So we'll use a local state
+            }
+          });
+          setLocalAdminMsgs(mapped);
+        });
+    });
+  },[tab]);
+
+
   return(
     <div style={{minHeight:"100vh",background:C.bg,display:"flex"}}>
       <div style={{height:3,background:`linear-gradient(90deg,${artist.color},${C.gold},${artist.color})`,position:"fixed",top:0,left:0,right:0,zIndex:200}}/>
@@ -4858,7 +4914,7 @@ function CountryPricingTab({ artist, onUpdateArtist, vp }) {
                         </div>
                       </div>
                       {/* Active toggle */}
-                      <div onClick={e=>{e.stopPropagation();toggle(row.code);}}
+                      <div onClick={e=>{e.stopPropagation();toggleAndSave(row.code);}}
                         style={{width:44,height:24,borderRadius:12,background:row.active?C.emerald:C.border,position:"relative",cursor:"pointer",flexShrink:0,transition:"background 0.2s"}}>
                         <div style={{position:"absolute",top:3,left:row.active?"23px":"3px",width:18,height:18,borderRadius:"50%",background:"#fff",transition:"left 0.2s",boxShadow:"0 1px 4px rgba(0,0,0,0.3)"}}/>
                       </div>
@@ -5699,7 +5755,7 @@ function AppInner() {
         *,*::before,*::after{box-sizing:border-box;}
         html{margin:0;padding:0;background:${C.bg};}
         html{margin:0!important;padding:0!important;background:${C.bg};}
-        body{margin:0!important;padding:0!important;background:${C.bg};}
+        body{margin:0!important;padding:0!important;background:${C.bg};-webkit-tap-highlight-color:transparent;}
         #root{margin:0;padding:0;width:100%;background:${C.bg};}
         html,body{
           margin:0!important;padding:0!important;
