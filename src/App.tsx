@@ -3205,8 +3205,7 @@ function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction,
   const [replyText,setReplyText]=useState("");
   const [replySent,setReplySent]=useState(false);
   const [sendingReply,setSendingReply]=useState(false);
-  const [localAdminMsgs,setLocalAdminMsgs]=React.useState([]);
-  const [artistReplyMsg,setArtistReplyMsg]=React.useState("");
+
   const [chat,setChat]=useState(null);
   const [adminChatArtist,setAdminChatArtist]=useState(null);
   const [adminChatMsg,setAdminChatMsg]=useState("");
@@ -3272,7 +3271,7 @@ function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction,
           tags:Array.isArray(a.tags)?a.tags:[],
           instruments:Array.isArray(a.instruments)?a.instruments:[],
           superhost:a.superhost||false,
-          status:a.status||"pending",joined:a.joined_date||"",
+          status:a.status||"pending",joined:a.joined_date||"",isBoosted:a.is_boosted||false,
           available:a.available||{},blocked:a.blocked||{},
           earnings:a.earnings||0,totalBookings:a.total_bookings||0,
           verified:a.verified||false,
@@ -3371,6 +3370,10 @@ function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction,
             )}
             {!a.verified&&(
               <button onClick={()=>onAction(a.id,"verify")} style={{background:C.lapisS,color:C.text,border:`1px solid ${C.border}`,borderRadius:7,padding:"6px 14px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>✦ Verify</button>
+              <button onClick={()=>onAction(a.id,a.isBoosted?"unboost":"boost")}
+                style={{background:a.isBoosted?`linear-gradient(135deg,${C.gold},${C.saffron})`:C.surface,color:a.isBoosted?C.bg:C.gold,border:`1px solid ${C.gold}44`,borderRadius:7,padding:"6px 14px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>
+                {a.isBoosted?"⭐ Boosted":"⭐ Boost"}
+              </button>
             )}
             <button onClick={()=>{setAdminChatArtist(a);setTab("chat");}} style={{background:C.surface,color:C.muted,border:`1px solid ${C.border}`,borderRadius:7,padding:"6px 14px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit",marginLeft:"auto"}}>💬 Message</button>
           </div>
@@ -3775,6 +3778,46 @@ function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction,
       {tab==="finance"&&(
         <div>
           <SectionHeader title="Finance Overview"/>
+
+          {/* ── Platform Stripe Connect Banner ── */}
+          <div style={{background:"linear-gradient(135deg,rgba(99,91,255,0.12),rgba(99,91,255,0.06))",border:"1px solid rgba(99,91,255,0.3)",borderRadius:14,padding:"20px 22px",marginBottom:20,display:"flex",alignItems:"center",gap:16,flexWrap:"wrap"}}>
+            <div style={{fontSize:36,flexShrink:0}}>💳</div>
+            <div style={{flex:1,minWidth:200}}>
+              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text,marginBottom:4}}>
+                Connect Awaz to Stripe
+              </div>
+              <div style={{color:C.muted,fontSize:T.sm,lineHeight:1.7,marginBottom:4}}>
+                To receive the 12% platform fee automatically, connect your Stripe account.<br/>
+                <strong style={{color:C.text}}>Steps:</strong> Go to <a href="https://dashboard.stripe.com" target="_blank" style={{color:"#635BFF",textDecoration:"none"}}>dashboard.stripe.com</a> → Settings → Connect → Enable Stripe Connect → Copy your <strong style={{color:C.text}}>Platform ID</strong> (starts with <code style={{background:C.surface,padding:"1px 6px",borderRadius:4,color:C.text}}>acct_</code>)
+              </div>
+              <div style={{display:"flex",gap:8,flexWrap:"wrap",marginTop:8}}>
+                <a href="https://dashboard.stripe.com/connect/accounts/overview" target="_blank"
+                  style={{background:"#635BFF",color:"#fff",borderRadius:8,padding:"9px 18px",fontWeight:700,fontSize:T.sm,textDecoration:"none",display:"inline-block"}}>
+                  Open Stripe Dashboard →
+                </a>
+                <a href="https://stripe.com/docs/connect/collect-then-transfer-guide" target="_blank"
+                  style={{background:C.surface,color:C.muted,borderRadius:8,padding:"9px 18px",fontWeight:600,fontSize:T.sm,textDecoration:"none",border:`1px solid ${C.border}`,display:"inline-block"}}>
+                  Setup Guide
+                </a>
+              </div>
+            </div>
+            <div style={{background:"rgba(99,91,255,0.08)",border:"1px solid rgba(99,91,255,0.2)",borderRadius:10,padding:"12px 16px",minWidth:160}}>
+              <div style={{color:"#635BFF",fontSize:T.xs,fontWeight:700,marginBottom:6}}>YOUR TAKE</div>
+              <div style={{color:C.text,fontWeight:800,fontSize:T.xl}}>12%</div>
+              <div style={{color:C.muted,fontSize:T.xs,marginTop:2}}>of every deposit</div>
+              <div style={{color:"#635BFF",fontSize:T.xs,marginTop:6,fontWeight:600}}>via Stripe Connect</div>
+            </div>
+          </div>
+
+          {/* ── Boost Revenue ── */}
+          <div style={{background:`linear-gradient(135deg,${C.goldS},${C.card})`,border:`1px solid ${C.gold}44`,borderRadius:12,padding:"16px 20px",marginBottom:20,display:"flex",alignItems:"center",gap:12}}>
+            <div style={{fontSize:28}}>⭐</div>
+            <div style={{flex:1}}>
+              <div style={{fontWeight:700,color:C.gold,fontSize:T.sm}}>Artist Boost Revenue</div>
+              <div style={{color:C.muted,fontSize:T.xs,marginTop:2}}>€50 per artist boost · {artists.filter(a=>a.isBoosted).length} active boosts · <strong style={{color:C.gold}}>€{artists.filter(a=>a.isBoosted).length * 50} earned</strong></div>
+            </div>
+            <button onClick={()=>setTab("artists")} style={{background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:8,padding:"8px 16px",fontWeight:700,fontSize:T.xs,cursor:"pointer",fontFamily:"inherit"}}>Manage Boosts →</button>
+          </div>
           <div style={{display:"grid",gridTemplateColumns:`repeat(${vp.isMobile?1:2},1fr)`,gap:12,marginBottom:24}}>
             <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:"20px"}}>
               <div style={{fontSize:T.xs,color:C.muted,fontWeight:700,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:12}}>Revenue Breakdown</div>
@@ -3970,6 +4013,8 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
   const vp=useViewport();
   const [tab,setTab]=useState("overview");
   const [chat,setChat]=useState(null);
+  const [localAdminMsgs,setLocalAdminMsgs]=useState([]);
+  const [artistReplyMsg,setArtistReplyMsg]=useState("");
   const [showStripeConnect,setShowStripeConnect]=useState(false);
   const [editing,setEditing]=useState(false);
   const [editF,setEditF]=useState({
@@ -4387,7 +4432,56 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
       )}
 
       {tab==="pricing"&&(
-        <CountryPricingTab artist={artist} onUpdateArtist={onUpdateArtist} vp={vp}/>
+        <div>
+          <CountryPricingTab artist={artist} onUpdateArtist={onUpdateArtist} vp={vp}/>
+
+          {/* ── Artist Boost ── */}
+          <div style={{marginTop:24,background:artist.isBoosted?`linear-gradient(135deg,rgba(200,168,74,0.1),${C.card})`:`linear-gradient(135deg,rgba(200,168,74,0.04),${C.card})`,border:`2px solid ${artist.isBoosted?C.gold:C.gold+"33"}`,borderRadius:16,padding:"22px 24px"}}>
+            <div style={{display:"flex",alignItems:"flex-start",gap:14,flexWrap:"wrap"}}>
+              <div style={{fontSize:36}}>⭐</div>
+              <div style={{flex:1,minWidth:200}}>
+                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:700,color:C.gold,marginBottom:6}}>
+                  {artist.isBoosted?"You're Featured!":"Artist Boost"}
+                </div>
+                {artist.isBoosted?(
+                  <div>
+                    <div style={{color:C.emerald,fontWeight:700,fontSize:T.sm,marginBottom:6}}>✓ Your profile is featured at the top of the browse page</div>
+                    <div style={{color:C.muted,fontSize:T.xs,lineHeight:1.7}}>
+                      Your profile appears in the Featured Artists section — visible to all visitors before the regular listing. Boosted by Awaz admin.
+                    </div>
+                  </div>
+                ):(
+                  <div>
+                    <div style={{color:C.muted,fontSize:T.sm,lineHeight:1.7,marginBottom:12}}>
+                      Get featured at the top of the browse page for <strong style={{color:C.gold}}>30 days</strong>. Your profile appears before all regular listings with a ⭐ Featured badge.
+                    </div>
+                    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:16}}>
+                      {[["3× more profile views","📈"],["Top of browse page","🔝"],["⭐ Featured badge","✨"],["30 days duration","📅"]].map(([text,icon])=>(
+                        <div key={text} style={{display:"flex",alignItems:"center",gap:8,background:C.surface,borderRadius:8,padding:"8px 12px",border:`1px solid ${C.border}`}}>
+                          <span style={{fontSize:16}}>{icon}</span>
+                          <span style={{color:C.textD,fontSize:T.xs,fontWeight:600}}>{text}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
+                      <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.8rem",fontWeight:800,color:C.gold}}>€50</div>
+                      <div style={{flex:1}}>
+                        <button onClick={()=>{
+                          // Open Stripe checkout for €50 boost
+                          // For now show instructions - Stripe integration requires backend
+                          alert("To activate boost: contact admin@awaz.no with subject 'Artist Boost - "+artist.name+"'. We will activate your boost after payment confirmation.");
+                        }} style={{background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:10,padding:"12px 24px",fontWeight:800,fontSize:T.sm,cursor:"pointer",fontFamily:"inherit",width:"100%"}}>
+                          ⭐ Boost My Profile — €50
+                        </button>
+                        <div style={{color:C.faint,fontSize:11,marginTop:5,textAlign:"center"}}>One-time payment · 30 days · Cancel anytime</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
       {tab==="settings"&&(
@@ -5692,7 +5786,7 @@ function AppInner() {
             tags:Array.isArray(a.tags)?a.tags:[],
             instruments:Array.isArray(a.instruments)?a.instruments:[],
             superhost:a.superhost||false,
-            status:a.status||"pending",joined:a.joined_date||"",
+            status:a.status||"pending",joined:a.joined_date||"",isBoosted:a.is_boosted||false,
             available:a.available||{},blocked:a.blocked||{},
             earnings:a.earnings||0,totalBookings:a.total_bookings||0,
             verified:a.verified||false,
@@ -5796,6 +5890,13 @@ function AppInner() {
       if(HAS_SUPA){
         const sb=await getSupabase();
         if(sb) await sb.from("artists").update({verified:true}).eq("id",id);
+      }
+    } else if(action==="boost"||action==="unboost"){
+      const isBoosted=action==="boost";
+      setArtists(p=>p.map(a=>a.id===id?{...a,isBoosted}:a));
+      if(HAS_SUPA){
+        const sb=await getSupabase();
+        if(sb) await sb.from("artists").update({is_boosted:isBoosted,boosted_until:isBoosted?new Date(Date.now()+30*24*60*60*1000).toISOString():null}).eq("id",id);
       }
     } else {
       // Update local state immediately
@@ -6330,11 +6431,39 @@ function AppInner() {
               </div>
             ):vp.isMobile?(
               <div style={{display:"flex",flexDirection:"column",gap:10}}>
-                {filtered.map(a=><ArtistCard key={a.id} artist={a} onClick={art=>{setSelArtist(art);nav("profile");}} compact/>)}
+                {/* Featured on mobile */}
+                {approved.filter(a=>a.isBoosted).map(a=>(
+                  <div key={a.id+"boost"} onClick={()=>{setSelArtist(a);nav("profile");}} style={{position:"relative",cursor:"pointer",borderRadius:12,overflow:"hidden",border:`2px solid ${C.gold}55`}}>
+                    <div style={{position:"absolute",top:8,right:8,zIndex:2,background:`linear-gradient(135deg,${C.gold},${C.saffron})`,borderRadius:12,padding:"2px 8px",fontSize:9,fontWeight:800,color:C.bg}}>⭐ FEATURED</div>
+                    <ArtistCard artist={a} onClick={art=>{setSelArtist(art);nav("profile");}} compact/>
+                  </div>
+                ))}
+                {filtered.filter(a=>!a.isBoosted).map(a=><ArtistCard key={a.id} artist={a} onClick={art=>{setSelArtist(art);nav("profile");}} compact/>)}
               </div>
             ):(
-              <div style={{display:"grid",gridTemplateColumns:`repeat(${vp.isTablet?2:3},1fr)`,gap:16}}>
-                {filtered.map(a=><ArtistCard key={a.id} artist={a} onClick={art=>{setSelArtist(art);nav("profile");}}/>)}
+              <div>
+                {/* Featured row on desktop */}
+                {approved.filter(a=>a.isBoosted).length>0&&(
+                  <div style={{marginBottom:24}}>
+                    <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}>
+                      <div style={{height:1,flex:1,background:`linear-gradient(90deg,${C.gold}33,transparent)`}}/>
+                      <span style={{color:C.gold,fontSize:T.xs,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase"}}>⭐ Featured Artists</span>
+                      <div style={{height:1,flex:1,background:`linear-gradient(270deg,${C.gold}33,transparent)`}}/>
+                    </div>
+                    <div style={{display:"grid",gridTemplateColumns:`repeat(${vp.isTablet?2:3},1fr)`,gap:16}}>
+                      {approved.filter(a=>a.isBoosted).map(a=>(
+                        <div key={a.id+"feat"} onClick={()=>{setSelArtist(a);nav("profile");}} style={{position:"relative",cursor:"pointer",borderRadius:14,overflow:"hidden",border:`2px solid ${C.gold}55`,boxShadow:`0 0 20px ${C.gold}18`}}>
+                          <div style={{position:"absolute",top:10,right:10,zIndex:2,background:`linear-gradient(135deg,${C.gold},${C.saffron})`,borderRadius:20,padding:"3px 10px",fontSize:10,fontWeight:800,color:C.bg,letterSpacing:"0.5px"}}>⭐ FEATURED</div>
+                          <ArtistCard artist={a} onClick={art=>{setSelArtist(art);nav("profile");}}/>
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{height:1,background:C.border,margin:"20px 0"}}/>
+                  </div>
+                )}
+                <div style={{display:"grid",gridTemplateColumns:`repeat(${vp.isTablet?2:3},1fr)`,gap:16}}>
+                  {filtered.filter(a=>!a.isBoosted).map(a=><ArtistCard key={a.id} artist={a} onClick={art=>{setSelArtist(art);nav("profile");}}/>)}
+                </div>
               </div>
             )}
           </div>
