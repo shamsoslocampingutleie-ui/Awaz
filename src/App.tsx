@@ -3223,13 +3223,13 @@ function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction,
     if(!sb) return;
 
     // Look for existing admin_chat conversation for this artist
-    const {data:existing}=await sb.from("bookings")
+    const {data:existing, error:fetchErr}=await sb.from("bookings")
       .select("id,messages")
       .eq("artist_id", adminChatArtist.id)
       .eq("status","admin_chat")
-      .single();
+      .maybeSingle(); // maybeSingle() returns null if not found, .single() throws error
 
-    if(existing){
+    if(existing && !fetchErr){
       // Append to existing conversation
       const newMsgs=[...(existing.messages||[]),msg];
       await sb.from("bookings")
@@ -3238,15 +3238,15 @@ function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction,
     } else {
       // Create new conversation with proper UUID
       await sb.from("bookings").insert([{
-        artist_id:    adminChatArtist.id,
-        customer_name:"Awaz Admin",
+        artist_id:     adminChatArtist.id,
+        customer_name: "Awaz Admin",
         customer_email:"admin@awaz.no",
-        status:       "admin_chat",
-        chat_unlocked:true,
-        paid:         false,
-        deposit:      0,
-        messages:     [msg],
-        date:         new Date().toISOString().split("T")[0],
+        status:        "admin_chat",
+        deposit:       0,
+        messages:      [msg],
+        date:          new Date().toISOString().split("T")[0],
+        country:       "NO",
+        event_type:    "Admin Message",
       }]);
     }
   };
@@ -4774,36 +4774,40 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
     </div>
   );
 
-  // Fetch admin messages when Messages tab opens
+  // Fetch admin messages every time Messages tab opens
   React.useEffect(()=>{
     if(tab !== "messages" || !HAS_SUPA) return;
-    getSupabase().then(sb=>{
-      if(!sb) return;
-      // Fetch ALL admin messages for this artist
-      sb.from("bookings")
+    let cancelled = false;
+    getSupabase().then(async sb=>{
+      if(!sb || cancelled) return;
+      const {data, error} = await sb
+        .from("bookings")
         .select("*")
         .eq("status","admin_chat")
         .eq("artist_id", artist.id)
-        .then(({data,error})=>{
-          if(error) console.warn("Admin msg fetch error:", error.message);
-          if(!data?.length) return;
-          setLocalAdminMsgs(data.map(b=>({
-            id:b.id,
-            artistId:b.artist_id,
-            customerName:"Awaz Admin",
-            customerEmail:"admin@awaz.no",
-            date:b.date||"",
-            event:"Message from Awaz",
-            deposit:0,
-            status:"admin_chat",
-            depositPaid:false,
-            chatUnlocked:true,
-            messages:b.messages||[],
-            country:"",
-          })));
-        });
+        .order("created_at", {ascending:true});
+
+      if(cancelled) return;
+      if(error){ console.warn("Admin msg fetch error:", error.message); return; }
+      if(!data?.length){ setLocalAdminMsgs([]); return; }
+
+      setLocalAdminMsgs(data.map(b=>({
+        id:          b.id,
+        artistId:    b.artist_id,
+        customerName:"Awaz Admin",
+        customerEmail:"admin@awaz.no",
+        date:        b.date||"",
+        event:       "Message from Awaz",
+        deposit:     0,
+        status:      "admin_chat",
+        depositPaid: false,
+        chatUnlocked:true,
+        messages:    b.messages||[],
+        country:     "",
+      })));
     });
-  },[tab]);
+    return ()=>{ cancelled = true; };
+  },[tab, artist.id]);
 
 
   return(
