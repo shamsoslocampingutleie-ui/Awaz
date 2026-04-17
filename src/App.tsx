@@ -2968,7 +2968,10 @@ function ProfilePage({ artist, bookings, onBack, onBookingCreated }) {
                 <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:800,color:artist.color}}>{artist.priceInfo}</div>
                 <div style={{fontSize:T.xs,color:C.muted,marginTop:2}}>€{artist.deposit} deposit · Balance cash</div>
               </div>
-              <Btn v="gold" sz="lg" onClick={()=>setShowCal(true)}>{t('bookNow')}</Btn>
+              <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+                <Btn v="gold" sz="lg" onClick={()=>setShowCal(true)}>{t('bookNow')}</Btn>
+                <Btn v="ghost" sz="lg" onClick={()=>{ const w=document.getElementById('awaz-inquiry-widget'); if(w){w.setAttribute('data-artist',artist.name);w.click();} }}>✉ Inquire</Btn>
+              </div>
             </div>
           )}
         </div>
@@ -3206,34 +3209,46 @@ function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction,
   const [artistFilter,setArtistFilter]=useState("all"); // all|pending|approved|suspended
   const [searchQ,setSearchQ]=useState("");
 
-  const sendAdminChat=()=>{
+  const sendAdminChat=async()=>{
     if(!adminChatArtist||!adminChatMsg.trim())return;
     const msgText=adminChatMsg.trim();
     const msg={from:"admin",text:msgText,time:new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})};
-    // Store in local adminChats state for display
-    setAdminChats(p=>({...p,[adminChatArtist.id]:[...(p[adminChatArtist.id]||[]),msg]}));
-    // Also persist to Supabase under a special admin-artist conversation key
-    if(HAS_SUPA){
-      getSupabase().then(sb=>{
-        if(!sb)return;
-        const convId=`admin_${adminChatArtist.id}`;
-        // Try to update existing, insert if not exists
-        sb.from("bookings").select("id,messages").eq("id",convId).single().then(({data})=>{
-          const msgs=[...(data?.messages||[]),msg];
-          if(data){
-            sb.from("bookings").update({messages:msgs}).eq("id",convId);
-          } else {
-            sb.from("bookings").insert([{
-              id:convId,artist_id:adminChatArtist.id,
-              customer_name:"Awaz Admin",customer_email:"admin@awaz.no",
-              status:"admin_chat",chat_unlocked:true,paid:false,deposit:0,
-              messages:[msg],
-            }]);
-          }
-        });
-      });
-    }
     setAdminChatMsg("");
+
+    // Update local state immediately
+    setAdminChats(p=>({...p,[adminChatArtist.id]:[...(p[adminChatArtist.id]||[]),msg]}));
+
+    if(!HAS_SUPA) return;
+    const sb=await getSupabase();
+    if(!sb) return;
+
+    // Look for existing admin_chat conversation for this artist
+    const {data:existing}=await sb.from("bookings")
+      .select("id,messages")
+      .eq("artist_id", adminChatArtist.id)
+      .eq("status","admin_chat")
+      .single();
+
+    if(existing){
+      // Append to existing conversation
+      const newMsgs=[...(existing.messages||[]),msg];
+      await sb.from("bookings")
+        .update({messages:newMsgs})
+        .eq("id", existing.id);
+    } else {
+      // Create new conversation with proper UUID
+      await sb.from("bookings").insert([{
+        artist_id:    adminChatArtist.id,
+        customer_name:"Awaz Admin",
+        customer_email:"admin@awaz.no",
+        status:       "admin_chat",
+        chat_unlocked:true,
+        paid:         false,
+        deposit:      0,
+        messages:     [msg],
+        date:         new Date().toISOString().split("T")[0],
+      }]);
+    }
   };
 
   // Stats
@@ -3571,6 +3586,179 @@ function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction,
       )}
 
       {/* ── DIRECT CHAT ── */}
+      {tab==="inquiries"&&(()=>{
+        const [selInq,setSelInq]=React.useState(null);
+        const [replyText,setReplyText]=React.useState("");
+        const [replySent,setReplySent]=React.useState(false);
+        const [sending,setSending]=React.useState(false);
+
+        const sendReply=async()=>{
+          if(!selInq||!replyText.trim()) return;
+          setSending(true);
+          const updated={...selInq,status:"replied",reply:replyText.trim()};
+          onUpdateInquiry(selInq.id,{status:"replied",reply:replyText.trim()});
+          // Save reply to Supabase
+          if(HAS_SUPA){
+            const sb=await getSupabase();
+            if(sb){
+              await sb.from("inquiries").update({
+                status:"replied",
+                reply:replyText.trim(),
+              }).eq("id",selInq.id);
+            }
+          }
+          setSending(false);
+          setReplySent(true);
+          setTimeout(()=>setReplySent(false),3000);
+          setSelInq(updated);
+          setReplyText("");
+        };
+
+        const markRead=async(inq)=>{
+          if(inq.status!=="new") return;
+          onUpdateInquiry(inq.id,{status:"read"});
+          if(HAS_SUPA){
+            const sb=await getSupabase();
+            if(sb) await sb.from("inquiries").update({status:"read"}).eq("id",inq.id);
+          }
+        };
+
+        const sorted=[...inquiries].sort((a,b)=>b.ts-a.ts);
+
+        return(
+          <div>
+            <SectionHeader title={`Inquiries (${inquiries.length})`}/>
+
+            {inquiries.length===0?(
+              <div style={{textAlign:"center",padding:"60px 20px",background:C.card,borderRadius:12,border:`1px solid ${C.border}`}}>
+                <div style={{fontSize:40,marginBottom:12}}>📬</div>
+                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,color:C.text,marginBottom:8}}>No inquiries yet</div>
+                <div style={{color:C.muted,fontSize:T.sm}}>Customer inquiries will appear here. Make sure the inquiry widget is visible on the public site.</div>
+              </div>
+            ):(
+              <div style={{display:"grid",gridTemplateColumns:vp.isMobile?"1fr":"320px 1fr",gap:16,minHeight:520}}>
+
+                {/* ── Inbox list ── */}
+                <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,overflow:"auto",maxHeight:620}}>
+                  {sorted.map(inq=>{
+                    const isNew=inq.status==="new";
+                    const isSel=selInq?.id===inq.id;
+                    return(
+                      <div key={inq.id} onClick={()=>{setSelInq(inq);setReplyText("");setReplySent(false);markRead(inq);}}
+                        style={{padding:"14px 16px",borderBottom:`1px solid ${C.border}`,cursor:"pointer",
+                          background:isSel?C.goldS:isNew?"rgba(200,168,74,0.04)":"transparent",
+                          borderLeft:`3px solid ${isSel?C.gold:isNew?C.gold+"66":"transparent"}`,
+                          transition:"background 0.15s"}}>
+                        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
+                          <div style={{fontWeight:700,color:C.text,fontSize:T.sm}}>{inq.name}</div>
+                          <div style={{display:"flex",gap:6,alignItems:"center"}}>
+                            {isNew&&<span style={{background:C.ruby,color:"#fff",borderRadius:6,fontSize:9,fontWeight:800,padding:"2px 6px"}}>NEW</span>}
+                            {inq.status==="replied"&&<span style={{background:C.emeraldS,color:C.emerald,borderRadius:6,fontSize:9,fontWeight:800,padding:"2px 6px"}}>REPLIED</span>}
+                            <span style={{color:C.faint,fontSize:10}}>{new Date(inq.ts).toLocaleDateString()}</span>
+                          </div>
+                        </div>
+                        <div style={{color:C.muted,fontSize:T.xs,marginBottom:3}}>{inq.email} · {inq.country}</div>
+                        <div style={{color:C.textD,fontSize:T.xs,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:"100%"}}>
+                          {inq.eventType&&<span style={{color:C.gold,fontWeight:600}}>{inq.eventType} · </span>}
+                          {inq.message}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* ── Detail + Reply ── */}
+                <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,display:"flex",flexDirection:"column"}}>
+                  {selInq?(
+                    <>
+                      {/* Header */}
+                      <div style={{padding:"16px 20px",borderBottom:`1px solid ${C.border}`,display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+                        <div>
+                          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:700,color:C.text}}>{selInq.name}</div>
+                          <div style={{color:C.muted,fontSize:T.xs,marginTop:2}}>{selInq.email} · {selInq.country}</div>
+                        </div>
+                        <span style={{
+                          background:selInq.status==="replied"?C.emeraldS:selInq.status==="new"?C.rubyS:C.surface,
+                          color:selInq.status==="replied"?C.emerald:selInq.status==="new"?C.ruby:C.muted,
+                          border:`1px solid ${selInq.status==="replied"?C.emerald+"44":selInq.status==="new"?C.ruby+"44":C.border}`,
+                          borderRadius:8,fontSize:T.xs,fontWeight:700,padding:"4px 10px",textTransform:"uppercase"
+                        }}>{selInq.status}</span>
+                      </div>
+
+                      {/* Inquiry details */}
+                      <div style={{padding:"16px 20px",flex:1,overflow:"auto"}}>
+                        {/* Info grid */}
+                        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:16}}>
+                          {[
+                            ["📅 Event Date", selInq.date||"—"],
+                            ["🎉 Event Type", selInq.eventType||"—"],
+                            ["💶 Budget",     selInq.budget||"—"],
+                            ["📍 Country",    selInq.country||"—"],
+                          ].filter(([,v])=>v!=="—").map(([k,v])=>(
+                            <div key={k} style={{background:C.surface,borderRadius:8,padding:"10px 12px",border:`1px solid ${C.border}`}}>
+                              <div style={{color:C.muted,fontSize:10,fontWeight:700,letterSpacing:"0.6px",textTransform:"uppercase",marginBottom:3}}>{k}</div>
+                              <div style={{color:C.text,fontSize:T.sm,fontWeight:600}}>{v}</div>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Message */}
+                        <div style={{background:C.surface,borderRadius:10,padding:"14px 16px",border:`1px solid ${C.border}`,marginBottom:16}}>
+                          <div style={{color:C.muted,fontSize:10,fontWeight:700,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:8}}>MESSAGE</div>
+                          <div style={{color:C.text,fontSize:T.sm,lineHeight:1.8,whiteSpace:"pre-wrap"}}>{selInq.message||"No message provided."}</div>
+                        </div>
+
+                        {/* Previous reply */}
+                        {selInq.reply&&(
+                          <div style={{background:C.emeraldS,border:`1px solid ${C.emerald}33`,borderRadius:10,padding:"14px 16px",marginBottom:16}}>
+                            <div style={{color:C.emerald,fontSize:10,fontWeight:700,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:8}}>✓ YOUR REPLY</div>
+                            <div style={{color:C.text,fontSize:T.sm,lineHeight:1.8,whiteSpace:"pre-wrap"}}>{selInq.reply}</div>
+                          </div>
+                        )}
+
+                        {/* Reply box */}
+                        {replySent?(
+                          <div style={{background:C.emeraldS,border:`1px solid ${C.emerald}44`,borderRadius:10,padding:"14px 16px",textAlign:"center",color:C.emerald,fontWeight:700}}>
+                            ✓ Reply sent!
+                          </div>
+                        ):(
+                          <div>
+                            <div style={{color:C.muted,fontSize:10,fontWeight:700,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:8}}>
+                              {selInq.reply?"SEND ANOTHER REPLY":"REPLY TO INQUIRY"}
+                            </div>
+                            <textarea
+                              value={replyText}
+                              onChange={e=>setReplyText(e.target.value)}
+                              placeholder={`Hi ${selInq.name.split(" ")[0]}, thank you for your inquiry…`}
+                              rows={4}
+                              style={{width:"100%",background:C.surface,border:`1px solid ${C.border}`,borderRadius:10,padding:"12px 14px",color:C.text,fontSize:T.sm,fontFamily:"inherit",resize:"vertical",outline:"none",lineHeight:1.7,boxSizing:"border-box"}}
+                            />
+                            <button
+                              onClick={sendReply}
+                              disabled={!replyText.trim()||sending}
+                              style={{marginTop:10,width:"100%",background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:10,padding:"12px",fontWeight:800,fontSize:T.sm,cursor:replyText.trim()?"pointer":"not-allowed",opacity:replyText.trim()?1:0.5,fontFamily:"inherit"}}>
+                              {sending?"Sending…":"Send Reply →"}
+                            </button>
+                            <div style={{color:C.faint,fontSize:11,marginTop:6,textAlign:"center"}}>
+                              Note: email delivery requires SMTP setup in Supabase
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </>
+                  ):(
+                    <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:10,color:C.muted}}>
+                      <div style={{fontSize:36}}>📬</div>
+                      <div style={{fontSize:T.sm}}>Select an inquiry to view details</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })()}
+
       {tab==="chat"&&(
         <div>
           <SectionHeader title="Direct Chat with Artists"/>
@@ -3579,7 +3767,23 @@ function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction,
             <div style={{background:C.card,borderRadius:12,border:`1px solid ${C.border}`,overflow:"auto"}}>
               <div style={{padding:"10px 14px",borderBottom:`1px solid ${C.border}`,fontSize:T.xs,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.8px"}}>Artists</div>
               {artists.map(a=>(
-                <button key={a.id} onClick={()=>setAdminChatArtist(a)} style={{
+                <button key={a.id} onClick={async()=>{
+                  setAdminChatArtist(a);
+                  // Load existing messages for this artist
+                  if(HAS_SUPA){
+                    const sb=await getSupabase();
+                    if(sb){
+                      const{data}=await sb.from("bookings")
+                        .select("id,messages")
+                        .eq("artist_id",a.id)
+                        .eq("status","admin_chat")
+                        .single();
+                      if(data?.messages?.length>0){
+                        setAdminChats(p=>({...p,[a.id]:data.messages}));
+                      }
+                    }
+                  }
+                }} style={{
                   width:"100%",display:"flex",gap:10,alignItems:"center",
                   padding:"12px 14px",
                   background:adminChatArtist?.id===a.id?C.goldS:"transparent",
@@ -4575,28 +4779,28 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
     if(tab !== "messages" || !HAS_SUPA) return;
     getSupabase().then(sb=>{
       if(!sb) return;
+      // Fetch ALL admin messages for this artist
       sb.from("bookings")
         .select("*")
         .eq("status","admin_chat")
         .eq("artist_id", artist.id)
-        .then(({data})=>{
+        .then(({data,error})=>{
+          if(error) console.warn("Admin msg fetch error:", error.message);
           if(!data?.length) return;
-          const mapped = data.map(b=>({
-            id:b.id, artistId:b.artist_id,
-            customerName:"Awaz Admin", customerEmail:"admin@awaz.no",
-            date:"", event:"Admin Message", deposit:0,
-            status:"admin_chat", depositPaid:false,
-            chatUnlocked:true, messages:b.messages||[], country:"",
-          }));
-          // Add to bookings if not already there
-          mapped.forEach(adminMsg=>{
-            const exists = bookings.find(b=>b.id===adminMsg.id);
-            if(!exists) {
-              // We can't directly set bookings here (no setter prop)
-              // So we'll use a local state
-            }
-          });
-          setLocalAdminMsgs(mapped);
+          setLocalAdminMsgs(data.map(b=>({
+            id:b.id,
+            artistId:b.artist_id,
+            customerName:"Awaz Admin",
+            customerEmail:"admin@awaz.no",
+            date:b.date||"",
+            event:"Message from Awaz",
+            deposit:0,
+            status:"admin_chat",
+            depositPaid:false,
+            chatUnlocked:true,
+            messages:b.messages||[],
+            country:"",
+          })));
         });
     });
   },[tab]);
@@ -4689,7 +4893,25 @@ function InquiryWidget({ artists, onSubmit }) {
     if(!f.name.trim()||!f.email.includes("@")){setErr("Please enter your name and a valid email.");return;}
     if(!f.message.trim()){setErr("Please describe your event.");return;}
     setErr("");
-    onSubmit({...f,id:`i_${Date.now()}`,status:"new",ts:Date.now()});
+    const inq={...f,id:`i_${Date.now()}`,status:"new",ts:Date.now()};
+    onSubmit(inq);
+    // Save to Supabase inquiries table
+    if(typeof getSupabase==="function"){
+      getSupabase().then(sb=>{
+        if(!sb) return;
+        sb.from("inquiries").insert([{
+          name:         f.name,
+          email:        f.email,
+          country:      f.country||"NO",
+          event_type:   f.eventType,
+          date:         f.date,
+          budget:       f.budget,
+          artist_id:    f.artistId||null,
+          message:      f.message,
+          status:       "new",
+        }]).then(({error})=>{ if(error) console.warn("Inquiry save error:", error.message); });
+      });
+    }
     setStep("sent");
   };
 
@@ -4704,7 +4926,7 @@ function InquiryWidget({ artists, onSubmit }) {
         right:vp.isMobile?"16px":"32px",
         zIndex:150,
       }}>
-        <button onClick={()=>{setOpen(true);reset();}}
+        <button id="awaz-inquiry-widget" onClick={()=>{setOpen(true);reset();}}
           style={{
             display:"flex",alignItems:"center",gap:9,
             background:`linear-gradient(135deg,${C.gold},${C.saffron})`,
@@ -5466,6 +5688,25 @@ function AppInner() {
           }));
           return[...demo,...supa];
         });
+      }
+
+      // ── 3b. Load inquiries from Supabase ──
+      const{data:inquiryRows}=await sb.from("inquiries").select("*").order("created_at",{ascending:false});
+      if(inquiryRows?.length>0){
+        setInquiries(inquiryRows.map(r=>({
+          id:       r.id,
+          name:     r.name,
+          email:    r.email,
+          country:  r.country||"",
+          eventType:r.event_type||"",
+          date:     r.date||"",
+          budget:   r.budget||"",
+          artistId: r.artist_id||"",
+          message:  r.message||"",
+          status:   r.status||"new",
+          reply:    r.reply||"",
+          ts:       new Date(r.created_at).getTime(),
+        })));
       }
 
       // ── 4. Load bookings (excluding admin_chat which are separate) ──
@@ -6405,7 +6646,7 @@ function AppInner() {
       <LoginSheet users={users} open={showLogin} onLogin={login} onClose={()=>setShowLogin(false)}/>
       {showApply&&<ApplySheet onSubmit={handleNewArtist} onClose={()=>setShowApply(false)}/>}
       {/* Floating concierge inquiry button — always visible to visitors */}
-      {/* InquiryWidget removed */}
+      <InquiryWidget artists={artists} onSubmit={handleNewInquiry}/>
     </div>
   );
 }
