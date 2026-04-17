@@ -3370,11 +3370,11 @@ function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction,
             )}
             {!a.verified&&(
               <button onClick={()=>onAction(a.id,"verify")} style={{background:C.lapisS,color:C.text,border:`1px solid ${C.border}`,borderRadius:7,padding:"6px 14px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>✦ Verify</button>
-              <button onClick={()=>onAction(a.id,a.isBoosted?"unboost":"boost")}
-                style={{background:a.isBoosted?`linear-gradient(135deg,${C.gold},${C.saffron})`:C.surface,color:a.isBoosted?C.bg:C.gold,border:`1px solid ${C.gold}44`,borderRadius:7,padding:"6px 14px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>
-                {a.isBoosted?"⭐ Boosted":"⭐ Boost"}
-              </button>
             )}
+            <button onClick={()=>onAction(a.id,a.isBoosted?"unboost":"boost")}
+              style={{background:a.isBoosted?`linear-gradient(135deg,${C.gold},${C.saffron})`:C.surface,color:a.isBoosted?C.bg:C.gold,border:`1px solid ${C.gold}44`,borderRadius:7,padding:"6px 14px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>
+              {a.isBoosted?"⭐ Boosted":"⭐ Boost"}
+            </button>
             <button onClick={()=>{setAdminChatArtist(a);setTab("chat");}} style={{background:C.surface,color:C.muted,border:`1px solid ${C.border}`,borderRadius:7,padding:"6px 14px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit",marginLeft:"auto"}}>💬 Message</button>
           </div>
         </div>
