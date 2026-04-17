@@ -3202,6 +3202,7 @@ function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction,
   const vp=useViewport();
   const [tab,setTab]=useState("overview");
   const [localAdminMsgs,setLocalAdminMsgs]=React.useState([]);
+  const [artistReplyMsg,setArtistReplyMsg]=React.useState("");
   const [chat,setChat]=useState(null);
   const [adminChatArtist,setAdminChatArtist]=useState(null);
   const [adminChatMsg,setAdminChatMsg]=useState("");
@@ -3212,43 +3213,24 @@ function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction,
   const sendAdminChat=async()=>{
     if(!adminChatArtist||!adminChatMsg.trim())return;
     const msgText=adminChatMsg.trim();
-    const msg={from:"admin",text:msgText,time:new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})};
+    const ts=new Date().toISOString();
+
+    // Update local UI immediately
+    const localMsg={from:"admin",text:msgText,time:new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})};
+    setAdminChats(p=>({...p,[adminChatArtist.id]:[...(p[adminChatArtist.id]||[]),localMsg]}));
     setAdminChatMsg("");
 
-    // Update local state immediately
-    setAdminChats(p=>({...p,[adminChatArtist.id]:[...(p[adminChatArtist.id]||[]),msg]}));
-
     if(!HAS_SUPA) return;
-    const sb=await getSupabase();
-    if(!sb) return;
-
-    // Look for existing admin_chat conversation for this artist
-    const {data:existing, error:fetchErr}=await sb.from("bookings")
-      .select("id,messages")
-      .eq("artist_id", adminChatArtist.id)
-      .eq("status","admin_chat")
-      .maybeSingle(); // maybeSingle() returns null if not found, .single() throws error
-
-    if(existing && !fetchErr){
-      // Append to existing conversation
-      const newMsgs=[...(existing.messages||[]),msg];
-      await sb.from("bookings")
-        .update({messages:newMsgs})
-        .eq("id", existing.id);
-    } else {
-      // Create new conversation with proper UUID
-      await sb.from("bookings").insert([{
-        artist_id:     adminChatArtist.id,
-        customer_name: "Awaz Admin",
-        customer_email:"admin@awaz.no",
-        status:        "admin_chat",
-        deposit:       0,
-        messages:      [msg],
-        date:          new Date().toISOString().split("T")[0],
-        country:       "NO",
-        event_type:    "Admin Message",
-      }]);
-    }
+    try{
+      const sb=await getSupabase();
+      if(!sb) return;
+      const {error}=await sb.from("chat_messages").insert({
+        artist_id: adminChatArtist.id,
+        from_role: "admin",
+        text:      msgText,
+      });
+      if(error) console.error("Chat save error:", error.message, error.details);
+    }catch(e){ console.error("Chat exception:", e); }
   };
 
   // Stats
@@ -3769,17 +3751,21 @@ function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction,
               {artists.map(a=>(
                 <button key={a.id} onClick={async()=>{
                   setAdminChatArtist(a);
-                  // Load existing messages for this artist
+                  // Load existing chat messages from dedicated table
                   if(HAS_SUPA){
                     const sb=await getSupabase();
                     if(sb){
-                      const{data}=await sb.from("bookings")
-                        .select("id,messages")
+                      const{data}=await sb.from("chat_messages")
+                        .select("*")
                         .eq("artist_id",a.id)
-                        .eq("status","admin_chat")
-                        .single();
-                      if(data?.messages?.length>0){
-                        setAdminChats(p=>({...p,[a.id]:data.messages}));
+                        .order("created_at",{ascending:true});
+                      if(data?.length>0){
+                        const msgs=data.map(r=>({
+                          from:r.from_role,
+                          text:r.text,
+                          time:new Date(r.created_at).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}),
+                        }));
+                        setAdminChats(p=>({...p,[a.id]:msgs}));
                       }
                     }
                   }
@@ -4360,24 +4346,101 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
       )}
 
       {tab==="messages"&&(
-        <div>
-          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:14}}>{t('messages2')}</div>
-          {myB.filter(b=>b.chatUnlocked).length===0
-            ?<div style={{textAlign:"center",padding:32,background:C.card,borderRadius:12,border:`1px solid ${C.border}`,color:C.muted,fontSize:T.sm,fontStyle:"italic"}}>{t('noChatsYet2')}</div>
-            :myB.filter(b=>b.chatUnlocked).map(b=>{
-              const last=b.messages?.[b.messages.length-1];
-              return(
-                <div key={b.id} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:10,padding:"14px",display:"flex",gap:12,alignItems:"center",cursor:"pointer",marginBottom:8,minHeight:64,WebkitTapHighlightColor:"transparent"}} onClick={()=>setChat(b)}>
-                  <div style={{width:40,height:40,borderRadius:"50%",background:C.goldS,border:`2px solid ${C.gold}28`,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800,color:C.gold,fontSize:16,flexShrink:0}}>{b.customerName[0]}</div>
-                  <div style={{flex:1,minWidth:0}}>
-                    <div style={{fontWeight:600,color:C.text,fontSize:T.sm,marginBottom:2}}>{b.customerName}</div>
-                    {last?<div style={{color:C.muted,fontSize:T.xs,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{last.text}</div>
-                         :<div style={{color:C.muted,fontSize:T.xs,fontStyle:"italic"}}>{t('noMessagesYet')}</div>}
-                  </div>
-                  <span style={{color:C.muted,fontSize:T.xs,flexShrink:0}}>{b.messages?.length||0} msgs</span>
+        <div style={{display:"flex",flexDirection:"column",height:"calc(100vh - 140px)",minHeight:500}}>
+          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:16}}>Messages</div>
+
+          {/* ── Admin chat thread ── */}
+          {localAdminMsgs.length > 0 ? (
+            <div style={{flex:1,display:"flex",flexDirection:"column",background:C.card,border:`1px solid ${C.border}`,borderRadius:14,overflow:"hidden"}}>
+              {/* Header */}
+              <div style={{padding:"14px 18px",borderBottom:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:10,background:C.surface}}>
+                <div style={{width:36,height:36,borderRadius:"50%",background:C.goldS,border:`2px solid ${C.gold}44`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>👑</div>
+                <div>
+                  <div style={{fontWeight:700,color:C.gold,fontSize:T.sm}}>Awaz Admin</div>
+                  <div style={{color:C.muted,fontSize:T.xs}}>Platform team</div>
                 </div>
-              );
-            })}
+              </div>
+              {/* Messages */}
+              <div style={{flex:1,overflow:"auto",padding:"16px 18px",display:"flex",flexDirection:"column",gap:10}}>
+                {localAdminMsgs[0]?.messages?.length > 0 ? localAdminMsgs[0].messages.map((msg,i)=>(
+                  <div key={i} style={{display:"flex",justifyContent:msg.from==="artist"?"flex-end":"flex-start"}}>
+                    <div style={{
+                      maxWidth:"75%",
+                      background:msg.from==="artist"?`linear-gradient(135deg,${C.ruby},${C.ruby}cc)`:C.surface,
+                      borderRadius:msg.from==="artist"?"14px 14px 4px 14px":"14px 14px 14px 4px",
+                      padding:"10px 14px",
+                      border:`1px solid ${msg.from==="artist"?C.ruby+"66":C.border}`,
+                    }}>
+                      <div style={{color:C.text,fontSize:T.sm,lineHeight:1.6}}>{msg.text}</div>
+                      <div style={{color:C.muted,fontSize:10,marginTop:4,textAlign:"right"}}>{msg.time}</div>
+                    </div>
+                  </div>
+                )) : (
+                  <div style={{textAlign:"center",color:C.muted,fontSize:T.sm,marginTop:40}}>No messages yet</div>
+                )}
+              </div>
+              {/* Artist reply input */}
+              <div style={{padding:"12px 16px",borderTop:`1px solid ${C.border}`,display:"flex",gap:8}}>
+                <input
+                  value={artistReplyMsg||""}
+                  onChange={e=>setArtistReplyMsg(e.target.value)}
+                  onKeyDown={async e=>{
+                    if(e.key==="Enter"&&(artistReplyMsg||"").trim()){
+                      const text=(artistReplyMsg||"").trim();
+                      setArtistReplyMsg("");
+                      // Save to chat_messages table
+                      if(HAS_SUPA){
+                        const sb=await getSupabase();
+                        if(sb){
+                          await sb.from("chat_messages").insert({
+                            artist_id: artist.id,
+                            from_role: "artist",
+                            text,
+                          });
+                          // Reload messages
+                          setTab("overview");
+                          setTimeout(()=>setTab("messages"),100);
+                        }
+                      }
+                    }
+                  }}
+                  placeholder="Reply to admin..."
+                  style={{flex:1,background:C.surface,border:`1px solid ${C.border}`,borderRadius:10,padding:"10px 14px",color:C.text,fontSize:T.sm,outline:"none",fontFamily:"inherit"}}
+                />
+                <button onClick={async()=>{
+                  const text=(artistReplyMsg||"").trim();
+                  if(!text) return;
+                  setArtistReplyMsg("");
+                  if(HAS_SUPA){
+                    const sb=await getSupabase();
+                    if(sb){
+                      await sb.from("chat_messages").insert({artist_id:artist.id,from_role:"artist",text});
+                      setTab("overview");
+                      setTimeout(()=>setTab("messages"),100);
+                    }
+                  }
+                }} style={{background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:10,padding:"10px 16px",fontWeight:800,cursor:"pointer",fontFamily:"inherit",fontSize:T.sm}}>→</button>
+              </div>
+            </div>
+          ) : (
+            <div style={{flex:1,display:"flex",flexDirection:"column",gap:12}}>
+              {/* No admin messages — show customer chats */}
+              <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:"24px",textAlign:"center",color:C.muted,fontSize:T.sm}}>
+                No messages yet. Admin messages will appear here.
+              </div>
+              {/* Customer booking chats */}
+              {myB.filter(b=>b.chatUnlocked&&b.messages?.length>0).map(b=>(
+                <div key={b.id} onClick={()=>setChat(b)}
+                  style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:"14px 16px",cursor:"pointer",display:"flex",gap:12,alignItems:"center"}}>
+                  <div style={{fontSize:24,flexShrink:0}}>💬</div>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontWeight:700,color:C.text,fontSize:T.sm}}>{b.customerName}</div>
+                    <div style={{color:C.muted,fontSize:T.xs,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{b.messages[b.messages.length-1]?.text}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -4774,38 +4837,49 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
     </div>
   );
 
-  // Fetch admin messages every time Messages tab opens
+  // Load messages from chat_messages table when Messages tab opens
   React.useEffect(()=>{
     if(tab !== "messages" || !HAS_SUPA) return;
     let cancelled = false;
-    getSupabase().then(async sb=>{
+
+    const load = async () => {
+      const sb = await getSupabase();
       if(!sb || cancelled) return;
+
       const {data, error} = await sb
-        .from("bookings")
+        .from("chat_messages")
         .select("*")
-        .eq("status","admin_chat")
         .eq("artist_id", artist.id)
-        .order("created_at", {ascending:true});
+        .order("created_at", {ascending: true});
 
       if(cancelled) return;
-      if(error){ console.warn("Admin msg fetch error:", error.message); return; }
+      if(error){ console.warn("Chat load error:", error.message); return; }
       if(!data?.length){ setLocalAdminMsgs([]); return; }
 
-      setLocalAdminMsgs(data.map(b=>({
-        id:          b.id,
-        artistId:    b.artist_id,
+      // Group all messages into one "conversation"
+      const msgs = data.map(r=>({
+        from:r.from_role,
+        text:r.text,
+        time:new Date(r.created_at).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}),
+      }));
+
+      setLocalAdminMsgs([{
+        id:          "admin-chat-"+artist.id,
+        artistId:    artist.id,
         customerName:"Awaz Admin",
         customerEmail:"admin@awaz.no",
-        date:        b.date||"",
-        event:       "Message from Awaz",
+        date:        "",
+        event:       "Messages from Awaz",
         deposit:     0,
         status:      "admin_chat",
         depositPaid: false,
         chatUnlocked:true,
-        messages:    b.messages||[],
+        messages:    msgs,
         country:     "",
-      })));
-    });
+      }]);
+    };
+
+    load();
     return ()=>{ cancelled = true; };
   },[tab, artist.id]);
 
