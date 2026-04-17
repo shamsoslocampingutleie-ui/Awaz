@@ -345,8 +345,8 @@ const TRANSLATIONS = {
     submitApplication:"Submit Application",
     inquiryReceived:"Inquiry Received",
     privateInquiry:"Private Inquiry",
-    directToOwner:"Direct to Owner",
-    directToOwnerDesc:"Personal response · Price negotiation · Bespoke packages",
+    directToOwner:"Book Afghan Artists",
+    directToOwnerDesc:"Fixed prices · Direct booking · Fast response within 24h",
     budgetRange:"Budget Range",
     selectRange:"Select a range…",
     preferredArtist:"Preferred Artist (optional)",
@@ -2439,7 +2439,7 @@ function StripeCheckout({ booking, artist, onSuccess, onClose }) {
     <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.92)",zIndex:920,display:"flex",flexDirection:"column",justifyContent:"flex-end"}} onClick={onClose}>
       <div style={{background:C.card,borderRadius:"20px 20px 0 0",maxHeight:"95vh",overflow:"auto",animation:"slideUp 0.28s cubic-bezier(0.32,0.72,0,1) both",boxShadow:"0 -20px 60px rgba(0,0,0,0.8)"}} onClick={e=>e.stopPropagation()}>
         <div style={{display:"flex",justifyContent:"center",padding:"12px 0 4px"}}><div style={{width:40,height:4,borderRadius:2,background:C.borderM}}/></div>
-        <div style={{height:3,background:`linear-gradient(90deg,${artist.color},${C.gold},${artist.color})`}}/>
+        <div style={{height:2,background:`linear-gradient(90deg,${artist.color}88,${C.gold}88,${artist.color}88)`}}/>
         <div style={{padding:"0 20px 32px",paddingBottom:`max(32px,calc(env(safe-area-inset-bottom,0px) + 32px))`}}>
 
           {step==="processing"&&(
@@ -2626,7 +2626,7 @@ function ArtistCard({ artist, onClick, compact=false }) {
   return (
     <div onClick={()=>onClick(artist)}
       style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,cursor:"pointer",overflow:"hidden",WebkitTapHighlightColor:"transparent",transition:"border-color 0.15s, transform 0.15s"}}>
-      <div style={{height:3,background:`linear-gradient(90deg,${artist.color},${C.gold},${artist.color})`}}/>
+      <div style={{height:2,background:`linear-gradient(90deg,${artist.color}88,${C.gold}88,${artist.color}88)`}}/>
       <div style={{padding:"20px"}}>
         <div style={{display:"flex",gap:13,alignItems:"flex-start",marginBottom:14}}>
           <div style={{position:"relative",flexShrink:0}}>
@@ -3101,7 +3101,7 @@ function ProfilePage({ artist, bookings, onBack, onBookingCreated }) {
         {!vp.isMobile&&(
           <div style={{position:"sticky",top:24,display:"flex",flexDirection:"column",gap:16}}>
             <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,overflow:"hidden",boxShadow:"0 8px 40px rgba(0,0,0,0.5)"}}>
-              <div style={{height:3,background:`linear-gradient(90deg,${artist.color},${C.gold},${artist.color})`}}/>
+              <div style={{height:2,background:`linear-gradient(90deg,${artist.color}88,${C.gold}88,${artist.color}88)`}}/>
               <div style={{padding:20}}>
                 <div style={{fontFamily:"'Cormorant Garamond',serif",color:C.gold,fontSize:T.lg,fontWeight:700,marginBottom:14}}>{t('selectDate2')}</div>
                 <MiniCal artist={artist} selDay={selDay} selMonth={selMonth} selYear={selYear} onSelect={(d,m,y)=>{setSelDay(d);setSelMonth(m);setSelYear(y);}} bookings={bookings}/>
@@ -3861,7 +3861,7 @@ function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction,
   // ── Mobile layout ──
   if(vp.isMobile) return(
     <div style={{minHeight:"100vh",background:C.bg,paddingBottom:90,width:"100%"}}>
-      <div style={{height:3,background:`linear-gradient(90deg,${C.ruby},${C.gold},${C.lapis})`,position:"fixed",top:0,left:0,right:0,zIndex:300}}/>
+      <div style={{height:2,background:`linear-gradient(90deg,${C.ruby}88,${C.gold}88,${C.lapis}88)`,position:"fixed",top:0,left:0,right:0,zIndex:300}}/>
       <div style={{position:"fixed",top:3,left:0,right:0,zIndex:200,background:`${C.surface}F8`,backdropFilter:"blur(20px)",borderBottom:`1px solid ${C.border}`,padding:"12px 16px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
         <div>
           <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.md,fontWeight:700,color:C.gold}}>Awaz Admin</div>
@@ -3878,7 +3878,7 @@ function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction,
   // ── Desktop layout ──
   return(
     <div style={{minHeight:"100vh",background:C.bg,display:"flex",width:"100%"}}>
-      <div style={{height:3,background:`linear-gradient(90deg,${C.ruby},${C.gold},${C.lapis})`,position:"fixed",top:0,left:0,right:0,zIndex:200}}/>
+      <div style={{height:2,background:`linear-gradient(90deg,${C.ruby}88,${C.gold}88,${C.lapis}88)`,position:"fixed",top:0,left:0,right:0,zIndex:200}}/>
       {/* Sidebar */}
       <aside style={{width:240,background:C.surface,borderRight:`1px solid ${C.border}`,padding:"0",display:"flex",flexDirection:"column",position:"fixed",top:3,bottom:0,zIndex:100,overflowY:"auto"}}>
         {/* Logo */}
@@ -3990,6 +3990,41 @@ function CountrySelect({value,onChange,label="Country"}:{value:string;onChange:(
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+
+// ── Support Widget (artist → admin message) ──────────────────────────────────
+function SupportWidget({artistId}:{artistId:string}){
+  const [msg,setMsg]=React.useState("");
+  const [sent,setSent]=React.useState(false);
+  if(sent) return(
+    <div style={{background:"rgba(34,197,94,0.1)",border:"1px solid rgba(34,197,94,0.3)",borderRadius:10,padding:"12px 16px",color:"#22C55E",fontWeight:700,fontSize:14}}>
+      ✓ Message sent — check Messages tab for our reply
+    </div>
+  );
+  return(
+    <div>
+      <textarea value={msg} onChange={e=>setMsg(e.target.value)}
+        placeholder="Describe your issue or question…" rows={3}
+        style={{width:"100%",background:"#0F0D16",border:"1px solid #201D2E",borderRadius:10,padding:"10px 14px",color:"#EDE4CE",fontSize:14,fontFamily:"inherit",resize:"vertical",outline:"none",lineHeight:1.6,boxSizing:"border-box",marginBottom:10}}
+      />
+      <button onClick={async()=>{
+        if(!msg.trim()) return;
+        if(typeof getSupabase==="function"){
+          const sb=await getSupabase();
+          if(sb) await sb.from("chat_messages").insert({
+            artist_id: artistId,
+            from_role: "artist",
+            text: "🆘 SUPPORT: "+msg.trim(),
+          });
+        }
+        setSent(true);
+      }} disabled={!msg.trim()}
+        style={{width:"100%",background:msg.trim()?"linear-gradient(135deg,#C8A84A,#E09F3E)":"#141220",color:msg.trim()?"#0F0D16":"#8A7D68",border:`1px solid ${msg.trim()?"#C8A84A":"#201D2E"}`,borderRadius:10,padding:"11px",fontWeight:700,fontSize:14,cursor:msg.trim()?"pointer":"not-allowed",fontFamily:"inherit"}}>
+        Send to Awaz Support →
+      </button>
     </div>
   );
 }
@@ -4532,11 +4567,9 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
 
           {/* ── Help ── */}
           <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:"20px"}}>
-            <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:10}}>{t('help')||"Help"}</div>
-            <p style={{fontSize:T.sm,color:C.muted,lineHeight:1.7}}>
-              {t('needHelp')||"Need help? Contact us at"}{" "}
-              <a href="mailto:support@awaz.no" style={{color:C.gold,textDecoration:"none"}}>support@awaz.no</a>
-            </p>
+            <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:12}}>SUPPORT</div>
+            <p style={{fontSize:T.sm,color:C.muted,lineHeight:1.7,marginBottom:14}}>Send a message directly to the Awaz team — we respond within a few hours.</p>
+            <SupportWidget artistId={artist.id}/>
           </div>
         </div>
       )}
@@ -4839,7 +4872,7 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
 
   if (vp.isMobile) return(
     <div style={{minHeight:"100vh",background:C.bg,paddingBottom:88}}>
-      <div style={{height:3,background:`linear-gradient(90deg,${artist.color},${C.gold},${artist.color})`,position:"fixed",top:0,left:0,right:0,zIndex:300}}/>
+      <div style={{height:2,background:`linear-gradient(90deg,${artist.color}88,${C.gold}88,${artist.color}88)`,position:"fixed",top:0,left:0,right:0,zIndex:300}}/>
       <div style={{position:"fixed",top:3,left:0,right:0,zIndex:200,background:`${C.surface}F8`,backdropFilter:"blur(20px)",borderBottom:`1px solid ${C.border}`,padding:"10px 16px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
         <div style={{display:"flex",gap:10,alignItems:"center"}}>
           {artist.photo?<img src={artist.photo} alt="" style={{width:32,height:32,borderRadius:7,objectFit:"cover"}}/>:<div style={{width:32,height:32,borderRadius:7,background:`${artist.color}18`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}}>{artist.emoji}</div>}
@@ -4908,7 +4941,7 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
   },[tab, artist.id]);
   return(
     <div style={{minHeight:"100vh",background:C.bg,display:"flex"}}>
-      <div style={{height:3,background:`linear-gradient(90deg,${artist.color},${C.gold},${artist.color})`,position:"fixed",top:0,left:0,right:0,zIndex:200}}/>
+      <div style={{height:2,background:`linear-gradient(90deg,${artist.color}88,${C.gold}88,${artist.color}88)`,position:"fixed",top:0,left:0,right:0,zIndex:200}}/>
       <div style={{width:220,background:C.surface,borderRight:`1px solid ${C.border}`,padding:"40px 0 24px",display:"flex",flexDirection:"column",position:"fixed",top:3,bottom:0,zIndex:100}}>
         <div style={{padding:"0 20px 20px",borderBottom:`1px solid ${C.border}`,marginBottom:14}}>
           {artist.photo?<img src={artist.photo} alt="" style={{width:42,height:42,borderRadius:8,objectFit:"cover",marginBottom:10}}/>:<div style={{width:42,height:42,borderRadius:8,background:`${artist.color}18`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,marginBottom:10}}>{artist.emoji}</div>}
