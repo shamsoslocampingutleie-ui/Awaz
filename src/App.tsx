@@ -2094,6 +2094,38 @@ function Sheet({ open, onClose, children, title, maxH = "92vh" }) {
 }
 
 // ── Bottom Navigation (mobile) ────────────────────────────────────────
+// ── Stars ─────────────────────────────────────────────────────────────────────
+const Stars = ({ rating=0, count=0, size=12 }) => (
+  <div style={{display:"flex",alignItems:"center",gap:4}}>
+    <div style={{display:"flex",gap:1}}>
+      {[1,2,3,4,5].map(i=>(
+        <svg key={i} width={size} height={size} viewBox="0 0 24 24"
+          fill={i<=Math.round(rating)?C.gold:"rgba(200,168,74,0.2)"} stroke="none">
+          <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
+        </svg>
+      ))}
+    </div>
+    {count>0&&<span style={{color:C.muted,fontSize:size,lineHeight:1}}>{rating.toFixed(1)} ({count})</span>}
+  </div>
+);
+
+// ── Badge ─────────────────────────────────────────────────────────────────────
+const Badge = ({ children, color=C.gold, sm=false }) => (
+  <span style={{
+    display:"inline-flex",alignItems:"center",
+    background:color+"18",color,
+    border:`1px solid ${color}44`,
+    borderRadius:20,padding:sm?"2px 7px":"3px 10px",
+    fontSize:sm?10:11,fontWeight:700,lineHeight:1.4,
+    letterSpacing:"0.3px",flexShrink:0,
+  }}>{children}</span>
+);
+
+// ── HR divider ────────────────────────────────────────────────────────────────
+const HR = ({ color=C.gold, my=14 }) => (
+  <div style={{height:1,background:color+"44",margin:`${my}px 0`,flexShrink:0}}/>
+);
+
 function BottomNav({ active, onNav, items }) {
   const [drawerOpen, setDrawerOpen] = React.useState(false);
 
