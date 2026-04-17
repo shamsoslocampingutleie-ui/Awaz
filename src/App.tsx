@@ -443,7 +443,28 @@ const TRANSLATIONS = {
     instagramRecognized:"Instagram profile recognized",
     howToFindLink:"How to find your link",
     spotifyInstructions:"Spotify app: Go to your profile → three dots (⋯) → Share → Copy link to artist",
-    artistProfileNotFound:"Artist Profile Not Found",
+    settings:"Settings",
+    manageAccount:"Manage your account",
+    editProfile:"Edit Profile",
+    editPricing:"Edit Pricing",
+    editSocial:"Social Media",
+    editCalendar:"Calendar",
+    accountStatus:"Account Status",
+    visibility:"Visibility",
+    profilePublished:"Profile published",
+    profileLive:"Your profile is live.",
+    completeProfile:"Complete your profile to go live.",
+    profileVisibleToClients:"Your profile is visible to clients",
+    pendingAdminApproval:"Waiting for admin approval",
+    approved:"Approved",
+    pendingApproval:"Pending Approval",
+    connected:"Connected",
+    notConnected:"Not connected",
+    needHelp:"Need help? Contact us at",
+    account:"Account",
+    artistName:"Artist Name",
+    help:"Help",
+      artistProfileNotFound:"Artist Profile Not Found",
     noStripe:"No Stripe",
     recentBookingsLabel:"Recent Bookings",
   },
@@ -2633,7 +2654,7 @@ function ArtistCard({ artist, onClick, compact=false }) {
           <Stars rating={artist.rating} count={artist.reviews} size={13}/>
           <div style={{textAlign:"right"}}>
             <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:artist.color}}>{artist.priceInfo}</div>
-            <div style={{fontSize:T.xs,color:C.muted,marginTop:2}}>€{artist.deposit} deposit</div>
+            <div style={{fontSize:T.xs,color:C.muted,marginTop:2}}>€{artist.deposit} {t('deposit')||"deposit"} · {t('paidInEUR')||"paid in EUR"}</div>
           </div>
         </div>
       </div>
@@ -3721,6 +3742,71 @@ function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction,
 }
 
 
+
+// ── Searchable Country Selector ──────────────────────────────────────────────
+const COUNTRY_LIST=[
+  ["AF","Afghanistan 🇦🇫"],["AL","Albania 🇦🇱"],["DZ","Algeria 🇩🇿"],
+  ["AU","Australia 🇦🇺"],["AT","Austria 🇦🇹"],["AZ","Azerbaijan 🇦🇿"],
+  ["BE","Belgium 🇧🇪"],["CA","Canada 🇨🇦"],["CN","China 🇨🇳"],
+  ["DK","Denmark 🇩🇰"],["EG","Egypt 🇪🇬"],["FI","Finland 🇫🇮"],
+  ["FR","France 🇫🇷"],["DE","Germany 🇩🇪"],["GR","Greece 🇬🇷"],
+  ["HU","Hungary 🇭🇺"],["IS","Iceland 🇮🇸"],["IN","India 🇮🇳"],
+  ["ID","Indonesia 🇮🇩"],["IR","Iran 🇮🇷"],["IQ","Iraq 🇮🇶"],
+  ["IE","Ireland 🇮🇪"],["IL","Israel 🇮🇱"],["IT","Italy 🇮🇹"],
+  ["JP","Japan 🇯🇵"],["JO","Jordan 🇯🇴"],["KZ","Kazakhstan 🇰🇿"],
+  ["KW","Kuwait 🇰🇼"],["LB","Lebanon 🇱🇧"],["LY","Libya 🇱🇾"],
+  ["MY","Malaysia 🇲🇾"],["MA","Morocco 🇲🇦"],["NL","Netherlands 🇳🇱"],
+  ["NZ","New Zealand 🇳🇿"],["NO","Norway 🇳🇴"],["OM","Oman 🇴🇲"],
+  ["PK","Pakistan 🇵🇰"],["PL","Poland 🇵🇱"],["PT","Portugal 🇵🇹"],
+  ["QA","Qatar 🇶🇦"],["RU","Russia 🇷🇺"],["SA","Saudi Arabia 🇸🇦"],
+  ["SE","Sweden 🇸🇪"],["CH","Switzerland 🇨🇭"],["TW","Taiwan 🇹🇼"],
+  ["TJ","Tajikistan 🇹🇯"],["TR","Turkey 🇹🇷"],["TM","Turkmenistan 🇹🇲"],
+  ["AE","UAE 🇦🇪"],["GB","United Kingdom 🇬🇧"],["US","United States 🇺🇸"],
+  ["UZ","Uzbekistan 🇺🇿"],["YE","Yemen 🇾🇪"],["OTHER","Other 🌍"],
+];
+function CountrySelect({value,onChange,label="Country"}:{value:string;onChange:(v:string)=>void;label?:string}){
+  const [q,setQ]=useState("");
+  const [open,setOpen]=useState(false);
+  const ref=useRef<HTMLDivElement>(null);
+  const filtered=q?COUNTRY_LIST.filter(([,l])=>l.toLowerCase().includes(q.toLowerCase())):COUNTRY_LIST;
+  const sel=COUNTRY_LIST.find(([c])=>c===value);
+  useEffect(()=>{
+    const handler=(e:MouseEvent)=>{if(ref.current&&!ref.current.contains(e.target as Node))setOpen(false);};
+    document.addEventListener("mousedown",handler);
+    return()=>document.removeEventListener("mousedown",handler);
+  },[]);
+  return(
+    <div ref={ref} style={{position:"relative"}}>
+      <div style={{fontSize:10,fontWeight:700,color:"#8A7D68",letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:6}}>{label}</div>
+      <button type="button" onClick={()=>setOpen(o=>!o)}
+        style={{width:"100%",background:"#0F0D16",border:`1px solid ${open?"#C8A84A":"#201D2E"}`,borderRadius:12,padding:"12px 16px",color:"#EDE4CE",fontSize:14,textAlign:"left",cursor:"pointer",fontFamily:"inherit",display:"flex",justifyContent:"space-between",alignItems:"center",transition:"border-color 0.15s"}}>
+        <span>{sel?sel[1]:"Select country…"}</span>
+        <span style={{color:"#8A7D68",fontSize:12}}>{open?"▲":"▼"}</span>
+      </button>
+      {open&&(
+        <div style={{position:"absolute",top:"calc(100% + 4px)",left:0,right:0,background:"#141220",border:"1px solid #2C2840",borderRadius:12,zIndex:200,boxShadow:"0 12px 40px rgba(0,0,0,0.6)",overflow:"hidden"}}>
+          <div style={{padding:"8px 10px",borderBottom:"1px solid #201D2E"}}>
+            <input autoFocus value={q} onChange={e=>setQ(e.target.value)}
+              placeholder="Search country…"
+              style={{width:"100%",background:"#0F0D16",border:"1px solid #201D2E",borderRadius:8,padding:"8px 12px",color:"#EDE4CE",fontSize:13,outline:"none",fontFamily:"inherit"}}/>
+          </div>
+          <div style={{maxHeight:220,overflowY:"auto"}}>
+            {filtered.map(([code,label])=>(
+              <button key={code} type="button" onClick={()=>{onChange(code);setOpen(false);setQ("");}}
+                style={{width:"100%",background:value===code?"rgba(200,168,74,0.1)":"transparent",color:value===code?"#C8A84A":"#EDE4CE",border:"none",padding:"10px 16px",textAlign:"left",cursor:"pointer",fontSize:13,fontFamily:"inherit",display:"block"}}
+                onMouseEnter={e=>(e.currentTarget.style.background="rgba(200,168,74,0.07)")}
+                onMouseLeave={e=>(e.currentTarget.style.background=value===code?"rgba(200,168,74,0.1)":"transparent")}>
+                {label}
+              </button>
+            ))}
+            {filtered.length===0&&<div style={{padding:"12px 16px",color:"#8A7D68",fontSize:13}}>No results</div>}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Artist Portal ──────────────────────────────────────────────────────
 function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, onUpdateArtist }) {
   const vp=useViewport();
@@ -4057,54 +4143,66 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
 
       {tab==="settings"&&(
         <div>
-          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:6}}>Settings</div>
-          <p style={{color:C.muted,fontSize:T.sm,marginBottom:20}}>Administrer kontoen din</p>
+          <SectionHeader title={t('settings')||"Settings"} subtitle={t('manageAccount')||"Manage your account"}/>
 
-          {/* Published toggle */}
-          <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:"20px",marginBottom:16}}>
-            <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:16}}>Synlighet</div>
-            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-              <div>
-                <div style={{fontWeight:600,color:C.text,fontSize:T.sm,marginBottom:4}}>Profil publisert</div>
-                <div style={{color:C.muted,fontSize:T.xs}}>{artist.status==="approved"?"Profilen din er synlig for kunder":"Venter på godkjenning fra admin"}</div>
-              </div>
-              <div style={{
-                width:48,height:26,borderRadius:13,
-                background:artist.status==="approved"?C.emerald:C.border,
-                position:"relative",cursor:"default",transition:"background 0.2s",flexShrink:0,
-              }}>
-                <div style={{
-                  position:"absolute",top:3,
-                  left:artist.status==="approved"?"25px":"3px",
-                  width:20,height:20,borderRadius:"50%",
-                  background:"#fff",transition:"left 0.2s",
-                  boxShadow:"0 1px 4px rgba(0,0,0,0.3)",
-                }}/>
-              </div>
-            </div>
+          {/* ── Quick links to edit profile ── */}
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:20}}>
+            {[
+              {icon:"👤",label:t('editProfile')||"Edit Profile",go:"profile"},
+              {icon:"💰",label:t('editPricing')||"Pricing",go:"pricing"},
+              {icon:"🎵",label:t('editSocial')||"Social Media",go:"social"},
+              {icon:"📅",label:t('editCalendar')||"Calendar",go:"calendar"},
+            ].map(({icon,label,go})=>(
+              <button key={go} onClick={()=>setTab(go)} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:10,padding:"14px 16px",display:"flex",alignItems:"center",gap:10,cursor:"pointer",textAlign:"left",transition:"border-color 0.15s",fontFamily:"inherit"}}
+                onMouseEnter={e=>(e.currentTarget.style.borderColor=C.gold)}
+                onMouseLeave={e=>(e.currentTarget.style.borderColor=C.border)}>
+                <span style={{fontSize:20}}>{icon}</span>
+                <span style={{fontSize:T.sm,fontWeight:600,color:C.text}}>{label}</span>
+              </button>
+            ))}
           </div>
 
-          {/* Account info */}
+          {/* ── Status ── */}
           <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:"20px",marginBottom:16}}>
-            <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:14}}>Konto</div>
+            <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:14}}>{t('accountStatus')||"Account Status"}</div>
             {[
-              ["Artist navn",artist.name],
-              ["Sjanger",artist.genre],
-              ["Status",artist.status==="approved"?"✓ Godkjent":"⏳ Venter godkjenning"],
-              ["Stripe",artist.stripeConnected?"✓ Tilkoblet":"Ikke tilkoblet"],
+              [t('artistName')||"Artist Name",   artist.name],
+              [t('genre')||"Genre",              artist.genre||"—"],
+              [t('location')||"Location",        artist.location||"—"],
+              [t('currency')||"Currency",        artist.currency||"EUR"],
+              [t('status')||"Status",            artist.status==="approved"?`✓ ${t('approved')||"Approved"}`:`⏳ ${t('pendingApproval')||"Pending Approval"}`],
+              ["Stripe",                         artist.stripeConnected?`✓ ${t('connected')||"Connected"}`:t('notConnected')||"Not connected"],
             ].map(([k,v])=>(
-              <div key={k} style={{display:"flex",justifyContent:"space-between",padding:"10px 0",borderBottom:`1px solid ${C.border}`,fontSize:T.sm}}>
+              <div key={k} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 0",borderBottom:`1px solid ${C.border}`,fontSize:T.sm}}>
                 <span style={{color:C.muted}}>{k}</span>
                 <span style={{color:C.text,fontWeight:600}}>{v}</span>
               </div>
             ))}
           </div>
 
-          {/* Help */}
+          {/* ── Visibility ── */}
+          <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:"20px",marginBottom:16}}>
+            <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:14}}>{t('visibility')||"Visibility"}</div>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+              <div>
+                <div style={{fontWeight:600,color:C.text,fontSize:T.sm,marginBottom:4}}>{t('profilePublished')||"Profile published"}</div>
+                <div style={{color:C.muted,fontSize:T.xs}}>
+                  {artist.status==="approved"
+                    ? t('profileVisibleToClients')||"Your profile is visible to clients"
+                    : t('pendingAdminApproval')||"Waiting for admin approval"}
+                </div>
+              </div>
+              <div style={{width:48,height:26,borderRadius:13,background:artist.status==="approved"?C.emerald:C.border,position:"relative",flexShrink:0}}>
+                <div style={{position:"absolute",top:3,left:artist.status==="approved"?"25px":"3px",width:20,height:20,borderRadius:"50%",background:"#fff",transition:"left 0.2s",boxShadow:"0 1px 4px rgba(0,0,0,0.3)"}}/>
+              </div>
+            </div>
+          </div>
+
+          {/* ── Help ── */}
           <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:"20px"}}>
-            <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:10}}>Hjelp</div>
+            <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:10}}>{t('help')||"Help"}</div>
             <p style={{fontSize:T.sm,color:C.muted,lineHeight:1.7}}>
-              Trenger du hjelp? Kontakt oss på{" "}
+              {t('needHelp')||"Need help? Contact us at"}{" "}
               <a href="mailto:support@awaz.no" style={{color:C.gold,textDecoration:"none"}}>support@awaz.no</a>
             </p>
           </div>
@@ -4369,8 +4467,7 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
                     <Inp label="Deposit (min €500)" type="number" value={editF.deposit} onChange={e=>setEditF(f=>({...f,deposit:String(Math.max(500,parseInt(e.target.value)||500))}))} hint="Customers pay this at booking — minimum €500"/>
                     <Sel label="Currency" value={editF.currency||"EUR"} onChange={e=>setEditF(f=>({...f,currency:e.target.value}))}
                       options={[["EUR","€ EUR"],["NOK","kr NOK"],["SEK","kr SEK"],["DKK","kr DKK"],["GBP","£ GBP"],["USD","$ USD"],["CHF","Fr CHF"],["AED","AED"],["AUD","A$"]]}/>
-                    <Sel label="Your Country" value={editF.country||"NO"} onChange={e=>setEditF(f=>({...f,country:e.target.value}))}
-                      options={[["NO","Norway 🇳🇴"],["SE","Sweden 🇸🇪"],["DK","Denmark 🇩🇰"],["DE","Germany 🇩🇪"],["NL","Netherlands 🇳🇱"],["BE","Belgium 🇧🇪"],["FR","France 🇫🇷"],["GB","United Kingdom 🇬🇧"],["CH","Switzerland 🇨🇭"],["AT","Austria 🇦🇹"],["FI","Finland 🇫🇮"],["US","United States 🇺🇸"],["CA","Canada 🇨🇦"],["AU","Australia 🇦🇺"],["AE","UAE 🇦🇪"],["AF","Afghanistan 🇦🇫"],["OTHER","Other"]]}/>
+                    <CountrySelect label="Your Country" value={editF.country||"NO"} onChange={v=>setEditF(f=>({...f,country:v}))}/>
                   </div>
                   <Sel label="Cancellation Policy" value={editF.cancellationPolicy} onChange={e=>setEditF(f=>({...f,cancellationPolicy:e.target.value}))}
                     options={POLICIES.map(p=>[p.id,`${p.label} — ${p.desc}`])}/>
@@ -6441,8 +6538,7 @@ function ApplySheet({ onSubmit, onClose }) {
                 <Sel label="Genre / Style *" value={f.genre} onChange={e=>setF(p=>({...p,genre:e.target.value}))}
                 options={[["","Select genre…"],["Ghazal","Ghazal — Classical vocal"],["Herati","Herati — Western Afghan folk"],["Mast","Mast — Dance & celebratory"],["Pashto","Pashto — Pashtun traditional"],["Logari","Logari — Southern Afghan"],["Qarsak","Qarsak — Party & wedding"],["Rubab","Rubab — Instrumental"],["Tabla","Tabla — Percussion"],["Sufi","Sufi — Devotional"],["Classical","Classical Afghan"],["Folk","Afghan Folk"],["Pop","Afghan Pop"],["Fusion","Afghan Fusion"],["Other","Other / Mixed"]]}/>
                 <Inp label="Location / City" placeholder="Oslo, Norway" value={f.location} onChange={e=>setF(p=>({...p,location:e.target.value}))}/>
-                <Sel label="Country" value={f.country} onChange={e=>setF(p=>({...p,country:e.target.value}))}
-                  options={[["NO","Norway 🇳🇴"],["SE","Sweden 🇸🇪"],["DK","Denmark 🇩🇰"],["DE","Germany 🇩🇪"],["NL","Netherlands 🇳🇱"],["BE","Belgium 🇧🇪"],["FR","France 🇫🇷"],["GB","United Kingdom 🇬🇧"],["CH","Switzerland 🇨🇭"],["AT","Austria 🇦🇹"],["FI","Finland 🇫🇮"],["US","United States 🇺🇸"],["CA","Canada 🇨🇦"],["AU","Australia 🇦🇺"],["AE","UAE 🇦🇪"],["AF","Afghanistan 🇦🇫"],["PK","Pakistan 🇵🇰"],["IR","Iran 🇮🇷"],["TR","Turkey 🇹🇷"],["OTHER","Other"]]}/>
+                <CountrySelect label="Country" value={f.country||"NO"} onChange={v=>setF(p=>({...p,country:v}))}/>
                 <Sel label="Preferred Currency (you get paid in this)" value={f.currency} onChange={e=>setF(p=>({...p,currency:e.target.value}))}
                   options={[["EUR","€ Euro (recommended)"],["NOK","kr Norwegian Krone"],["SEK","kr Swedish Krone"],["DKK","kr Danish Krone"],["GBP","£ British Pound"],["CHF","Fr Swiss Franc"],["USD","$ US Dollar"],["AED","د.إ UAE Dirham"]]}/>
                 <Inp label="Starting Price" placeholder="From €2,500" value={f.priceInfo} onChange={e=>setF(p=>({...p,priceInfo:e.target.value}))}/>
