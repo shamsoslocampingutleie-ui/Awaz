@@ -2095,69 +2095,168 @@ function Sheet({ open, onClose, children, title, maxH = "92vh" }) {
 
 // ── Bottom Navigation (mobile) ────────────────────────────────────────
 function BottomNav({ active, onNav, items }) {
-  return (
-    <nav style={{
-      position:"fixed",bottom:0,left:0,right:0,zIndex:200,
-      background:`${C.surface}F8`,backdropFilter:"blur(20px)",
-      borderTop:`1px solid ${C.border}`,
-      display:"flex",alignItems:"stretch",
-      paddingBottom:"env(safe-area-inset-bottom,0px)",
-      height:`calc(58px + env(safe-area-inset-bottom,0px))`,
-    }}>
-      {items.map(({ id, icon, label }) => {
-        const isActive = active === id;
-        return (
-          <button key={id} onClick={() => onNav(id)}
+  const [drawerOpen, setDrawerOpen] = React.useState(false);
+
+  // SVG icon library
+  const Icon = ({id}:{id:string}) => {
+    const icons:Record<string,any> = {
+      overview:  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
+      bookings:  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>,
+      calendar:  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg>,
+      messages:  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>,
+      pricing:   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>,
+      profile:   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
+      social:    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>,
+      settings:  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>,
+      artists:   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>,
+      inquiries: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>,
+      finance:   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>,
+      chat:      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>,
+      more:      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>,
+    };
+    return icons[id]||icons["more"];
+  };
+
+  // Show 4 primary + "More" button
+  const primary = items.slice(0, 4);
+  const secondary = items.slice(4);
+  const moreIsActive = secondary.some(i => i.id === active);
+  const totalBadge = secondary.reduce((s:number, i:any) => s + (i.badge||0), 0);
+
+  const NavBtn = ({item, onClick, isActive}:{item:any;onClick:()=>void;isActive:boolean}) => (
+    <button onClick={onClick}
+      style={{
+        flex:1,display:"flex",flexDirection:"column",alignItems:"center",
+        justifyContent:"center",gap:4,background:"transparent",border:"none",
+        cursor:"pointer",padding:"8px 4px",position:"relative",
+        WebkitTapHighlightColor:"transparent",minWidth:0,minHeight:58,
+      }}>
+      {isActive&&(
+        <div style={{position:"absolute",top:0,left:"50%",transform:"translateX(-50%)",
+          width:24,height:2,borderRadius:2,background:C.gold}}/>
+      )}
+      <div style={{
+        position:"relative",width:36,height:36,display:"flex",
+        alignItems:"center",justifyContent:"center",
+        background:isActive?`rgba(200,168,74,0.1)`:"transparent",
+        borderRadius:10,transition:"all 0.15s",
+        color:isActive?C.gold:"rgba(255,255,255,0.45)",
+      }}>
+        <Icon id={item.id}/>
+        {(item.badge||0)>0&&(
+          <div style={{
+            position:"absolute",top:-3,right:-5,
+            background:C.ruby,color:"#fff",borderRadius:8,
+            fontSize:9,fontWeight:800,padding:"1px 4px",
+            minWidth:15,textAlign:"center",
+            border:"1.5px solid rgba(13,11,21,1)",
+          }}>{(item.badge||0)>9?"9+":(item.badge||0)}</div>
+        )}
+      </div>
+      <span style={{
+        fontSize:10,fontWeight:isActive?700:400,
+        color:isActive?C.gold:"rgba(255,255,255,0.45)",
+        letterSpacing:"0.2px",lineHeight:1,fontFamily:"'DM Sans',sans-serif",
+      }}>{item.label}</span>
+    </button>
+  );
+
+  return(
+    <>
+      {/* ── Bottom bar ── */}
+      <nav style={{
+        position:"fixed",bottom:0,left:0,right:0,zIndex:200,
+        background:"rgba(10,8,18,0.97)",
+        backdropFilter:"blur(24px)",WebkitBackdropFilter:"blur(24px)",
+        borderTop:"1px solid rgba(255,255,255,0.05)",
+        display:"flex",alignItems:"stretch",
+        paddingBottom:"env(safe-area-inset-bottom,0px)",
+        boxShadow:"0 -1px 0 rgba(255,255,255,0.04), 0 -8px 32px rgba(0,0,0,0.5)",
+      }}>
+        {primary.map(item=>(
+          <NavBtn key={item.id} item={item} isActive={active===item.id}
+            onClick={()=>{setDrawerOpen(false);onNav(item.id);}}/>
+        ))}
+        {/* More button */}
+        {secondary.length>0&&(
+          <button onClick={()=>setDrawerOpen(o=>!o)}
             style={{
-              flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
-              gap:3,background:"transparent",border:"none",cursor:"pointer",
-              color:isActive?C.gold:C.muted,
-              paddingTop:8,paddingBottom:4,
-              minHeight:44,minWidth:44,
-              transition:"color 0.15s",
-              fontFamily:"inherit",
+              flex:1,display:"flex",flexDirection:"column",alignItems:"center",
+              justifyContent:"center",gap:4,background:"transparent",border:"none",
+              cursor:"pointer",padding:"8px 4px",position:"relative",
+              WebkitTapHighlightColor:"transparent",minWidth:0,minHeight:58,
             }}>
-            <div style={{fontSize:22,lineHeight:1}}>{icon}</div>
-            <div style={{fontSize:10,fontWeight:isActive?700:500,letterSpacing:"0.2px"}}>{label}</div>
-            {isActive && <div style={{position:"absolute",top:0,width:24,height:2,borderRadius:1,background:C.gold}}/>}
+            {(moreIsActive||drawerOpen)&&(
+              <div style={{position:"absolute",top:0,left:"50%",transform:"translateX(-50%)",
+                width:24,height:2,borderRadius:2,background:C.gold}}/>
+            )}
+            <div style={{
+              position:"relative",width:36,height:36,display:"flex",
+              alignItems:"center",justifyContent:"center",
+              background:(moreIsActive||drawerOpen)?`rgba(200,168,74,0.1)`:"transparent",
+              borderRadius:10,
+              color:(moreIsActive||drawerOpen)?C.gold:"rgba(255,255,255,0.45)",
+            }}>
+              <Icon id="more"/>
+              {totalBadge>0&&(
+                <div style={{position:"absolute",top:-3,right:-5,background:C.ruby,color:"#fff",borderRadius:8,fontSize:9,fontWeight:800,padding:"1px 4px",minWidth:15,textAlign:"center",border:"1.5px solid rgba(13,11,21,1)"}}>
+                  {totalBadge>9?"9+":totalBadge}
+                </div>
+              )}
+            </div>
+            <span style={{fontSize:10,fontWeight:(moreIsActive||drawerOpen)?700:400,color:(moreIsActive||drawerOpen)?C.gold:"rgba(255,255,255,0.45)",letterSpacing:"0.2px",lineHeight:1,fontFamily:"'DM Sans',sans-serif"}}>More</span>
           </button>
-        );
-      })}
-    </nav>
+        )}
+      </nav>
+
+      {/* ── More drawer ── */}
+      {drawerOpen&&secondary.length>0&&(
+        <>
+          {/* Backdrop */}
+          <div onClick={()=>setDrawerOpen(false)}
+            style={{position:"fixed",inset:0,zIndex:195,background:"rgba(0,0,0,0.5)"}}/>
+          {/* Sheet */}
+          <div style={{
+            position:"fixed",bottom:`calc(62px + env(safe-area-inset-bottom,0px))`,
+            left:0,right:0,zIndex:196,
+            background:"rgba(18,15,30,0.98)",
+            backdropFilter:"blur(24px)",WebkitBackdropFilter:"blur(24px)",
+            borderTop:"1px solid rgba(255,255,255,0.07)",
+            borderRadius:"20px 20px 0 0",
+            padding:"8px 16px 16px",
+            animation:"fade 0.2s ease",
+          }}>
+            <div style={{width:36,height:3,borderRadius:2,background:"rgba(255,255,255,0.12)",margin:"6px auto 14px"}}/>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:4}}>
+              {secondary.map(item=>(
+                <button key={item.id}
+                  onClick={()=>{setDrawerOpen(false);onNav(item.id);}}
+                  style={{
+                    display:"flex",flexDirection:"column",alignItems:"center",gap:6,
+                    background:active===item.id?`rgba(200,168,74,0.1)`:"transparent",
+                    border:`1px solid ${active===item.id?`rgba(200,168,74,0.3)`:"transparent"}`,
+                    borderRadius:14,padding:"14px 8px",cursor:"pointer",
+                    WebkitTapHighlightColor:"transparent",
+                    color:active===item.id?C.gold:"rgba(255,255,255,0.7)",
+                  }}>
+                  <div style={{position:"relative"}}>
+                    <Icon id={item.id}/>
+                    {(item.badge||0)>0&&(
+                      <div style={{position:"absolute",top:-4,right:-6,background:C.ruby,color:"#fff",borderRadius:8,fontSize:9,fontWeight:800,padding:"1px 4px",minWidth:15,textAlign:"center",border:"1.5px solid rgba(18,15,30,1)"}}>
+                        {(item.badge||0)>9?"9+":(item.badge||0)}
+                      </div>
+                    )}
+                  </div>
+                  <span style={{fontSize:11,fontWeight:active===item.id?700:500,fontFamily:"'DM Sans',sans-serif",letterSpacing:"0.2px"}}>{item.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+    </>
   );
 }
-
-// ── UI Primitives ─────────────────────────────────────────────────────
-const Diamond = ({ color=C.gold, size=8 }) => (
-  <svg width={size} height={size} viewBox="0 0 8 8" style={{flexShrink:0}}>
-    <path d="M4 0L5 3L8 4L5 5L4 8L3 5L0 4L3 3Z" fill={color} opacity="0.6"/>
-  </svg>
-);
-
-const HR = ({ color=C.gold, my=14 }) => (
-  <div style={{display:"flex",alignItems:"center",gap:10,margin:`${my}px 0`}}>
-    <div style={{flex:1,height:1,background:`linear-gradient(90deg,transparent,${color}38)`}}/>
-    <Diamond color={color}/>
-    <div style={{flex:1,height:1,background:`linear-gradient(270deg,transparent,${color}38)`}}/>
-  </div>
-);
-
-const Badge = ({ children, color=C.gold, sm=true }) => (
-  <span style={{
-    background:color+"14",color,border:`1px solid ${color}30`,
-    borderRadius:4,padding:sm?"2px 8px":"3px 10px",
-    fontSize:sm?10:11,fontWeight:700,letterSpacing:"0.4px",
-    display:"inline-flex",alignItems:"center",gap:3,flexShrink:0,
-  }}>{children}</span>
-);
-
-const Stars = ({ rating, count, size=12 }) => (
-  <span style={{display:"flex",alignItems:"center",gap:4,flexShrink:0}}>
-    <span style={{color:C.gold,fontSize:size}}>★</span>
-    <span style={{color:C.text,fontWeight:700,fontSize:size}}>{rating}</span>
-    {count && <span style={{color:C.muted,fontSize:size-1}}>({count})</span>}
-  </span>
-);
 
 function Btn({ children, onClick, v="gold", sz="md", disabled, full, loading, xs={}, type="button" }) {
   const bgs = {
@@ -3350,13 +3449,13 @@ function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction,
   };
 
   const navItems=[
-    {id:"overview",  icon:"📊", label:"Overview"},
-    {id:"artists",   icon:"🎤", label:"Artists",  badge:pendingArtists},
-    {id:"bookings",  icon:"📅", label:"Bookings"},
-    {id:"inquiries", icon:"📬", label:"Inquiries", badge:newInquiries},
-    {id:"messages",  icon:"💬", label:"Messages"},
-    {id:"chat",      icon:"✉️",  label:"Direct Chat"},
-    {id:"finance",   icon:"💶", label:"Finance"},
+    {id:"overview",  label:"Overview"},
+    {id:"artists",   label:"Artists",  badge:pendingArtists},
+    {id:"bookings",  label:"Bookings"},
+    {id:"inquiries", label:"Inquiries", badge:newInquiries},
+    {id:"messages",  label:"Messages"},
+    {id:"chat",      label:"Chat"},
+    {id:"finance",   label:"Finance"},
   ];
 
   // Filtered artists — uses refreshed list if available
@@ -4133,14 +4232,14 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
   const pendingCount=myB.filter(b=>b.status==="pending_payment"||b.status==="pending").length;
 
   const navItems=[
-    {id:"overview",icon:"🏠",label:"Overview"},
-    {id:"bookings",icon:"📋",label:"Bookings",badge:pendingCount},
-    {id:"calendar",icon:"📅",label:"Calendar"},
-    {id:"messages",icon:"💬",label:"Messages"},
-    {id:"pricing", icon:"💰",label:"Pricing"},
-    {id:"profile", icon:"👤",label:"Profile"},
-    {id:"social",  icon:"🎵",label:"Social"},
-    {id:"settings",icon:"⚙️", label:"Settings"},
+    {id:"overview", label:"Overview"},
+    {id:"bookings", label:"Bookings", badge:pendingCount},
+    {id:"calendar", label:"Calendar"},
+    {id:"messages", label:"Messages"},
+    {id:"pricing",  label:"Pricing"},
+    {id:"profile",  label:"Profile"},
+    {id:"social",   label:"Social"},
+    {id:"settings", label:"Settings"},
   ];
 
   const saveEdit=async()=>{
