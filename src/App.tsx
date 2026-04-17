@@ -3185,6 +3185,52 @@ function ProfilePage({ artist, bookings, onBack, onBookingCreated }) {
 }
 
 // ── Admin Dashboard ────────────────────────────────────────────────────
+
+// ── Notification System ──────────────────────────────────────────────────────
+// Types: "booking" | "message" | "inquiry" | "approval" | "success" | "error"
+const NotifContext = React.createContext({show:(_msg:string,_type?:string)=>{}});
+
+function NotificationProvider({children}:{children:any}){
+  const [notifs,setNotifs]=React.useState<{id:number;msg:string;type:string}[]>([]);
+  const show=(msg:string,type="info")=>{
+    const id=Date.now();
+    setNotifs(p=>[...p,{id,msg,type}]);
+    setTimeout(()=>setNotifs(p=>p.filter(n=>n.id!==id)),4500);
+  };
+  const colors:any={
+    booking:"#22C55E",message:"#C8A84A",inquiry:"#818CF8",
+    approval:"#22C55E",error:"#EF4444",info:"#C8A84A",success:"#22C55E",
+  };
+  const icons:any={
+    booking:"📅",message:"💬",inquiry:"📬",
+    approval:"✓",error:"⚠️",info:"🔔",success:"✓",
+  };
+  return(
+    <NotifContext.Provider value={{show}}>
+      {children}
+      {/* Toast container — top-right, mobile-safe */}
+      <div style={{position:"fixed",top:16,right:16,zIndex:9999,display:"flex",flexDirection:"column",gap:8,pointerEvents:"none",maxWidth:"calc(100vw - 32px)"}}>
+        {notifs.map(n=>(
+          <div key={n.id} style={{
+            background:"#1A1728",border:`1px solid ${colors[n.type]||"#C8A84A"}66`,
+            borderLeft:`4px solid ${colors[n.type]||"#C8A84A"}`,
+            borderRadius:12,padding:"12px 18px",
+            display:"flex",alignItems:"center",gap:10,
+            boxShadow:"0 8px 32px rgba(0,0,0,0.5)",
+            animation:"notifSlide 0.35s ease",
+            minWidth:260,maxWidth:360,pointerEvents:"all",
+          }}>
+            <span style={{fontSize:20,flexShrink:0}}>{icons[n.type]||"🔔"}</span>
+            <span style={{color:"#EDE4CE",fontSize:13,fontWeight:600,lineHeight:1.4,flex:1}}>{n.msg}</span>
+          </div>
+        ))}
+      </div>
+    </NotifContext.Provider>
+  );
+}
+
+function useNotif(){ return React.useContext(NotifContext); }
+
 // ── Global SectionHeader ────────────────────────────────────────────────────
 function SectionHeader({title,action=null,subtitle=null}:{title:any;action?:any;subtitle?:any}){
   return(
@@ -3197,6 +3243,21 @@ function SectionHeader({title,action=null,subtitle=null}:{title:any;action?:any;
     </div>
   );
 }
+
+// ── Browser Push Notification helper ─────────────────────────────────────────
+async function requestPushPermission(){
+  if(!("Notification" in window)) return false;
+  if(Notification.permission==="granted") return true;
+  if(Notification.permission==="denied") return false;
+  const p=await Notification.requestPermission();
+  return p==="granted";
+}
+function sendBrowserNotif(title:string,body:string,icon="/favicon.ico"){
+  if(Notification.permission!=="granted") return;
+  const n=new Notification(title,{body,icon,badge:"/favicon.ico"});
+  setTimeout(()=>n.close(),5000);
+}
+
 
 function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction, onLogout, onMsg, onUpdateInquiry }) {
   const vp=useViewport();
@@ -4032,6 +4093,7 @@ function SupportWidget({artistId}:{artistId:string}){
 // ── Artist Portal ──────────────────────────────────────────────────────
 function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, onUpdateArtist }) {
   const vp=useViewport();
+  const {show:notify}=useNotif();
   const [tab,setTab]=useState("overview");
   const [chat,setChat]=useState(null);
   const [localAdminMsgs,setLocalAdminMsgs]=useState([]);
@@ -4529,6 +4591,18 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
             ))}
           </div>
 
+          {/* ── Notification toggle ── */}
+          <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:"16px 20px",marginBottom:16,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+            <div>
+              <div style={{fontWeight:600,color:C.text,fontSize:T.sm,marginBottom:2}}>🔔 Browser Notifications</div>
+              <div style={{color:C.muted,fontSize:T.xs}}>Get notified of new bookings and messages</div>
+            </div>
+            <button onClick={()=>requestPushPermission().then(ok=>notify(ok?"Notifications enabled!":" Please allow notifications in your browser","success"))}
+              style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,padding:"7px 14px",color:C.text,fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>
+              Enable
+            </button>
+          </div>
+
           {/* ── Status ── */}
           <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:"20px",marginBottom:16}}>
             <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:14}}>{t('accountStatus')||"Account Status"}</div>
@@ -4912,6 +4986,9 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
       if(cancelled) return;
       if(error){ console.warn("Chat load error:", error.message); return; }
       if(!data?.length){ setLocalAdminMsgs([]); return; }
+      // Notify artist of new admin messages
+      const adminMsgCount = data.reduce((s,r)=>s+1,0);
+      if(adminMsgCount>0) notify(`${adminMsgCount} message${adminMsgCount>1?'s':''} from Awaz team`,'message');
 
       // Group all messages into one "conversation"
       const msgs = data.map(r=>({
@@ -5593,10 +5670,11 @@ function AppInner() {
   };
   const isRTL = isRTLLang(lang);
   const [users,setUsers]=useState(USERS);
+  const {show:notify}=useNotif();
   const [artists,setArtists]=useState(ARTISTS);
   const [bookings,setBookings]=useState(DEMO_BOOKINGS);
   const [inquiries,setInquiries]=useState(DEMO_INQUIRIES);
-  const handleNewInquiry=inq=>setInquiries(p=>[inq,...p]);
+  const handleNewInquiry=inq=>{setInquiries(p=>[inq,...p]);notify(`New inquiry from ${inq.name||'a visitor'}!`,'inquiry'); sendBrowserNotif('New Inquiry — Awaz',`${inq.name||'Someone'} sent a private inquiry`);};
   const handleUpdateInquiry=(id,updates)=>setInquiries(p=>p.map(i=>i.id===id?{...i,...updates}:i));
   const [session,setSession]=useState(null);
   const [appReady,setAppReady]=useState(!HAS_SUPA); // true immediately if no Supabase
@@ -5890,7 +5968,7 @@ function AppInner() {
     return ms&&mg;
   }),[approved,search,genreF]);
 
-  const login=u=>{setSession(u);setShowLogin(false);};
+  const login=u=>{setSession(u);setShowLogin(false);requestPushPermission();};
   const logout=async()=>{
     // Always clear local session first — prevents blank screen if signOut throws
     setSession(null);
@@ -5948,6 +6026,8 @@ function AppInner() {
   const handleUpdateArtist=(id,updates)=>{setArtists(p=>p.map(a=>a.id===id?{...a,...updates}:a));if(selArtist?.id===id)setSelArtist(p=>p?{...p,...updates}:p);};
   const handleNewBooking=async b=>{
     setBookings(p=>[...p,b]);
+    notify(`New booking from ${b.customerName||"a customer"}!`,'booking');
+    sendBrowserNotif('New Booking — Awaz',`${b.customerName||'A customer'} wants to book you!`);
     if(HAS_SUPA){
       try{
         const sb=await getSupabase();
@@ -5988,6 +6068,7 @@ function AppInner() {
     }
   };
   const handleMsg=(bid,m)=>{
+    notify('New message received','message');
     setBookings(p=>p.map(b=>{
       if(b.id!==bid)return b;
       const msgs=[...(b.messages||[]),m];
@@ -6131,51 +6212,19 @@ function AppInner() {
     <div key={lang} dir={isRTL?'rtl':'ltr'} translate="no" style={{background:C.bg,minHeight:"100vh",width:"100%",maxWidth:"100%",margin:0,padding:0,overflowX:"hidden",fontFamily:isRTL?"'Noto Naskh Arabic','DM Sans',sans-serif":"'DM Sans',sans-serif",color:C.text}}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;0,800;1,300;1,400;1,600&family=Noto+Naskh+Arabic:wght@400;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap');
-        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-        :root{margin:0;padding:0;}
+        html,body,#root{margin:0!important;padding:0!important;width:100%;max-width:100vw;overflow-x:hidden;background:${C.bg};box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
         *,*::before,*::after{box-sizing:border-box;}
-        html{margin:0;padding:0;background:${C.bg};}
-        html{margin:0!important;padding:0!important;background:${C.bg};}
-        body{margin:0!important;padding:0!important;background:${C.bg};-webkit-tap-highlight-color:transparent;}
-        #root{margin:0;padding:0;width:100%;background:${C.bg};}
-        html,body{
-          margin:0!important;padding:0!important;
-          width:100%;max-width:100%;
-          overflow-x:hidden;
-          background:${C.bg};
-          -webkit-text-size-adjust:100%;text-size-adjust:100%;
-          -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
-          text-rendering:optimizeLegibility;
-          scroll-behavior:smooth;
-        }
-        body{line-height:1.6;}
-        #root{width:100%;overflow-x:hidden;}
+        input,textarea,select,button{font-family:inherit;-webkit-appearance:none;}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+        @keyframes inquiryPulse{0%,100%{box-shadow:0 0 0 0 rgba(200,168,74,0.4)}70%{box-shadow:0 0 0 10px rgba(200,168,74,0)}}
+        @keyframes notifSlide{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
+        ::-webkit-scrollbar{width:4px;height:4px}
+        ::-webkit-scrollbar-track{background:transparent}
+        ::-webkit-scrollbar-thumb{background:${C.border};border-radius:4px}
         .notranslate{transform:translateZ(0);}
-        input,textarea,button,select{font-family:'DM Sans',sans-serif;-webkit-appearance:none;}
-        ::selection{background:rgba(200,168,74,0.25);color:#EDE4CE;}
-        ::-webkit-scrollbar{width:3px;height:3px;}
-        ::-webkit-scrollbar-track{background:${C.bg};}
-        ::-webkit-scrollbar-thumb{background:${C.border};border-radius:2px;}
-        @keyframes slideUp{from{transform:translateY(100%);opacity:0.6;}to{transform:translateY(0);opacity:1;}}
-        @keyframes spin{to{transform:rotate(360deg);}}
-        @keyframes up{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}
-        @keyframes inquiryPulse{0%,100%{box-shadow:0 8px 32px ${C.gold}55;}50%{box-shadow:0 8px 48px ${C.gold}99,0 0 0 8px ${C.gold}15;}}
-        @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
-        .u0{animation:up 0.6s cubic-bezier(.4,0,.2,1) both;}
-        .u1{animation:up 0.6s 0.1s cubic-bezier(.4,0,.2,1) both;}
-        .u2{animation:up 0.6s 0.2s cubic-bezier(.4,0,.2,1) both;}
-        .u3{animation:up 0.6s 0.3s cubic-bezier(.4,0,.2,1) both;}
-        img{max-width:100%;height:auto;}
-        button{cursor:pointer;}
-        @media(hover:hover){
-          button:not(:disabled):hover{opacity:0.85;}
-          a:hover{opacity:0.8;}
-        }
-        @media(max-width:767px){
-          *{-webkit-tap-highlight-color:transparent;}
-        }
-        p{line-height:1.8;}
-        :focus-visible{outline:2px solid ${C.gold};outline-offset:3px;border-radius:4px;}
+        input,textarea,select,button{outline:none;}
       `}</style>
 
       {/* ── Header ── */}
@@ -7079,10 +7128,10 @@ function ApplySheet({ onSubmit, onClose }) {
 }
 
 // ── Root export — wraps everything in ErrorBoundary ─────────────────
-export default function App() {
-  return (
-    <ErrorBoundary>
-      <AppInner />
-    </ErrorBoundary>
+export default function App(){
+  return(
+    <NotificationProvider>
+      <ErrorBoundary><AppInner/></ErrorBoundary>
+    </NotificationProvider>
   );
 }
