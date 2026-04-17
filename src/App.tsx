@@ -2654,7 +2654,7 @@ function ArtistCard({ artist, onClick, compact=false }) {
           <Stars rating={artist.rating} count={artist.reviews} size={13}/>
           <div style={{textAlign:"right"}}>
             <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:artist.color}}>{artist.priceInfo}</div>
-            <div style={{fontSize:T.xs,color:C.muted,marginTop:2}}>€{artist.deposit} {t('deposit')||"deposit"} · {t('paidInEUR')||"paid in EUR"}</div>
+            <div style={{fontSize:T.xs,color:C.muted,marginTop:2}}>€{artist.deposit} deposit · Stripe</div>
           </div>
         </div>
       </div>
@@ -3524,10 +3524,26 @@ function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction,
       {/* ── MESSAGES ── */}
       {tab==="messages"&&(
         <div>
-          <SectionHeader title="All Conversations"/>
-          {bookings.filter(b=>b.messages?.length>0).length===0?(
+          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:16}}>{t('messages2')||"Messages"}</div>
+
+          {/* Admin messages shown first */}
+          {myB.filter(b=>b.status==="admin_chat"&&b.messages?.length>0).map(b=>(
+            <div key={b.id} onClick={()=>setChat(b)}
+              style={{background:`linear-gradient(135deg,${C.goldS},${C.card})`,border:`1px solid ${C.gold}44`,borderRadius:12,padding:"14px 16px",marginBottom:12,cursor:"pointer",display:"flex",gap:12,alignItems:"center"}}>
+              <div style={{width:40,height:40,borderRadius:"50%",background:C.goldS,border:`2px solid ${C.gold}44`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>👑</div>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontWeight:700,color:C.gold,fontSize:T.sm,marginBottom:2}}>Message from Awaz Admin</div>
+                <div style={{color:C.muted,fontSize:T.xs,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
+                  {b.messages[b.messages.length-1]?.text||""}
+                </div>
+              </div>
+              <span style={{background:C.ruby,color:"#fff",borderRadius:10,fontSize:10,fontWeight:700,padding:"2px 7px",flexShrink:0}}>NEW</span>
+            </div>
+          ))}
+
+          {myB.filter(b=>b.status!=="admin_chat"&&b.messages?.length>0).length===0&&myB.filter(b=>b.status==="admin_chat").length===0?(
             <div style={{textAlign:"center",padding:"40px",background:C.card,borderRadius:12,border:`1px solid ${C.border}`,color:C.muted}}>No conversations yet</div>
-          ):bookings.filter(b=>b.messages?.length>0).map(b=>{
+          ):myB.filter(b=>b.status!=="admin_chat"&&b.messages?.length>0).map(b=>{
             const art=artists.find(a=>a.id===b.artistId);
             const last=b.messages[b.messages.length-1];
             return(
@@ -3933,8 +3949,8 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
             <div onClick={()=>setTab("bookings")} style={{display:"flex",alignItems:"center",gap:12,background:"rgba(168,44,56,0.08)",border:"1px solid rgba(168,44,56,0.3)",borderRadius:12,padding:"14px 16px",marginBottom:16,cursor:"pointer"}}>
               <span style={{fontSize:22}}>🔔</span>
               <div style={{flex:1}}>
-                <div style={{fontWeight:700,color:C.ruby,fontSize:T.sm}}>{pendingCount} ny booking{pendingCount>1?"s":""} venter på svar</div>
-                <div style={{color:C.muted,fontSize:T.xs,marginTop:2}}>Trykk for å godkjenne eller avvise →</div>
+                <div style={{fontWeight:700,color:C.ruby,fontSize:T.sm}}>{pendingCount} new booking{pendingCount>1?"s":""} awaiting your response</div>
+                <div style={{color:C.muted,fontSize:T.xs,marginTop:2}}>Tap to review →</div>
               </div>
             </div>
           )}
@@ -4048,13 +4064,13 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
                           <div style={{color:C.muted,fontSize:T.xs,marginTop:2}}>{b.customerEmail||""}</div>
                         </div>
                         <div style={{display:"flex",alignItems:"center",gap:8,flexShrink:0}}>
-                          <Badge color={sc}>{isPending?"VENTER":b.status.replace(/_/g," ").toUpperCase()}</Badge>
+                          <Badge color={sc}>{isPending?"PENDING":b.status.replace(/_/g," ").toUpperCase()}</Badge>
                           <span style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,color:C.gold,fontSize:T.md}}>€{b.deposit}</span>
                         </div>
                       </div>
                       {/* Details */}
                       <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:8,marginBottom:12}}>
-                        {[["📅 Dato",b.date],["🎉 Arrangement",b.event||b.eventType||"—"],["📍 Land",b.country||"—"],["💳 Depositum",b.depositPaid?"✓ Betalt":"✗ Venter"]].map(([l,v])=>(
+                        {[["📅 Date",b.date],["🎉 Event",b.event||b.eventType||"—"],["📍 Country",b.country||"—"],["💳 Deposit",b.depositPaid?"✓ Paid":"✗ Pending"]].map(([l,v])=>(
                           <div key={l} style={{background:C.surface,borderRadius:8,padding:"8px 10px"}}>
                             <div style={{fontSize:10,color:C.muted,fontWeight:700,letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:2}}>{l}</div>
                             <div style={{fontSize:T.xs,color:C.text}}>{v}</div>
@@ -4075,7 +4091,7 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
                                 onUpdateArtist&&onUpdateArtist(artist.id,{});
                               }}
                               style={{flex:1,background:C.emerald,color:"#fff",border:"none",borderRadius:10,padding:"10px 14px",fontSize:T.sm,fontWeight:700,cursor:"pointer",fontFamily:"inherit",minHeight:42}}>
-                              ✓ Godkjenn
+                              ✓ Confirm
                             </button>
                             <button
                               onClick={async()=>{
@@ -4086,7 +4102,7 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
                                 onUpdateArtist&&onUpdateArtist(artist.id,{});
                               }}
                               style={{flex:1,background:C.rubyS,color:C.ruby,border:`1px solid ${C.ruby}44`,borderRadius:10,padding:"10px 14px",fontSize:T.sm,fontWeight:700,cursor:"pointer",fontFamily:"inherit",minHeight:42}}>
-                              ✗ Avvis
+                              ✗ Decline
                             </button>
                           </>
                         )}
@@ -4100,7 +4116,7 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
                               onUpdateArtist&&onUpdateArtist(artist.id,{});
                             }}
                             style={{flex:1,background:"rgba(30,78,140,0.12)",color:C.lapis,border:`1px solid ${C.lapis}44`,borderRadius:10,padding:"10px 14px",fontSize:T.sm,fontWeight:700,cursor:"pointer",fontFamily:"inherit",minHeight:42}}>
-                            ✓ Merk som fullført
+                            ✓ Mark as Completed
                           </button>
                         )}
                         <button onClick={()=>setChat(b)} style={{width:42,height:42,borderRadius:10,background:C.surface,border:`1px solid ${C.border}`,fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
@@ -4143,7 +4159,10 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
 
       {tab==="settings"&&(
         <div>
-          <SectionHeader title={t('settings')||"Settings"} subtitle={t('manageAccount')||"Manage your account"}/>
+          <div style={{marginBottom:20}}>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text}}>{t('settings')||"Settings"}</div>
+            <div style={{color:C.muted,fontSize:T.sm,marginTop:4}}>Manage your account</div>
+          </div>
 
           {/* ── Quick links to edit profile ── */}
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:20}}>
@@ -4229,7 +4248,7 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
           )}
           {socialSaved&&(
             <div style={{background:C.emeraldS,border:`1px solid ${C.emerald}44`,borderRadius:10,padding:"12px 14px",color:C.emerald,fontSize:T.sm,fontFamily:"'DM Sans',sans-serif",display:"flex",gap:8,alignItems:"center"}}>
-              ✓ Saved! Your social profile is now live on your public page.
+              ✓ Saved! Social links are live on your public profile.
             </div>
           )}
 
@@ -4247,7 +4266,7 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
 
               {/* What Spotify can do */}
               <div style={{background:"rgba(29,185,84,0.06)",border:"1px solid rgba(29,185,84,0.14)",borderRadius:8,padding:"10px 12px",marginBottom:14,fontFamily:"'DM Sans',sans-serif",fontSize:T.sm,color:"#1DB954",lineHeight:1.7}}>
-                ✓ Limer du inn Spotify-lenken din hentes <strong>alt automatisk</strong> — bilde, biografi, topp-sanger og lyttere vises direkte på profilen din som en live widget.
+                ✓ Paste your Spotify link — your photo, bio, top tracks and monthly listeners appear <strong>automatically</strong> as a live widget on your profile.
               </div>
 
               <Inp
@@ -4259,9 +4278,10 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
                   setSocialF(f=>({...f,spotifyUrl:val}));
                   setSocialErr("");
                 }}
+                onBlur={()=>{ if(socialF.spotifyUrl) saveSocial(); }}
                 hint={previewSpotifyId
-                  ? `✓ ✓ Artist ID found: ${previewSpotifyId}`
-                  : "Copy the link from your Spotify profile and paste here"}
+                  ? `✓ Connected — ${previewSpotifyId}`
+                  : "Paste your Spotify artist link here — preview appears automatically"}
               />
 
               {/* Instruction */}
@@ -4755,11 +4775,24 @@ function CountryPricingTab({ artist, onUpdateArtist, vp }) {
   const [expanded,setExpanded]=useState(null); // which market card is expanded
 
   const update=(code,field,val)=>setPricing(p=>p.map(row=>row.code===code?{...row,[field]:val}:row));
-  const toggle=(code)=>setPricing(p=>p.map(row=>row.code===code?{...row,active:!row.active}:row));
+// toggle is now handled by toggleAndSave below
 
-  const save=()=>{
-    onUpdateArtist(artist.id,{countryPricing:pricing});
+  const save=async(pricingData=pricing)=>{
+    onUpdateArtist(artist.id,{countryPricing:pricingData});
     setSaved(true);setTimeout(()=>setSaved(false),3000);
+    // Persist to Supabase
+    if(typeof getSupabase==="function"){
+      try{
+        const sb=await getSupabase();
+        if(sb) await sb.from("artists").update({country_pricing:pricingData}).eq("id",artist.id);
+      }catch(e){console.warn("Market pricing save:",e);}
+    }
+  };
+
+  const toggleAndSave=(code)=>{
+    const newPricing=pricing.map(row=>row.code===code?{...row,active:!row.active}:row);
+    setPricing(newPricing);
+    save(newPricing); // auto-save immediately on toggle
   };
 
   const eurVal=(row)=>{
@@ -4777,7 +4810,7 @@ function CountryPricingTab({ artist, onUpdateArtist, vp }) {
       <div>
         <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:4}}>{t('marketPricing')}</div>
         <div style={{fontSize:T.sm,color:C.muted,lineHeight:1.7}}>
-          Set your fee per country. Customers see your local-currency price. Toggle markets on/off to control where you appear.
+          All prices are displayed in EUR (€) to customers. Toggle markets on/off to control where you appear. You keep 88% of every deposit.
         </div>
       </div>
 
@@ -5379,8 +5412,21 @@ function AppInner() {
         });
       }
 
-      // ── 4. Load bookings ──
+      // ── 4. Load bookings (excluding admin_chat which are separate) ──
       const{data:bookingRows}=await sb.from("bookings").select("*").neq("status","admin_chat");
+      // Also load admin chat messages for artists
+      const{data:adminChatRows}=await sb.from("bookings").select("*").eq("status","admin_chat");
+      if(adminChatRows?.length>0){
+        setBookings(prev=>{
+          const adminMapped=adminChatRows.map(b=>({
+            id:b.id,artistId:b.artist_id,customerName:"Awaz Admin",
+            customerEmail:"admin@awaz.no",date:"",event:"Admin Message",
+            deposit:0,status:"admin_chat",depositPaid:false,
+            chatUnlocked:true,messages:b.messages||[],country:"",
+          }));
+          return[...prev,...adminMapped];
+        });
+      }
       if(bookingRows?.length>0){
         setBookings(prev=>{
           const supaIds=new Set(bookingRows.map(b=>b.id));
@@ -5645,11 +5691,16 @@ function AppInner() {
 
 
   return(
-    <div key={lang} dir={isRTL?'rtl':'ltr'} translate="no" style={{background:C.bg,minHeight:"100vh",width:"100%",overflowX:"hidden",fontFamily:isRTL?"'Noto Naskh Arabic','DM Sans',sans-serif":"'DM Sans',sans-serif",color:C.text}}>
+    <div key={lang} dir={isRTL?'rtl':'ltr'} translate="no" style={{background:C.bg,minHeight:"100vh",width:"100%",maxWidth:"100%",margin:0,padding:0,overflowX:"hidden",fontFamily:isRTL?"'Noto Naskh Arabic','DM Sans',sans-serif":"'DM Sans',sans-serif",color:C.text}}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;0,800;1,300;1,400;1,600&family=Noto+Naskh+Arabic:wght@400;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap');
         *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
         :root{margin:0;padding:0;}
+        *,*::before,*::after{box-sizing:border-box;}
+        html{margin:0;padding:0;background:${C.bg};}
+        html{margin:0!important;padding:0!important;background:${C.bg};}
+        body{margin:0!important;padding:0!important;background:${C.bg};}
+        #root{margin:0;padding:0;width:100%;background:${C.bg};}
         html,body{
           margin:0!important;padding:0!important;
           width:100%;max-width:100%;
