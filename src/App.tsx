@@ -3538,26 +3538,12 @@ function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction,
       {/* ── MESSAGES ── */}
       {tab==="messages"&&(
         <div>
-          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:16}}>{t('messages2')||"Messages"}</div>
-
-          {/* Admin messages shown first */}
-          {[...localAdminMsgs,...myB.filter(b=>b.status==="admin_chat")].filter((b,i,arr)=>arr.findIndex(x=>x.id===b.id)===i&&b.messages?.length>0).map(b=>(
-            <div key={b.id} onClick={()=>setChat(b)}
-              style={{background:`linear-gradient(135deg,${C.goldS},${C.card})`,border:`1px solid ${C.gold}44`,borderRadius:12,padding:"14px 16px",marginBottom:12,cursor:"pointer",display:"flex",gap:12,alignItems:"center"}}>
-              <div style={{width:40,height:40,borderRadius:"50%",background:C.goldS,border:`2px solid ${C.gold}44`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>👑</div>
-              <div style={{flex:1,minWidth:0}}>
-                <div style={{fontWeight:700,color:C.gold,fontSize:T.sm,marginBottom:2}}>Message from Awaz Admin</div>
-                <div style={{color:C.muted,fontSize:T.xs,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
-                  {b.messages[b.messages.length-1]?.text||""}
-                </div>
-              </div>
-              <span style={{background:C.ruby,color:"#fff",borderRadius:10,fontSize:10,fontWeight:700,padding:"2px 7px",flexShrink:0}}>NEW</span>
+          <SectionHeader title={`All Conversations (${bookings.filter(b=>b.messages?.length>0&&b.status!=="admin_chat").length})`}/>
+          {bookings.filter(b=>b.messages?.length>0&&b.status!=="admin_chat").length===0?(
+            <div style={{textAlign:"center",padding:"40px",background:C.card,borderRadius:12,border:`1px solid ${C.border}`,color:C.muted}}>
+              No customer conversations yet
             </div>
-          ))}
-
-          {myB.filter(b=>b.status!=="admin_chat"&&b.messages?.length>0).length===0&&localAdminMsgs.length===0&&myB.filter(b=>b.status==="admin_chat").length===0?(
-            <div style={{textAlign:"center",padding:"40px",background:C.card,borderRadius:12,border:`1px solid ${C.border}`,color:C.muted}}>No conversations yet</div>
-          ):myB.filter(b=>b.status!=="admin_chat"&&b.messages?.length>0).map(b=>{
+          ):bookings.filter(b=>b.messages?.length>0&&b.status!=="admin_chat").map(b=>{
             const art=artists.find(a=>a.id===b.artistId);
             const last=b.messages[b.messages.length-1];
             return(
