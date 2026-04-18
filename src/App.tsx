@@ -2383,9 +2383,19 @@ function PhotoUpload({ photo, onPhoto, color, emoji, size=80, artistId="" }) {
       } catch(e) { /* fall through to base64 */ }
       setUploading(false);
     }
-    // Fallback: local base64
+    // Fallback: base64 — saved to artists.photo column in DB via onPhoto→onUpdateArtist
+    setUploading(true);
     const r = new FileReader();
-    r.onload = ev => onPhoto(ev.target.result);
+    r.onload = async ev => {
+      const b64 = ev.target.result as string;
+      onPhoto(b64); // triggers onUpdateArtist → saves to Supabase artists.photo
+      // Also directly persist to ensure it's saved
+      if(HAS_SUPA && artistId){
+        const sb = await getSupabase();
+        if(sb) await sb.from("artists").update({photo: b64}).eq("id", artistId);
+      }
+      setUploading(false);
+    };
     r.readAsDataURL(file);
   };
   return (
@@ -2554,169 +2564,169 @@ function Chat({ booking, artist, myRole, onClose, onSend }) {
 
 // ── Stripe checkout ───────────────────────────────────────────────────
 function StripeCheckout({ booking, artist, onSuccess, onClose }) {
-  const [card,setCard]=useState({number:"",expiry:"",cvc:"",name:""});
-  const [step,setStep]=useState("form");
-  const [err,setErr]=useState("");
-  const deposit=booking.deposit||1000;
-  const artistAmt=Math.round(deposit*0.88);
-  const awazAmt=deposit-artistAmt;
-  const fmt4=v=>v.replace(/\D/g,"").replace(/(.{4})/g,"$1 ").trim().slice(0,19);
-  const fmtEx=v=>{const n=v.replace(/\D/g,"");return n.length>=3?n.slice(0,2)+"/"+n.slice(2,4):n;};
-  const pay=()=>{
-    if(!card.name||card.number.replace(/\s/g,"").length<16||card.expiry.length<5||card.cvc.length<3){setErr("Please complete all fields.");return;}
-    setErr("");setStep("processing");setTimeout(()=>setStep("done"),2000);
+  const [loading,  setLoading]  = useState(false);
+  const [error,    setError]    = useState("");
+  const [clientSecret, setClientSecret] = useState("");
+  const [step,     setStep]     = useState<"init"|"pay"|"done">("init");
+
+  const deposit = booking.deposit || 1000;
+  const artistAmt = Math.round(deposit * 0.88);
+
+  // Step 1: Create PaymentIntent via Supabase Edge Function
+  const initPayment = async () => {
+    setLoading(true); setError("");
+    try {
+      const SUPA_URL = import.meta.env.VITE_SUPABASE_URL;
+      const SUPA_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+      const res = await fetch(`${SUPA_URL}/functions/v1/create-payment-intent`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${SUPA_KEY}`,
+          "apikey": SUPA_KEY,
+        },
+        body: JSON.stringify({
+          amount:              deposit,
+          artistStripeAccount: artist.stripeAccount || null,
+          bookingId:           booking.id,
+          customerEmail:       booking.customerEmail || "",
+          artistName:          artist.name,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || data.error) throw new Error(data.error || "Payment failed");
+
+      setClientSecret(data.clientSecret);
+      setStep("pay");
+
+      // Load Stripe.js dynamically
+      if (!document.querySelector("#stripe-js")) {
+        const script = document.createElement("script");
+        script.id = "stripe-js";
+        script.src = "https://js.stripe.com/v3/";
+        document.head.appendChild(script);
+      }
+    } catch (e:any) {
+      setError(e.message);
+    }
+    setLoading(false);
+  };
+
+  // Step 2: Confirm payment via Stripe.js
+  const confirmPayment = async () => {
+    setLoading(true); setError("");
+    try {
+      const stripeKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+      if (!stripeKey) throw new Error("Stripe not configured — add VITE_STRIPE_PUBLISHABLE_KEY to Vercel");
+
+      // @ts-ignore — Stripe loaded dynamically
+      const stripe = window.Stripe ? window.Stripe(stripeKey) : null;
+      if (!stripe) throw new Error("Stripe.js not loaded yet — please wait a moment and try again");
+
+      const { error: stripeError } = await stripe.confirmPayment({
+        clientSecret,
+        confirmParams: {
+          return_url: window.location.href,
+          payment_method_data: {
+            billing_details: { email: booking.customerEmail || "" },
+          },
+        },
+        redirect: "if_required",
+      });
+
+      if (stripeError) throw new Error(stripeError.message);
+
+      // Payment confirmed — webhook will update booking, but also update locally
+      setStep("done");
+      onSuccess();
+    } catch (e:any) {
+      setError(e.message);
+    }
+    setLoading(false);
   };
 
   return(
-    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.92)",zIndex:920,display:"flex",flexDirection:"column",justifyContent:"flex-end"}} onClick={onClose}>
-      <div style={{background:C.card,borderRadius:"20px 20px 0 0",maxHeight:"95vh",overflow:"auto",animation:"slideUp 0.28s cubic-bezier(0.32,0.72,0,1) both",boxShadow:"0 -20px 60px rgba(0,0,0,0.8)"}} onClick={e=>e.stopPropagation()}>
-        <div style={{display:"flex",justifyContent:"center",padding:"12px 0 4px"}}><div style={{width:40,height:4,borderRadius:2,background:C.borderM}}/></div>
-        <div style={{height:2,background:`linear-gradient(90deg,${artist.color}88,${C.gold}88,${artist.color}88)`}}/>
-        <div style={{padding:"0 20px 32px",paddingBottom:`max(32px,calc(env(safe-area-inset-bottom,0px) + 32px))`}}>
+    <div style={{position:"fixed",inset:0,zIndex:900,background:"rgba(0,0,0,0.7)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}
+      onClick={e=>e.target===e.currentTarget&&onClose()}>
+      <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:16,padding:"24px",maxWidth:440,width:"100%",animation:"fade 0.2s ease"}}>
 
-          {step==="processing"&&(
-            <div style={{textAlign:"center",padding:"48px 0"}}>
-              <div style={{width:48,height:48,border:`3px solid ${C.border}`,borderTopColor:C.gold,borderRadius:"50%",animation:"spin 0.8s linear infinite",margin:"0 auto 20px"}}/>
-              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,color:C.text,marginBottom:6}}>Processing…</div>
-              <div style={{color:C.muted,fontSize:T.sm}}>{t('securedByStripe')}</div>
+        {step==="done"?(
+          <div style={{textAlign:"center",padding:"20px 0"}}>
+            <div style={{fontSize:52,marginBottom:12}}>🎉</div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:700,color:C.text,marginBottom:8}}>Booking Confirmed!</div>
+            <div style={{color:C.muted,fontSize:T.sm,lineHeight:1.7,marginBottom:20}}>
+              Deposit of <strong style={{color:C.gold}}>€{deposit}</strong> secured.<br/>
+              {artist.name} has been notified and will be in touch.
             </div>
-          )}
-
-          {step==="done"&&(
-            <div style={{textAlign:"center",padding:"32px 0"}}>
-              <div style={{width:60,height:60,borderRadius:"50%",background:C.emeraldS,border:`2px solid ${C.emerald}`,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 18px",fontSize:26}}>✓</div>
-              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:8}}>{t('depositConfirmed2')}</div>
-              <div style={{color:C.muted,fontSize:T.sm,lineHeight:1.7,marginBottom:8}}>
-                <strong style={{color:C.gold}}>€{deposit}</strong> processed securely.
-              </div>
-              <div style={{background:C.surface,borderRadius:10,padding:"12px 16px",marginBottom:16,border:`1px solid ${C.border}`,textAlign:"left"}}>
-                <div style={{display:"flex",justifyContent:"space-between",fontSize:T.sm,marginBottom:5}}>
-                  <span style={{color:C.muted}}>→ {artist.name}</span>
-                  <span style={{color:C.emerald,fontWeight:700}}>€{artistAmt} (direct)</span>
-                </div>
-                <div style={{display:"flex",justifyContent:"space-between",fontSize:T.sm}}>
-                  <span style={{color:C.muted}}>→ Secured by Awaz</span>
-                  <span style={{color:C.lapis,fontWeight:700}}>€{awazAmt}</span>
-                </div>
-              </div>
-              <div style={{background:C.emeraldS,border:`1px solid ${C.emerald}44`,borderRadius:10,padding:"10px 14px",marginBottom:16,fontSize:T.sm,color:C.emerald}}>
-                💬 Chat with {artist.name} is now unlocked!
-              </div>
-              <Btn v="emerald" sz="lg" full onClick={()=>{onSuccess();onClose();}}>{t('continueToChat2')}</Btn>
-              <div style={{color:C.muted,fontSize:T.xs,marginTop:10}}>{t('balanceCashNote2')}</div>
+            <Btn full v="gold" onClick={onClose}>View Booking</Btn>
+          </div>
+        ):step==="pay"?(
+          <div>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
+              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text}}>Confirm Payment</div>
+              <button onClick={onClose} style={{background:"none",border:"none",color:C.muted,cursor:"pointer",fontSize:18}}>✕</button>
             </div>
-          )}
-
-          {step==="form"&&(
-            <>
-              <div style={{paddingTop:16,paddingBottom:14,borderBottom:`1px solid ${C.border}`,marginBottom:16,display:"flex",gap:12,alignItems:"center"}}>
-                {artist.photo?<img src={artist.photo} alt="" style={{width:44,height:44,borderRadius:8,objectFit:"cover",flexShrink:0}}/>:
-                  <div style={{width:44,height:44,borderRadius:8,background:`${artist.color}18`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}}>{artist.emoji}</div>}
-                <div style={{flex:1,minWidth:0}}>
-                  <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.md,fontWeight:700,color:C.text}}>{artist.name}</div>
-                  <div style={{color:artist.color,fontSize:T.xs}}>{booking.event} · {booking.date}</div>
-                </div>
+            <div style={{background:C.surface,borderRadius:10,padding:"14px 16px",marginBottom:20,border:`1px solid ${C.border}`}}>
+              <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
+                <span style={{color:C.muted,fontSize:T.sm}}>Artist</span>
+                <span style={{fontWeight:600,color:C.text,fontSize:T.sm}}>{artist.name}</span>
               </div>
-
-              <div style={{background:C.surface,borderRadius:10,padding:"14px",marginBottom:14,border:`1px solid ${C.border}`}}>
-                <div style={{display:"flex",justifyContent:"space-between",marginBottom:8}}>
-                  <span style={{color:C.muted,fontSize:T.sm}}>{t('depositStripe')}</span>
-                  <span style={{color:C.gold,fontWeight:800,fontSize:T.xl,fontFamily:"'Cormorant Garamond',serif"}}>€{deposit}</span>
-                </div>
-                <div style={{display:"flex",gap:8}}>
-                  <div style={{flex:1,background:C.emeraldS,borderRadius:6,padding:"7px 10px",textAlign:"center"}}>
-                    <div style={{color:C.emerald,fontWeight:700,fontSize:T.sm}}>€{artistAmt}</div>
-                    <div style={{color:C.muted,fontSize:T.xs,marginTop:1}}>Artist payment</div>
-                  </div>
-                  <div style={{flex:1,background:C.lapisS,borderRadius:6,padding:"7px 10px",textAlign:"center"}}>
-                    <div style={{color:C.lapis,fontWeight:700,fontSize:T.sm}}>€{awazAmt}</div>
-                    <div style={{color:C.muted,fontSize:T.xs,marginTop:1}}>Platform fee</div>
-                  </div>
-                </div>
+              <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
+                <span style={{color:C.muted,fontSize:T.sm}}>Event</span>
+                <span style={{fontWeight:600,color:C.text,fontSize:T.sm}}>{booking.eventType||booking.event||"—"}</span>
               </div>
-
-              <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}>
-                <div style={{flex:1,height:1,background:C.border}}/>
-                <div style={{background:"#635BFF",borderRadius:4,padding:"3px 10px",fontSize:T.xs,fontWeight:800,color:"#fff"}}>stripe</div>
-                <div style={{flex:1,height:1,background:C.border}}/>
+              <div style={{height:1,background:C.border,margin:"10px 0"}}/>
+              <div style={{display:"flex",justifyContent:"space-between"}}>
+                <span style={{fontWeight:700,color:C.text,fontSize:T.sm}}>Deposit to pay</span>
+                <span style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:800,color:C.gold,fontSize:T.lg}}>€{deposit}</span>
               </div>
-
-              <div style={{display:"flex",flexDirection:"column",gap:11,marginBottom:14}}>
-                <Inp label="Cardholder Name" placeholder="Full name on card" value={card.name} onChange={e=>setCard(c=>({...c,name:e.target.value}))}/>
-                <Inp label="Card Number" placeholder="4242 4242 4242 4242" value={card.number} onChange={e=>setCard(c=>({...c,number:fmt4(e.target.value)}))}/>
-                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:11}}>
-                  <Inp label="Expiry" placeholder="MM/YY" value={card.expiry} onChange={e=>setCard(c=>({...c,expiry:fmtEx(e.target.value)}))}/>
-                  <Inp label="CVC" placeholder="•••" value={card.cvc} onChange={e=>setCard(c=>({...c,cvc:e.target.value.replace(/\D/g,"").slice(0,4)}))}/>
-                </div>
+            </div>
+            {/* Stripe Elements placeholder */}
+            <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:10,padding:"16px",marginBottom:16,fontSize:T.sm,color:C.muted,textAlign:"center",lineHeight:1.7}}>
+              🔒 Stripe payment form loads here.<br/>
+              Add <code style={{background:C.card,padding:"1px 6px",borderRadius:4,color:C.text}}>VITE_STRIPE_PUBLISHABLE_KEY</code> to Vercel to activate.
+            </div>
+            {error&&<div style={{background:C.rubyS,borderRadius:8,padding:"10px 12px",color:C.ruby,fontSize:T.xs,marginBottom:12}}>⚠ {error}</div>}
+            <Btn full v="gold" sz="lg" loading={loading} onClick={confirmPayment}>
+              Pay €{deposit} Securely
+            </Btn>
+            <div style={{color:C.faint,fontSize:11,textAlign:"center",marginTop:8}}>🔒 SSL · Stripe PCI-L1 · 256-bit encryption</div>
+          </div>
+        ):(
+          /* INIT — show booking summary and start */
+          <div>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
+              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text}}>Secure Payment</div>
+              <button onClick={onClose} style={{background:"none",border:"none",color:C.muted,cursor:"pointer",fontSize:18}}>✕</button>
+            </div>
+            <div style={{background:C.goldS,border:`1px solid ${C.gold}44`,borderRadius:12,padding:"16px",marginBottom:20}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
+                <span style={{color:C.muted,fontSize:T.xs,textTransform:"uppercase",letterSpacing:"0.8px",fontWeight:700}}>Booking with</span>
+                <span style={{color:C.gold,fontWeight:700,fontSize:T.sm}}>{artist.name}</span>
               </div>
-
-              {err&&<div style={{background:C.rubyS,border:`1px solid ${C.ruby}28`,borderRadius:8,padding:"10px 13px",color:C.ruby,fontSize:T.xs,marginBottom:12}}>⚠ {err}</div>}
-
-              <button onClick={pay} style={{width:"100%",background:"linear-gradient(135deg,#635BFF,#7B72FF)",color:"#fff",border:"none",borderRadius:10,padding:16,fontSize:T.md,fontWeight:800,cursor:"pointer",fontFamily:"inherit",minHeight:52}}>
-                Pay €{deposit} deposit securely
-              </button>
-              <div style={{textAlign:"center",marginTop:10,color:C.muted,fontSize:T.xs}}>🔒 256-bit SSL · Stripe PCI L1 · Secured payment</div>
-            </>
-          )}
-        </div>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                <span style={{color:C.muted,fontSize:T.xs,textTransform:"uppercase",letterSpacing:"0.8px",fontWeight:700}}>Deposit</span>
+                <span style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:800,color:C.gold,fontSize:"1.5rem"}}>€{deposit}</span>
+              </div>
+              <div style={{color:C.muted,fontSize:T.xs,marginTop:8,lineHeight:1.6}}>
+                Artist receives <strong style={{color:C.emerald}}>€{artistAmt}</strong> (88%) · Balance paid in cash at event
+              </div>
+            </div>
+            {error&&<div style={{background:C.rubyS,borderRadius:8,padding:"10px 12px",color:C.ruby,fontSize:T.xs,marginBottom:12}}>⚠ {error}</div>}
+            <Btn full v="gold" sz="lg" loading={loading} onClick={initPayment}>
+              Proceed to Payment →
+            </Btn>
+            <div style={{color:C.faint,fontSize:11,textAlign:"center",marginTop:8}}>🔒 Powered by Stripe · No card details stored on Awaz</div>
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
-// ── Data ──────────────────────────────────────────────────────────────
-const POLICIES=[
-  {id:"flexible", label:"Flexible",  desc:"Full refund 7+ days before, 50% within 7 days"},
-  {id:"moderate", label:"Moderate",  desc:"Full refund 72h+ before, no refund after"},
-  {id:"strict",   label:"Strict",    desc:"50% refund 72h+ before, no refund after"},
-  {id:"no_refund",label:"No Refund", desc:"No refunds under any circumstances"},
-];
-// Admin emails — verified server-side via Supabase Auth (no passwords in code)
-const ADMIN_EMAILS=["shams.nn@outlook.com"];
-const ARTISTS=[
-  // Demo artists removed — all artists load from Supabase
-];
-// ── Global markets — diaspora-relevant countries with EUR conversion ──
-const MARKETS=[
-  // Nordic diaspora hub — top priority
-  {code:"NO",flag:"🇳🇴",name:"Norway",        currency:"NOK",sym:"kr",  toEur:0.087, pop:true},
-  {code:"SE",flag:"🇸🇪",name:"Sweden",        currency:"SEK",sym:"kr",  toEur:0.089, pop:true},
-  {code:"DK",flag:"🇩🇰",name:"Denmark",       currency:"DKK",sym:"kr",  toEur:0.134, pop:true},
-  {code:"FI",flag:"🇫🇮",name:"Finland",       currency:"EUR",sym:"€",   toEur:1,     pop:true},
-  // Western Europe
-  {code:"DE",flag:"🇩🇪",name:"Germany",       currency:"EUR",sym:"€",   toEur:1,     pop:true},
-  {code:"GB",flag:"🇬🇧",name:"United Kingdom",currency:"GBP",sym:"£",   toEur:1.17,  pop:true},
-  {code:"NL",flag:"🇳🇱",name:"Netherlands",   currency:"EUR",sym:"€",   toEur:1,     pop:true},
-  {code:"FR",flag:"🇫🇷",name:"France",        currency:"EUR",sym:"€",   toEur:1,     pop:true},
-  {code:"BE",flag:"🇧🇪",name:"Belgium",       currency:"EUR",sym:"€",   toEur:1,     pop:true},
-  {code:"CH",flag:"🇨🇭",name:"Switzerland",   currency:"CHF",sym:"Fr",  toEur:1.03,  pop:true},
-  {code:"AT",flag:"🇦🇹",name:"Austria",       currency:"EUR",sym:"€",   toEur:1,     pop:false},
-  {code:"IT",flag:"🇮🇹",name:"Italy",         currency:"EUR",sym:"€",   toEur:1,     pop:false},
-  {code:"ES",flag:"🇪🇸",name:"Spain",         currency:"EUR",sym:"€",   toEur:1,     pop:false},
-  {code:"PT",flag:"🇵🇹",name:"Portugal",      currency:"EUR",sym:"€",   toEur:1,     pop:false},
-  {code:"IE",flag:"🇮🇪",name:"Ireland",       currency:"EUR",sym:"€",   toEur:1,     pop:false},
-  // North America
-  {code:"US",flag:"🇺🇸",name:"USA",           currency:"USD",sym:"$",   toEur:0.92,  pop:true},
-  {code:"CA",flag:"🇨🇦",name:"Canada",        currency:"CAD",sym:"$",   toEur:0.68,  pop:true},
-  // Oceania
-  {code:"AU",flag:"🇦🇺",name:"Australia",     currency:"AUD",sym:"$",   toEur:0.61,  pop:true},
-  {code:"NZ",flag:"🇳🇿",name:"New Zealand",   currency:"NZD",sym:"$",   toEur:0.56,  pop:false},
-  // Middle East / Afghan diaspora
-  {code:"AE",flag:"🇦🇪",name:"UAE",           currency:"AED",sym:"د.إ", toEur:0.25,  pop:true},
-  {code:"QA",flag:"🇶🇦",name:"Qatar",         currency:"QAR",sym:"ر.ق", toEur:0.25,  pop:true},
-  {code:"KW",flag:"🇰🇼",name:"Kuwait",        currency:"KWD",sym:"د.ك", toEur:3.00,  pop:false},
-  {code:"SA",flag:"🇸🇦",name:"Saudi Arabia",  currency:"SAR",sym:"ر.س", toEur:0.24,  pop:false},
-  {code:"TR",flag:"🇹🇷",name:"Turkey",        currency:"TRY",sym:"₺",   toEur:0.028, pop:false},
-  {code:"IR",flag:"🇮🇷",name:"Iran",          currency:"USD",sym:"$",   toEur:0.92,  pop:false},
-  {code:"PK",flag:"🇵🇰",name:"Pakistan",      currency:"USD",sym:"$",   toEur:0.92,  pop:false},
-  {code:"AF",flag:"🇦🇫",name:"Afghanistan",   currency:"USD",sym:"$",   toEur:0.92,  pop:true},
-];
 
-// ── Demo inquiries (owner inbox) ──────────────────────────────────────
-const DEMO_INQUIRIES=[];
-const DEMO_BOOKINGS=[];
-
-// ── Reviews Section — only verified bookers can write ────────────────────────
 function ReviewsSection({artist, session, bookings, onNewBooking}:{artist:any;session:any;bookings:any[];onNewBooking?:any}){
   const [reviews,setReviews]=useState<any[]>([]);
   const [showForm,setShowForm]=useState(false);
@@ -3319,7 +3329,7 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
               </div>
             )}
             {tab==="reviews"&&(
-              <ReviewsSection artist={artist} session={session} bookings={bookings} onNewBooking={handleNewBooking}/>
+              <ReviewsSection artist={artist} session={session} bookings={bookings} onNewBooking={onBookingCreated}/>
             )}
             {tab==="social"&&(
               <div style={{paddingTop:4}}>
@@ -4575,6 +4585,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
   const [chat,setChat]=useState(null);
   const [localAdminMsgs,setLocalAdminMsgs]=useState([]);
   const [artistReplyMsg,setArtistReplyMsg]=useState("");
+  const [calSaved,setCalSaved]=useState(false);
   const [showStripeConnect,setShowStripeConnect]=useState(false);
   const [editing,setEditing]=useState(false);
   const [editF,setEditF]=useState({
@@ -4645,7 +4656,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
     }
   };
 
-  const saveSocial=()=>{
+  const saveSocial=async()=>{
     setSocialErr("");
     if(socialF.spotifyUrl){
       const testId=parseSpotifyArtistId(socialF.spotifyUrl);
@@ -4678,14 +4689,19 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
     setSocialSaved(true);
     setTimeout(()=>setSocialSaved(false),3500);
     if(HAS_SUPA){
-      getSupabase().then(sb=>{
-        if(sb) sb.from("artists").update({
-          spotify_data:newSpotify,
-          instagram_data:newInstagram,
-          youtube_data:newYoutube,
-          tiktok_data:newTiktok,
-        }).eq("id",artist.id);
-      });
+      try{
+        const sb=await getSupabase();
+        if(sb){
+          const{error}=await sb.from("artists").update({
+            spotify_data:newSpotify,
+            instagram_data:newInstagram,
+            youtube_data:newYoutube,
+            tiktok_data:newTiktok,
+          }).eq("id",artist.id);
+          if(error) console.warn("Social save error:",error.message);
+          else console.log("✅ Social saved to Supabase");
+        }
+      }catch(e){ console.warn("Social save failed:",e); }
     }
   };
 
@@ -4783,13 +4799,20 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
 
       {tab==="calendar"&&(
         <div>
-          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:4}}>{t('availabilityTitle')}</div>
-          <div style={{color:C.muted,fontSize:T.sm,marginBottom:16}}>{t('tapToToggle')}</div>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4,flexWrap:"wrap",gap:8}}>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text}}>{t('availabilityTitle')}</div>
+            {calSaved&&(
+              <div style={{background:C.emeraldS,color:C.emerald,border:`1px solid ${C.emerald}33`,borderRadius:8,padding:"5px 12px",fontSize:T.xs,fontWeight:700}}>
+                ✓ Saved
+              </div>
+            )}
+          </div>
+          <div style={{color:C.muted,fontSize:T.sm,marginBottom:16}}>Tap any date to toggle availability. Saves automatically.</div>
           <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:vp.isMobile?16:24}}>
-            <MiniCal artist={artist} editMode onToggle={(mo,yr,day)=>onToggleDay(artist.id,mo,yr,day)} bookings={bookings}/>
+            <MiniCal artist={artist} editMode onToggle={(mo,yr,day)=>{onToggleDay(artist.id,mo,yr,day);setCalSaved(true);setTimeout(()=>setCalSaved(false),2000);}} bookings={bookings}/>
           </div>
           <div style={{marginTop:12,background:artist.color+"10",border:`1px solid ${artist.color}28`,borderRadius:8,padding:"11px 13px",fontSize:T.xs,color:C.textD,lineHeight:1.6}}>
-            <strong style={{color:artist.color}}>Tip:</strong> Keep your calendar updated to attract more bookings.
+            <strong style={{color:artist.color}}>Tip:</strong> Mark dates as available so customers can book you.
           </div>
         </div>
       )}
@@ -5519,7 +5542,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
             <div style={{padding:vp.isMobile?16:24}}>
               <div style={{display:"flex",gap:14,alignItems:"flex-start",marginBottom:16}}>
                 <div>
-                  <PhotoUpload photo={artist.photo} onPhoto={p=>onUpdateArtist(artist.id,{photo:p})} color={artist.color} emoji={artist.emoji} size={vp.isMobile?72:88}/>
+                  <PhotoUpload photo={artist.photo} onPhoto={p=>onUpdateArtist(artist.id,{photo:p})} color={artist.color} emoji={artist.emoji} size={vp.isMobile?72:88} artistId={artist.id}/>
                   <div style={{textAlign:"center",marginTop:5,fontSize:T.xs,color:C.muted}}>{t('tapToChange')}</div>
                 </div>
                 <div style={{flex:1,minWidth:0}}>
@@ -5733,44 +5756,102 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
 
 // ── Stripe Connect Sheet ───────────────────────────────────────────────
 function StripeConnectSheet({ artist, onConnected, onClose }) {
-  const [iban,setIban]=useState(""),[loading,setLoading]=useState(false),[done,setDone]=useState(false);
-  const connect=()=>{
-    if(!iban.trim())return;
-    setLoading(true);
-    setTimeout(()=>{
-      onConnected({stripeConnected:true,stripeAccount:`acct_${artist.name.split(" ")[0].toLowerCase()}${Date.now().toString().slice(-5)}`});
-      setDone(true);setLoading(false);
-    },2000);
+  const [loading, setLoading] = useState(false);
+  const [done, setDone]       = useState(false);
+  const [error, setError]     = useState("");
+
+  const startConnect = async () => {
+    setLoading(true); setError("");
+    try {
+      // Call Supabase Edge Function to create Stripe Express account + onboarding link
+      const SUPA_URL = import.meta.env.VITE_SUPABASE_URL;
+      const SUPA_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+      const res = await fetch(`${SUPA_URL}/functions/v1/stripe-connect-onboard`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${SUPA_KEY}`,
+          "apikey": SUPA_KEY,
+        },
+        body: JSON.stringify({
+          artistId:    artist.id,
+          artistEmail: artist.email || "",
+          artistName:  artist.name,
+          returnUrl:   window.location.origin + "/?stripe=success",
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || data.error) throw new Error(data.error || "Connection failed");
+
+      // Save account ID immediately
+      onConnected({ stripeConnected: false, stripeAccount: data.accountId });
+
+      // Redirect to Stripe onboarding
+      window.location.href = data.url;
+    } catch (e:any) {
+      setError(e.message || "Failed to connect Stripe. Please try again.");
+      setLoading(false);
+    }
   };
+
+  // Handle return from Stripe onboarding
+  useState(()=>{
+    const params = new URLSearchParams(window.location.search);
+    if(params.get("stripe") === "success"){
+      onConnected({ stripeConnected: true, stripeAccount: artist.stripeAccount });
+      setDone(true);
+    }
+  });
+
   return(
     <Sheet open title="Connect Stripe Account" onClose={onClose}>
       <div style={{padding:"16px 20px 32px"}}>
         {done?(
           <div style={{textAlign:"center",padding:"20px 0"}}>
-            <div style={{width:52,height:52,borderRadius:"50%",background:C.emeraldS,border:`2px solid ${C.emerald}`,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 14px",fontSize:24}}>✓</div>
-            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:700,color:C.text,marginBottom:8}}>{t('connected')}</div>
-            <div style={{color:C.muted,fontSize:T.sm,lineHeight:1.7,marginBottom:16}}>{t('youllReceive')}<strong style={{color:C.gold}}>€{Math.round(artist.deposit*0.88)}</strong> from each deposit automatically.</div>
-            <Btn v="emerald" full sz="lg" onClick={onClose}>Done</Btn>
-          </div>
-        ):loading?(
-          <div style={{textAlign:"center",padding:"32px 0"}}>
-            <div style={{width:44,height:44,border:`3px solid ${C.border}`,borderTopColor:"#635BFF",borderRadius:"50%",animation:"spin 0.8s linear infinite",margin:"0 auto 16px"}}/>
-            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,color:C.text}}>{t('connectingStripe')}</div>
+            <div style={{fontSize:48,marginBottom:12}}>✅</div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:700,color:C.text,marginBottom:8}}>Stripe Connected!</div>
+            <div style={{color:C.muted,fontSize:T.sm,lineHeight:1.7,marginBottom:20}}>
+              You will receive <strong style={{color:C.gold}}>88%</strong> of every deposit automatically. Payments arrive weekly every Monday.
+            </div>
+            <Btn full v="gold" onClick={onClose}>Back to Dashboard</Btn>
           </div>
         ):(
           <>
-            <div style={{background:"#635BFF12",border:"1px solid #635BFF30",borderRadius:10,padding:"14px",marginBottom:16}}>
-              {["Client pays deposit via Stripe","Funds secured immediately","Artist receives payment after event"].map((t,i)=>(
-                <div key={i} style={{display:"flex",gap:8,marginBottom:6,fontSize:T.sm,color:C.textD}}><span style={{color:"#8B83FF",fontWeight:700}}>{i+1}.</span>{t}</div>
+            {/* What you get */}
+            <div style={{background:C.goldS,border:`1px solid ${C.gold}33`,borderRadius:12,padding:"16px",marginBottom:20}}>
+              <div style={{fontWeight:700,color:C.gold,fontSize:T.sm,marginBottom:10}}>💳 Stripe Express Account</div>
+              {[
+                "88% of every booking deposit paid directly to your bank",
+                "Weekly payouts every Monday",
+                "Instant notifications when money arrives",
+                "Free to set up — no monthly fees",
+              ].map(item=>(
+                <div key={item} style={{display:"flex",gap:8,alignItems:"flex-start",marginBottom:6}}>
+                  <span style={{color:C.gold,flexShrink:0,marginTop:1}}>✓</span>
+                  <span style={{color:C.textD,fontSize:T.sm}}>{item}</span>
+                </div>
               ))}
             </div>
-            <Inp label="Bank Account / IBAN *" placeholder="NO12 3456 7890 1234 5" value={iban} onChange={e=>setIban(e.target.value)} hint="Deposits transferred here automatically"/>
-            <div style={{height:16}}/>
-            <button onClick={connect} disabled={!iban.trim()}
-              style={{width:"100%",background:"linear-gradient(135deg,#635BFF,#7B72FF)",color:"#fff",border:"none",borderRadius:10,padding:16,fontSize:T.md,fontWeight:800,cursor:iban.trim()?"pointer":"not-allowed",opacity:iban.trim()?1:0.5,fontFamily:"inherit",minHeight:52}}>
-              Connect via Stripe →
-            </button>
-            <div style={{textAlign:"center",marginTop:10,color:C.muted,fontSize:T.xs}}>{t('stripeSecurity')}</div>
+
+            {/* How it works */}
+            <div style={{background:C.surface,borderRadius:10,padding:"14px",border:`1px solid ${C.border}`,marginBottom:20,fontSize:T.xs,color:C.muted,lineHeight:1.7}}>
+              <strong style={{color:C.text}}>How it works:</strong> You will be redirected to Stripe to enter your bank details securely. This takes about 5 minutes. Once done, you are ready to receive payments automatically.
+            </div>
+
+            {error&&(
+              <div style={{background:C.rubyS,border:`1px solid ${C.ruby}33`,borderRadius:8,padding:"10px 14px",color:C.ruby,fontSize:T.sm,marginBottom:16}}>
+                ⚠ {error}
+              </div>
+            )}
+
+            <Btn full v="gold" sz="lg" loading={loading} onClick={startConnect}>
+              {loading ? "Connecting…" : "Connect Stripe Account →"}
+            </Btn>
+            <div style={{color:C.faint,fontSize:11,textAlign:"center",marginTop:8}}>
+              🔒 Secure · Powered by Stripe · PCI-DSS compliant
+            </div>
           </>
         )}
       </div>
@@ -5778,21 +5859,6 @@ function StripeConnectSheet({ artist, onConnected, onClose }) {
   );
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
-// 🎵 SONG REQUEST WIDGET — Guest-facing mobile-first request flow
-// ══════════════════════════════════════════════════════════════════════════════
-// Progressive pricing: free → €10 → €20 (based on guest's request count)
-const SONG_PRICING = [
-  {requestNum:1, base:0,  label:"1st Song",  desc:"Your first request tonight is on us!", color:"#22C55E", icon:"🎵"},
-  {requestNum:2, base:10, label:"2nd Song",  desc:"Second request",                       color:"#C8A84A", icon:"🎶"},
-  {requestNum:3, base:20, label:"3rd Song+", desc:"Third song and beyond",                color:"#F59E0B", icon:"🎵"},
-];
-// Keep for backwards compat
-const PRIORITY_TIERS = [
-  {amount:0,  label:"Free",          desc:"1st song — free tonight!", color:"#22C55E", icon:"🎵"},
-  {amount:10, label:"€10",           desc:"2nd song",                 color:"#C8A84A", icon:"🎶"},
-  {amount:20, label:"€20",           desc:"3rd song+",                color:"#F59E0B", icon:"🎵"},
-];
 
 function SongRequestModal({artist, bookingId, onClose}:{artist:any;bookingId?:string;onClose:()=>void}){
   const {show:notify}=useNotif();
@@ -6248,6 +6314,505 @@ function ArtistQRPanel({artist}:{artist:any}){
           <div style={{color:"#4A4054",fontSize:11,lineHeight:1.7}}>
             💡 <strong style={{color:"#8A7D68"}}>How to use:</strong> Print the QR card and place it on tables at your event. Guests scan, choose a song, pick priority (€30–€100) and pay. You see requests live in your Requests tab.
           </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 🎤 ARTIST DEMO PAGE — Live showcase of the full artist experience
+// ══════════════════════════════════════════════════════════════════════════════
+function DemoPage({onBook, onApply, vp}:{onBook:()=>void;onApply:()=>void;vp:any}){
+  const [demoStep,setDemoStep]=useState<"intro"|"profile"|"booking"|"dashboard"|"songreq">("intro");
+  const [demoTab,setDemoTab]=useState("overview");
+  const [bookingDone,setBookingDone]=useState(false);
+  const [songDone,setSongDone]=useState(false);
+  const [songTitle,setSongTitle]=useState("");
+  const [guestName,setGuestName]=useState("");
+
+  const demoArtist={
+    id:"demo-001",
+    name:"Soraya Rahimi",
+    nameDari:"ثریا رحیمی",
+    genre:"Traditional · Ghazal · Fusion",
+    location:"Oslo, Norway",
+    emoji:"🎤",
+    color:"#A82C38",
+    photo:null,
+    bio:"Award-winning Afghan vocalist based in Oslo. Specialising in traditional Ghazal, folk songs and contemporary fusion. Performed across Europe at weddings, Eid celebrations and cultural galas. Trained under Ustad Mohammad Omar's tradition.",
+    deposit:1200,
+    priceInfo:"From €1,200",
+    rating:4.9,
+    reviews:47,
+    verified:true,
+    isBoosted:true,
+    tags:["Ghazal","Traditional","Wedding","Eid","Live Band"],
+    instruments:["Voice","Rubab","Harmonium"],
+    spotify:{profileUrl:"https://open.spotify.com/",monthlyListeners:"12,400",topTracks:["Leili Jan","Bya Ke Bya","Atan"]},
+    instagram:{handle:"soraya.music",followers:"8,200",profileUrl:"https://instagram.com/"},
+  };
+
+  const steps = [
+    {id:"intro",     label:"Overview",    icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>},
+    {id:"profile",   label:"Profile",     icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>},
+    {id:"booking",   label:"Booking",     icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>},
+    {id:"dashboard", label:"Dashboard",   icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>},
+    {id:"songreq",   label:"Song Requests",icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>},
+  ];
+
+  const S = {
+    card: {background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:14,padding:"20px"},
+    gold: "#C8A84A",
+    ruby: "#A82C38",
+    muted:"#8A7D68",
+    text: "#EDE4CE",
+    green:"#22C55E",
+  };
+
+  return(
+    <div style={{minHeight:"100vh",background:"#070608",color:"#EDE4CE",fontFamily:"'DM Sans',sans-serif",paddingTop:62,paddingBottom:80}}>
+      {/* Hero */}
+      <div style={{background:"linear-gradient(135deg,rgba(168,44,56,0.15),rgba(200,168,74,0.08))",borderBottom:"1px solid rgba(200,168,74,0.1)",padding:vp.isMobile?"32px 20px":"48px 0",textAlign:"center"}}>
+        <div style={{maxWidth:700,margin:"0 auto",padding:"0 24px"}}>
+          <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(200,168,74,0.1)",border:"1px solid rgba(200,168,74,0.25)",borderRadius:20,padding:"5px 14px",marginBottom:18}}>
+            <span style={{fontSize:12,fontWeight:700,color:S.gold,letterSpacing:"1px",textTransform:"uppercase"}}>✦ Live Demo</span>
+          </div>
+          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:vp.isMobile?"2.2rem":"3rem",fontWeight:700,lineHeight:1.2,marginBottom:14}}>
+            Experience Awaz as an Artist
+          </div>
+          <div style={{color:S.muted,fontSize:16,lineHeight:1.8,marginBottom:28,maxWidth:540,margin:"0 auto 28px"}}>
+            See exactly how artists use the platform — from profile to bookings, live song requests and earnings dashboard.
+          </div>
+          <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}>
+            <button onClick={onApply}
+              style={{background:`linear-gradient(135deg,${S.ruby},${S.ruby}cc)`,color:"#fff",border:"none",borderRadius:12,padding:"13px 28px",fontWeight:800,fontSize:15,cursor:"pointer",fontFamily:"inherit"}}>
+              Apply as Artist →
+            </button>
+            <button onClick={onBook}
+              style={{background:"rgba(255,255,255,0.05)",color:S.text,border:"1px solid rgba(255,255,255,0.1)",borderRadius:12,padding:"13px 28px",fontWeight:700,fontSize:15,cursor:"pointer",fontFamily:"inherit"}}>
+              Browse Artists
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div style={{maxWidth:920,margin:"0 auto",padding:vp.isMobile?"0 0 40px":"0 24px 60px"}}>
+        {/* Step tabs */}
+        <div style={{display:"flex",overflowX:"auto",gap:4,padding:"20px 20px 0",scrollbarWidth:"none"}}>
+          {steps.map((s,i)=>(
+            <button key={s.id} onClick={()=>setDemoStep(s.id as any)}
+              style={{display:"flex",alignItems:"center",gap:7,background:demoStep===s.id?"rgba(200,168,74,0.12)":"transparent",color:demoStep===s.id?S.gold:S.muted,border:`1px solid ${demoStep===s.id?"rgba(200,168,74,0.3)":"transparent"}`,borderRadius:10,padding:"9px 16px",cursor:"pointer",fontFamily:"inherit",fontSize:13,fontWeight:demoStep===s.id?700:500,whiteSpace:"nowrap",flexShrink:0}}>
+              {s.icon}{s.label}
+            </button>
+          ))}
+        </div>
+
+        <div style={{padding:"0 20px"}}>
+
+          {/* ── INTRO ── */}
+          {demoStep==="intro"&&(
+            <div style={{paddingTop:28}}>
+              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.6rem",fontWeight:700,marginBottom:6}}>Platform Overview</div>
+              <div style={{color:S.muted,fontSize:14,marginBottom:24}}>Everything an artist gets when they join Awaz</div>
+              <div style={{display:"grid",gridTemplateColumns:vp.isMobile?"1fr":"1fr 1fr",gap:12}}>
+                {[
+                  {icon:"🎤",title:"Professional Profile",desc:"Public-facing artist page with bio, instruments, social links, reviews and a booking calendar. Customers find you and book directly."},
+                  {icon:"💳",title:"Direct Bookings",desc:"Customers pay a deposit via Stripe. You receive 88% automatically. No invoicing, no chasing payments — it just works."},
+                  {icon:"💬",title:"Built-in Messaging",desc:"All communication happens on the platform after deposit payment. No WhatsApp, no email chains — clean and professional."},
+                  {icon:"🎵",title:"Live Song Requests",desc:"During your event, guests scan your QR code to request songs and tip. You see requests live and manage them from your phone."},
+                  {icon:"📊",title:"Earnings Dashboard",desc:"Real-time overview of bookings, pending deposits, completed events and total earnings. Full transparency at all times."},
+                  {icon:"⭐",title:"Verified Reviews",desc:"Only guests who actually booked you can leave reviews. Builds genuine credibility over time."},
+                  {icon:"🌍",title:"European Reach",desc:"Reach the Afghan diaspora across Norway, Sweden, Germany, UK, France and beyond — one platform for all of Europe."},
+                  {icon:"🔔",title:"Instant Notifications",desc:"Get notified the moment a booking comes in, a message arrives or a song is requested — browser push + in-app toasts."},
+                ].map(({icon,title,desc})=>(
+                  <div key={title} style={{...S.card,display:"flex",gap:14,alignItems:"flex-start"}}>
+                    <div style={{fontSize:28,flexShrink:0,marginTop:2}}>{icon}</div>
+                    <div>
+                      <div style={{fontWeight:700,color:S.text,fontSize:14,marginBottom:5}}>{title}</div>
+                      <div style={{color:S.muted,fontSize:13,lineHeight:1.7}}>{desc}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div style={{marginTop:24,textAlign:"center"}}>
+                <button onClick={()=>setDemoStep("profile")}
+                  style={{background:`linear-gradient(135deg,${S.gold},#E09F3E)`,color:"#0F0D16",border:"none",borderRadius:12,padding:"13px 32px",fontWeight:800,fontSize:15,cursor:"pointer",fontFamily:"inherit"}}>
+                  See Artist Profile Demo →
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ── PROFILE ── */}
+          {demoStep==="profile"&&(
+            <div style={{paddingTop:24}}>
+              <div style={{marginBottom:16,display:"flex",alignItems:"center",gap:8}}>
+                <div style={{flex:1}}>
+                  <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.5rem",fontWeight:700}}>Artist Profile Page</div>
+                  <div style={{color:S.muted,fontSize:13}}>This is what customers see when they find your profile</div>
+                </div>
+                <span style={{background:"rgba(200,168,74,0.1)",color:S.gold,border:"1px solid rgba(200,168,74,0.2)",borderRadius:8,padding:"4px 10px",fontSize:11,fontWeight:700}}>LIVE PREVIEW</span>
+              </div>
+              {/* Demo profile card */}
+              <div style={{background:"#0F0D16",border:"1px solid rgba(255,255,255,0.06)",borderRadius:16,overflow:"hidden"}}>
+                {/* Profile header */}
+                <div style={{background:"linear-gradient(135deg,rgba(168,44,56,0.2),rgba(200,168,74,0.05))",padding:vp.isMobile?"20px":"28px 32px",display:"flex",gap:20,alignItems:"flex-start",flexWrap:"wrap"}}>
+                  <div style={{width:80,height:80,borderRadius:14,background:"rgba(168,44,56,0.2)",border:"2px solid rgba(168,44,56,0.4)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:36,flexShrink:0}}>
+                    🎤
+                  </div>
+                  <div style={{flex:1,minWidth:200}}>
+                    <div style={{display:"flex",alignItems:"center",gap:10,flexWrap:"wrap",marginBottom:4}}>
+                      <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.8rem",fontWeight:700}}>{demoArtist.name}</div>
+                      <div style={{fontFamily:"'Noto Naskh Arabic',serif",color:S.muted,fontSize:16}}>{demoArtist.nameDari}</div>
+                    </div>
+                    <div style={{color:S.muted,fontSize:13,marginBottom:8}}>{demoArtist.genre} · {demoArtist.location}</div>
+                    <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:12}}>
+                      {demoArtist.tags.map(t=>(
+                        <span key={t} style={{background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:20,padding:"3px 10px",fontSize:11,color:S.muted}}>{t}</span>
+                      ))}
+                    </div>
+                    <div style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
+                      <div style={{display:"flex",gap:2}}>
+                        {"★★★★★".split("").map((s,i)=>(
+                          <span key={i} style={{color:S.gold,fontSize:14}}>{s}</span>
+                        ))}
+                        <span style={{color:S.muted,fontSize:12,marginLeft:6}}>{demoArtist.rating} ({demoArtist.reviews} reviews)</span>
+                      </div>
+                      <span style={{background:"rgba(34,197,94,0.1)",color:S.green,border:"1px solid rgba(34,197,94,0.2)",borderRadius:6,fontSize:11,fontWeight:700,padding:"2px 8px"}}>✓ VERIFIED</span>
+                      <span style={{background:"rgba(200,168,74,0.1)",color:S.gold,border:"1px solid rgba(200,168,74,0.2)",borderRadius:6,fontSize:11,fontWeight:700,padding:"2px 8px"}}>⭐ FEATURED</span>
+                    </div>
+                  </div>
+                  <div style={{textAlign:"right",flexShrink:0}}>
+                    <div style={{color:S.muted,fontSize:11,textTransform:"uppercase",letterSpacing:"0.8px",marginBottom:4}}>FROM</div>
+                    <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.6rem",fontWeight:800,color:S.ruby}}>{demoArtist.priceInfo}</div>
+                    <div style={{color:S.muted,fontSize:11,marginBottom:12}}>€{demoArtist.deposit} deposit · Balance cash</div>
+                    <button onClick={()=>setDemoStep("booking")}
+                      style={{background:`linear-gradient(135deg,${S.gold},#E09F3E)`,color:"#0F0D16",border:"none",borderRadius:10,padding:"11px 22px",fontWeight:800,fontSize:14,cursor:"pointer",fontFamily:"inherit",display:"block",width:"100%",marginBottom:8}}>
+                      Book Now
+                    </button>
+                    <button onClick={()=>setDemoStep("songreq")}
+                      style={{background:"rgba(255,255,255,0.04)",color:S.text,border:"1px solid rgba(255,255,255,0.08)",borderRadius:10,padding:"9px 22px",fontWeight:600,fontSize:13,cursor:"pointer",fontFamily:"inherit",display:"block",width:"100%"}}>
+                      🎵 Request a Song
+                    </button>
+                  </div>
+                </div>
+                {/* Bio + Social */}
+                <div style={{padding:vp.isMobile?"16px":"24px 32px",borderTop:"1px solid rgba(255,255,255,0.05)"}}>
+                  <div style={{marginBottom:16}}>
+                    <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.1rem",fontWeight:700,color:S.gold,marginBottom:8}}>About {demoArtist.name}</div>
+                    <div style={{color:"rgba(237,228,206,0.75)",fontSize:14,lineHeight:1.85}}>{demoArtist.bio}</div>
+                  </div>
+                  <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+                    {[["🎵 Spotify","12,400 monthly listeners"],["📸 Instagram","8,200 followers"]].map(([label,sub])=>(
+                      <div key={label} style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.06)",borderRadius:10,padding:"10px 14px",display:"flex",gap:8,alignItems:"center"}}>
+                        <div>
+                          <div style={{fontWeight:700,color:S.text,fontSize:13}}>{label}</div>
+                          <div style={{color:S.muted,fontSize:11}}>{sub}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <div style={{marginTop:16,textAlign:"center"}}>
+                <button onClick={()=>setDemoStep("booking")}
+                  style={{background:`linear-gradient(135deg,${S.gold},#E09F3E)`,color:"#0F0D16",border:"none",borderRadius:12,padding:"12px 28px",fontWeight:800,fontSize:14,cursor:"pointer",fontFamily:"inherit"}}>
+                  Try Booking Flow →
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ── BOOKING ── */}
+          {demoStep==="booking"&&(
+            <div style={{paddingTop:24}}>
+              <div style={{marginBottom:20}}>
+                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.5rem",fontWeight:700}}>Booking Flow</div>
+                <div style={{color:S.muted,fontSize:13}}>How customers book and pay a deposit</div>
+              </div>
+              {bookingDone?(
+                <div style={{textAlign:"center",padding:"48px 24px",...S.card}}>
+                  <div style={{fontSize:64,marginBottom:16}}>🎉</div>
+                  <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.8rem",fontWeight:700,marginBottom:8}}>Booking Confirmed!</div>
+                  <div style={{color:S.muted,fontSize:14,lineHeight:1.8,marginBottom:24}}>
+                    The artist receives a notification instantly.<br/>
+                    <strong style={{color:S.gold}}>€{demoArtist.deposit}</strong> deposit secured via Stripe.<br/>
+                    Artist gets <strong style={{color:S.green}}>€{Math.round(demoArtist.deposit*0.88)}</strong> (88%) — Awaz keeps €{Math.round(demoArtist.deposit*0.12)} (12%).
+                  </div>
+                  <div style={{display:"flex",gap:8,justifyContent:"center",flexWrap:"wrap"}}>
+                    <button onClick={()=>setDemoStep("dashboard")}
+                      style={{background:`linear-gradient(135deg,${S.gold},#E09F3E)`,color:"#0F0D16",border:"none",borderRadius:12,padding:"12px 24px",fontWeight:800,fontSize:14,cursor:"pointer",fontFamily:"inherit"}}>
+                      See Artist Dashboard →
+                    </button>
+                    <button onClick={()=>setBookingDone(false)}
+                      style={{background:"rgba(255,255,255,0.04)",color:S.text,border:"1px solid rgba(255,255,255,0.08)",borderRadius:12,padding:"12px 20px",fontWeight:600,fontSize:13,cursor:"pointer",fontFamily:"inherit"}}>
+                      Try Again
+                    </button>
+                  </div>
+                </div>
+              ):(
+                <div style={{...S.card,maxWidth:440}}>
+                  <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:20,paddingBottom:16,borderBottom:"1px solid rgba(255,255,255,0.06)"}}>
+                    <div style={{width:44,height:44,borderRadius:10,background:"rgba(168,44,56,0.2)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22}}>🎤</div>
+                    <div>
+                      <div style={{fontWeight:700,color:S.text,fontSize:14}}>{demoArtist.name}</div>
+                      <div style={{color:S.muted,fontSize:12}}>Deposit: €{demoArtist.deposit}</div>
+                    </div>
+                  </div>
+                  {[
+                    {label:"Your Name",     placeholder:"e.g. Ahmad Karimi",    type:"text"},
+                    {label:"Email",         placeholder:"you@email.com",         type:"email"},
+                    {label:"Event Type",    placeholder:"Wedding / Eid / Gala",  type:"text"},
+                    {label:"Event Date",    placeholder:"e.g. 15 June 2025",     type:"text"},
+                  ].map(({label,placeholder,type})=>(
+                    <div key={label} style={{marginBottom:14}}>
+                      <div style={{fontSize:11,fontWeight:700,color:S.muted,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:6}}>{label}</div>
+                      <input type={type} placeholder={placeholder}
+                        style={{width:"100%",background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:10,padding:"12px 14px",color:S.text,fontSize:14,fontFamily:"inherit",outline:"none",boxSizing:"border-box"}}/>
+                    </div>
+                  ))}
+                  <div style={{background:"rgba(200,168,74,0.06)",border:"1px solid rgba(200,168,74,0.15)",borderRadius:10,padding:"12px 14px",marginBottom:16,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                    <div style={{color:S.muted,fontSize:13}}>Deposit to pay now</div>
+                    <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.5rem",fontWeight:800,color:S.gold}}>€{demoArtist.deposit}</div>
+                  </div>
+                  <button onClick={()=>setBookingDone(true)}
+                    style={{width:"100%",background:`linear-gradient(135deg,${S.gold},#E09F3E)`,color:"#0F0D16",border:"none",borderRadius:12,padding:"14px",fontWeight:800,fontSize:15,cursor:"pointer",fontFamily:"inherit"}}>
+                    Pay Deposit · €{demoArtist.deposit} →
+                  </button>
+                  <div style={{color:"rgba(138,125,104,0.7)",fontSize:11,textAlign:"center",marginTop:8}}>🔒 Secured by Stripe · PCI compliant</div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── ARTIST DASHBOARD ── */}
+          {demoStep==="dashboard"&&(
+            <div style={{paddingTop:24}}>
+              <div style={{marginBottom:20}}>
+                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.5rem",fontWeight:700}}>Artist Dashboard</div>
+                <div style={{color:S.muted,fontSize:13}}>What {demoArtist.name} sees when she logs in</div>
+              </div>
+              {/* Mini nav */}
+              <div style={{display:"flex",gap:4,overflowX:"auto",marginBottom:16,scrollbarWidth:"none"}}>
+                {["overview","bookings","calendar","earnings"].map(tab=>(
+                  <button key={tab} onClick={()=>setDemoTab(tab)}
+                    style={{background:demoTab===tab?"rgba(200,168,74,0.12)":"rgba(255,255,255,0.02)",color:demoTab===tab?S.gold:S.muted,border:`1px solid ${demoTab===tab?"rgba(200,168,74,0.3)":"rgba(255,255,255,0.06)"}`,borderRadius:8,padding:"8px 14px",cursor:"pointer",fontFamily:"inherit",fontSize:12,fontWeight:600,whiteSpace:"nowrap",textTransform:"capitalize"}}>
+                    {tab}
+                  </button>
+                ))}
+              </div>
+
+              {demoTab==="overview"&&(
+                <div>
+                  <div style={{display:"grid",gridTemplateColumns:vp.isMobile?"1fr 1fr":"repeat(4,1fr)",gap:10,marginBottom:20}}>
+                    {[
+                      {label:"Total Earned",  val:"€8,580",   sub:"This year",       color:S.gold},
+                      {label:"Bookings",       val:"9",         sub:"Confirmed",       color:S.green},
+                      {label:"Pending",        val:"2",         sub:"New requests",    color:"#F59E0B"},
+                      {label:"Rating",         val:"4.9 ★",     sub:"47 reviews",      color:S.ruby},
+                    ].map(({label,val,sub,color})=>(
+                      <div key={label} style={{...S.card,textAlign:"center"}}>
+                        <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.6rem",fontWeight:800,color,marginBottom:2}}>{val}</div>
+                        <div style={{fontWeight:700,color:S.text,fontSize:12}}>{label}</div>
+                        <div style={{color:S.muted,fontSize:11,marginTop:1}}>{sub}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{...S.card,marginBottom:12}}>
+                    <div style={{color:S.gold,fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.8px",marginBottom:12}}>UPCOMING BOOKINGS</div>
+                    {[
+                      {name:"Karimi Family Wedding",date:"14 Jun 2025",deposit:1200,status:"confirmed"},
+                      {name:"Eid Gala — Oslo Kulturhus",date:"28 May 2025",deposit:1500,status:"pending"},
+                    ].map(b=>(
+                      <div key={b.name} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 0",borderBottom:"1px solid rgba(255,255,255,0.04)"}}>
+                        <div>
+                          <div style={{fontWeight:600,color:S.text,fontSize:13}}>{b.name}</div>
+                          <div style={{color:S.muted,fontSize:11,marginTop:1}}>📅 {b.date}</div>
+                        </div>
+                        <div style={{textAlign:"right"}}>
+                          <div style={{fontWeight:700,color:S.gold,fontSize:13}}>€{Math.round(b.deposit*0.88)}</div>
+                          <span style={{background:b.status==="confirmed"?"rgba(34,197,94,0.1)":"rgba(245,158,11,0.1)",color:b.status==="confirmed"?S.green:"#F59E0B",fontSize:10,fontWeight:700,borderRadius:4,padding:"2px 6px"}}>{b.status.toUpperCase()}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <button onClick={()=>setDemoStep("songreq")}
+                    style={{background:`linear-gradient(135deg,${S.gold},#E09F3E)`,color:"#0F0D16",border:"none",borderRadius:12,padding:"12px 24px",fontWeight:800,fontSize:14,cursor:"pointer",fontFamily:"inherit",width:"100%"}}>
+                    See Song Requests →
+                  </button>
+                </div>
+              )}
+
+              {demoTab==="bookings"&&(
+                <div style={{...S.card}}>
+                  <div style={{color:S.gold,fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.8px",marginBottom:14}}>ALL BOOKINGS</div>
+                  {[
+                    {name:"Rahimi Wedding",      date:"14 Jun",price:1056,status:"confirmed"},
+                    {name:"Eid Gala Oslo",        date:"28 May",price:1320,status:"pending"},
+                    {name:"Ahmadi 50th Birthday", date:"3 Apr", price:880, status:"completed"},
+                    {name:"Cultural Night — Berlin",date:"15 Mar",price:1760,status:"completed"},
+                  ].map(b=>(
+                    <div key={b.name} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 0",borderBottom:"1px solid rgba(255,255,255,0.04)"}}>
+                      <div>
+                        <div style={{fontWeight:600,color:S.text,fontSize:13}}>{b.name}</div>
+                        <div style={{color:S.muted,fontSize:11,marginTop:2}}>📅 {b.date} 2025</div>
+                      </div>
+                      <div style={{textAlign:"right"}}>
+                        <div style={{fontWeight:700,color:S.gold,fontSize:13}}>€{b.price}</div>
+                        <span style={{fontSize:10,fontWeight:700,borderRadius:4,padding:"2px 6px",background:b.status==="completed"?"rgba(34,197,94,0.1)":b.status==="confirmed"?"rgba(200,168,74,0.1)":"rgba(245,158,11,0.1)",color:b.status==="completed"?S.green:b.status==="confirmed"?S.gold:"#F59E0B"}}>{b.status.toUpperCase()}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {demoTab==="calendar"&&(
+                <div style={{...S.card}}>
+                  <div style={{color:S.gold,fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.8px",marginBottom:14}}>AVAILABILITY — MAY 2025</div>
+                  <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:4,marginBottom:12}}>
+                    {["M","T","W","T","F","S","S"].map((d,i)=>(
+                      <div key={i} style={{textAlign:"center",color:S.muted,fontSize:11,fontWeight:700,paddingBottom:6}}>{d}</div>
+                    ))}
+                    {Array.from({length:31},(_,i)=>i+1).map(d=>{
+                      const booked=[14,28].includes(d);
+                      const available=[10,11,12,15,16,17,18,20,21,22].includes(d);
+                      return(
+                        <div key={d} style={{textAlign:"center",padding:"6px 2px",borderRadius:6,fontSize:12,fontWeight:600,background:booked?"rgba(168,44,56,0.2)":available?"rgba(34,197,94,0.1)":"transparent",color:booked?S.ruby:available?S.green:S.muted,border:`1px solid ${booked?"rgba(168,44,56,0.3)":available?"rgba(34,197,94,0.2)":"transparent"}`}}>
+                          {d}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div style={{display:"flex",gap:16,fontSize:11,color:S.muted}}>
+                    <span style={{color:S.green}}>■ Available</span>
+                    <span style={{color:S.ruby}}>■ Booked</span>
+                  </div>
+                </div>
+              )}
+
+              {demoTab==="earnings"&&(
+                <div>
+                  <div style={{...S.card,marginBottom:12}}>
+                    <div style={{color:S.gold,fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.8px",marginBottom:14}}>2025 EARNINGS</div>
+                    {[["January","€880"],["February","€1,056"],["March","€1,760"],["April","€880"],["May","€2,376 (est.)"]].map(([m,v])=>(
+                      <div key={m} style={{display:"flex",justifyContent:"space-between",padding:"9px 0",borderBottom:"1px solid rgba(255,255,255,0.04)"}}>
+                        <span style={{color:S.muted,fontSize:13}}>{m}</span>
+                        <span style={{fontWeight:700,color:S.gold,fontSize:13}}>{v}</span>
+                      </div>
+                    ))}
+                    <div style={{display:"flex",justifyContent:"space-between",padding:"12px 0",borderTop:"1px solid rgba(200,168,74,0.2)",marginTop:4}}>
+                      <span style={{fontWeight:700,color:S.text,fontSize:14}}>Total 2025</span>
+                      <span style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:800,color:S.gold,fontSize:"1.4rem"}}>€8,952</span>
+                    </div>
+                  </div>
+                  <div style={{background:"rgba(34,197,94,0.05)",border:"1px solid rgba(34,197,94,0.15)",borderRadius:12,padding:"14px 16px",fontSize:13,color:S.muted,lineHeight:1.7}}>
+                    💡 <strong style={{color:S.text}}>88% split:</strong> For every €1,000 deposit, you receive <strong style={{color:S.green}}>€880</strong> directly to your Stripe account. Awaz keeps €120 (12%) as platform fee.
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── SONG REQUESTS ── */}
+          {demoStep==="songreq"&&(
+            <div style={{paddingTop:24}}>
+              <div style={{marginBottom:20}}>
+                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.5rem",fontWeight:700}}>Song Request System</div>
+                <div style={{color:S.muted,fontSize:13}}>Guests scan your QR code at events — you see requests live</div>
+              </div>
+              <div style={{display:"grid",gridTemplateColumns:vp.isMobile?"1fr":"1fr 1fr",gap:16}}>
+                {/* Guest side */}
+                <div>
+                  <div style={{color:S.gold,fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.8px",marginBottom:12}}>GUEST EXPERIENCE</div>
+                  {!songDone?(
+                    <div style={{...S.card}}>
+                      <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.2rem",fontWeight:700,marginBottom:4}}>Request a Song</div>
+                      <div style={{color:S.muted,fontSize:12,marginBottom:16}}>from {demoArtist.name} · 1st song free</div>
+                      <div style={{marginBottom:12}}>
+                        <div style={{fontSize:11,fontWeight:700,color:S.muted,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:6}}>Song Title *</div>
+                        <input value={songTitle} onChange={e=>setSongTitle(e.target.value)}
+                          placeholder="e.g. Leili Jan, Bya Ke Bya…"
+                          style={{width:"100%",background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:10,padding:"11px 14px",color:S.text,fontSize:14,fontFamily:"inherit",outline:"none",boxSizing:"border-box"}}/>
+                      </div>
+                      <div style={{marginBottom:16}}>
+                        <div style={{fontSize:11,fontWeight:700,color:S.muted,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:6}}>Your Name *</div>
+                        <input value={guestName} onChange={e=>setGuestName(e.target.value)}
+                          placeholder="e.g. Layla, Ahmad…"
+                          style={{width:"100%",background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:10,padding:"11px 14px",color:S.text,fontSize:14,fontFamily:"inherit",outline:"none",boxSizing:"border-box"}}/>
+                      </div>
+                      <div style={{background:"rgba(34,197,94,0.06)",border:"1px solid rgba(34,197,94,0.15)",borderRadius:10,padding:"10px 12px",marginBottom:14,fontSize:12,color:S.green,fontWeight:700}}>
+                        🎵 1st song tonight is FREE!
+                      </div>
+                      <button onClick={()=>{ if(songTitle&&guestName) setSongDone(true); }}
+                        disabled={!songTitle||!guestName}
+                        style={{width:"100%",background:songTitle&&guestName?`linear-gradient(135deg,${S.gold},#E09F3E)`:"rgba(255,255,255,0.04)",color:songTitle&&guestName?"#0F0D16":S.muted,border:"none",borderRadius:10,padding:"12px",fontWeight:800,fontSize:14,cursor:songTitle&&guestName?"pointer":"not-allowed",fontFamily:"inherit"}}>
+                        Send Free Request →
+                      </button>
+                    </div>
+                  ):(
+                    <div style={{...S.card,textAlign:"center",padding:"32px 20px"}}>
+                      <div style={{fontSize:48,marginBottom:12}}>🎶</div>
+                      <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.4rem",fontWeight:700,marginBottom:6}}>Sent!</div>
+                      <div style={{color:S.muted,fontSize:13,lineHeight:1.7}}>
+                        <strong style={{color:S.gold}}>"{songTitle}"</strong> sent to {demoArtist.name}
+                      </div>
+                      <button onClick={()=>{setSongDone(false);setSongTitle("");setGuestName("");}}
+                        style={{marginTop:16,background:"rgba(255,255,255,0.05)",color:S.muted,border:"1px solid rgba(255,255,255,0.08)",borderRadius:10,padding:"9px 20px",fontSize:12,cursor:"pointer",fontFamily:"inherit"}}>
+                        Try Again
+                      </button>
+                    </div>
+                  )}
+                </div>
+                {/* Artist side */}
+                <div>
+                  <div style={{color:S.gold,fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.8px",marginBottom:12}}>ARTIST VIEW — LIVE REQUESTS</div>
+                  <div style={{...S.card}}>
+                    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:14}}>
+                      {[{label:"Pending",val:songDone?"2":"1",color:"#F59E0B"},{label:"Earned",val:"€30",color:S.gold}].map(({label,val,color})=>(
+                        <div key={label} style={{background:"rgba(255,255,255,0.02)",borderRadius:8,padding:"10px",textAlign:"center"}}>
+                          <div style={{fontWeight:800,color,fontSize:"1.3rem"}}>{val}</div>
+                          <div style={{color:S.muted,fontSize:10,textTransform:"uppercase",letterSpacing:"0.5px"}}>{label}</div>
+                        </div>
+                      ))}
+                    </div>
+                    {[
+                      {song:"Leili Jan",guest:"Ahmad",amount:0,priority:"FREE",color:S.green,status:"pending"},
+                      {song:"Bya Ke Bya",guest:"Noor",amount:50,priority:"⚡ HIGH",color:"#F59E0B",status:"pending"},
+                      ...(songDone?[{song:songTitle,guest:guestName,amount:0,priority:"FREE",color:S.green,status:"new"}]:[]),
+                    ].map((r,i)=>(
+                      <div key={i} style={{borderLeft:`3px solid ${r.color}`,borderRadius:8,padding:"10px 12px",background:"rgba(255,255,255,0.02)",marginBottom:8}}>
+                        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:6}}>
+                          <div>
+                            <div style={{fontWeight:700,color:S.text,fontSize:13}}>{r.song}</div>
+                            <div style={{color:S.muted,fontSize:11}}>👤 {r.guest}</div>
+                          </div>
+                          <div style={{textAlign:"right"}}>
+                            <div style={{fontWeight:700,color:r.color,fontSize:12}}>{r.priority}</div>
+                            {r.amount>0&&<div style={{color:S.muted,fontSize:10}}>€{r.amount}</div>}
+                          </div>
+                        </div>
+                        <div style={{display:"flex",gap:6}}>
+                          <button style={{flex:1,background:"rgba(34,197,94,0.1)",color:S.green,border:"1px solid rgba(34,197,94,0.2)",borderRadius:6,padding:"5px",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>✓ Accept</button>
+                          <button style={{flex:1,background:"rgba(168,44,56,0.08)",color:S.ruby,border:"1px solid rgba(168,44,56,0.15)",borderRadius:6,padding:"5px",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>✗ Skip</button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              {/* CTA */}
+              <div style={{marginTop:24,background:"linear-gradient(135deg,rgba(168,44,56,0.1),rgba(200,168,74,0.05))",border:"1px solid rgba(200,168,74,0.15)",borderRadius:16,padding:"24px",textAlign:"center"}}>
+                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.5rem",fontWeight:700,marginBottom:8}}>Ready to Join Awaz?</div>
+                <div style={{color:S.muted,fontSize:14,marginBottom:20,lineHeight:1.7}}>Start receiving bookings from the Afghan diaspora across Europe.<br/>Free to apply — no subscription, no upfront cost.</div>
+                <button onClick={onApply}
+                  style={{background:`linear-gradient(135deg,${S.ruby},${S.ruby}cc)`,color:"#fff",border:"none",borderRadius:12,padding:"14px 36px",fontWeight:800,fontSize:15,cursor:"pointer",fontFamily:"inherit"}}>
+                  Apply as Artist — It's Free →
+                </button>
+              </div>
+            </div>
+          )}
+
         </div>
       </div>
     </div>
@@ -7458,7 +8023,7 @@ function AppInner() {
 
         {vp.isDesktop&&(
           <nav style={{display:"flex",gap:2,alignItems:"center"}}>
-            {[[t('browseArtists'),"browse"],[t('howItWorks'),"how"],[t('pricing'),"pricing"]].map(([l,v])=>(
+            {[[t('browseArtists'),"browse"],[t('howItWorks'),"how"],[t('pricing'),"pricing"],["✦ Artist Demo","demo"]].map(([l,v])=>(
               <button key={v} onClick={()=>nav(v)} style={{background:"transparent",border:"none",color:view===v?C.gold:C.muted,cursor:"pointer",fontFamily:"inherit",fontSize:T.sm,fontWeight:500,padding:"6px 13px",borderRadius:6,minHeight:44,WebkitTapHighlightColor:"transparent"}}>
                 {l}
               </button>
@@ -7664,7 +8229,7 @@ function AppInner() {
                   <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:14,fontWeight:700,color:C.text}}>Awaz — Afghan Artist Booking</div>
                 </div>
                 <div style={{display:"flex",gap:18}}>
-                  {[[t('footerBrowse'),()=>nav("browse")],[t('footerApply'),()=>setShowApply(true)],[t('howItWorks'),()=>nav("how")],["Pricing",()=>nav("pricing")]].map(([l,fn])=>(
+                  {[[t('footerBrowse'),()=>nav("browse")],[t('footerApply'),()=>setShowApply(true)],[t('howItWorks'),()=>nav("how")],["Pricing",()=>nav("pricing")],["Artist Demo",()=>nav("demo")]].map(([l,fn])=>(
                     <button key={l} onClick={fn} style={{color:C.muted,fontSize:T.xs,cursor:"pointer",background:"none",border:"none",fontFamily:"inherit",padding:0,minHeight:36}}>{l}</button>
                   ))}
                 </div>
@@ -7758,6 +8323,10 @@ function AppInner() {
       )}
 
       {/* ── HOW IT WORKS ── */}
+      {view==="demo"&&(
+        <DemoPage onBook={()=>nav("browse")} onApply={()=>setShowApply(true)} vp={vp}/>
+      )}
+
       {view==="how"&&(()=>{
         // ── Step data — rewritten for clarity, trust, conversion ────────
         const steps=[
