@@ -467,6 +467,49 @@ const TRANSLATIONS = {
       artistProfileNotFound:"Artist Profile Not Found",
     noStripe:"No Stripe",
     recentBookingsLabel:"Recent Bookings",
+    demoLiveDemo:"✦ Live Demo",
+    demoHeroTitle:"Experience Awaz as an Artist",
+    demoHeroSub:"See exactly how artists use the platform — from profile to bookings, live song requests and earnings dashboard.",
+    demoApplyBtn:"Apply as Artist →",
+    demoBrowseBtn:"Browse Artists",
+    demoOverviewTab:"Overview",
+    demoProfileTab:"Profile",
+    demoBookingTab:"Booking",
+    demoDashboardTab:"Dashboard",
+    demoSongTab:"Song Requests",
+    demoPlatformOverview:"Platform Overview",
+    demoPlatformSub:"Everything an artist gets when they join Awaz",
+    demoSeeDemoProfile:"See Artist Profile Demo →",
+    demoProfileTitle:"Artist Profile Page",
+    demoProfileSub:"This is what customers see when they find your profile",
+    demoLivePreview:"LIVE PREVIEW",
+    demoBookingTitle:"Booking Flow",
+    demoBookingSub:"How customers book and pay a deposit",
+    demoDepositNow:"Deposit to pay now",
+    demoPayBtn:"Pay Deposit →",
+    demoConfirmed:"Booking Confirmed!",
+    demoDashTitle:"Artist Dashboard",
+    demoDashSub:"What the artist sees when they log in",
+    demoUpcoming:"UPCOMING BOOKINGS",
+    demoAllBookings:"ALL BOOKINGS",
+    demoCalTitle:"AVAILABILITY",
+    demoAvailable:"Available",
+    demoBooked:"Booked",
+    demoEarnings2025:"2025 EARNINGS",
+    demoTotal2025:"Total 2025",
+    demoSongTitle:"Song Request System",
+    demoSongSub:"Guests scan your QR code at events — you see requests live",
+    demoGuestSide:"GUEST EXPERIENCE",
+    demoArtistSide:"ARTIST VIEW — LIVE REQUESTS",
+    demoRequestSong:"Request a Song",
+    demoSongTitleField:"Song Title *",
+    demoYourName:"Your Name *",
+    demoFreeRequest:"1st song tonight is FREE! 🎵",
+    demoSendFree:"Send Free Request →",
+    demoSentTitle:"Sent!",
+    demoJoinTitle:"Ready to Join Awaz?",
+    demoJoinSub:"Start receiving bookings from the Afghan diaspora across Europe. Free to apply — no subscription, no upfront cost.",
+    demoJoinBtn:"Apply as Artist — It's Free →",
   },
 
   no: {
@@ -707,6 +750,49 @@ const TRANSLATIONS = {
     artistProfileNotFound:"Artistprofil ikke funnet",
     noStripe:"Ingen Stripe",
     recentBookingsLabel:"Siste bookinger",
+    demoLiveDemo:"✦ Live Demo",
+    demoHeroTitle:"Opplev Awaz som artist",
+    demoHeroSub:"Se nøyaktig hvordan artister bruker plattformen — fra profil til bookinger, live sangønsker og inntektsdashboard.",
+    demoApplyBtn:"Søk som artist →",
+    demoBrowseBtn:"Bla gjennom artister",
+    demoOverviewTab:"Oversikt",
+    demoProfileTab:"Profil",
+    demoBookingTab:"Booking",
+    demoDashboardTab:"Dashboard",
+    demoSongTab:"Sangønsker",
+    demoPlatformOverview:"Plattformoversikt",
+    demoPlatformSub:"Alt en artist får når de blir med i Awaz",
+    demoSeeDemoProfile:"Se artist-profil demo →",
+    demoProfileTitle:"Artistprofilside",
+    demoProfileSub:"Dette ser kunder når de finner profilen din",
+    demoLivePreview:"LIVE FORHÅNDSVISNING",
+    demoBookingTitle:"Bookingflyt",
+    demoBookingSub:"Hvordan kunder booker og betaler depositum",
+    demoDepositNow:"Depositum å betale nå",
+    demoPayBtn:"Betal depositum →",
+    demoConfirmed:"Booking bekreftet!",
+    demoDashTitle:"Artistdashboard",
+    demoDashSub:"Hva artisten ser når de logger inn",
+    demoUpcoming:"KOMMENDE BOOKINGER",
+    demoAllBookings:"ALLE BOOKINGER",
+    demoCalTitle:"TILGJENGELIGHET",
+    demoAvailable:"Ledig",
+    demoBooked:"Booket",
+    demoEarnings2025:"INNTEKTER 2025",
+    demoTotal2025:"Total 2025",
+    demoSongTitle:"Sangønskesystem",
+    demoSongSub:"Gjester skanner QR-koden din på arrangementer — du ser ønsker live",
+    demoGuestSide:"GJESTENS OPPLEVELSE",
+    demoArtistSide:"ARTISTVISNING — LIVE FORESPØRSLER",
+    demoRequestSong:"Be om en sang",
+    demoSongTitleField:"Sangtittel *",
+    demoYourName:"Ditt navn *",
+    demoFreeRequest:"Første sang i kveld er GRATIS! 🎵",
+    demoSendFree:"Send gratis forespørsel →",
+    demoSentTitle:"Sendt!",
+    demoJoinTitle:"Klar for å bli med i Awaz?",
+    demoJoinSub:"Begynn å motta bookinger fra den afghanske diasporaen i Europa. Gratis å søke — ingen abonnement, ingen forhåndskostnader.",
+    demoJoinBtn:"Søk som artist — gratis →",
   },
 
   de: {
@@ -947,6 +1033,49 @@ const TRANSLATIONS = {
     artistProfileNotFound:"Künstlerprofil nicht gefunden",
     noStripe:"Kein Stripe",
     recentBookingsLabel:"Aktuelle Buchungen",
+    demoLiveDemo:"✦ Live Demo",
+    demoHeroTitle:"Erleben Sie Awaz als Künstler",
+    demoHeroSub:"Sehen Sie genau, wie Künstler die Plattform nutzen — von Profil bis Buchungen, Live-Musikwünsche und Einnahmen.",
+    demoApplyBtn:"Als Künstler bewerben →",
+    demoBrowseBtn:"Künstler durchsuchen",
+    demoOverviewTab:"Übersicht",
+    demoProfileTab:"Profil",
+    demoBookingTab:"Buchung",
+    demoDashboardTab:"Dashboard",
+    demoSongTab:"Musikwünsche",
+    demoPlatformOverview:"Plattformübersicht",
+    demoPlatformSub:"Alles, was ein Künstler bei Awaz bekommt",
+    demoSeeDemoProfile:"Künstlerprofil-Demo ansehen →",
+    demoProfileTitle:"Künstlerprofilseite",
+    demoProfileSub:"Das sehen Kunden, wenn sie Ihr Profil finden",
+    demoLivePreview:"LIVE-VORSCHAU",
+    demoBookingTitle:"Buchungsablauf",
+    demoBookingSub:"Wie Kunden buchen und eine Anzahlung leisten",
+    demoDepositNow:"Jetzt zu zahlende Anzahlung",
+    demoPayBtn:"Anzahlung zahlen →",
+    demoConfirmed:"Buchung bestätigt!",
+    demoDashTitle:"Künstler-Dashboard",
+    demoDashSub:"Was der Künstler beim Einloggen sieht",
+    demoUpcoming:"KOMMENDE BUCHUNGEN",
+    demoAllBookings:"ALLE BUCHUNGEN",
+    demoCalTitle:"VERFÜGBARKEIT",
+    demoAvailable:"Verfügbar",
+    demoBooked:"Gebucht",
+    demoEarnings2025:"EINNAHMEN 2025",
+    demoTotal2025:"Gesamt 2025",
+    demoSongTitle:"Musikwunschsystem",
+    demoSongSub:"Gäste scannen Ihren QR-Code — Sie sehen Wünsche live",
+    demoGuestSide:"GÄSTE-ERLEBNIS",
+    demoArtistSide:"KÜNSTLERANSICHT — LIVE-ANFRAGEN",
+    demoRequestSong:"Song wünschen",
+    demoSongTitleField:"Songtitel *",
+    demoYourName:"Ihr Name *",
+    demoFreeRequest:"Erster Song heute Abend KOSTENLOS! 🎵",
+    demoSendFree:"Kostenlose Anfrage senden →",
+    demoSentTitle:"Gesendet!",
+    demoJoinTitle:"Bereit, Awaz beizutreten?",
+    demoJoinSub:"Beginnen Sie, Buchungen von der afghanischen Diaspora in Europa zu erhalten. Kostenlos bewerben.",
+    demoJoinBtn:"Als Künstler bewerben — kostenlos →",
   },
 
   fr: {
@@ -1187,6 +1316,49 @@ const TRANSLATIONS = {
     artistProfileNotFound:"Profil artiste introuvable",
     noStripe:"Sans Stripe",
     recentBookingsLabel:"Réservations récentes",
+    demoLiveDemo:"✦ Démo en direct",
+    demoHeroTitle:"Découvrez Awaz en tant qu'artiste",
+    demoHeroSub:"Voyez exactement comment les artistes utilisent la plateforme — profil, réservations, demandes de chansons et revenus.",
+    demoApplyBtn:"Postuler comme artiste →",
+    demoBrowseBtn:"Parcourir les artistes",
+    demoOverviewTab:"Aperçu",
+    demoProfileTab:"Profil",
+    demoBookingTab:"Réservation",
+    demoDashboardTab:"Tableau de bord",
+    demoSongTab:"Demandes de chansons",
+    demoPlatformOverview:"Aperçu de la plateforme",
+    demoPlatformSub:"Tout ce qu'un artiste obtient en rejoignant Awaz",
+    demoSeeDemoProfile:"Voir la démo du profil artiste →",
+    demoProfileTitle:"Page de profil artiste",
+    demoProfileSub:"Ce que les clients voient lorsqu'ils trouvent votre profil",
+    demoLivePreview:"APERÇU EN DIRECT",
+    demoBookingTitle:"Flux de réservation",
+    demoBookingSub:"Comment les clients réservent et paient un acompte",
+    demoDepositNow:"Acompte à payer maintenant",
+    demoPayBtn:"Payer l'acompte →",
+    demoConfirmed:"Réservation confirmée!",
+    demoDashTitle:"Tableau de bord artiste",
+    demoDashSub:"Ce que l'artiste voit en se connectant",
+    demoUpcoming:"PROCHAINES RÉSERVATIONS",
+    demoAllBookings:"TOUTES LES RÉSERVATIONS",
+    demoCalTitle:"DISPONIBILITÉ",
+    demoAvailable:"Disponible",
+    demoBooked:"Réservé",
+    demoEarnings2025:"REVENUS 2025",
+    demoTotal2025:"Total 2025",
+    demoSongTitle:"Système de demandes de chansons",
+    demoSongSub:"Les invités scannent votre QR code — vous voyez les demandes en direct",
+    demoGuestSide:"EXPÉRIENCE INVITÉ",
+    demoArtistSide:"VUE ARTISTE — DEMANDES EN DIRECT",
+    demoRequestSong:"Demander une chanson",
+    demoSongTitleField:"Titre de la chanson *",
+    demoYourName:"Votre nom *",
+    demoFreeRequest:"Première chanson ce soir GRATUITE! 🎵",
+    demoSendFree:"Envoyer une demande gratuite →",
+    demoSentTitle:"Envoyé!",
+    demoJoinTitle:"Prêt à rejoindre Awaz?",
+    demoJoinSub:"Commencez à recevoir des réservations de la diaspora afghane en Europe. Gratuit pour postuler.",
+    demoJoinBtn:"Postuler comme artiste — gratuit →",
   },
 
   da: {
@@ -1428,6 +1600,49 @@ const TRANSLATIONS = {
     artistProfileNotFound:"پروفایل هنرمند یافت نشد",
     noStripe:"بدون Stripe",
     recentBookingsLabel:"رزروهای اخیر",
+    demoLiveDemo:"✦ نمایش زنده",
+    demoHeroTitle:"آواز را به عنوان هنرمند تجربه کنید",
+    demoHeroSub:"ببینید هنرمندان چگونه از پلتفرم استفاده می‌کنند — از پروفایل تا رزروها، درخواست آهنگ زنده و داشبورد درآمد.",
+    demoApplyBtn:"درخواست هنرمند →",
+    demoBrowseBtn:"مرور هنرمندان",
+    demoOverviewTab:"مرور کلی",
+    demoProfileTab:"پروفایل",
+    demoBookingTab:"رزرو",
+    demoDashboardTab:"داشبورد",
+    demoSongTab:"درخواست آهنگ",
+    demoPlatformOverview:"مرور پلتفرم",
+    demoPlatformSub:"هر آنچه هنرمند با عضویت در آواز دریافت می‌کند",
+    demoSeeDemoProfile:"مشاهده دمو پروفایل هنرمند →",
+    demoProfileTitle:"صفحه پروفایل هنرمند",
+    demoProfileSub:"این چیزی است که مشتریان هنگام یافتن پروفایل شما می‌بینند",
+    demoLivePreview:"پیش‌نمایش زنده",
+    demoBookingTitle:"جریان رزرو",
+    demoBookingSub:"نحوه رزرو مشتریان و پرداخت پیش‌پرداخت",
+    demoDepositNow:"پیش‌پرداخت برای پرداخت",
+    demoPayBtn:"پرداخت پیش‌پرداخت →",
+    demoConfirmed:"رزرو تأیید شد!",
+    demoDashTitle:"داشبورد هنرمند",
+    demoDashSub:"آنچه هنرمند هنگام ورود می‌بیند",
+    demoUpcoming:"رزروهای آینده",
+    demoAllBookings:"همه رزروها",
+    demoCalTitle:"در دسترس بودن",
+    demoAvailable:"آزاد",
+    demoBooked:"رزرو شده",
+    demoEarnings2025:"درآمد ۲۰۲۵",
+    demoTotal2025:"مجموع ۲۰۲۵",
+    demoSongTitle:"سیستم درخواست آهنگ",
+    demoSongSub:"مهمانان کد QR شما را اسکن می‌کنند — شما درخواست‌ها را زنده می‌بینید",
+    demoGuestSide:"تجربه مهمان",
+    demoArtistSide:"نمای هنرمند — درخواست‌های زنده",
+    demoRequestSong:"درخواست آهنگ",
+    demoSongTitleField:"عنوان آهنگ *",
+    demoYourName:"نام شما *",
+    demoFreeRequest:"اولین آهنگ امشب رایگان است! 🎵",
+    demoSendFree:"ارسال درخواست رایگان →",
+    demoSentTitle:"ارسال شد!",
+    demoJoinTitle:"آماده پیوستن به آواز هستید؟",
+    demoJoinSub:"شروع به دریافت رزرو از دیاسپورای افغان در اروپا کنید. درخواست رایگان است.",
+    demoJoinBtn:"درخواست هنرمند — رایگان →",
   },
 
   ps: {
@@ -1669,6 +1884,49 @@ const TRANSLATIONS = {
     artistProfileNotFound:"د هنرمند پروفایل ونه موندل شو",
     noStripe:"Stripe نشته",
     recentBookingsLabel:"وروستي بکنګونه",
+    demoLiveDemo:"✦ ژوندی ښودنه",
+    demoHeroTitle:"آواز د هنرمند په توګه تجربه کړئ",
+    demoHeroSub:"وګورئ چې هنرمندان پلیټفارم څنګه کاروي — له پروفایل نه تر بکنګونو، ژوندي سندرې غوښتنو او عایداتو ډشبورډ.",
+    demoApplyBtn:"د هنرمند غوښتنه →",
+    demoBrowseBtn:"هنرمندان وګورئ",
+    demoOverviewTab:"لنډیز",
+    demoProfileTab:"پروفایل",
+    demoBookingTab:"بکنګ",
+    demoDashboardTab:"ډشبورډ",
+    demoSongTab:"د سندرې غوښتنې",
+    demoPlatformOverview:"د پلیټفارم لنډیز",
+    demoPlatformSub:"هنرمند د آواز سره د یوځای کیدو سره هر څه ترلاسه کوي",
+    demoSeeDemoProfile:"د هنرمند پروفایل ډیمو وګورئ →",
+    demoProfileTitle:"د هنرمند پروفایل پاڼه",
+    demoProfileSub:"پیرودونکي ستاسو پروفایل موندلو کې دا وویني",
+    demoLivePreview:"ژوندی مخکتنه",
+    demoBookingTitle:"د بکنګ جریان",
+    demoBookingSub:"پیرودونکي څنګه بک کوي او پیش پیسې ورکوي",
+    demoDepositNow:"اوس د ورکولو پیش پیسې",
+    demoPayBtn:"پیش پیسې ورکړئ →",
+    demoConfirmed:"بکنګ تایید شو!",
+    demoDashTitle:"د هنرمند ډشبورډ",
+    demoDashSub:"هنرمند د ننوتلو پر مهال څه وویني",
+    demoUpcoming:"راتلونکي بکنګونه",
+    demoAllBookings:"ټول بکنګونه",
+    demoCalTitle:"شتون",
+    demoAvailable:"خالي",
+    demoBooked:"بک شوی",
+    demoEarnings2025:"د ۲۰۲۵ عواید",
+    demoTotal2025:"ټول ۲۰۲۵",
+    demoSongTitle:"د سندرې غوښتنې سیستم",
+    demoSongSub:"مهمانان ستاسو QR کوډ سکین کوي — تاسو غوښتنې ژوندي وینئ",
+    demoGuestSide:"د مهمان تجربه",
+    demoArtistSide:"د هنرمند لید — ژوندي غوښتنې",
+    demoRequestSong:"سندره وغواړئ",
+    demoSongTitleField:"د سندرې عنوان *",
+    demoYourName:"ستاسو نوم *",
+    demoFreeRequest:"د شپې لومړۍ سندره وړیا ده! 🎵",
+    demoSendFree:"وړیا غوښتنه واستوئ →",
+    demoSentTitle:"واستول شو!",
+    demoJoinTitle:"آیا د آواز سره یوځای کیدو ته چمتو یاست؟",
+    demoJoinSub:"د اروپا کې د افغان ډیاسپورا نه بکنګونه ترلاسه کول پیل کړئ. غوښتنه وړیا ده.",
+    demoJoinBtn:"د هنرمند غوښتنه — وړیا →",
   },
 };
 
@@ -6368,11 +6626,11 @@ function DemoPage({onBook, onApply, vp}:{onBook:()=>void;onApply:()=>void;vp:any
   };
 
   const steps = [
-    {id:"intro",     label:"Overview",    icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>},
-    {id:"profile",   label:"Profile",     icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>},
-    {id:"booking",   label:"Booking",     icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>},
-    {id:"dashboard", label:"Dashboard",   icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>},
-    {id:"songreq",   label:"Song Requests",icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>},
+    {id:"intro",     label:t('demoOverviewTab'),    icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>},
+    {id:"profile",   label:t('demoProfileTab'),     icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>},
+    {id:"booking",   label:t('demoBookingTab'),     icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>},
+    {id:"dashboard", label:t('demoDashboardTab'),   icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>},
+    {id:"songreq",   label:t('demoSongTab'),icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>},
   ];
 
   const S = {
@@ -6427,8 +6685,8 @@ function DemoPage({onBook, onApply, vp}:{onBook:()=>void;onApply:()=>void;vp:any
           {/* ── INTRO ── */}
           {demoStep==="intro"&&(
             <div style={{paddingTop:28}}>
-              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.6rem",fontWeight:700,marginBottom:6}}>Platform Overview</div>
-              <div style={{color:S.muted,fontSize:14,marginBottom:24}}>Everything an artist gets when they join Awaz</div>
+              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.6rem",fontWeight:700,marginBottom:6}}>{t('demoPlatformOverview')}</div>
+              <div style={{color:S.muted,fontSize:14,marginBottom:24}}>{t('demoPlatformSub')}</div>
               <div style={{display:"grid",gridTemplateColumns:vp.isMobile?"1fr":"1fr 1fr",gap:12}}>
                 {[
                   {icon:"🎤",title:"Professional Profile",desc:"Public-facing artist page with bio, instruments, social links, reviews and a booking calendar. Customers find you and book directly."},
@@ -6463,10 +6721,10 @@ function DemoPage({onBook, onApply, vp}:{onBook:()=>void;onApply:()=>void;vp:any
             <div style={{paddingTop:24}}>
               <div style={{marginBottom:16,display:"flex",alignItems:"center",gap:8}}>
                 <div style={{flex:1}}>
-                  <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.5rem",fontWeight:700}}>Artist Profile Page</div>
-                  <div style={{color:S.muted,fontSize:13}}>This is what customers see when they find your profile</div>
+                  <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.5rem",fontWeight:700}}>{t('demoProfileTitle')}</div>
+                  <div style={{color:S.muted,fontSize:13}}>{t('demoProfileSub')}</div>
                 </div>
-                <span style={{background:"rgba(200,168,74,0.1)",color:S.gold,border:"1px solid rgba(200,168,74,0.2)",borderRadius:8,padding:"4px 10px",fontSize:11,fontWeight:700}}>LIVE PREVIEW</span>
+                <span style={{background:"rgba(200,168,74,0.1)",color:S.gold,border:"1px solid rgba(200,168,74,0.2)",borderRadius:8,padding:"4px 10px",fontSize:11,fontWeight:700}}>{t('demoLivePreview')}</span>
               </div>
               {/* Demo profile card */}
               <div style={{background:"#0F0D16",border:"1px solid rgba(255,255,255,0.06)",borderRadius:16,overflow:"hidden"}}>
@@ -6542,13 +6800,13 @@ function DemoPage({onBook, onApply, vp}:{onBook:()=>void;onApply:()=>void;vp:any
           {demoStep==="booking"&&(
             <div style={{paddingTop:24}}>
               <div style={{marginBottom:20}}>
-                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.5rem",fontWeight:700}}>Booking Flow</div>
-                <div style={{color:S.muted,fontSize:13}}>How customers book and pay a deposit</div>
+                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.5rem",fontWeight:700}}>{t('demoBookingTitle')}</div>
+                <div style={{color:S.muted,fontSize:13}}>{t('demoBookingSub')}</div>
               </div>
               {bookingDone?(
                 <div style={{textAlign:"center",padding:"48px 24px",...S.card}}>
                   <div style={{fontSize:64,marginBottom:16}}>🎉</div>
-                  <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.8rem",fontWeight:700,marginBottom:8}}>Booking Confirmed!</div>
+                  <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.8rem",fontWeight:700,marginBottom:8}}>{t('demoConfirmed')}</div>
                   <div style={{color:S.muted,fontSize:14,lineHeight:1.8,marginBottom:24}}>
                     The artist receives a notification instantly.<br/>
                     <strong style={{color:S.gold}}>€{demoArtist.deposit}</strong> deposit secured via Stripe.<br/>
@@ -6587,7 +6845,7 @@ function DemoPage({onBook, onApply, vp}:{onBook:()=>void;onApply:()=>void;vp:any
                     </div>
                   ))}
                   <div style={{background:"rgba(200,168,74,0.06)",border:"1px solid rgba(200,168,74,0.15)",borderRadius:10,padding:"12px 14px",marginBottom:16,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                    <div style={{color:S.muted,fontSize:13}}>Deposit to pay now</div>
+                    <div style={{color:S.muted,fontSize:13}}>{t('demoDepositNow')}</div>
                     <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.5rem",fontWeight:800,color:S.gold}}>€{demoArtist.deposit}</div>
                   </div>
                   <button onClick={()=>setBookingDone(true)}
@@ -6604,7 +6862,7 @@ function DemoPage({onBook, onApply, vp}:{onBook:()=>void;onApply:()=>void;vp:any
           {demoStep==="dashboard"&&(
             <div style={{paddingTop:24}}>
               <div style={{marginBottom:20}}>
-                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.5rem",fontWeight:700}}>Artist Dashboard</div>
+                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.5rem",fontWeight:700}}>{t('demoDashTitle')}</div>
                 <div style={{color:S.muted,fontSize:13}}>What {demoArtist.name} sees when she logs in</div>
               </div>
               {/* Mini nav */}
@@ -6634,7 +6892,7 @@ function DemoPage({onBook, onApply, vp}:{onBook:()=>void;onApply:()=>void;vp:any
                     ))}
                   </div>
                   <div style={{...S.card,marginBottom:12}}>
-                    <div style={{color:S.gold,fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.8px",marginBottom:12}}>UPCOMING BOOKINGS</div>
+                    <div style={{color:S.gold,fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.8px",marginBottom:12}}>{t('demoUpcoming')}</div>
                     {[
                       {name:"Karimi Family Wedding",date:"14 Jun 2025",deposit:1200,status:"confirmed"},
                       {name:"Eid Gala — Oslo Kulturhus",date:"28 May 2025",deposit:1500,status:"pending"},
@@ -6660,7 +6918,7 @@ function DemoPage({onBook, onApply, vp}:{onBook:()=>void;onApply:()=>void;vp:any
 
               {demoTab==="bookings"&&(
                 <div style={{...S.card}}>
-                  <div style={{color:S.gold,fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.8px",marginBottom:14}}>ALL BOOKINGS</div>
+                  <div style={{color:S.gold,fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.8px",marginBottom:14}}>{t('demoAllBookings')}</div>
                   {[
                     {name:"Rahimi Wedding",      date:"14 Jun",price:1056,status:"confirmed"},
                     {name:"Eid Gala Oslo",        date:"28 May",price:1320,status:"pending"},
@@ -6683,7 +6941,7 @@ function DemoPage({onBook, onApply, vp}:{onBook:()=>void;onApply:()=>void;vp:any
 
               {demoTab==="calendar"&&(
                 <div style={{...S.card}}>
-                  <div style={{color:S.gold,fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.8px",marginBottom:14}}>AVAILABILITY — MAY 2025</div>
+                  <div style={{color:S.gold,fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.8px",marginBottom:14}}>{t('demoCalTitle')+' — MAY 2025'}</div>
                   <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:4,marginBottom:12}}>
                     {["M","T","W","T","F","S","S"].map((d,i)=>(
                       <div key={i} style={{textAlign:"center",color:S.muted,fontSize:11,fontWeight:700,paddingBottom:6}}>{d}</div>
@@ -6716,7 +6974,7 @@ function DemoPage({onBook, onApply, vp}:{onBook:()=>void;onApply:()=>void;vp:any
                       </div>
                     ))}
                     <div style={{display:"flex",justifyContent:"space-between",padding:"12px 0",borderTop:"1px solid rgba(200,168,74,0.2)",marginTop:4}}>
-                      <span style={{fontWeight:700,color:S.text,fontSize:14}}>Total 2025</span>
+                      <span style={{fontWeight:700,color:S.text,fontSize:14}}>{t('demoTotal2025')}</span>
                       <span style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:800,color:S.gold,fontSize:"1.4rem"}}>€8,952</span>
                     </div>
                   </div>
@@ -6732,25 +6990,25 @@ function DemoPage({onBook, onApply, vp}:{onBook:()=>void;onApply:()=>void;vp:any
           {demoStep==="songreq"&&(
             <div style={{paddingTop:24}}>
               <div style={{marginBottom:20}}>
-                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.5rem",fontWeight:700}}>Song Request System</div>
-                <div style={{color:S.muted,fontSize:13}}>Guests scan your QR code at events — you see requests live</div>
+                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.5rem",fontWeight:700}}>{t('demoSongTitle')}</div>
+                <div style={{color:S.muted,fontSize:13}}>{t('demoSongSub')}</div>
               </div>
               <div style={{display:"grid",gridTemplateColumns:vp.isMobile?"1fr":"1fr 1fr",gap:16}}>
                 {/* Guest side */}
                 <div>
-                  <div style={{color:S.gold,fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.8px",marginBottom:12}}>GUEST EXPERIENCE</div>
+                  <div style={{color:S.gold,fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.8px",marginBottom:12}}>{t('demoGuestSide')}</div>
                   {!songDone?(
                     <div style={{...S.card}}>
-                      <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.2rem",fontWeight:700,marginBottom:4}}>Request a Song</div>
+                      <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.2rem",fontWeight:700,marginBottom:4}}>{t('demoRequestSong')}</div>
                       <div style={{color:S.muted,fontSize:12,marginBottom:16}}>from {demoArtist.name} · 1st song free</div>
                       <div style={{marginBottom:12}}>
-                        <div style={{fontSize:11,fontWeight:700,color:S.muted,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:6}}>Song Title *</div>
+                        <div style={{fontSize:11,fontWeight:700,color:S.muted,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:6}}>{t('demoSongTitleField')}</div>
                         <input value={songTitle} onChange={e=>setSongTitle(e.target.value)}
                           placeholder="e.g. Leili Jan, Bya Ke Bya…"
                           style={{width:"100%",background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:10,padding:"11px 14px",color:S.text,fontSize:14,fontFamily:"inherit",outline:"none",boxSizing:"border-box"}}/>
                       </div>
                       <div style={{marginBottom:16}}>
-                        <div style={{fontSize:11,fontWeight:700,color:S.muted,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:6}}>Your Name *</div>
+                        <div style={{fontSize:11,fontWeight:700,color:S.muted,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:6}}>{t('demoYourName')}</div>
                         <input value={guestName} onChange={e=>setGuestName(e.target.value)}
                           placeholder="e.g. Layla, Ahmad…"
                           style={{width:"100%",background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:10,padding:"11px 14px",color:S.text,fontSize:14,fontFamily:"inherit",outline:"none",boxSizing:"border-box"}}/>
@@ -6767,7 +7025,7 @@ function DemoPage({onBook, onApply, vp}:{onBook:()=>void;onApply:()=>void;vp:any
                   ):(
                     <div style={{...S.card,textAlign:"center",padding:"32px 20px"}}>
                       <div style={{fontSize:48,marginBottom:12}}>🎶</div>
-                      <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.4rem",fontWeight:700,marginBottom:6}}>Sent!</div>
+                      <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.4rem",fontWeight:700,marginBottom:6}}>{t('demoSentTitle')}</div>
                       <div style={{color:S.muted,fontSize:13,lineHeight:1.7}}>
                         <strong style={{color:S.gold}}>"{songTitle}"</strong> sent to {demoArtist.name}
                       </div>
@@ -6780,7 +7038,7 @@ function DemoPage({onBook, onApply, vp}:{onBook:()=>void;onApply:()=>void;vp:any
                 </div>
                 {/* Artist side */}
                 <div>
-                  <div style={{color:S.gold,fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.8px",marginBottom:12}}>ARTIST VIEW — LIVE REQUESTS</div>
+                  <div style={{color:S.gold,fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.8px",marginBottom:12}}>{t('demoArtistSide')}</div>
                   <div style={{...S.card}}>
                     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:14}}>
                       {[{label:"Pending",val:songDone?"2":"1",color:"#F59E0B"},{label:"Earned",val:"€30",color:S.gold}].map(({label,val,color})=>(
@@ -6817,8 +7075,8 @@ function DemoPage({onBook, onApply, vp}:{onBook:()=>void;onApply:()=>void;vp:any
               </div>
               {/* CTA */}
               <div style={{marginTop:24,background:"linear-gradient(135deg,rgba(168,44,56,0.1),rgba(200,168,74,0.05))",border:"1px solid rgba(200,168,74,0.15)",borderRadius:16,padding:"24px",textAlign:"center"}}>
-                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.5rem",fontWeight:700,marginBottom:8}}>Ready to Join Awaz?</div>
-                <div style={{color:S.muted,fontSize:14,marginBottom:20,lineHeight:1.7}}>Start receiving bookings from the Afghan diaspora across Europe.<br/>Free to apply — no subscription, no upfront cost.</div>
+                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.5rem",fontWeight:700,marginBottom:8}}>{t('demoJoinTitle')}</div>
+                <div style={{color:S.muted,fontSize:14,marginBottom:20,lineHeight:1.7}}>Start receiving bookings from the Afghan diaspora across Europe.<br/>{t('demoJoinSub')}</div>
                 <button onClick={onApply}
                   style={{background:`linear-gradient(135deg,${S.ruby},${S.ruby}cc)`,color:"#fff",border:"none",borderRadius:12,padding:"14px 36px",fontWeight:800,fontSize:15,cursor:"pointer",fontFamily:"inherit"}}>
                   Apply as Artist — It's Free →
