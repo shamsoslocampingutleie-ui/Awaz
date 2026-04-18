@@ -3016,19 +3016,8 @@ function LoginSheet({ users, open, onLogin, onClose }) {
     }
 
     // ── No Supabase configured ────────────────────────────────────────
-    setTimeout(()=>{
-      setLoading(false);
-      if(true){
-        setAt(prev=>{
-          const na=prev+1;
-          if(na>=5){setLocked(true);setTimeout(()=>{setLocked(false);setAt(0);},5*60*1000);}
-          setErr(`Wrong credentials. ${Math.max(0,5-na)} attempts left.`);
-          return na;
-        });
-        return;
-      }
-      onLogin(u);
-    },500);
+    setLoading(false);
+    setErr("Supabase is not configured. Please check your environment variables.");
   };
 
   const doForgot=async()=>{
@@ -5125,7 +5114,7 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
                       <div style={{textAlign:"right",flexShrink:0}}>
                         <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:800,color:C.gold}}>€{req.amount||0}</div>
                         <div style={{fontSize:10,fontWeight:700,color:priorityColor,marginTop:2}}>{priorityLabel}</div>
-                        <div style={{fontSize:10,color:C.muted,marginTop:1}}>You get: €{Math.round((req.amount||0)*0.88)}</div>
+                        <div style={{fontSize:10,color:C.muted,marginTop:1}}>You get: €{Math.round((req.amount||0)*0.88)}{(req.amount||0)>(req.priority_amount||req.amount)&&` (incl. tip)`}</div>
                       </div>
                     </div>
 
@@ -5743,10 +5732,17 @@ function StripeConnectSheet({ artist, onConnected, onClose }) {
 // ══════════════════════════════════════════════════════════════════════════════
 // 🎵 SONG REQUEST WIDGET — Guest-facing mobile-first request flow
 // ══════════════════════════════════════════════════════════════════════════════
+// Progressive pricing: free → €10 → €20 (based on guest's request count)
+const SONG_PRICING = [
+  {requestNum:1, base:0,  label:"1st Song",  desc:"Your first request tonight is on us!", color:"#22C55E", icon:"🎵"},
+  {requestNum:2, base:10, label:"2nd Song",  desc:"Second request",                       color:"#C8A84A", icon:"🎶"},
+  {requestNum:3, base:20, label:"3rd Song+", desc:"Third song and beyond",                color:"#F59E0B", icon:"🎵"},
+];
+// Keep for backwards compat
 const PRIORITY_TIERS = [
-  {amount:30,  label:"Normal",        desc:"Standard request",              color:"#22C55E", icon:"🎵"},
-  {amount:50,  label:"High Priority", desc:"Moved up the queue",            color:"#F59E0B", icon:"⚡"},
-  {amount:100, label:"Must Play",     desc:"Top of the list — guaranteed",  color:"#EF4444", icon:"🔥"},
+  {amount:0,  label:"Free",          desc:"1st song — free tonight!", color:"#22C55E", icon:"🎵"},
+  {amount:10, label:"€10",           desc:"2nd song",                 color:"#C8A84A", icon:"🎶"},
+  {amount:20, label:"€20",           desc:"3rd song+",                color:"#F59E0B", icon:"🎵"},
 ];
 
 function SongRequestModal({artist, bookingId, onClose}:{artist:any;bookingId?:string;onClose:()=>void}){
@@ -5822,29 +5818,24 @@ function SongRequestModal({artist, bookingId, onClose}:{artist:any;bookingId?:st
               Requesting: <strong style={{color:"#C8A84A"}}>"{f.song_title}"</strong>
               {f.song_artist&&<span> by {f.song_artist}</span>}
             </div>
-            <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:20}}>
-              {PRIORITY_TIERS.map(t=>(
-                <button key={t.amount} onClick={()=>setTier(t)}
-                  style={{background:tier.amount===t.amount?`rgba(${t.color.replace("#","").match(/.{2}/g)?.map(x=>parseInt(x,16)).join(",")},0.1)`:"rgba(255,255,255,0.02)",border:`2px solid ${tier.amount===t.amount?t.color:`rgba(255,255,255,0.06)`}`,borderRadius:14,padding:"16px 18px",cursor:"pointer",textAlign:"left",transition:"all 0.15s",fontFamily:"inherit"}}>
-                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                    <div>
-                      <div style={{fontSize:18,marginBottom:4}}>{t.icon} <span style={{color:tier.amount===t.amount?t.color:"#EDE4CE",fontWeight:700,fontSize:15}}>{t.label}</span></div>
-                      <div style={{color:"#8A7D68",fontSize:12,lineHeight:1.5}}>{t.desc}</div>
-                    </div>
-                    <div style={{textAlign:"right"}}>
-                      <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.6rem",fontWeight:800,color:t.color}}>€{t.amount}</div>
-                      {t.amount===100&&<div style={{fontSize:10,color:t.color,fontWeight:700}}>GUARANTEED</div>}
-                    </div>
-                  </div>
-                </button>
-              ))}
+            {/* Tip selector */}
+            <div style={{marginBottom:16}}>
+              <div style={{fontSize:11,fontWeight:700,color:"#8A7D68",letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:10}}>Add a tip (optional)</div>
+              <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:10}}>
+                {[0,5,10,20].map(t=>(
+                  <button key={t} onClick={()=>setTier({...tier,amount:t})}
+                    style={{background:tier.amount===t?"rgba(200,168,74,0.15)":"rgba(255,255,255,0.03)",color:tier.amount===t?"#C8A84A":"#8A7D68",border:`1px solid ${tier.amount===t?"rgba(200,168,74,0.4)":"rgba(255,255,255,0.07)"}`,borderRadius:10,padding:"12px 4px",cursor:"pointer",fontFamily:"inherit",fontSize:14,fontWeight:700}}>
+                    {t===0?"No tip":`+€${t}`}
+                  </button>
+                ))}
+              </div>
             </div>
             {err&&<div style={{color:"#EF4444",fontSize:13,marginBottom:12,padding:"10px 14px",background:"rgba(239,68,68,0.08)",borderRadius:8}}>{err}</div>}
             <button onClick={submit} disabled={loading}
-              style={{width:"100%",background:loading?"#201D2E":`linear-gradient(135deg,${tier.color}cc,${tier.color})`,color:"#fff",border:"none",borderRadius:14,padding:"16px",fontWeight:800,fontSize:16,cursor:loading?"not-allowed":"pointer",fontFamily:"inherit",transition:"all 0.2s"}}>
-              {loading?"Sending…":`Send Request · €${tier.amount}`}
+              style={{width:"100%",background:loading?"#201D2E":"linear-gradient(135deg,#C8A84A,#E09F3E)",color:"#0F0D16",border:"none",borderRadius:14,padding:"16px",fontWeight:800,fontSize:16,cursor:loading?"not-allowed":"pointer",fontFamily:"inherit"}}>
+              {loading?"Sending…":tier.amount===0?"Send Request (Free) →":`Send Request · €${tier.amount}`}
             </button>
-            <div style={{color:"#8A7D68",fontSize:11,textAlign:"center",marginTop:8}}>Secure payment · 88% goes to {artist.name}</div>
+            <div style={{color:"#8A7D68",fontSize:11,textAlign:"center",marginTop:8}}>88% goes to {artist.name}</div>
           </div>
         ):(
           /* FORM STEP */
@@ -5903,24 +5894,29 @@ function QRCode({url, size=200}:{url:string;size?:number}){
   );
 }
 
-// ── Song Request Landing Page (scanned from QR) ──────────────────────────────
+// ── Song Request Landing Page (scanned from QR) ──────────────────────────
 function SongRequestPage({artistId, artists, onBack}:{artistId:string;artists:any[];onBack:()=>void}){
   const artist = artists.find(a=>a.id===artistId);
-  const [step,setStep]=useState<"form"|"priority"|"done">("form");
-  const [f,setF]=useState({song_title:"",song_artist:"",guest_name:"",message:""});
-  const [tier,setTier]=useState(PRIORITY_TIERS[0]);
-  const [loading,setLoading]=useState(false);
-  const [err,setErr]=useState("");
   const {show:notify}=useNotif();
 
-  if(!artist) return(
-    <div style={{minHeight:"100vh",background:"#070608",display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
-      <div style={{textAlign:"center",color:"#8A7D68"}}>
-        <div style={{fontSize:48,marginBottom:12}}>🎵</div>
-        <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.4rem",color:"#EDE4CE"}}>Artist not found</div>
-      </div>
-    </div>
-  );
+  // Track how many songs THIS guest has requested (stored in localStorage per artist)
+  const storageKey = `awaz_req_${artistId}`;
+  const [guestReqCount,setGuestReqCount]=useState(()=>{
+    try{ return parseInt(localStorage.getItem(storageKey)||"0",10); }
+    catch{ return 0; }
+  });
+
+  const getBasePrice=(count:number)=>count===0?0:count===1?10:20;
+  const currentBase = getBasePrice(guestReqCount);
+
+  const [step,setStep]=useState<"form"|"tip"|"done">("form");
+  const [f,setF]=useState({song_title:"",song_artist:"",guest_name:"",message:""});
+  const [tip,setTip]=useState(0);
+  const [customTip,setCustomTip]=useState("");
+  const [loading,setLoading]=useState(false);
+  const [err,setErr]=useState("");
+
+  const totalAmount = currentBase + tip;
 
   const submit=async()=>{
     if(!f.song_title.trim()||!f.guest_name.trim()){setErr("Please fill in all required fields");return;}
@@ -5935,99 +5931,161 @@ function SongRequestPage({artistId, artists, onBack}:{artistId:string;artists:an
             song_artist:     sanitize(f.song_artist.trim())||null,
             guest_name:      sanitize(f.guest_name.trim()),
             message:         sanitize(f.message.trim())||null,
-            amount:          tier.amount,
-            priority_amount: tier.amount,
+            amount:          totalAmount,
+            priority_amount: totalAmount,
             status:          "pending",
           });
           if(error){setErr("Failed to send. Please try again.");setLoading(false);return;}
         }
       }
+      // Update guest's request count
+      const newCount = guestReqCount + 1;
+      setGuestReqCount(newCount);
+      try{ localStorage.setItem(storageKey, String(newCount)); }catch{}
       setLoading(false);setStep("done");
     }catch(e){setLoading(false);setErr("Connection error. Please try again.");}
   };
 
+  if(!artist) return(
+    <div style={{minHeight:"100vh",background:"#070608",display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
+      <div style={{textAlign:"center",color:"#8A7D68"}}>
+        <div style={{fontSize:48,marginBottom:12}}>🎵</div>
+        <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.4rem",color:"#EDE4CE"}}>Artist not found</div>
+      </div>
+    </div>
+  );
+
   return(
     <div style={{minHeight:"100vh",background:"#070608",fontFamily:"'DM Sans',sans-serif",color:"#EDE4CE"}}>
       {/* Header */}
-      <div style={{background:"linear-gradient(180deg,rgba(200,168,74,0.08),transparent)",borderBottom:"1px solid rgba(200,168,74,0.1)",padding:"20px 24px",display:"flex",alignItems:"center",gap:14}}>
+      <div style={{background:"linear-gradient(180deg,rgba(200,168,74,0.1),transparent)",borderBottom:"1px solid rgba(200,168,74,0.12)",padding:"20px 24px",display:"flex",alignItems:"center",gap:14}}>
         <div style={{width:52,height:52,borderRadius:12,background:`${artist.color}20`,border:`2px solid ${artist.color}40`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:26,flexShrink:0,overflow:"hidden"}}>
           {artist.photo?<img src={artist.photo} style={{width:"100%",height:"100%",objectFit:"cover"}} alt=""/>:artist.emoji}
         </div>
         <div>
-          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.4rem",fontWeight:700,color:"#EDE4CE"}}>{artist.name}</div>
-          <div style={{color:"#8A7D68",fontSize:13}}>🎵 Song Request</div>
+          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.4rem",fontWeight:700}}>{artist.name}</div>
+          <div style={{color:"#8A7D68",fontSize:13,marginTop:2}}>🎵 Song Request</div>
+        </div>
+        {/* Pricing info pill */}
+        <div style={{marginLeft:"auto",background:"rgba(200,168,74,0.08)",border:"1px solid rgba(200,168,74,0.2)",borderRadius:20,padding:"6px 14px",fontSize:12,color:"#C8A84A",fontWeight:600,whiteSpace:"nowrap"}}>
+          {guestReqCount===0?"1st: Free":guestReqCount===1?"2nd: €10":"3rd+: €20"}
         </div>
       </div>
 
-      <div style={{maxWidth:480,margin:"0 auto",padding:"24px 20px 48px"}}>
+      <div style={{maxWidth:480,margin:"0 auto",padding:"24px 20px 60px"}}>
+        {/* Pricing ladder — always visible */}
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:6,marginBottom:24}}>
+          {SONG_PRICING.map((p,i)=>{
+            const isActive = guestReqCount===i || (i===2 && guestReqCount>=2);
+            const isDone = guestReqCount > i && !(i===2 && guestReqCount>=2);
+            return(
+              <div key={i} style={{background:isActive?"rgba(200,168,74,0.1)":"rgba(255,255,255,0.02)",border:`1px solid ${isActive?"rgba(200,168,74,0.4)":isDone?"rgba(34,197,94,0.2)":"rgba(255,255,255,0.06)"}`,borderRadius:10,padding:"10px 8px",textAlign:"center"}}>
+                <div style={{fontSize:isDone?16:14,marginBottom:2}}>{isDone?"✓":p.icon}</div>
+                <div style={{fontWeight:700,fontSize:13,color:isActive?"#C8A84A":isDone?"#22C55E":"#8A7D68"}}>
+                  {p.base===0?"Free":`€${p.base}`}
+                </div>
+                <div style={{fontSize:10,color:"#4A4054",marginTop:1}}>{p.label}</div>
+              </div>
+            );
+          })}
+        </div>
+
         {step==="done"?(
-          <div style={{textAlign:"center",paddingTop:40}}>
-            <div style={{fontSize:72,marginBottom:16}}>🎶</div>
-            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"2rem",fontWeight:700,marginBottom:8}}>Request Sent!</div>
-            <div style={{color:"#8A7D68",fontSize:14,lineHeight:1.8,marginBottom:8}}>
+          <div style={{textAlign:"center",paddingTop:20}}>
+            <div style={{fontSize:72,marginBottom:12}}>🎶</div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"2rem",fontWeight:700,marginBottom:8}}>Sent!</div>
+            <div style={{color:"#8A7D68",fontSize:14,lineHeight:1.8,marginBottom:4}}>
               <strong style={{color:"#C8A84A"}}>"{f.song_title}"</strong> sent to <strong style={{color:"#EDE4CE"}}>{artist.name}</strong>
             </div>
-            <div style={{background:"rgba(200,168,74,0.08)",border:"1px solid rgba(200,168,74,0.2)",borderRadius:14,padding:"16px",marginTop:20,marginBottom:28}}>
-              <div style={{fontSize:18,marginBottom:4}}>{tier.icon} <span style={{color:tier.color,fontWeight:700}}>{tier.label}</span></div>
-              <div style={{color:"#8A7D68",fontSize:13}}>{tier.desc}</div>
-              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.6rem",color:"#C8A84A",fontWeight:800,marginTop:6}}>€{tier.amount} paid</div>
-            </div>
-            <button onClick={()=>{setStep("form");setF({song_title:"",song_artist:"",guest_name:"",message:""});setTier(PRIORITY_TIERS[0]);}}
+            {totalAmount>0&&(
+              <div style={{background:"rgba(200,168,74,0.06)",border:"1px solid rgba(200,168,74,0.15)",borderRadius:12,padding:"14px",marginTop:16,marginBottom:20}}>
+                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.8rem",color:"#C8A84A",fontWeight:800}}>€{totalAmount}</div>
+                {tip>0&&<div style={{color:"#22C55E",fontSize:12,marginTop:2}}>incl. €{tip} tip — thank you! 💛</div>}
+              </div>
+            )}
+            {totalAmount===0&&(
+              <div style={{color:"#22C55E",fontSize:14,fontWeight:700,marginTop:8,marginBottom:20}}>✓ Free request sent!</div>
+            )}
+            <button onClick={()=>{setStep("form");setF({song_title:"",song_artist:"",guest_name:f.guest_name,message:""});setTip(0);setCustomTip("");}}
               style={{background:"rgba(200,168,74,0.1)",color:"#C8A84A",border:"1px solid rgba(200,168,74,0.3)",borderRadius:12,padding:"12px 28px",fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>
-              + Request another song
+              + Request another song {guestReqCount>=1?`(€${getBasePrice(guestReqCount)})`:""}
             </button>
           </div>
-        ):step==="priority"?(
+
+        ):step==="tip"?(
+          /* TIP STEP */
           <div>
             <button onClick={()=>setStep("form")} style={{background:"none",border:"none",color:"#8A7D68",cursor:"pointer",fontSize:13,fontFamily:"inherit",marginBottom:20,display:"flex",alignItems:"center",gap:6}}>← Back</button>
-            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.6rem",fontWeight:700,marginBottom:6}}>Choose Priority</div>
-            <div style={{background:"rgba(200,168,74,0.05)",border:"1px solid rgba(200,168,74,0.15)",borderRadius:10,padding:"10px 14px",marginBottom:20,fontSize:13,color:"#8A7D68"}}>
-              Requesting: <strong style={{color:"#C8A84A"}}>"{f.song_title}"</strong>{f.song_artist&&` by ${f.song_artist}`}
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.6rem",fontWeight:700,marginBottom:6}}>
+              {currentBase===0?"Send Free Request 🎵":`Pay €${currentBase} + Tip`}
             </div>
-            <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:20}}>
-              {PRIORITY_TIERS.map(t=>{
-                const isSelected=tier.amount===t.amount;
-                return(
-                  <button key={t.amount} onClick={()=>setTier(t)} style={{
-                    background:isSelected?`rgba(${t.color.replace("#","").match(/.{2}/g)?.map((x:string)=>parseInt(x,16)).join(",")},0.12)`:"rgba(255,255,255,0.02)",
-                    border:`2px solid ${isSelected?t.color:"rgba(255,255,255,0.07)"}`,
-                    borderRadius:14,padding:"18px 20px",cursor:"pointer",textAlign:"left",fontFamily:"inherit",
-                    transition:"all 0.15s",
-                  }}>
-                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                      <div>
-                        <div style={{fontSize:20,marginBottom:4}}>{t.icon} <span style={{color:isSelected?t.color:"#EDE4CE",fontWeight:700,fontSize:16}}>{t.label}</span></div>
-                        <div style={{color:"#8A7D68",fontSize:13,lineHeight:1.5}}>{t.desc}</div>
-                        {t.amount===100&&<div style={{color:t.color,fontSize:11,fontWeight:700,marginTop:4}}>🔥 GUARANTEED PERFORMANCE</div>}
-                      </div>
-                      <div style={{textAlign:"right",flexShrink:0,marginLeft:16}}>
-                        <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"2rem",fontWeight:800,color:t.color}}>€{t.amount}</div>
-                        <div style={{color:"#8A7D68",fontSize:11,marginTop:2}}>88% to artist</div>
-                      </div>
-                    </div>
+            <div style={{background:"rgba(200,168,74,0.05)",border:"1px solid rgba(200,168,74,0.15)",borderRadius:10,padding:"12px 14px",marginBottom:20,fontSize:13,color:"#8A7D68"}}>
+              Song: <strong style={{color:"#C8A84A"}}>"{f.song_title}"</strong>{f.song_artist&&` by ${f.song_artist}`}
+            </div>
+
+            {/* Tip selector */}
+            <div style={{marginBottom:20}}>
+              <div style={{fontSize:11,fontWeight:700,color:"#8A7D68",letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:10}}>
+                {currentBase===0?"Add a tip? (optional)":"Add an extra tip?"}
+              </div>
+              <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:10}}>
+                {[0,5,10,20].map(t=>(
+                  <button key={t} onClick={()=>{setTip(t);setCustomTip("");}}
+                    style={{background:tip===t&&customTip===""?"rgba(200,168,74,0.15)":"rgba(255,255,255,0.03)",color:tip===t&&customTip===""?"#C8A84A":"#8A7D68",border:`1px solid ${tip===t&&customTip===""?"rgba(200,168,74,0.4)":"rgba(255,255,255,0.07)"}`,borderRadius:10,padding:"12px 4px",cursor:"pointer",fontFamily:"inherit",fontSize:14,fontWeight:700}}>
+                    {t===0?"No tip":`+€${t}`}
                   </button>
-                );
-              })}
+                ))}
+              </div>
+              <div style={{display:"flex",alignItems:"center",gap:8}}>
+                <span style={{color:"#8A7D68",fontSize:13,whiteSpace:"nowrap"}}>Custom:</span>
+                <div style={{position:"relative",flex:1}}>
+                  <span style={{position:"absolute",left:12,top:"50%",transform:"translateY(-50%)",color:"#8A7D68",fontSize:14}}>€</span>
+                  <input type="number" min="0" max="500" value={customTip}
+                    onChange={e=>{setCustomTip(e.target.value);setTip(0);}}
+                    placeholder="0"
+                    style={{width:"100%",background:"#141220",border:"1px solid #201D2E",borderRadius:10,padding:"11px 14px 11px 28px",color:"#EDE4CE",fontSize:14,fontFamily:"inherit",outline:"none",boxSizing:"border-box"}}/>
+                </div>
+              </div>
             </div>
+
+            {/* Total */}
+            <div style={{background:"rgba(255,255,255,0.02)",border:"1px solid rgba(255,255,255,0.06)",borderRadius:12,padding:"14px 16px",marginBottom:20,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+              <div>
+                <div style={{color:"#8A7D68",fontSize:12}}>Total</div>
+                {currentBase>0&&<div style={{color:"#4A4054",fontSize:11}}>€{currentBase} song + €{customTip||tip} tip</div>}
+              </div>
+              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"2rem",fontWeight:800,color:totalAmount+(parseInt(customTip||"0"))>0?"#C8A84A":"#22C55E"}}>
+                {currentBase+(parseInt(customTip||"0")+tip)===0?"FREE":`€${currentBase+(parseInt(customTip||"0")||tip)}`}
+              </div>
+            </div>
+
             {err&&<div style={{color:"#EF4444",fontSize:13,marginBottom:12,padding:"10px 14px",background:"rgba(239,68,68,0.08)",borderRadius:8}}>{err}</div>}
-            <button onClick={submit} disabled={loading}
-              style={{width:"100%",background:loading?"#1A1728":`linear-gradient(135deg,${tier.color},${tier.color}cc)`,color:"#fff",border:"none",borderRadius:14,padding:"18px",fontWeight:800,fontSize:16,cursor:loading?"not-allowed":"pointer",fontFamily:"inherit",letterSpacing:"0.3px"}}>
-              {loading?"Sending…":`🎵 Send Request · €${tier.amount}`}
+            <button onClick={()=>{
+              if(customTip) setTip(parseInt(customTip)||0);
+              submit();
+            }} disabled={loading}
+              style={{width:"100%",background:loading?"#1A1728":"linear-gradient(135deg,#C8A84A,#E09F3E)",color:"#0F0D16",border:"none",borderRadius:14,padding:"18px",fontWeight:800,fontSize:16,cursor:loading?"not-allowed":"pointer",fontFamily:"inherit"}}>
+              {loading?"Sending…":currentBase===0&&!tip&&!customTip?"Send Free Request →":`Send · €${currentBase+(parseInt(customTip||"0")||tip)}`}
             </button>
             <div style={{color:"#4A4054",fontSize:11,textAlign:"center",marginTop:10}}>
-              Secure payment via Stripe · 88% goes directly to {artist.name}
+              88% goes directly to {artist.name} 💛
             </div>
           </div>
+
         ):(
-          /* FORM */
+          /* FORM STEP */
           <div>
             <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.8rem",fontWeight:700,marginBottom:4}}>Request a Song</div>
-            <div style={{color:"#8A7D68",fontSize:14,marginBottom:24}}>Your request goes directly to {artist.name} on stage</div>
+            <div style={{color:"#8A7D68",fontSize:14,marginBottom:24}}>
+              {currentBase===0
+                ?"Your first song tonight is <strong style={{color:'#22C55E'}}>free</strong>! 🎉".replace(/<[^>]+>/g,"")
+                :`Song #${guestReqCount+1} — €${currentBase}`}
+            </div>
             {[
               {field:"song_title",  label:"Song Title *",    placeholder:"e.g. Bya Ke Bya, Leili Jan…"},
               {field:"song_artist", label:"Original Artist", placeholder:"e.g. Ahmad Zahir, Farhad Darya…"},
               {field:"guest_name",  label:"Your Name *",     placeholder:"e.g. Layla, Ahmad…"},
-              {field:"message",     label:"Dedication / Note", placeholder:"For my mother's birthday… 💛"},
+              {field:"message",     label:"Dedication",      placeholder:"Happy birthday Noor! 💛"},
             ].map(({field,label,placeholder})=>(
               <div key={field} style={{marginBottom:16}}>
                 <div style={{fontSize:11,fontWeight:700,color:"#8A7D68",letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:7}}>{label}</div>
@@ -6046,17 +6104,20 @@ function SongRequestPage({artistId, artists, onBack}:{artistId:string;artists:an
             <button onClick={()=>{
               if(!f.song_title.trim()){setErr("Song title is required");return;}
               if(!f.guest_name.trim()){setErr("Your name is required");return;}
-              setErr("");setStep("priority");
-            }} style={{width:"100%",background:"linear-gradient(135deg,#C8A84A,#E09F3E)",color:"#0F0D16",border:"none",borderRadius:14,padding:"18px",fontWeight:800,fontSize:16,cursor:"pointer",fontFamily:"inherit",letterSpacing:"0.3px"}}>
-              Continue to Payment →
+              setErr("");setStep("tip");
+            }} style={{width:"100%",background:"linear-gradient(135deg,#C8A84A,#E09F3E)",color:"#0F0D16",border:"none",borderRadius:14,padding:"18px",fontWeight:800,fontSize:16,cursor:"pointer",fontFamily:"inherit"}}>
+              {currentBase===0?"Continue — Free ✓ →":"Continue →"}
             </button>
-            <div style={{color:"#4A4054",fontSize:12,textAlign:"center",marginTop:12}}>From €30 · Secure · 88% goes to the artist</div>
+            <div style={{color:"#4A4054",fontSize:12,textAlign:"center",marginTop:12}}>
+              {currentBase===0?"1st song is free · Add a tip if you'd like":`€${currentBase} · + optional tip · 88% to artist`}
+            </div>
           </div>
         )}
       </div>
     </div>
   );
 }
+
 
 // ── QR Code Panel — shown in artist portal ──────────────────────────────────
 function ArtistQRPanel({artist}:{artist:any}){
@@ -6727,7 +6788,7 @@ function AppInner() {
     setLang(l);
   };
   const isRTL = isRTLLang(lang);
-  const [users,setUsers]=useState(USERS);
+  const [users,setUsers]=useState([]);  // Users loaded from Supabase only
   const {show:notify}=useNotif();
   const [cookieConsent,setCookieConsent]=useState(()=>localStorage.getItem("awaz_cookie")||"");
   // Handle QR scan: /?request=ARTIST_ID
