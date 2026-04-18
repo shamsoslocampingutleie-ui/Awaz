@@ -8092,6 +8092,8 @@ function AppInner() {
             artistId:null,
           });
           // Skip straight to appReady — no artist profile load needed
+          setAppReady(true);
+          return; // Don't load artist/booking data for admin here — AdminDash loads its own
         } else {
         // Check users table first (new schema), then profiles (old schema)
         const{data:dbUser}=await sb.from("users").select("*").eq("id",existingSession.user.id).single();
@@ -8172,6 +8174,7 @@ function AppInner() {
                 role:"admin",
                 artistId:null,
               });
+              setAppReady(true);
               return;
             }
 
