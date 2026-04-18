@@ -5349,11 +5349,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
         </div>
       )}
 
-      {tab==="social"&&(()=>{
-        const previewSpotifyId = parseSpotifyArtistId(socialF.spotifyUrl);
-        const previewHandle    = parseInstagramHandle(socialF.instagramHandle);
-
-        return(
+      {tab==="social"&&(
         <div style={{display:"flex",flexDirection:"column",gap:16}}>
           <div>
             <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:4}}>{t('socialMedia')}</div>
@@ -5382,7 +5378,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
                   <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
                 </svg>
                 <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:T.md,fontWeight:700,color:"#1DB954"}}>Spotify</div>
-                {artist.spotify&&previewSpotifyId&&<Badge color="#1DB954">Live ✓</Badge>}
+                {artist.spotify&&parseSpotifyArtistId(socialF.spotifyUrl)&&<Badge color="#1DB954">Live ✓</Badge>}
               </div>
 
               {/* What Spotify can do */}
@@ -5400,8 +5396,8 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
                   setSocialErr("");
                 }}
                 onBlur={()=>{ if(socialF.spotifyUrl) saveSocial(); }}
-                hint={previewSpotifyId
-                  ? `✓ Connected — ${previewSpotifyId}`
+                hint={parseSpotifyArtistId(socialF.spotifyUrl)
+                  ? `✓ Connected — ${parseSpotifyArtistId(socialF.spotifyUrl)}`
                   : "Paste your Spotify artist link here — preview appears automatically"}
               />
 
@@ -5415,19 +5411,19 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
               </div>
 
               {/* Live preview */}
-              {previewSpotifyId && (
+              {parseSpotifyArtistId(socialF.spotifyUrl) && (
                 <div style={{marginTop:14,background:"rgba(29,185,84,0.07)",border:"1px solid rgba(29,185,84,0.25)",borderRadius:12,padding:"16px 18px"}}>
                   <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
                     <div style={{width:32,height:32,borderRadius:"50%",background:"rgba(29,185,84,0.15)",border:"1px solid rgba(29,185,84,0.3)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:16}}>✓</div>
                     <div>
                       <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:T.sm,fontWeight:700,color:"#1DB954"}}>{t('spotifyLinkRecognized')}</div>
-                      <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:T.xs,color:C.muted,marginTop:2}}>Artist-ID: {previewSpotifyId}</div>
+                      <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:T.xs,color:C.muted,marginTop:2}}>Artist-ID: {parseSpotifyArtistId(socialF.spotifyUrl)}</div>
                     </div>
                   </div>
                   <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:T.sm,color:C.textD,lineHeight:1.7,marginBottom:12}}>
                     The Spotify widget is hidden in StackBlitz/editor — this is normal. On your published Vercel site it loads automatically showing your photo, bio and top tracks.
                   </div>
-                  <a href={`https://open.spotify.com/artist/${previewSpotifyId}`} target="_blank" rel="noopener noreferrer"
+                  <a href={`https://open.spotify.com/artist/${parseSpotifyArtistId(socialF.spotifyUrl)}`} target="_blank" rel="noopener noreferrer"
                     style={{display:"inline-flex",alignItems:"center",gap:7,background:"#1DB954",color:"#000",borderRadius:20,padding:"9px 18px",fontSize:13,fontWeight:700,textDecoration:"none",fontFamily:"'DM Sans',sans-serif"}}>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="black"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
                     Verify on Spotify ↗
@@ -5448,7 +5444,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
                   </svg>
                 </div>
                 <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:T.md,fontWeight:700,background:"linear-gradient(90deg,#C084FC,#FB7185)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>Instagram</div>
-                {previewHandle&&<Badge color="#E1306C">Connected ✓</Badge>}
+                {parseInstagramHandle(socialF.instagramHandle)&&<Badge color="#E1306C">Connected ✓</Badge>}
               </div>
 
               {/* Honest explanation */}
@@ -5465,7 +5461,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
                     setSocialF(f=>({...f,instagramHandle:e.target.value}));
                     setSocialErr("");
                   }}
-                  hint={previewHandle ? `✓ ✓ Handle recognized: ${previewHandle}` : "Copy your Instagram profile URL and paste here"}
+                  hint={parseInstagramHandle(socialF.instagramHandle) ? `✓ ✓ Handle recognized: ${parseInstagramHandle(socialF.instagramHandle)}` : "Copy your Instagram profile URL and paste here"}
                 />
                 <Inp
                   label="Følgertall (valgfritt, f.eks. 89.2K)"
@@ -5477,16 +5473,16 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
               </div>
 
               {/* Live preview */}
-              {previewHandle && (
+              {parseInstagramHandle(socialF.instagramHandle) && (
                 <div style={{marginTop:14,background:"rgba(225,48,108,0.07)",border:"1px solid rgba(225,48,108,0.25)",borderRadius:12,padding:"16px 18px"}}>
                   <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
                     <div style={{width:32,height:32,borderRadius:"50%",background:"rgba(225,48,108,0.15)",border:"1px solid rgba(225,48,108,0.3)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:16}}>✓</div>
                     <div>
                       <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:T.sm,fontWeight:700,color:"#E1306C"}}>{t('instagramRecognized')}</div>
-                      <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:T.xs,color:C.muted,marginTop:2}}>{previewHandle}{socialF.instagramFollowers?` · ${socialF.instagramFollowers} følgere`:""}</div>
+                      <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:T.xs,color:C.muted,marginTop:2}}>{parseInstagramHandle(socialF.instagramHandle)}{socialF.instagramFollowers?` · ${socialF.instagramFollowers} følgere`:""}</div>
                     </div>
                   </div>
-                  <a href={`https://instagram.com/${previewHandle.replace("@","")}`} target="_blank" rel="noopener noreferrer"
+                  <a href={`https://instagram.com/${parseInstagramHandle(socialF.instagramHandle).replace("@","")}`} target="_blank" rel="noopener noreferrer"
                     style={{display:"inline-flex",alignItems:"center",gap:7,background:"linear-gradient(135deg,#833AB4,#E1306C)",color:"#fff",borderRadius:20,padding:"9px 18px",fontSize:13,fontWeight:700,textDecoration:"none",fontFamily:"'DM Sans',sans-serif"}}>
                     Verify on Instagram ↗
                   </a>
@@ -5573,8 +5569,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
             </button>
           )}
         </div>
-        );
-      })()}
+        )}
 
       {tab==="profile"&&(
         <div>
