@@ -4255,7 +4255,8 @@ function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction,
           available:a.available||{},blocked:a.blocked||{},
           earnings:a.earnings||0,totalBookings:a.total_bookings||0,
           verified:a.verified||false,
-          stripeConnected:a.stripe_connected||false,
+          isHidden:a.is_hidden||false,
+            stripeConnected:a.stripe_connected||false,
           stripeAccount:a.stripe_account||null,
           cancellationPolicy:a.cancellation_policy||"moderate",
           spotify:a.spotify_data||null,instagram:a.instagram_data||null,
@@ -5834,25 +5835,50 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
                 <div style={{fontWeight:600,color:C.text,fontSize:T.sm,marginBottom:4}}>{t('profilePublished')||"Profile published"}</div>
                 <div style={{color:C.muted,fontSize:T.xs}}>
                   {artist.status==="approved"
-                    ? t('profileVisibleToClients')||"Your profile is visible to clients"
+                    ? (artist.isHidden
+                        ? <span style={{color:C.ruby,fontWeight:700}}>🙈 Hidden — not visible to clients</span>
+                        : t('profileVisibleToClients')||"Your profile is visible to clients")
                     : t('pendingAdminApproval')||"Waiting for admin approval"}
                 </div>
               </div>
               <button
                 onClick={async()=>{
-                  if(artist.status!=="approved") return; // Can only toggle if approved
-                  const newVal = artist.status==="approved";
-                  // Toggle hidden flag
-                  const isHidden = artist.isHidden||false;
-                  const newHidden = !isHidden;
-                  onUpdateArtist(artist.id,{isHidden:newHidden});
+                  // Any artist can hide/show their own profile
+                  const newHidden = !(artist.isHidden||false);
+                  // 1. Update LOCAL state immediately (optimistic)
+                  onUpdateArtist(artist.id, {isHidden: newHidden});
+                  // 2. Save to Supabase
                   if(HAS_SUPA){
-                    const sb=await getSupabase();
-                    if(sb) await sb.from("artists").update({is_hidden:newHidden}).eq("id",artist.id);
+                    try{
+                      const sb = await getSupabase();
+                      if(sb){
+                        const {error} = await sb
+                          .from("artists")
+                          .update({is_hidden: newHidden})
+                          .eq("id", artist.id);
+                        if(error){
+                          // Revert on failure
+                          onUpdateArtist(artist.id, {isHidden: !newHidden});
+                          notify("Could not save visibility — please try again","error");
+                          return;
+                        }
+                      }
+                    }catch(e){
+                      onUpdateArtist(artist.id, {isHidden: !newHidden});
+                      notify("Connection error — visibility not saved","error");
+                      return;
+                    }
                   }
+                  // 3. Success feedback
+                  notify(
+                    newHidden
+                      ? "🙈 Profile hidden — not visible to clients"
+                      : "✅ Profile is now live and visible to clients",
+                    newHidden ? "error" : "success"
+                  );
                 }}
-                style={{width:48,height:26,borderRadius:13,background:artist.status==="approved"&&!artist.isHidden?C.emerald:C.border,position:"relative",flexShrink:0,border:"none",cursor:artist.status==="approved"?"pointer":"not-allowed",padding:0}}>
-                <div style={{position:"absolute",top:3,left:artist.status==="approved"&&!artist.isHidden?"25px":"3px",width:20,height:20,borderRadius:"50%",background:"#fff",transition:"left 0.2s",boxShadow:"0 1px 4px rgba(0,0,0,0.3)"}}/>
+                style={{width:48,height:26,borderRadius:13,background:artist.isHidden?C.ruby:C.emerald,position:"relative",flexShrink:0,border:"none",cursor:artist.status==="approved"?"pointer":"not-allowed",padding:0}}>
+                <div style={{position:"absolute",top:3,left:artist.isHidden?"3px":"25px",width:20,height:20,borderRadius:"50%",background:"#fff",transition:"left 0.2s",boxShadow:"0 1px 4px rgba(0,0,0,0.3)"}}/>
               </button>
             </div>
           </div>
@@ -8240,6 +8266,7 @@ function AppInner() {
             available:a.available||{},blocked:a.blocked||{},
             earnings:a.earnings||0,totalBookings:a.total_bookings||0,
             verified:a.verified||false,
+            isHidden:a.is_hidden||false,
             stripeConnected:a.stripe_connected||false,
             stripeAccount:a.stripe_account||null,
             cancellationPolicy:a.cancellation_policy||"moderate",
@@ -8550,7 +8577,8 @@ function AppInner() {
                   joined:a.joined_date||"", available:a.available||{},
                   blocked:a.blocked||{}, earnings:a.earnings||0,
                   totalBookings:a.total_bookings||0, verified:a.verified||false,
-                  stripeConnected:a.stripe_connected||false,
+                  isHidden:a.is_hidden||false,
+            stripeConnected:a.stripe_connected||false,
                   stripeAccount:a.stripe_account||null,
                   cancellationPolicy:a.cancellation_policy||"moderate",
                   spotify:a.spotify_data||null, instagram:a.instagram_data||null,
