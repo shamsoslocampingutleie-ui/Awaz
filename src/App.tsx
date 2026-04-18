@@ -4567,7 +4567,7 @@ function SupportWidget({artistId}:{artistId:string}){
 }
 
 // ── Artist Portal ──────────────────────────────────────────────────────
-function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, onUpdateArtist }) {
+function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, onMsg, onUpdateArtist }) {
   const vp=useViewport();
   const {show:notify}=useNotif();
   const [tab,setTab]=useState("overview");
@@ -4632,10 +4632,14 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
       try{
         const sb=await getSupabase();
         if(sb) await sb.from("artists").update({
-          bio:updates.bio,
-          price_info:updates.priceInfo,
-          deposit:updates.deposit,
-          cancellation_policy:updates.cancellationPolicy,
+          bio:                 updates.bio,
+          price_info:          updates.priceInfo,
+          deposit:             updates.deposit,
+          cancellation_policy: updates.cancellationPolicy,
+          currency:            updates.currency||"EUR",
+          country:             updates.country||"NO",
+          photo:               artist.photo||null,
+          emoji:               artist.emoji||"🎤",
         }).eq("id",artist.id);
       }catch(e){console.warn("Supabase artist update failed:",e);}
     }
@@ -5606,10 +5610,54 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
         .select("*")
         .eq("artist_id", artist.id)
         .order("created_at",{ascending:false});
-      if(data) setSongRequests(data);
+      if(data){
+        const prevPending = songRequests.filter(r=>r.status==="pending").length;
+        const newPending  = data.filter(r=>r.status==="pending").length;
+        if(newPending > prevPending){
+          notify(`${newPending - prevPending} new song request(s)!`,"message");
+          sendBrowserNotif("New Song Request","Someone wants to hear a song live!");
+        }
+        setSongRequests(data);
+      }
     });
   },[artist.id]);
 
+
+  // Poll for new song requests every 30s
+  React.useEffect(()=>{
+    if(!HAS_SUPA) return;
+    const poll=setInterval(async()=>{
+      const sb=await getSupabase();
+      if(!sb) return;
+      const {data}=await sb.from("song_requests")
+        .select("*").eq("artist_id",artist.id).eq("status","pending");
+      if(data&&data.length>songRequests.filter(r=>r.status==="pending").length){
+        setSongRequests(p=>[...p.filter(r=>r.status!=="pending"),...data]);
+        notify(`New song request!`,"message");
+        sendBrowserNotif("New Song Request","Check your Requests tab!");
+      }
+    },30000);
+    return ()=>clearInterval(poll);
+  },[artist.id]);
+  // Poll for new song requests every 30s
+  React.useEffect(()=>{
+    if(!HAS_SUPA) return;
+    const poll=setInterval(async()=>{
+      const sb=await getSupabase();
+      if(!sb) return;
+      const {data}=await sb.from("song_requests")
+        .select("*").eq("artist_id",artist.id).eq("status","pending");
+      if(data){
+        const cur=songRequests.filter(r=>r.status==="pending").length;
+        if(data.length > cur){
+          notify(`${data.length-cur} new song request(s)!`,"message");
+          sendBrowserNotif("New Song Request — Awaz","Check your Requests tab!");
+          setSongRequests(p=>[...p.filter(r=>r.status!=="pending"),...data]);
+        }
+      }
+    },30000);
+    return ()=>clearInterval(poll);
+  },[artist.id, songRequests.length]);
   // Load messages from chat_messages table when Messages tab opens
   React.useEffect(()=>{
     if(tab !== "messages" || !HAS_SUPA) return;
@@ -7137,14 +7185,47 @@ function AppInner() {
       }
     }
   };
-  const handleToggle=(aid,month,year,day)=>setArtists(p=>p.map(a=>{
-    if(a.id!==aid)return a;
-    const k=`${year}-${month}`,av=[...(a.available[k]||[])],bl=[...(a.blocked[k]||[])];
-    if(av.includes(day))return{...a,available:{...a.available,[k]:av.filter(d=>d!==day)},blocked:{...a.blocked,[k]:[...bl,day]}};
-    if(bl.includes(day))return{...a,blocked:{...a.blocked,[k]:bl.filter(d=>d!==day)},available:{...a.available,[k]:[...av,day]}};
-    return{...a,available:{...a.available,[k]:[...av,day]}};
-  }));
-  const handleUpdateArtist=(id,updates)=>{setArtists(p=>p.map(a=>a.id===id?{...a,...updates}:a));if(selArtist?.id===id)setSelArtist(p=>p?{...p,...updates}:p);};
+  const handleToggle=async(aid,month,year,day)=>{
+    let newAvailable={},newBlocked={};
+    setArtists(p=>p.map(a=>{
+      if(a.id!==aid)return a;
+      const k=`${year}-${month}`,av=[...(a.available[k]||[])],bl=[...(a.blocked[k]||[])];
+      let updated;
+      if(av.includes(day)) updated={...a,available:{...a.available,[k]:av.filter(d=>d!==day)},blocked:{...a.blocked,[k]:[...bl,day]}};
+      else if(bl.includes(day)) updated={...a,blocked:{...a.blocked,[k]:bl.filter(d=>d!==day)},available:{...a.available,[k]:[...av,day]}};
+      else updated={...a,available:{...a.available,[k]:[...av,day]}};
+      newAvailable=updated.available;newBlocked=updated.blocked;
+      return updated;
+    }));
+    // Persist to Supabase immediately
+    if(HAS_SUPA&&Object.keys(newAvailable).length>0){
+      const sb=await getSupabase();
+      if(sb) await sb.from("artists").update({available:newAvailable,blocked:newBlocked}).eq("id",aid);
+    }
+  };
+  const handleUpdateArtist=async(id,updates)=>{
+    setArtists(p=>p.map(a=>a.id===id?{...a,...updates}:a));
+    if(selArtist?.id===id) setSelArtist(p=>p?{...p,...updates}:p);
+    // Persist specific fields to Supabase immediately (photo, boost, stripe, etc.)
+    const persistKeys=['photo','emoji','color','is_boosted','boosted_until','stripe_connected','stripe_account',
+      'verified','superhost','available','blocked','status','name','name_dari'];
+    const dbUpdates:any={};
+    if(updates.photo!==undefined)       dbUpdates.photo           = updates.photo;
+    if(updates.emoji!==undefined)       dbUpdates.emoji           = updates.emoji;
+    if(updates.isBoosted!==undefined)   dbUpdates.is_boosted      = updates.isBoosted;
+    if(updates.boostedUntil!==undefined)dbUpdates.boosted_until   = updates.boostedUntil;
+    if(updates.stripeConnected!==undefined)dbUpdates.stripe_connected=updates.stripeConnected;
+    if(updates.stripeAccount!==undefined)  dbUpdates.stripe_account  =updates.stripeAccount;
+    if(updates.available!==undefined)   dbUpdates.available       = updates.available;
+    if(updates.blocked!==undefined)     dbUpdates.blocked         = updates.blocked;
+    if(updates.countryPricing!==undefined)dbUpdates.country_pricing=updates.countryPricing;
+    if(Object.keys(dbUpdates).length>0 && HAS_SUPA){
+      const sb=await getSupabase();
+      if(sb) sb.from("artists").update(dbUpdates).eq("id",id).then(({error})=>{
+        if(error) console.warn("Artist update failed:",error.message);
+      });
+    }
+  };
   const handleNewBooking=async b=>{
     setBookings(p=>[...p,b]);
     notify(`New booking from ${b.customerName||"a customer"}!`,'booking');
@@ -7240,7 +7321,7 @@ function AppInner() {
   if(session?.role==="artist"){
     const myA=artists.find(a=>a.id===session.artistId);
     // Only show dashboard if artist is approved by admin
-    if(myA && myA.status==="approved") return <ArtistPortal key={lang} user={session} artist={myA} bookings={bookings} onLogout={logout} onToggleDay={handleToggle} onMsg={handleMsg} onUpdateArtist={handleUpdateArtist}/>;
+    if(myA && myA.status==="approved") return <ArtistPortal key={lang} user={session} artist={myA} bookings={bookings} onLogout={logout} session={session} onToggleDay={handleToggle} onMsg={handleMsg} onUpdateArtist={handleUpdateArtist}/>;
     // Wait for hydration — avoid race condition on page refresh
     if(!appReady) return(
       <div style={{minHeight:"100vh",background:C.bg,display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:16,fontFamily:"'DM Sans',sans-serif"}}>
