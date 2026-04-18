@@ -7275,13 +7275,13 @@ function DemoPage({onBook, onApply, vp}:{onBook:()=>void;onApply:()=>void;vp:any
                       <div style={{marginBottom:12}}>
                         <div style={{fontSize:11,fontWeight:700,color:S.muted,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:6}}>{t('demoSongTitleField')}</div>
                         <input value={songTitle} onChange={e=>setSongTitle(e.target.value)}
-                          placeholder=t('demoSongPh')
+                          placeholder={t('demoSongPh')}
                           style={{width:"100%",background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:10,padding:"11px 14px",color:S.text,fontSize:14,fontFamily:"inherit",outline:"none",boxSizing:"border-box"}}/>
                       </div>
                       <div style={{marginBottom:16}}>
                         <div style={{fontSize:11,fontWeight:700,color:S.muted,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:6}}>{t('demoYourName')}</div>
                         <input value={guestName} onChange={e=>setGuestName(e.target.value)}
-                          placeholder=t('demoNamePh')
+                          placeholder={t('demoNamePh')}
                           style={{width:"100%",background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:10,padding:"11px 14px",color:S.text,fontSize:14,fontFamily:"inherit",outline:"none",boxSizing:"border-box"}}/>
                       </div>
                       <div style={{background:"rgba(34,197,94,0.06)",border:"1px solid rgba(34,197,94,0.15)",borderRadius:10,padding:"10px 12px",marginBottom:14,fontSize:12,color:S.green,fontWeight:700}}>
