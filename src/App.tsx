@@ -4358,15 +4358,23 @@ function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction,
             <button onClick={()=>{setAdminChatArtist(a);setTab("chat");}} style={{background:C.surface,color:C.muted,border:`1px solid ${C.border}`,borderRadius:7,padding:"6px 14px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit",marginLeft:"auto"}}>💬 Message</button>
             <button onClick={async()=>{
               if(!confirm(`Delete "${a.name}" permanently? This cannot be undone.`)) return;
+              // Update local state immediately
               setArtists(p=>p.filter(x=>x.id!==a.id));
               if(HAS_SUPA){
-                const sb=await getSupabase();
-                if(sb){
-                  await sb.from("artists").delete().eq("id",a.id);
-                  await sb.from("profiles").delete().eq("artist_id",a.id);
-                  await sb.from("users").delete().eq("id",a.id);
-                  // Delete from auth (needs service key - just soft-delete via users)
-                }
+                try{
+                  const sb=await getSupabase();
+                  if(sb){
+                    // Delete in correct order (foreign key constraints)
+                    await sb.from("song_requests").delete().eq("artist_id",a.id);
+                    await sb.from("chat_messages").delete().eq("artist_id",a.id);
+                    await sb.from("bookings").delete().eq("artist_id",a.id);
+                    await sb.from("reviews").delete().eq("artist_id",a.id);
+                    await sb.from("artists").delete().eq("id",a.id);
+                    // Also clean up user profile
+                    await sb.from("profiles").delete().eq("id",a.id);
+                    await sb.from("users").delete().eq("id",a.id);
+                  }
+                }catch(e){console.warn("Delete artist error:",e);}
               }
             }} style={{background:"rgba(168,44,56,0.08)",color:C.ruby,border:`1px solid ${C.ruby}33`,borderRadius:7,padding:"6px 10px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit",lineHeight:1}}>🗑</button>
           </div>
@@ -4612,7 +4620,10 @@ function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction,
                       e.stopPropagation();
                       if(!confirm("Delete this inquiry?")) return;
                       onUpdateInquiry(inq.id,{status:"deleted"});
-                      if(HAS_SUPA){const sb=await getSupabase();if(sb)await sb.from("inquiries").delete().eq("id",inq.id);}
+                      if(HAS_SUPA){
+                        try{const sb=await getSupabase();if(sb)await sb.from("inquiries").delete().eq("id",inq.id);}
+                        catch(e){console.warn("Delete inquiry error:",e);}
+                      }
                     }} style={{position:"absolute",top:8,right:8,background:"rgba(168,44,56,0.15)",color:C.ruby,border:"none",borderRadius:6,padding:"3px 7px",fontSize:11,cursor:"pointer",fontFamily:"inherit",opacity:0,transition:"opacity 0.15s",zIndex:2}}>🗑</button>
                     <div onClick={async()=>{
                       setSelInq(inq);setReplyText("");setReplySent(false);
