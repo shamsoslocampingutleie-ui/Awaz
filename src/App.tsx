@@ -4477,12 +4477,22 @@ function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction,
               if(!rejected.length){alert("No rejected artists.");return;}
               if(!confirm(`Delete ${rejected.length} rejected artist(s) permanently?`)) return;
               setArtists(p=>p.filter(a=>a.status!=="rejected"));
-              if(HAS_SUPA){const sb=await getSupabase();if(sb)for(const a of rejected){
-                await sb.from("chat_messages").delete().eq("artist_id",a.id);
-                await sb.from("bookings").delete().eq("artist_id",a.id);
-                await sb.from("artists").delete().eq("id",a.id);
-                await sb.from("profiles").delete().eq("id",a.id);
-              }}
+              if(HAS_SUPA){
+                try{
+                  const sb=await getSupabase();
+                  if(sb){
+                    for(const a of rejected){
+                      await sb.from("song_requests").delete().eq("artist_id",a.id);
+                      await sb.from("chat_messages").delete().eq("artist_id",a.id);
+                      await sb.from("bookings").delete().eq("artist_id",a.id);
+                      await sb.from("reviews").delete().eq("artist_id",a.id);
+                      await sb.from("artists").delete().eq("id",a.id);
+                      await sb.from("profiles").delete().eq("id",a.id);
+                      await sb.from("users").delete().eq("id",a.id);
+                    }
+                  }
+                }catch(e){console.warn("Bulk delete error:",e);}
+              }
             }} style={{background:"rgba(168,44,56,0.07)",color:C.ruby,border:`1px solid ${C.ruby}22`,borderRadius:8,padding:"6px 14px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>
               🗑 Remove all rejected ({displayArtists.filter(a=>a.status==="rejected").length})
             </button>
@@ -4778,7 +4788,9 @@ function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction,
                       setAdminChats(p=>({...p,[adminChatArtist.id]:[]}));
                       if(HAS_SUPA){
                         const sb=await getSupabase();
-                        if(sb) await sb.from("chat_messages").delete().eq("artist_id",adminChatArtist.id);
+                        try{
+                    if(sb) await sb.from("chat_messages").delete().eq("artist_id",adminChatArtist.id);
+                  }catch(e){console.warn("Clear chat error:",e);}
                       }
                     }} style={{background:"rgba(168,44,56,0.08)",color:C.ruby,border:`1px solid ${C.ruby}33`,borderRadius:7,padding:"5px 10px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit",flexShrink:0}}>
                       🗑 Clear
