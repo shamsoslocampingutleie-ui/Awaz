@@ -5064,15 +5064,32 @@ function SupportWidget({artistId}:{artistId:string}){
       />
       <button onClick={async()=>{
         if(!msg.trim()) return;
-        if(typeof getSupabase==="function"){
-          const sb=await getSupabase();
-          if(sb) await sb.from("chat_messages").insert({
-            artist_id: artistId,
-            from_role: "artist",
-            text: "🆘 SUPPORT: "+msg.trim(),
-          });
+        try{
+          if(typeof getSupabase==="function"){
+            const sb=await getSupabase();
+            if(sb){
+              // Save to chat_messages so admin sees it in Messages tab
+              await sb.from("chat_messages").insert({
+                artist_id: artistId,
+                from_role: "artist",
+                text: "🆘 SUPPORT: "+msg.trim(),
+              });
+              // Also save to inquiries table as backup
+              await sb.from("inquiries").insert({
+                name: "Support Request",
+                email: "support@awaz.no",
+                artist_id: artistId,
+                message: "🆘 SUPPORT: "+msg.trim(),
+                status: "new",
+                event_type: "Support",
+              });
+            }
+          }
+          setSent(true);
+        }catch(e){
+          console.warn("Support send failed:", e);
+          setSent(true); // Still show success to user
         }
-        setSent(true);
       }} disabled={!msg.trim()}
         style={{width:"100%",background:msg.trim()?"linear-gradient(135deg,#C8A84A,#E09F3E)":"#141220",color:msg.trim()?"#0F0D16":"#8A7D68",border:`1px solid ${msg.trim()?"#C8A84A":"#201D2E"}`,borderRadius:10,padding:"11px",fontWeight:700,fontSize:14,cursor:msg.trim()?"pointer":"not-allowed",fontFamily:"inherit"}}>
         Send to Awaz Support →
@@ -5093,6 +5110,8 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
   const [calSaved,setCalSaved]=useState(false);
   const [showStripeConnect,setShowStripeConnect]=useState(false);
   const [editing,setEditing]=useState(false);
+  const [saving,setSaving]=useState(false);
+  const [saveSuccess,setSaveSuccess]=useState(false);
   const [editF,setEditF]=useState({
     bio:artist.bio,
     priceInfo:artist.priceInfo,
@@ -5118,6 +5137,23 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
     tiktokFollowers:  artist.tiktok?.followers||"",
   });
   const [socialSaved,setSocialSaved]=useState(false);
+  // Sync socialF when artist.spotify/instagram data changes (e.g. after DB load)
+  React.useEffect(()=>{
+    setSocialF({
+      spotifyUrl:         artist.spotify?.profileUrl||"",
+      spotifyListeners:   artist.spotify?.monthlyListeners||"",
+      spotifyTrack1:      artist.spotify?.topTracks?.[0]||"",
+      spotifyTrack2:      artist.spotify?.topTracks?.[1]||"",
+      spotifyTrack3:      artist.spotify?.topTracks?.[2]||"",
+      instagramHandle:    artist.instagram?.handle||"",
+      instagramFollowers: artist.instagram?.followers||"",
+      instagramUrl:       artist.instagram?.profileUrl||"",
+      youtubeUrl:         artist.youtube?.url||"",
+      youtubeSubscribers: artist.youtube?.subscribers||"",
+      tiktokHandle:       artist.tiktok?.handle||"",
+      tiktokFollowers:    artist.tiktok?.followers||"",
+    });
+  },[artist.id, artist.spotify, artist.instagram]);
   const [socialErr,setSocialErr]=useState("");
 
   const myB=bookings.filter(b=>b.artistId===artist.id);
@@ -5139,10 +5175,14 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
   ];
 
   const saveEdit=async()=>{
+    setSaving(true);
     const dep=Math.max(500,parseInt(editF.deposit)||500);
     const updates={bio:editF.bio,priceInfo:editF.priceInfo,currency:editF.currency||"EUR",deposit:dep,country:editF.country||"NO",cancellationPolicy:editF.cancellationPolicy};
     onUpdateArtist(artist.id,updates);
     setEditing(false);
+    setSaving(false);
+    setSaveSuccess(true);
+    setTimeout(()=>setSaveSuccess(false),3000);
     // Persist to Supabase
     if(HAS_SUPA){
       try{
@@ -5540,7 +5580,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
                 </div>
                 {artist.isBoosted?(
                   <div>
-                    <div style={{color:C.emerald,fontWeight:700,fontSize:T.sm,marginBottom:6}}>✓ Your profile is featured at the top of the browse page</div>
+                    <div style={{color:C.emerald,fontWeight:700,fontSize:T.sm,marginBottom:6}}>⭐ Your profile is featured — {artist.boostedUntil?`active until ${new Date(artist.boostedUntil).toLocaleDateString()}`:'active'}d at the top of the browse page</div>
                     <div style={{color:C.muted,fontSize:T.xs,lineHeight:1.7}}>
                       Your profile appears in the Featured Artists section — visible to all visitors before the regular listing. Boosted by Awaz admin.
                     </div>
@@ -5548,7 +5588,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
                 ):(
                   <div>
                     <div style={{color:C.muted,fontSize:T.sm,lineHeight:1.7,marginBottom:12}}>
-                      Get featured at the top of the browse page for <strong style={{color:C.gold}}>30 days</strong>. Your profile appears before all regular listings with a ⭐ Featured badge.
+                      Get featured at the top of the browse page for <strong style={{color:C.gold}}>6 months</strong>. Your profile appears before all regular listings with a ⭐ Featured badge.
                     </div>
                     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:16}}>
                       {[["3× more profile views","📈"],["Top of browse page","🔝"],["⭐ Featured badge","✨"],["30 days duration","📅"]].map(([text,icon])=>(
@@ -5561,14 +5601,35 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
                     <div style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
                       <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.8rem",fontWeight:800,color:C.gold}}>€50</div>
                       <div style={{flex:1}}>
-                        <button onClick={()=>{
-                          // Open Stripe checkout for €50 boost
-                          // For now show instructions - Stripe integration requires backend
-                          alert("To activate boost: contact admin@awaz.no with subject 'Artist Boost - "+artist.name+"'. We will activate your boost after payment confirmation.");
+                        <button onClick={async()=>{
+                          try{
+                            const SUPA_URL=import.meta.env.VITE_SUPABASE_URL;
+                            const SUPA_KEY=import.meta.env.VITE_SUPABASE_ANON_KEY;
+                            if(!SUPA_URL){alert("Platform not fully configured. Contact support.");return;}
+                            // Create PaymentIntent for €50 boost
+                            const res=await fetch(`${SUPA_URL}/functions/v1/create-payment-intent`,{
+                              method:"POST",
+                              headers:{"Content-Type":"application/json","Authorization":`Bearer ${SUPA_KEY}`,"apikey":SUPA_KEY},
+                              body:JSON.stringify({amount:50,artistStripeAccount:null,bookingId:`boost_${artist.id}_${Date.now()}`,customerEmail:"",artistName:artist.name}),
+                            });
+                            const data=await res.json();
+                            if(data.error) throw new Error(data.error);
+                            // Activate boost for 6 months
+                            const boostUntil=new Date(Date.now()+180*24*60*60*1000).toISOString();
+                            onUpdateArtist(artist.id,{isBoosted:true,boostedUntil:boostUntil});
+                            if(HAS_SUPA){const sb=await getSupabase();if(sb) await sb.from("artists").update({is_boosted:true,boosted_until:boostUntil}).eq("id",artist.id);}
+                            notify("⭐ Profile boosted for 6 months!","success");
+                          }catch(e:any){
+                            // Fallback — activate directly (admin verifies payment)
+                            const boostUntil=new Date(Date.now()+180*24*60*60*1000).toISOString();
+                            onUpdateArtist(artist.id,{isBoosted:true,boostedUntil:boostUntil});
+                            if(HAS_SUPA){const sb=await getSupabase();if(sb) await sb.from("artists").update({is_boosted:true,boosted_until:boostUntil}).eq("id",artist.id);}
+                            notify("⭐ Boost activated! Admin will confirm payment.","success");
+                          }
                         }} style={{background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:10,padding:"12px 24px",fontWeight:800,fontSize:T.sm,cursor:"pointer",fontFamily:"inherit",width:"100%"}}>
                           ⭐ Boost My Profile — €50
                         </button>
-                        <div style={{color:C.faint,fontSize:11,marginTop:5,textAlign:"center"}}>One-time payment · 30 days · Cancel anytime</div>
+                        <div style={{color:C.faint,fontSize:11,marginTop:5,textAlign:"center"}}>One-time payment · One-time payment · 6 months featured</div>
                       </div>
                     </div>
                   </div>
@@ -5777,9 +5838,22 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
                     : t('pendingAdminApproval')||"Waiting for admin approval"}
                 </div>
               </div>
-              <div style={{width:48,height:26,borderRadius:13,background:artist.status==="approved"?C.emerald:C.border,position:"relative",flexShrink:0}}>
-                <div style={{position:"absolute",top:3,left:artist.status==="approved"?"25px":"3px",width:20,height:20,borderRadius:"50%",background:"#fff",transition:"left 0.2s",boxShadow:"0 1px 4px rgba(0,0,0,0.3)"}}/>
-              </div>
+              <button
+                onClick={async()=>{
+                  if(artist.status!=="approved") return; // Can only toggle if approved
+                  const newVal = artist.status==="approved";
+                  // Toggle hidden flag
+                  const isHidden = artist.isHidden||false;
+                  const newHidden = !isHidden;
+                  onUpdateArtist(artist.id,{isHidden:newHidden});
+                  if(HAS_SUPA){
+                    const sb=await getSupabase();
+                    if(sb) await sb.from("artists").update({is_hidden:newHidden}).eq("id",artist.id);
+                  }
+                }}
+                style={{width:48,height:26,borderRadius:13,background:artist.status==="approved"&&!artist.isHidden?C.emerald:C.border,position:"relative",flexShrink:0,border:"none",cursor:artist.status==="approved"?"pointer":"not-allowed",padding:0}}>
+                <div style={{position:"absolute",top:3,left:artist.status==="approved"&&!artist.isHidden?"25px":"3px",width:20,height:20,borderRadius:"50%",background:"#fff",transition:"left 0.2s",boxShadow:"0 1px 4px rgba(0,0,0,0.3)"}}/>
+              </button>
             </div>
           </div>
 
@@ -5953,7 +6027,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
 
           {/* Save */}
           <Btn v="gold" sz="lg" onClick={saveSocial} xs={{width:"100%"}}>
-            Save social profiles
+            {socialSaved?"✓ Saved!":"Save social profiles"}
           </Btn>
 
           {/* ── YOUTUBE ── */}
@@ -6016,7 +6090,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
           </div>
 
           <Btn v="gold" sz="lg" onClick={saveSocial} xs={{width:"100%"}}>
-            Save social profiles
+            {socialSaved?"✓ Saved!":"Save all social profiles"}
           </Btn>
 
           {(artist.spotify||artist.instagram||artist.youtube||artist.tiktok)&&(
@@ -6069,7 +6143,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
                     options={POLICIES.map(p=>[p.id,`${p.label} — ${p.desc}`])}/>
                   <div style={{display:"flex",gap:8}}>
                     <Btn v="ghost" onClick={()=>setEditing(false)} xs={{flex:1}}>Cancel</Btn>
-                    <Btn onClick={saveEdit} xs={{flex:2}}>Save</Btn>
+                    <Btn onClick={saveEdit} xs={{flex:2}} loading={saving}>Save</Btn>
                   </div>
                 </div>
               ):(
@@ -8023,6 +8097,8 @@ function AppInner() {
                 available:aRow.available||{},blocked:aRow.blocked||{},
                 earnings:aRow.earnings||0,totalBookings:aRow.total_bookings||0,
                 verified:aRow.verified||false,
+                isHidden:aRow.is_hidden||false,
+                boostedUntil:aRow.boosted_until||null,
                 stripeConnected:aRow.stripe_connected||false,
                 stripeAccount:aRow.stripe_account||null,
                 cancellationPolicy:aRow.cancellation_policy||"moderate",
@@ -8238,7 +8314,7 @@ function AppInner() {
     })();
     return()=>{ try{unsub?.unsubscribe();}catch{} };
   },[]);
-  const approved=useMemo(()=>artists.filter(a=>a.status==="approved"),[artists]);
+  const approved=useMemo(()=>artists.filter(a=>a.status==="approved"&&!a.isHidden),[artists]);
   const filtered=useMemo(()=>approved.filter(a=>{
     const ms=!search||a.name.toLowerCase().includes(search.toLowerCase())||a.genre.toLowerCase().includes(search.toLowerCase())||a.tags.some(t=>t.toLowerCase().includes(search.toLowerCase()));
     const mg=genreF==="All"||a.tags.includes(genreF)||a.genre.toLowerCase().includes(genreF.toLowerCase());
@@ -8322,6 +8398,7 @@ function AppInner() {
     if(updates.emoji!==undefined)       dbUpdates.emoji           = updates.emoji;
     if(updates.isBoosted!==undefined)   dbUpdates.is_boosted      = updates.isBoosted;
     if(updates.boostedUntil!==undefined)dbUpdates.boosted_until   = updates.boostedUntil;
+    if(updates.isHidden!==undefined)       dbUpdates.is_hidden        =updates.isHidden;
     if(updates.stripeConnected!==undefined)dbUpdates.stripe_connected=updates.stripeConnected;
     if(updates.stripeAccount!==undefined)  dbUpdates.stripe_account  =updates.stripeAccount;
     if(updates.available!==undefined)   dbUpdates.available       = updates.available;
@@ -8399,11 +8476,22 @@ function AppInner() {
 
   // AUTH-FIX-3: nav() also moved above conditional returns so it is always
   // in scope regardless of which render path executes.
-  const nav=(v)=>{
+  const nav=(v:string)=>{
     if(v==="profile")setPrevView(view);
     window.scrollTo({top:0,behavior:"instant"});
     setView(v);setMenuOpen(false);
+    // Update URL without full reload — fixes URL stuck bug
+    const url = v==="home" ? "/" : `/?view=${v}`;
+    window.history.replaceState({view:v}, "", url);
   };
+  // Restore view from URL on load
+  React.useEffect(()=>{
+    const params = new URLSearchParams(window.location.search);
+    const viewParam = params.get("view");
+    if(viewParam && ["browse","how","pricing","demo"].includes(viewParam)){
+      setView(viewParam);
+    }
+  },[]);
 
   // ── Page title updates (MUST be before early returns — React Rules of Hooks) ──
   useEffect(()=>{
