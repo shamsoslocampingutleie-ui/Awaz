@@ -7409,8 +7409,8 @@ function AppInner() {
   const urlReqArtistId = new URLSearchParams(typeof window!=="undefined"?window.location.search:"").get("request");;
   const [showPrivacy,setShowPrivacy]=useState(false);
   const [artists,setArtists]=useState<any[]>([]);
-  const [bookings,setBookings]=useState(DEMO_BOOKINGS);
-  const [inquiries,setInquiries]=useState(DEMO_INQUIRIES);
+  const [bookings,setBookings]=useState<any[]>([]);
+  const [inquiries,setInquiries]=useState<any[]>([]);
   const handleNewInquiry=inq=>{setInquiries(p=>[inq,...p]);notify(`New inquiry from ${inq.name||'a visitor'}!`,'inquiry'); sendBrowserNotif('New Inquiry — Awaz',`${inq.name||'Someone'} sent a private inquiry`);};
   const handleUpdateInquiry=(id,updates)=>setInquiries(p=>p.map(i=>i.id===id?{...i,...updates}:i));
   const [session,setSession]=useState(null);
