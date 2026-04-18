@@ -510,6 +510,44 @@ const TRANSLATIONS = {
     demoJoinTitle:"Ready to Join Awaz?",
     demoJoinSub:"Start receiving bookings from the Afghan diaspora across Europe. Free to apply — no subscription, no upfront cost.",
     demoJoinBtn:"Apply as Artist — It's Free →",
+    demoFeat1Title:"Professional Profile",
+    demoFeat1Desc:"Public-facing artist page with bio, instruments, social links, reviews and a booking calendar. Customers find you and book directly.",
+    demoFeat2Title:"Direct Bookings",
+    demoFeat2Desc:"Customers pay a deposit via Stripe. You receive 88% automatically. No invoicing, no chasing payments — it just works.",
+    demoFeat3Title:"Built-in Messaging",
+    demoFeat3Desc:"All communication happens on the platform after deposit payment. No WhatsApp, no email chains — clean and professional.",
+    demoFeat4Title:"Live Song Requests",
+    demoFeat4Desc:"During your event, guests scan your QR code to request songs and tip. You see requests live and manage them from your phone.",
+    demoFeat5Title:"Earnings Dashboard",
+    demoFeat5Desc:"Real-time overview of bookings, pending deposits, completed events and total earnings. Full transparency at all times.",
+    demoFeat6Title:"Verified Reviews",
+    demoFeat6Desc:"Only guests who actually booked you can leave reviews. Builds genuine credibility over time.",
+    demoFeat7Title:"European Reach",
+    demoFeat7Desc:"Reach the Afghan diaspora across Norway, Sweden, Germany, UK, France and beyond — one platform for all of Europe.",
+    demoFeat8Title:"Instant Notifications",
+    demoFeat8Desc:"Get notified the moment a booking comes in, a message arrives or a song is requested — browser push + in-app toasts.",
+    demoFieldName:"Your Name",
+    demoFieldEmail:"Email",
+    demoFieldEventType:"Event Type",
+    demoFieldDate:"Event Date",
+    demoFieldDatePh:"e.g. 15 June 2025",
+    demoFieldTypePh:"Wedding / Eid / Gala",
+    demoTotalEarned:"Total Earned",
+    demoThisYear:"This year",
+    demoConfirmedLabel:"Confirmed",
+    demoNewRequests:"New requests",
+    demoRatingLabel:"reviews",
+    demoPendingLabel:"pending",
+    demoSeeSongReq:"See Song Requests →",
+    demoSeeArtistDash:"See Artist Dashboard →",
+    demoTryBooking:"Try Booking Flow →",
+    demoNotified:"The artist receives a notification instantly.",
+    demoDepositSecured:"deposit secured via Stripe.",
+    demoArtistGets:"Artist gets",
+    demoAwazKeeps:"Awaz keeps",
+    demoSplitNote:"For every €1,000 deposit, you receive €880 (88%) directly to your Stripe account. Awaz keeps €120 (12%) as platform fee.",
+    demoSongPh:"e.g. Leili Jan, Bya Ke Bya…",
+    demoNamePh:"e.g. Layla, Ahmad…",
   },
 
   no: {
@@ -793,6 +831,44 @@ const TRANSLATIONS = {
     demoJoinTitle:"Klar for å bli med i Awaz?",
     demoJoinSub:"Begynn å motta bookinger fra den afghanske diasporaen i Europa. Gratis å søke — ingen abonnement, ingen forhåndskostnader.",
     demoJoinBtn:"Søk som artist — gratis →",
+    demoFeat1Title:"Profesjonell profil",
+    demoFeat1Desc:"Offentlig artistside med bio, instrumenter, sosiale lenker, anmeldelser og bookingkalender. Kunder finner deg og booker direkte.",
+    demoFeat2Title:"Direkte bookinger",
+    demoFeat2Desc:"Kunder betaler depositum via Stripe. Du mottar 88% automatisk. Ingen fakturering, ingen jaging av betalinger — det bare fungerer.",
+    demoFeat3Title:"Innebygd meldinger",
+    demoFeat3Desc:"All kommunikasjon skjer på plattformen etter depositumbetaling. Ingen WhatsApp, ingen e-postkjeder — rent og profesjonelt.",
+    demoFeat4Title:"Live sangønsker",
+    demoFeat4Desc:"Under arrangementet skanner gjestene QR-koden din for å be om sanger og gi tips. Du ser ønsker live og administrerer dem fra telefonen.",
+    demoFeat5Title:"Inntektsdashboard",
+    demoFeat5Desc:"Sanntidsoversikt over bookinger, ventende depositum, fullførte arrangementer og total inntekt. Full åpenhet til enhver tid.",
+    demoFeat6Title:"Verifiserte anmeldelser",
+    demoFeat6Desc:"Bare gjester som faktisk har booket deg kan legge igjen anmeldelser. Bygger ekte troverdighet over tid.",
+    demoFeat7Title:"Europeisk rekkevidde",
+    demoFeat7Desc:"Nå den afghanske diasporaen i Norge, Sverige, Tyskland, Storbritannia, Frankrike og videre — én plattform for hele Europa.",
+    demoFeat8Title:"Øyeblikkelige varsler",
+    demoFeat8Desc:"Bli varslet i det øyeblikket en booking kommer inn, en melding ankommer eller en sang ønskes — nettleserpush + in-app-toast.",
+    demoFieldName:"Ditt navn",
+    demoFieldEmail:"E-post",
+    demoFieldEventType:"Arrangementstype",
+    demoFieldDate:"Arrangementsdato",
+    demoFieldDatePh:"f.eks. 15. juni 2025",
+    demoFieldTypePh:"Bryllup / Eid / Gala",
+    demoTotalEarned:"Total inntjent",
+    demoThisYear:"I år",
+    demoConfirmedLabel:"Bekreftet",
+    demoNewRequests:"Nye forespørsler",
+    demoRatingLabel:"anmeldelser",
+    demoPendingLabel:"venter",
+    demoSeeSongReq:"Se sangønsker →",
+    demoSeeArtistDash:"Se artistdashboard →",
+    demoTryBooking:"Prøv bookingflyt →",
+    demoNotified:"Artisten mottar et varsel øyeblikkelig.",
+    demoDepositSecured:"depositum sikret via Stripe.",
+    demoArtistGets:"Artist mottar",
+    demoAwazKeeps:"Awaz beholder",
+    demoSplitNote:"For hvert €1 000-depositum mottar du €880 (88%) direkte til din Stripe-konto. Awaz beholder €120 (12%) som plattformgebyr.",
+    demoSongPh:"f.eks. Leili Jan, Bya Ke Bya…",
+    demoNamePh:"f.eks. Layla, Ahmad…",
   },
 
   de: {
@@ -1076,6 +1152,44 @@ const TRANSLATIONS = {
     demoJoinTitle:"Bereit, Awaz beizutreten?",
     demoJoinSub:"Beginnen Sie, Buchungen von der afghanischen Diaspora in Europa zu erhalten. Kostenlos bewerben.",
     demoJoinBtn:"Als Künstler bewerben — kostenlos →",
+    demoFeat1Title:"Professionelles Profil",
+    demoFeat1Desc:"Öffentliche Künstlerseite mit Bio, Instrumenten, Social Links, Bewertungen und Buchungskalender. Kunden finden Sie und buchen direkt.",
+    demoFeat2Title:"Direkte Buchungen",
+    demoFeat2Desc:"Kunden zahlen eine Anzahlung via Stripe. Sie erhalten automatisch 88%. Keine Rechnungsstellung, kein Nachjagen von Zahlungen.",
+    demoFeat3Title:"Integriertes Messaging",
+    demoFeat3Desc:"Alle Kommunikation findet nach der Anzahlung auf der Plattform statt. Kein WhatsApp, keine E-Mail-Ketten — sauber und professionell.",
+    demoFeat4Title:"Live-Musikwünsche",
+    demoFeat4Desc:"Bei Ihrer Veranstaltung scannen Gäste Ihren QR-Code, um Songs zu wünschen und Trinkgeld zu geben. Sie sehen Wünsche live.",
+    demoFeat5Title:"Einnahmen-Dashboard",
+    demoFeat5Desc:"Echtzeit-Übersicht über Buchungen, ausstehende Anzahlungen, abgeschlossene Events und Gesamteinnahmen.",
+    demoFeat6Title:"Verifizierte Bewertungen",
+    demoFeat6Desc:"Nur Gäste, die Sie tatsächlich gebucht haben, können Bewertungen hinterlassen. Baut echte Glaubwürdigkeit auf.",
+    demoFeat7Title:"Europäische Reichweite",
+    demoFeat7Desc:"Erreichen Sie die afghanische Diaspora in Norwegen, Schweden, Deutschland, UK, Frankreich und darüber hinaus.",
+    demoFeat8Title:"Sofortige Benachrichtigungen",
+    demoFeat8Desc:"Werden Sie benachrichtigt, sobald eine Buchung eingeht, eine Nachricht ankommt oder ein Song gewünscht wird.",
+    demoFieldName:"Ihr Name",
+    demoFieldEmail:"E-Mail",
+    demoFieldEventType:"Veranstaltungsart",
+    demoFieldDate:"Veranstaltungsdatum",
+    demoFieldDatePh:"z.B. 15. Juni 2025",
+    demoFieldTypePh:"Hochzeit / Eid / Gala",
+    demoTotalEarned:"Gesamtverdienst",
+    demoThisYear:"Dieses Jahr",
+    demoConfirmedLabel:"Bestätigt",
+    demoNewRequests:"Neue Anfragen",
+    demoRatingLabel:"Bewertungen",
+    demoPendingLabel:"ausstehend",
+    demoSeeSongReq:"Musikwünsche ansehen →",
+    demoSeeArtistDash:"Künstler-Dashboard →",
+    demoTryBooking:"Buchungsablauf testen →",
+    demoNotified:"Der Künstler erhält sofort eine Benachrichtigung.",
+    demoDepositSecured:"Anzahlung gesichert via Stripe.",
+    demoArtistGets:"Künstler erhält",
+    demoAwazKeeps:"Awaz behält",
+    demoSplitNote:"Bei jeder €1.000-Anzahlung erhalten Sie €880 (88%) direkt auf Ihr Stripe-Konto. Awaz behält €120 (12%) als Plattformgebühr.",
+    demoSongPh:"z.B. Leili Jan, Bya Ke Bya…",
+    demoNamePh:"z.B. Layla, Ahmad…",
   },
 
   fr: {
@@ -1359,6 +1473,44 @@ const TRANSLATIONS = {
     demoJoinTitle:"Prêt à rejoindre Awaz?",
     demoJoinSub:"Commencez à recevoir des réservations de la diaspora afghane en Europe. Gratuit pour postuler.",
     demoJoinBtn:"Postuler comme artiste — gratuit →",
+    demoFeat1Title:"Profil professionnel",
+    demoFeat1Desc:"Page artiste publique avec bio, instruments, liens sociaux, avis et calendrier de réservation. Les clients vous trouvent et réservent directement.",
+    demoFeat2Title:"Réservations directes",
+    demoFeat2Desc:"Les clients paient un acompte via Stripe. Vous recevez 88% automatiquement. Pas de facturation, pas de relances.",
+    demoFeat3Title:"Messagerie intégrée",
+    demoFeat3Desc:"Toute communication se passe sur la plateforme après le paiement de l'acompte. Pas de WhatsApp, pas d'e-mails.",
+    demoFeat4Title:"Demandes de chansons en direct",
+    demoFeat4Desc:"Pendant votre événement, les invités scannent votre QR code pour demander des chansons. Vous voyez les demandes en direct.",
+    demoFeat5Title:"Tableau de bord des revenus",
+    demoFeat5Desc:"Vue d'ensemble en temps réel des réservations, acomptes en attente, événements terminés et revenus totaux.",
+    demoFeat6Title:"Avis vérifiés",
+    demoFeat6Desc:"Seuls les invités qui vous ont réellement réservé peuvent laisser des avis. Construit une crédibilité authentique.",
+    demoFeat7Title:"Portée européenne",
+    demoFeat7Desc:"Atteignez la diaspora afghane en Norvège, Suède, Allemagne, Royaume-Uni, France et au-delà.",
+    demoFeat8Title:"Notifications instantanées",
+    demoFeat8Desc:"Soyez notifié dès qu'une réservation arrive, un message est reçu ou une chanson est demandée.",
+    demoFieldName:"Votre nom",
+    demoFieldEmail:"E-mail",
+    demoFieldEventType:"Type d'événement",
+    demoFieldDate:"Date de l'événement",
+    demoFieldDatePh:"ex. 15 juin 2025",
+    demoFieldTypePh:"Mariage / Aïd / Gala",
+    demoTotalEarned:"Total gagné",
+    demoThisYear:"Cette année",
+    demoConfirmedLabel:"Confirmé",
+    demoNewRequests:"Nouvelles demandes",
+    demoRatingLabel:"avis",
+    demoPendingLabel:"en attente",
+    demoSeeSongReq:"Voir les demandes →",
+    demoSeeArtistDash:"Tableau de bord →",
+    demoTryBooking:"Essayer la réservation →",
+    demoNotified:"L'artiste reçoit une notification instantanément.",
+    demoDepositSecured:"acompte sécurisé via Stripe.",
+    demoArtistGets:"L'artiste reçoit",
+    demoAwazKeeps:"Awaz garde",
+    demoSplitNote:"Pour chaque acompte de €1 000, vous recevez €880 (88%) directement sur votre compte Stripe. Awaz garde €120 (12%).",
+    demoSongPh:"ex. Leili Jan, Bya Ke Bya…",
+    demoNamePh:"ex. Layla, Ahmad…",
   },
 
   da: {
@@ -1643,6 +1795,44 @@ const TRANSLATIONS = {
     demoJoinTitle:"آماده پیوستن به آواز هستید؟",
     demoJoinSub:"شروع به دریافت رزرو از دیاسپورای افغان در اروپا کنید. درخواست رایگان است.",
     demoJoinBtn:"درخواست هنرمند — رایگان →",
+    demoFeat1Title:"پروفایل حرفه‌ای",
+    demoFeat1Desc:"صفحه عمومی هنرمند با بیو، ساز، لینک‌های شبکه اجتماعی، نظرات و تقویم رزرو.",
+    demoFeat2Title:"رزرو مستقیم",
+    demoFeat2Desc:"مشتریان از طریق Stripe پیش‌پرداخت می‌دهند. شما به‌طور خودکار 88٪ دریافت می‌کنید.",
+    demoFeat3Title:"پیام‌رسانی یکپارچه",
+    demoFeat3Desc:"تمام ارتباطات پس از پرداخت پیش‌پرداخت در پلتفرم انجام می‌شود. بدون واتساپ، بدون زنجیره ایمیل.",
+    demoFeat4Title:"درخواست آهنگ زنده",
+    demoFeat4Desc:"در رویداد شما، مهمانان کد QR شما را اسکن می‌کنند تا آهنگ درخواست دهند. شما درخواست‌ها را زنده می‌بینید.",
+    demoFeat5Title:"داشبورد درآمد",
+    demoFeat5Desc:"نمای کلی بلادرنگ از رزروها، پیش‌پرداخت‌های معلق، رویدادهای تمام شده و درآمد کل.",
+    demoFeat6Title:"نظرات تأیید شده",
+    demoFeat6Desc:"فقط مهمانانی که واقعاً شما را رزرو کرده‌اند می‌توانند نظر بگذارند.",
+    demoFeat7Title:"دسترسی اروپایی",
+    demoFeat7Desc:"به دیاسپورای افغان در نروژ، سوئد، آلمان، بریتانیا، فرانسه و فراتر از آن دسترسی داشته باشید.",
+    demoFeat8Title:"اعلان‌های فوری",
+    demoFeat8Desc:"به محض ورود رزرو، پیام یا درخواست آهنگ مطلع شوید.",
+    demoFieldName:"نام شما",
+    demoFieldEmail:"ایمیل",
+    demoFieldEventType:"نوع رویداد",
+    demoFieldDate:"تاریخ رویداد",
+    demoFieldDatePh:"مثلاً ۱۵ ژوئن ۲۰۲۵",
+    demoFieldTypePh:"عروسی / عید / گالا",
+    demoTotalEarned:"کل درآمد",
+    demoThisYear:"امسال",
+    demoConfirmedLabel:"تأیید شده",
+    demoNewRequests:"درخواست‌های جدید",
+    demoRatingLabel:"نظر",
+    demoPendingLabel:"در انتظار",
+    demoSeeSongReq:"مشاهده درخواست‌ها →",
+    demoSeeArtistDash:"داشبورد هنرمند →",
+    demoTryBooking:"امتحان رزرو →",
+    demoNotified:"هنرمند فوراً اعلان دریافت می‌کند.",
+    demoDepositSecured:"پیش‌پرداخت از طریق Stripe تضمین شده.",
+    demoArtistGets:"هنرمند دریافت می‌کند",
+    demoAwazKeeps:"آواز نگه می‌دارد",
+    demoSplitNote:"برای هر پیش‌پرداخت €۱۰۰۰، €۸۸۰ (۸۸٪) مستقیماً به حساب Stripe شما می‌رسد. آواز €۱۲۰ (۱۲٪) را نگه می‌دارد.",
+    demoSongPh:"مثلاً لیلی جان، بیا که بیا…",
+    demoNamePh:"مثلاً لیلا، احمد…",
   },
 
   ps: {
@@ -1927,6 +2117,44 @@ const TRANSLATIONS = {
     demoJoinTitle:"آیا د آواز سره یوځای کیدو ته چمتو یاست؟",
     demoJoinSub:"د اروپا کې د افغان ډیاسپورا نه بکنګونه ترلاسه کول پیل کړئ. غوښتنه وړیا ده.",
     demoJoinBtn:"د هنرمند غوښتنه — وړیا →",
+    demoFeat1Title:"مسلکي پروفایل",
+    demoFeat1Desc:"عامه هنرمند پاڼه د بایو، آلاتو، ټولنیزو لینکونو، بیاکتنو او بکنګ کلنډر سره.",
+    demoFeat2Title:"مستقیم بکنګونه",
+    demoFeat2Desc:"پیرودونکي د Stripe له لارې پیش پیسې ورکوي. تاسو اتوماتیک ۸۸٪ ترلاسه کوئ.",
+    demoFeat3Title:"جوړ شوی پیغام",
+    demoFeat3Desc:"د پیش پیسو پرداخت وروسته ټول اړیکې پلیټفارم کې کیږي. بدون واټساپ، بدون ایمیل.",
+    demoFeat4Title:"ژوندي د سندرې غوښتنې",
+    demoFeat4Desc:"ستاسو د پیښې پر مهال مهمانان ستاسو QR کوډ سکین کوي. تاسو غوښتنې ژوندي وینئ.",
+    demoFeat5Title:"د عاید ډشبورډ",
+    demoFeat5Desc:"د بکنګونو، معلق پیش پیسو او ټول عاید بلاتاخیره لید.",
+    demoFeat6Title:"تایید شوي بیاکتنې",
+    demoFeat6Desc:"یوازې هغه مهمانان چې تاسو یې ریښتیا بک کړي دي کولی شي بیاکتنې پریږدي.",
+    demoFeat7Title:"اروپایي رسیدنه",
+    demoFeat7Desc:"د اروپا کې افغان ډیاسپورا ته ورسیږئ — نارویجن، سویدن، جرمني، بریتانیا، فرانسه.",
+    demoFeat8Title:"سمدلاسه خبرتیاوې",
+    demoFeat8Desc:"کله چې بکنګ راشي، پیغام وصل شي یا سندره وغوښتل شي خبر شئ.",
+    demoFieldName:"ستاسو نوم",
+    demoFieldEmail:"برېښنالیک",
+    demoFieldEventType:"د پیښې ډول",
+    demoFieldDate:"د پیښې نیټه",
+    demoFieldDatePh:"د بیلګې: ۱۵ جون ۲۰۲۵",
+    demoFieldTypePh:"واده / اختر / ګالا",
+    demoTotalEarned:"ټول ګټل شوي",
+    demoThisYear:"سږکال",
+    demoConfirmedLabel:"تایید شوی",
+    demoNewRequests:"نوې غوښتنې",
+    demoRatingLabel:"بیاکتنې",
+    demoPendingLabel:"انتظار",
+    demoSeeSongReq:"د سندرې غوښتنې وګورئ →",
+    demoSeeArtistDash:"د هنرمند ډشبورډ →",
+    demoTryBooking:"د بکنګ جریان هڅه وکړئ →",
+    demoNotified:"هنرمند سمدلاسه خبرتیا ترلاسه کوي.",
+    demoDepositSecured:"د Stripe له لارې پیش پیسې خوندي دي.",
+    demoArtistGets:"هنرمند ترلاسه کوي",
+    demoAwazKeeps:"آواز ساتي",
+    demoSplitNote:"د هرې €۱۰۰۰ پیش پیسو لپاره، تاسو €۸۸۰ (۸۸٪) مستقیم خپل Stripe حساب ته ترلاسه کوئ.",
+    demoSongPh:"د بیلګې: لیلي جانه، بیا که بیا…",
+    demoNamePh:"د بیلګې: لیلا، احمد…",
   },
 };
 
@@ -5918,21 +6146,35 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
   },[artist.id]);
 
 
-  // Poll for new song requests every 30s
+  // ── TRUE REALTIME: Supabase subscription for song requests ──────────────
   React.useEffect(()=>{
     if(!HAS_SUPA) return;
-    const poll=setInterval(async()=>{
-      const sb=await getSupabase();
+    let channel:any = null;
+    getSupabase().then(sb=>{
       if(!sb) return;
-      const {data}=await sb.from("song_requests")
-        .select("*").eq("artist_id",artist.id).eq("status","pending");
-      if(data&&data.length>songRequests.filter(r=>r.status==="pending").length){
-        setSongRequests(p=>[...p.filter(r=>r.status!=="pending"),...data]);
-        notify(`New song request!`,"message");
-        sendBrowserNotif("New Song Request","Check your Requests tab!");
-      }
-    },30000);
-    return ()=>clearInterval(poll);
+      channel = sb
+        .channel(`song_requests_${artist.id}`)
+        .on("postgres_changes", {
+          event: "*",
+          schema: "public",
+          table: "song_requests",
+          filter: `artist_id=eq.${artist.id}`,
+        }, (payload:any) => {
+          if(payload.eventType === "INSERT"){
+            const newReq = payload.new;
+            setSongRequests(p => [newReq, ...p]);
+            notify(`🎵 New song request: "${newReq.song_title}"`, "message");
+            sendBrowserNotif("New Song Request — Awaz",
+              `"${newReq.song_title}" from ${newReq.guest_name}`);
+          } else if(payload.eventType === "UPDATE"){
+            setSongRequests(p => p.map(r => r.id===payload.new.id ? payload.new : r));
+          } else if(payload.eventType === "DELETE"){
+            setSongRequests(p => p.filter(r => r.id!==payload.old.id));
+          }
+        })
+        .subscribe();
+    });
+    return ()=>{ if(channel) channel.unsubscribe(); };
   },[artist.id]);
   // Poll for new song requests every 30s
   React.useEffect(()=>{
@@ -6001,7 +6243,36 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
     load();
     return ()=>{ cancelled = true; };
   },[tab, artist.id]);
-  return(
+
+  // ── REALTIME: admin chat messages ──────────────────────────────────────
+  React.useEffect(()=>{
+    if(!HAS_SUPA) return;
+    let channel:any = null;
+    getSupabase().then(sb=>{
+      if(!sb) return;
+      channel = sb
+        .channel(`chat_${artist.id}`)
+        .on("postgres_changes",{
+          event:"INSERT",
+          schema:"public",
+          table:"chat_messages",
+          filter:`artist_id=eq.${artist.id}`,
+        },(payload:any)=>{
+          const msg = payload.new;
+          if(msg.from_role==="admin"){
+            const newMsg={from:"admin",text:msg.text,time:new Date(msg.created_at).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})};
+            setLocalAdminMsgs(p=>{
+              if(!p.length) return [{id:"admin-chat-"+artist.id,artistId:artist.id,customerName:"Awaz Admin",customerEmail:"admin@awaz.no",date:"",event:"Messages from Awaz",deposit:0,status:"admin_chat",depositPaid:false,chatUnlocked:true,messages:[newMsg],country:""}];
+              return p.map((b,i)=>i===0?{...b,messages:[...b.messages,newMsg]}:b);
+            });
+            notify("💬 New message from Awaz team","message");
+            sendBrowserNotif("New message from Awaz","Check your Messages tab!");
+          }
+        })
+        .subscribe();
+    });
+    return ()=>{ if(channel) channel.unsubscribe(); };
+  },[artist.id]);return(
     <div style={{minHeight:"100vh",background:C.bg,display:"flex"}}>
       <div style={{height:2,background:`linear-gradient(90deg,${artist.color}88,${C.gold}88,${artist.color}88)`,position:"fixed",top:0,left:0,right:0,zIndex:200}}/>
       <div style={{width:220,background:C.surface,borderRight:`1px solid ${C.border}`,padding:"40px 0 24px",display:"flex",flexDirection:"column",position:"fixed",top:3,bottom:0,zIndex:100}}>
@@ -6689,14 +6960,14 @@ function DemoPage({onBook, onApply, vp}:{onBook:()=>void;onApply:()=>void;vp:any
               <div style={{color:S.muted,fontSize:14,marginBottom:24}}>{t('demoPlatformSub')}</div>
               <div style={{display:"grid",gridTemplateColumns:vp.isMobile?"1fr":"1fr 1fr",gap:12}}>
                 {[
-                  {icon:"🎤",title:"Professional Profile",desc:"Public-facing artist page with bio, instruments, social links, reviews and a booking calendar. Customers find you and book directly."},
-                  {icon:"💳",title:"Direct Bookings",desc:"Customers pay a deposit via Stripe. You receive 88% automatically. No invoicing, no chasing payments — it just works."},
-                  {icon:"💬",title:"Built-in Messaging",desc:"All communication happens on the platform after deposit payment. No WhatsApp, no email chains — clean and professional."},
-                  {icon:"🎵",title:"Live Song Requests",desc:"During your event, guests scan your QR code to request songs and tip. You see requests live and manage them from your phone."},
-                  {icon:"📊",title:"Earnings Dashboard",desc:"Real-time overview of bookings, pending deposits, completed events and total earnings. Full transparency at all times."},
-                  {icon:"⭐",title:"Verified Reviews",desc:"Only guests who actually booked you can leave reviews. Builds genuine credibility over time."},
-                  {icon:"🌍",title:"European Reach",desc:"Reach the Afghan diaspora across Norway, Sweden, Germany, UK, France and beyond — one platform for all of Europe."},
-                  {icon:"🔔",title:"Instant Notifications",desc:"Get notified the moment a booking comes in, a message arrives or a song is requested — browser push + in-app toasts."},
+                  {icon:"🎤",title:t('demoFeat1Title'),desc:t('demoFeat1Desc')},
+                  {icon:"💳",title:t('demoFeat2Title'),desc:t('demoFeat2Desc')},
+                  {icon:"💬",title:t('demoFeat3Title'),desc:t('demoFeat3Desc')},
+                  {icon:"🎵",title:t('demoFeat4Title'),desc:t('demoFeat4Desc')},
+                  {icon:"📊",title:t('demoFeat5Title'),desc:t('demoFeat5Desc')},
+                  {icon:"⭐",title:t('demoFeat6Title'),desc:t('demoFeat6Desc')},
+                  {icon:"🌍",title:t('demoFeat7Title'),desc:t('demoFeat7Desc')},
+                  {icon:"🔔",title:t('demoFeat8Title'),desc:t('demoFeat8Desc')},
                 ].map(({icon,title,desc})=>(
                   <div key={title} style={{...S.card,display:"flex",gap:14,alignItems:"flex-start"}}>
                     <div style={{fontSize:28,flexShrink:0,marginTop:2}}>{icon}</div>
@@ -6833,10 +7104,10 @@ function DemoPage({onBook, onApply, vp}:{onBook:()=>void;onApply:()=>void;vp:any
                     </div>
                   </div>
                   {[
-                    {label:"Your Name",     placeholder:"e.g. Ahmad Karimi",    type:"text"},
-                    {label:"Email",         placeholder:"you@email.com",         type:"email"},
-                    {label:"Event Type",    placeholder:"Wedding / Eid / Gala",  type:"text"},
-                    {label:"Event Date",    placeholder:"e.g. 15 June 2025",     type:"text"},
+                    {label:t('demoFieldName'),     placeholder:"e.g. Ahmad Karimi",    type:"text"},
+                    {label:t('demoFieldEmail'),         placeholder:"you@email.com",         type:"email"},
+                    {label:t('demoFieldEventType'),    placeholder:t('demoFieldTypePh'),  type:"text"},
+                    {label:t('demoFieldDate'),    placeholder:t('demoFieldDatePh'),     type:"text"},
                   ].map(({label,placeholder,type})=>(
                     <div key={label} style={{marginBottom:14}}>
                       <div style={{fontSize:11,fontWeight:700,color:S.muted,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:6}}>{label}</div>
@@ -6879,10 +7150,10 @@ function DemoPage({onBook, onApply, vp}:{onBook:()=>void;onApply:()=>void;vp:any
                 <div>
                   <div style={{display:"grid",gridTemplateColumns:vp.isMobile?"1fr 1fr":"repeat(4,1fr)",gap:10,marginBottom:20}}>
                     {[
-                      {label:"Total Earned",  val:"€8,580",   sub:"This year",       color:S.gold},
-                      {label:"Bookings",       val:"9",         sub:"Confirmed",       color:S.green},
-                      {label:"Pending",        val:"2",         sub:"New requests",    color:"#F59E0B"},
-                      {label:"Rating",         val:"4.9 ★",     sub:"47 reviews",      color:S.ruby},
+                      {label:t('demoTotalEarned'),  val:"€8,580",   sub:t('demoThisYear'),       color:S.gold},
+                      {label:t('demoBookingTab'),       val:"9",         sub:t('demoConfirmedLabel'),       color:S.green},
+                      {label:t('demoPendingLabel').charAt(0).toUpperCase()+t('demoPendingLabel').slice(1),        val:"2",         sub:t('demoNewRequests'),    color:"#F59E0B"},
+                      {label:t('demoRatingLabel'),         val:"4.9 ★",     sub:"47 "+t('demoRatingLabel'),      color:S.ruby},
                     ].map(({label,val,sub,color})=>(
                       <div key={label} style={{...S.card,textAlign:"center"}}>
                         <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.6rem",fontWeight:800,color,marginBottom:2}}>{val}</div>
@@ -7004,13 +7275,13 @@ function DemoPage({onBook, onApply, vp}:{onBook:()=>void;onApply:()=>void;vp:any
                       <div style={{marginBottom:12}}>
                         <div style={{fontSize:11,fontWeight:700,color:S.muted,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:6}}>{t('demoSongTitleField')}</div>
                         <input value={songTitle} onChange={e=>setSongTitle(e.target.value)}
-                          placeholder="e.g. Leili Jan, Bya Ke Bya…"
+                          placeholder=t('demoSongPh')
                           style={{width:"100%",background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:10,padding:"11px 14px",color:S.text,fontSize:14,fontFamily:"inherit",outline:"none",boxSizing:"border-box"}}/>
                       </div>
                       <div style={{marginBottom:16}}>
                         <div style={{fontSize:11,fontWeight:700,color:S.muted,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:6}}>{t('demoYourName')}</div>
                         <input value={guestName} onChange={e=>setGuestName(e.target.value)}
-                          placeholder="e.g. Layla, Ahmad…"
+                          placeholder=t('demoNamePh')
                           style={{width:"100%",background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:10,padding:"11px 14px",color:S.text,fontSize:14,fontFamily:"inherit",outline:"none",boxSizing:"border-box"}}/>
                       </div>
                       <div style={{background:"rgba(34,197,94,0.06)",border:"1px solid rgba(34,197,94,0.15)",borderRadius:10,padding:"10px 12px",marginBottom:14,fontSize:12,color:S.green,fontWeight:700}}>
