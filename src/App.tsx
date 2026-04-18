@@ -4364,17 +4364,26 @@ function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction,
                 try{
                   const sb=await getSupabase();
                   if(sb){
-                    // Delete in correct order (foreign key constraints)
-                    await sb.from("song_requests").delete().eq("artist_id",a.id);
-                    await sb.from("chat_messages").delete().eq("artist_id",a.id);
-                    await sb.from("bookings").delete().eq("artist_id",a.id);
-                    await sb.from("reviews").delete().eq("artist_id",a.id);
-                    await sb.from("artists").delete().eq("id",a.id);
-                    // Also clean up user profile
-                    await sb.from("profiles").delete().eq("id",a.id);
-                    await sb.from("users").delete().eq("id",a.id);
+                    const r1=await sb.from("song_requests").delete().eq("artist_id",a.id);
+                    const r2=await sb.from("chat_messages").delete().eq("artist_id",a.id);
+                    const r3=await sb.from("bookings").delete().eq("artist_id",a.id);
+                    const r4=await sb.from("reviews").delete().eq("artist_id",a.id);
+                    const r5=await sb.from("artists").delete().eq("id",a.id);
+                    const r6=await sb.from("profiles").delete().eq("id",a.id);
+                    const r7=await sb.from("users").delete().eq("id",a.id);
+                    const errs=[r1,r2,r3,r4,r5,r6,r7].filter(r=>r.error).map(r=>r.error?.message);
+                    if(errs.length>0){
+                      alert("Delete failed — run the RLS SQL in Supabase first:\n"+errs.join("\n"));
+                      // Restore artist in state since DB delete failed
+                      setArtists(p=>[...p,a]);
+                    } else {
+                      notify("Artist deleted","success");
+                    }
                   }
-                }catch(e){console.warn("Delete artist error:",e);}
+                }catch(e:any){
+                  alert("Delete error: "+e.message);
+                  setArtists(p=>[...p,a]);
+                }
               }
             }} style={{background:"rgba(168,44,56,0.08)",color:C.ruby,border:`1px solid ${C.ruby}33`,borderRadius:7,padding:"6px 10px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit",lineHeight:1}}>🗑</button>
           </div>
@@ -4788,9 +4797,9 @@ function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction,
                       setAdminChats(p=>({...p,[adminChatArtist.id]:[]}));
                       if(HAS_SUPA){
                         const sb=await getSupabase();
-                        try{
-                    if(sb) await sb.from("chat_messages").delete().eq("artist_id",adminChatArtist.id);
-                  }catch(e){console.warn("Clear chat error:",e);}
+                        const {error:chatErr}=await sb.from("chat_messages").delete().eq("artist_id",adminChatArtist.id);
+                  if(chatErr){alert("Clear chat failed: "+chatErr.message);}
+                  else{notify("Chat cleared","success");}
                       }
                     }} style={{background:"rgba(168,44,56,0.08)",color:C.ruby,border:`1px solid ${C.ruby}33`,borderRadius:7,padding:"5px 10px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit",flexShrink:0}}>
                       🗑 Clear
