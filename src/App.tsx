@@ -280,7 +280,7 @@ const TRANSLATIONS = {
     howStep2Title:"Choose Date",
     howStep2Desc:"View live calendars — pick an open date",
     howStep3Title:"Pay Deposit",
-    howStep3Desc:"Artist-set deposit via Stripe — auto-split",
+    howStep3Desc:"Artist-set deposit via Stripe — secure payment",
     howStep4Title:"Chat Opens",
     howStep4Desc:"Direct messaging after payment",
     howStep5Title:"Enjoy",
@@ -2144,6 +2144,7 @@ function BottomNav({ active, onNav, items }) {
       inquiries: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>,
       finance:   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>,
       chat:      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>,
+      songreqs:  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>,
       more:      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>,
     };
     return icons[id]||icons["more"];
@@ -2594,7 +2595,7 @@ function StripeCheckout({ booking, artist, onSuccess, onClose }) {
                   <span style={{color:C.emerald,fontWeight:700}}>€{artistAmt} (direct)</span>
                 </div>
                 <div style={{display:"flex",justifyContent:"space-between",fontSize:T.sm}}>
-                  <span style={{color:C.muted}}>→ Awaz fee (12%)</span>
+                  <span style={{color:C.muted}}>→ Secured by Awaz</span>
                   <span style={{color:C.lapis,fontWeight:700}}>€{awazAmt}</span>
                 </div>
               </div>
@@ -2625,11 +2626,11 @@ function StripeCheckout({ booking, artist, onSuccess, onClose }) {
                 <div style={{display:"flex",gap:8}}>
                   <div style={{flex:1,background:C.emeraldS,borderRadius:6,padding:"7px 10px",textAlign:"center"}}>
                     <div style={{color:C.emerald,fontWeight:700,fontSize:T.sm}}>€{artistAmt}</div>
-                    <div style={{color:C.muted,fontSize:T.xs,marginTop:1}}>Artist (88%)</div>
+                    <div style={{color:C.muted,fontSize:T.xs,marginTop:1}}>Artist payment</div>
                   </div>
                   <div style={{flex:1,background:C.lapisS,borderRadius:6,padding:"7px 10px",textAlign:"center"}}>
                     <div style={{color:C.lapis,fontWeight:700,fontSize:T.sm}}>€{awazAmt}</div>
-                    <div style={{color:C.muted,fontSize:T.xs,marginTop:1}}>Awaz (12%)</div>
+                    <div style={{color:C.muted,fontSize:T.xs,marginTop:1}}>Platform fee</div>
                   </div>
                 </div>
               </div>
@@ -2654,7 +2655,7 @@ function StripeCheckout({ booking, artist, onSuccess, onClose }) {
               <button onClick={pay} style={{width:"100%",background:"linear-gradient(135deg,#635BFF,#7B72FF)",color:"#fff",border:"none",borderRadius:10,padding:16,fontSize:T.md,fontWeight:800,cursor:"pointer",fontFamily:"inherit",minHeight:52}}>
                 Pay €{deposit} deposit securely
               </button>
-              <div style={{textAlign:"center",marginTop:10,color:C.muted,fontSize:T.xs}}>🔒 256-bit SSL · Stripe PCI L1 · Auto-split payments</div>
+              <div style={{textAlign:"center",marginTop:10,color:C.muted,fontSize:T.xs}}>🔒 256-bit SSL · Stripe PCI L1 · Secured payment</div>
             </>
           )}
         </div>
@@ -2716,6 +2717,148 @@ const MARKETS=[
 // ── Demo inquiries (owner inbox) ──────────────────────────────────────
 const DEMO_INQUIRIES=[];
 const DEMO_BOOKINGS=[];
+
+// ── Reviews Section — only verified bookers can write ────────────────────────
+function ReviewsSection({artist, session, bookings, onNewBooking}:{artist:any;session:any;bookings:any[];onNewBooking?:any}){
+  const [reviews,setReviews]=useState<any[]>([]);
+  const [showForm,setShowForm]=useState(false);
+  const [form,setForm]=useState({rating:5,text:""});
+  const [submitting,setSubmitting]=useState(false);
+  const [submitted,setSubmitted]=useState(false);
+
+  // Load reviews from Supabase
+  useEffect(()=>{
+    if(!HAS_SUPA) return;
+    getSupabase().then(sb=>{
+      if(!sb) return;
+      sb.from("reviews").select("*").eq("artist_id",artist.id).order("created_at",{ascending:false})
+        .then(({data})=>{ if(data) setReviews(data); });
+    });
+  },[artist.id]);
+
+  // Check if logged-in user has a completed booking with this artist
+  const myCompletedBooking = session ? bookings.find(b=>
+    b.artistId===artist.id &&
+    (b.customerEmail===session.email || b.userId===session.id) &&
+    ["confirmed","completed"].includes(b.status)
+  ) : null;
+
+  const alreadyReviewed = session ? reviews.some(r=>r.user_id===session.id) : false;
+  const avgRating = reviews.length ? reviews.reduce((s,r)=>s+r.rating,0)/reviews.length : 0;
+
+  const submitReview=async()=>{
+    if(!form.text.trim()||submitting) return;
+    setSubmitting(true);
+    const review={
+      artist_id: artist.id,
+      user_id:   session.id,
+      user_name: session.name||"Verified Guest",
+      rating:    form.rating,
+      text:      form.text.trim(),
+    };
+    if(HAS_SUPA){
+      const sb=await getSupabase();
+      if(sb){
+        const{error}=await sb.from("reviews").insert(review);
+        if(!error){
+          setReviews(p=>[{...review,created_at:new Date().toISOString()},...p]);
+          setSubmitted(true);setShowForm(false);
+          setForm({rating:5,text:""});
+        }
+      }
+    }
+    setSubmitting(false);
+  };
+
+  return(
+    <div style={{display:"flex",flexDirection:"column",gap:16}}>
+      {/* ── Header ── */}
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}>
+        <div>
+          {reviews.length>0&&(
+            <div style={{display:"flex",alignItems:"center",gap:10}}>
+              <Stars rating={avgRating} count={reviews.length}/>
+            </div>
+          )}
+        </div>
+        {/* Write review — only for verified bookers */}
+        {session && myCompletedBooking && !alreadyReviewed && !showForm && (
+          <button onClick={()=>setShowForm(true)}
+            style={{background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:10,padding:"10px 18px",fontWeight:700,fontSize:T.sm,cursor:"pointer",fontFamily:"inherit"}}>
+            ★ Write a Review
+          </button>
+        )}
+      </div>
+
+      {/* ── Write review form ── */}
+      {showForm&&(
+        <div style={{background:C.card,border:`1px solid ${C.gold}44`,borderRadius:14,padding:"20px"}}>
+          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text,marginBottom:14}}>
+            Your experience with {artist.name}
+          </div>
+          {/* Star rating */}
+          <div style={{display:"flex",gap:6,marginBottom:14}}>
+            {[1,2,3,4,5].map(n=>(
+              <button key={n} onClick={()=>setForm(f=>({...f,rating:n}))}
+                style={{background:"none",border:"none",cursor:"pointer",padding:4,fontSize:28,color:n<=form.rating?C.gold:"rgba(200,168,74,0.2)"}}>★</button>
+            ))}
+          </div>
+          <textarea value={form.text} onChange={e=>setForm(f=>({...f,text:e.target.value}))}
+            placeholder="Share your experience — what made the event special?"
+            rows={4}
+            style={{width:"100%",background:C.surface,border:`1px solid ${C.border}`,borderRadius:10,padding:"12px 14px",color:C.text,fontSize:T.sm,fontFamily:"inherit",resize:"vertical",outline:"none",lineHeight:1.7,boxSizing:"border-box",marginBottom:12}}/>
+          <div style={{display:"flex",gap:8}}>
+            <button onClick={submitReview} disabled={!form.text.trim()||submitting}
+              style={{flex:1,background:form.text.trim()?`linear-gradient(135deg,${C.gold},${C.saffron})`:C.surface,color:form.text.trim()?C.bg:C.muted,border:"none",borderRadius:10,padding:"11px",fontWeight:700,fontSize:T.sm,cursor:form.text.trim()?"pointer":"not-allowed",fontFamily:"inherit"}}>
+              {submitting?"Submitting…":"Submit Review"}
+            </button>
+            <button onClick={()=>setShowForm(false)}
+              style={{background:C.surface,color:C.muted,border:`1px solid ${C.border}`,borderRadius:10,padding:"11px 18px",fontWeight:600,fontSize:T.sm,cursor:"pointer",fontFamily:"inherit"}}>
+              Cancel
+            </button>
+          </div>
+          <div style={{color:C.faint,fontSize:11,marginTop:6}}>✓ Verified booking required · Reviews are public</div>
+        </div>
+      )}
+
+      {submitted&&(
+        <div style={{background:C.emeraldS,border:`1px solid ${C.emerald}44`,borderRadius:10,padding:"12px 16px",color:C.emerald,fontWeight:700,fontSize:T.sm}}>
+          ✓ Thank you! Your review has been published.
+        </div>
+      )}
+
+      {/* ── Review list ── */}
+      {reviews.length===0?(
+        <div style={{textAlign:"center",padding:"40px 24px",background:C.card,borderRadius:12,border:`1px solid ${C.border}`}}>
+          <div style={{fontSize:32,marginBottom:8}}>⭐</div>
+          <div style={{color:C.muted,fontSize:T.sm}}>No reviews yet</div>
+          {session&&myCompletedBooking&&!alreadyReviewed&&!showForm&&(
+            <div style={{color:C.muted,fontSize:T.xs,marginTop:6}}>Be the first to review this artist!</div>
+          )}
+          {(!session||!myCompletedBooking)&&(
+            <div style={{color:C.faint,fontSize:T.xs,marginTop:6}}>Only verified bookers can write reviews</div>
+          )}
+        </div>
+      ):(
+        reviews.map((r,i)=>(
+          <div key={i} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:"16px 20px"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
+              <div>
+                <div style={{fontWeight:700,color:C.text,fontSize:T.sm,marginBottom:4}}>{r.user_name||"Verified Guest"}</div>
+                <Stars rating={r.rating} size={13}/>
+              </div>
+              <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:4}}>
+                <span style={{color:C.faint,fontSize:11}}>{new Date(r.created_at).toLocaleDateString("en",{month:"short",year:"numeric"})}</span>
+                <span style={{background:C.emeraldS,color:C.emerald,borderRadius:6,fontSize:9,fontWeight:700,padding:"1px 6px"}}>✓ VERIFIED</span>
+              </div>
+            </div>
+            <p style={{color:C.textD,fontSize:T.base,margin:0,lineHeight:1.8,fontFamily:"'DM Sans',sans-serif"}}>{r.text}</p>
+          </div>
+        ))
+      )}
+    </div>
+  );
+}
 
 // ── Artist card ───────────────────────────────────────────────────────
 function ArtistCard({ artist, onClick, compact=false }) {
@@ -3099,9 +3242,9 @@ function ProfilePage({ artist, bookings, onBack, onBookingCreated }) {
                 <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:800,color:artist.color}}>{artist.priceInfo}</div>
                 <div style={{fontSize:T.xs,color:C.muted,marginTop:2}}>€{artist.deposit} deposit · Balance cash</div>
               </div>
-              <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+              <div style={{display:"flex",flexDirection:"column",gap:10,width:"100%",maxWidth:280}}>
                 <Btn v="gold" sz="lg" onClick={()=>setShowCal(true)}>{t('bookNow')}</Btn>
-                <Btn v="ghost" sz="lg" onClick={()=>{ const w=document.getElementById('awaz-inquiry-widget'); if(w){w.setAttribute('data-artist',artist.name);w.click();} }}>✉ Inquire</Btn>
+                <Btn v="ghost" sz="lg" onClick={()=>setShowSongReq(true)}>🎵 Request a Song</Btn>
               </div>
             </div>
           )}
@@ -3138,7 +3281,7 @@ function ProfilePage({ artist, bookings, onBack, onBookingCreated }) {
                 <div style={{background:C.card,borderRadius:12,padding:vp.isMobile?20:28,border:`1px solid ${C.border}`}}>
                   <div style={{fontFamily:"'Cormorant Garamond',serif",color:C.gold,fontSize:T.xl,fontWeight:700,marginBottom:14,letterSpacing:"-0.3px"}}>{t('bookingTerms')}</div>
                   <div style={{display:"grid",gridTemplateColumns:vp.isMobile?"1fr":"1fr 1fr",gap:12}}>
-                    {[["💳",`€${artist.deposit} deposit via Stripe`,"Paid at booking — auto-split"],["💬","Chat unlocks immediately","Direct messaging after payment"],["💵","Balance in cash","To artist after the concert"],["📋",`${policy?.label} policy`,policy?.desc||""]].map(([icon,k,v])=>(
+                    {[["💳",`€${artist.deposit} deposit via Stripe`,"Secured payment · Paid at booking"],["💬","Chat unlocks immediately","Direct messaging after payment"],["💵","Balance in cash","To artist after the concert"],["📋",`${policy?.label} policy`,policy?.desc||""]].map(([icon,k,v])=>(
                       <div key={k} style={{background:C.surface,borderRadius:8,padding:"12px 14px",border:`1px solid ${C.border}`,borderLeft:`3px solid ${artist.color}35`}}>
                         <div style={{fontSize:18,marginBottom:6}}>{icon}</div>
                         <div style={{color:C.text,fontWeight:700,fontSize:T.xs,marginBottom:3}}>{k}</div>
@@ -3190,17 +3333,7 @@ function ProfilePage({ artist, bookings, onBack, onBookingCreated }) {
               </div>
             )}
             {tab==="reviews"&&(
-              <div style={{display:"flex",flexDirection:"column",gap:12}}>
-                {[{name:"Nasrin Ahmadi",date:"Feb 2025",text:"An absolutely incredible performance. Every guest was moved to tears. Truly unforgettable.",rating:5},{name:"Jamshid Karimi",date:"Jan 2025",text:"Professional, punctual, authentic. The music perfectly captured the spirit of our Eid. Cannot recommend enough.",rating:5},{name:"Layla Mansouri",date:"Dec 2024",text:"Exceeded every expectation at our corporate cultural evening. The entire room was captivated.",rating:4.8}].map((r,i)=>(
-                  <div key={i} style={{background:C.card,borderRadius:12,padding:vp.isMobile?18:24,border:`1px solid ${C.border}`}}>
-                    <div style={{display:"flex",justifyContent:"space-between",marginBottom:10}}>
-                      <div><div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,color:C.text,fontSize:T.lg}}>{r.name}</div><div style={{color:C.muted,fontSize:T.sm,marginTop:2}}>{r.date}</div></div>
-                      <Stars rating={r.rating} size={14}/>
-                    </div>
-                    <p style={{color:C.textD,fontSize:T.base,margin:0,lineHeight:1.8,fontFamily:"'DM Sans',sans-serif",fontWeight:400}}>{r.text}</p>
-                  </div>
-                ))}
-              </div>
+              <ReviewsSection artist={artist} session={session} bookings={bookings} onNewBooking={handleNewBooking}/>
             )}
             {tab==="social"&&(
               <div style={{paddingTop:4}}>
@@ -3217,7 +3350,7 @@ function ProfilePage({ artist, bookings, onBack, onBookingCreated }) {
             {tab==="policy"&&(
               <div style={{background:C.card,borderRadius:12,padding:vp.isMobile?20:28,border:`1px solid ${C.border}`}}>
                 <div style={{fontFamily:"'Cormorant Garamond',serif",color:C.gold,fontSize:T.xl,fontWeight:700,marginBottom:16,letterSpacing:"-0.3px"}}>Booking Terms — {policy?.label}</div>
-                {[["Deposit",`€${artist.deposit} via Stripe — auto-split 88% artist / 12% Awaz`],["Balance","Paid cash directly to artist after performance"],["Cancellation",policy?.desc||""],["Force Majeure","Full refund issued regardless of policy"],["No-Show","Customer no-show forfeits deposit · Artist no-show triggers full refund + €50 credit"]].map(([k,v])=>(
+                {[["Deposit",`€${artist.deposit} via Stripe — secured payment`],["Balance","Paid directly to artist after performance"],["Cancellation Policy",policy?.desc||"Full refund 72h+ before · No refund after"]].map(([k,v])=>(
                   <div key={k} style={{marginBottom:18,paddingBottom:18,borderBottom:`1px solid ${C.border}`}}>
                     <div style={{color:C.text,fontWeight:700,fontSize:T.md,marginBottom:5,fontFamily:"'DM Sans',sans-serif"}}>{k}</div>
                     <div style={{color:C.textD,fontSize:T.base,lineHeight:1.75,fontFamily:"'DM Sans',sans-serif"}}>{v}</div>
@@ -3305,7 +3438,7 @@ function ProfilePage({ artist, bookings, onBack, onBookingCreated }) {
             style={{width:"100%",background:"linear-gradient(135deg,#635BFF,#7B72FF)",color:"#fff",border:"none",borderRadius:10,padding:16,fontSize:T.md,fontWeight:800,cursor:"pointer",opacity:!form.name||!form.email?0.5:1,fontFamily:"inherit",minHeight:52}}>
             Pay €{artist.deposit} via Stripe →
           </button>
-          <div style={{textAlign:"center",color:C.muted,fontSize:T.xs}}>🔒 Stripe · SSL · PCI compliant · Auto-split</div>
+          <div style={{textAlign:"center",color:C.muted,fontSize:T.xs}}>🔒 Stripe · SSL · PCI compliant</div>
         </div>
       </Sheet>
 
@@ -4226,6 +4359,7 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
   const vp=useViewport();
   const {show:notify}=useNotif();
   const [tab,setTab]=useState("overview");
+  const [songRequests,setSongRequests]=useState<any[]>([]);
   const [chat,setChat]=useState(null);
   const [localAdminMsgs,setLocalAdminMsgs]=useState([]);
   const [artistReplyMsg,setArtistReplyMsg]=useState("");
@@ -4263,15 +4397,17 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
 
   const pendingCount=myB.filter(b=>b.status==="pending_payment"||b.status==="pending").length;
 
+  const songRequestCount = songRequests.filter(r=>r.status==="pending").length;
   const navItems=[
-    {id:"overview", label:"Overview"},
-    {id:"bookings", label:"Bookings", badge:pendingCount},
-    {id:"calendar", label:"Calendar"},
-    {id:"messages", label:"Messages"},
-    {id:"pricing",  label:"Pricing"},
-    {id:"profile",  label:"Profile"},
-    {id:"social",   label:"Social"},
-    {id:"settings", label:"Settings"},
+    {id:"overview",  label:"Overview"},
+    {id:"bookings",  label:"Bookings",  badge:pendingCount},
+    {id:"songreqs",  label:"Requests",  badge:songRequestCount},
+    {id:"calendar",  label:"Calendar"},
+    {id:"messages",  label:"Messages"},
+    {id:"pricing",   label:"Pricing"},
+    {id:"profile",   label:"Profile"},
+    {id:"social",    label:"Social"},
+    {id:"settings",  label:"Settings"},
   ];
 
   const saveEdit=async()=>{
@@ -4698,7 +4834,139 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
         </div>
       )}
 
-      {tab==="settings"&&(
+      {tab==="songreqs"&&(
+        <div>
+          {/* ── Header with live stats ── */}
+          <div style={{marginBottom:20}}>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:4}}>🎵 Song Requests</div>
+            <div style={{color:C.muted,fontSize:T.sm}}>Manage live requests from your audience</div>
+          </div>
+
+          {/* ── Live stats strip ── */}
+          <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:20}}>
+            {[
+              {label:"Pending",    val:songRequests.filter(r=>r.status==="pending").length,  color:C.saffron},
+              {label:"Accepted",   val:songRequests.filter(r=>r.status==="accepted").length, color:C.emerald},
+              {label:"Completed",  val:songRequests.filter(r=>r.status==="completed").length,color:C.lapis},
+              {label:"Earned",     val:`€${songRequests.filter(r=>["accepted","completed"].includes(r.status)).reduce((s,r)=>s+Math.round((r.amount||0)*0.88),0)}`,color:C.gold},
+            ].map(({label,val,color})=>(
+              <div key={label} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:10,padding:"12px",textAlign:"center"}}>
+                <div style={{fontSize:T.lg,fontWeight:800,color,marginBottom:2}}>{val}</div>
+                <div style={{fontSize:10,color:C.muted,fontWeight:600,letterSpacing:"0.5px",textTransform:"uppercase"}}>{label}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* ── Request list ── */}
+          {songRequests.length===0?(
+            <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,padding:"48px 24px",textAlign:"center"}}>
+              <div style={{fontSize:48,marginBottom:12}}>🎶</div>
+              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,color:C.text,marginBottom:8}}>No requests yet</div>
+              <div style={{color:C.muted,fontSize:T.sm,lineHeight:1.7}}>Share your Song Request link with your audience. Requests will appear here in real-time.</div>
+            </div>
+          ):(
+            <div style={{display:"flex",flexDirection:"column",gap:10}}>
+              {/* Pending first, then by priority */}
+              {[...songRequests].sort((a,b)=>{
+                const order={pending:0,accepted:1,completed:2,rejected:3,refunded:4};
+                if(a.status!==b.status) return (order[a.status]||0)-(order[b.status]||0);
+                return (b.priority_amount||0)-(a.priority_amount||0);
+              }).map(req=>{
+                const isPending=req.status==="pending";
+                const priorityColor=req.priority_amount>=100?C.ruby:req.priority_amount>=50?C.saffron:C.emerald;
+                const priorityLabel=req.priority_amount>=100?"🔥 MUST PLAY":req.priority_amount>=50?"⚡ HIGH PRIORITY":"✓ Normal";
+                return(
+                  <div key={req.id} style={{
+                    background:C.card,
+                    border:`1px solid ${isPending?priorityColor+"44":C.border}`,
+                    borderLeft:`4px solid ${isPending?priorityColor:C.border}`,
+                    borderRadius:12,padding:"16px",
+                    animation:isPending?"fade 0.3s ease":"none",
+                  }}>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:12,flexWrap:"wrap"}}>
+                      <div style={{flex:1,minWidth:0}}>
+                        {/* Song + artist */}
+                        <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text,marginBottom:2}}>
+                          {req.song_title}
+                        </div>
+                        {req.song_artist&&(
+                          <div style={{color:C.muted,fontSize:T.sm,marginBottom:6}}>by {req.song_artist}</div>
+                        )}
+                        {/* Requester info */}
+                        <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
+                          <span style={{color:C.textD,fontSize:T.xs}}>👤 {req.guest_name||"Anonymous"}</span>
+                          {req.message&&<span style={{color:C.muted,fontSize:T.xs}}>· "{req.message}"</span>}
+                        </div>
+                      </div>
+                      {/* Right: amount + priority */}
+                      <div style={{textAlign:"right",flexShrink:0}}>
+                        <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:800,color:C.gold}}>€{req.amount||0}</div>
+                        <div style={{fontSize:10,fontWeight:700,color:priorityColor,marginTop:2}}>{priorityLabel}</div>
+                        <div style={{fontSize:10,color:C.muted,marginTop:1}}>You get: €{Math.round((req.amount||0)*0.88)}</div>
+                      </div>
+                    </div>
+
+                    {/* Status badge + time */}
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:12}}>
+                      <span style={{
+                        background:req.status==="pending"?C.saffronS:req.status==="accepted"||req.status==="completed"?C.emeraldS:C.rubyS,
+                        color:req.status==="pending"?C.saffron:req.status==="accepted"||req.status==="completed"?C.emerald:C.ruby,
+                        border:`1px solid ${req.status==="pending"?C.saffron+"44":req.status==="accepted"||req.status==="completed"?C.emerald+"44":C.ruby+"44"}`,
+                        borderRadius:20,fontSize:10,fontWeight:700,padding:"3px 10px",textTransform:"uppercase",letterSpacing:"0.5px",
+                      }}>{req.status}</span>
+                      <span style={{color:C.faint,fontSize:11}}>
+                        {new Date(req.created_at).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}
+                      </span>
+                    </div>
+
+                    {/* Action buttons for pending */}
+                    {isPending&&(
+                      <div style={{display:"flex",gap:8,marginTop:12}}>
+                        <button onClick={async()=>{
+                          setSongRequests(p=>p.map(r=>r.id===req.id?{...r,status:"accepted"}:r));
+                          notify(`Accepted: "${req.song_title}"`,"success");
+                          if(HAS_SUPA){const sb=await getSupabase();if(sb)await sb.from("song_requests").update({status:"accepted"}).eq("id",req.id);}
+                        }} style={{flex:1,background:C.emerald,color:"#fff",border:"none",borderRadius:8,padding:"9px",fontWeight:700,fontSize:T.xs,cursor:"pointer",fontFamily:"inherit"}}>
+                          ✓ Accept
+                        </button>
+                        <button onClick={async()=>{
+                          setSongRequests(p=>p.map(r=>r.id===req.id?{...r,status:"rejected"}:r));
+                          if(HAS_SUPA){const sb=await getSupabase();if(sb)await sb.from("song_requests").update({status:"rejected"}).eq("id",req.id);}
+                        }} style={{flex:1,background:C.rubyS,color:C.ruby,border:`1px solid ${C.ruby}44`,borderRadius:8,padding:"9px",fontWeight:700,fontSize:T.xs,cursor:"pointer",fontFamily:"inherit"}}>
+                          ✗ Decline
+                        </button>
+                      </div>
+                    )}
+                    {/* Mark as played */}
+                    {req.status==="accepted"&&(
+                      <button onClick={async()=>{
+                        setSongRequests(p=>p.map(r=>r.id===req.id?{...r,status:"completed"}:r));
+                        notify(`"${req.song_title}" marked as played! 🎵`,"success");
+                        if(HAS_SUPA){const sb=await getSupabase();if(sb)await sb.from("song_requests").update({status:"completed"}).eq("id",req.id);}
+                      }} style={{width:"100%",marginTop:10,background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:8,padding:"9px",fontWeight:700,fontSize:T.xs,cursor:"pointer",fontFamily:"inherit"}}>
+                        🎵 Mark as Played
+                      </button>
+                    )}
+                    {/* Refund button */}
+                    {(req.status==="rejected"||req.status==="accepted")&&(
+                      <button onClick={async()=>{
+                        if(!confirm("Refund this payment to the guest?")) return;
+                        setSongRequests(p=>p.map(r=>r.id===req.id?{...r,status:"refunded"}:r));
+                        notify("Refund initiated — guest will receive payment back","info");
+                        if(HAS_SUPA){const sb=await getSupabase();if(sb)await sb.from("song_requests").update({status:"refunded"}).eq("id",req.id);}
+                      }} style={{width:"100%",marginTop:6,background:"transparent",color:C.muted,border:`1px solid ${C.border}`,borderRadius:8,padding:"7px",fontWeight:600,fontSize:T.xs,cursor:"pointer",fontFamily:"inherit"}}>
+                        ↩ Refund Guest
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+            {tab==="settings"&&(
         <div>
           <div style={{marginBottom:20}}>
             <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text}}>{t('settings')||"Settings"}</div>
@@ -5099,6 +5367,19 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
 
 
 
+  // Load song requests for this artist
+  React.useEffect(()=>{
+    if(!HAS_SUPA) return;
+    getSupabase().then(async sb=>{
+      if(!sb) return;
+      const {data}=await sb.from("song_requests")
+        .select("*")
+        .eq("artist_id", artist.id)
+        .order("created_at",{ascending:false});
+      if(data) setSongRequests(data);
+    });
+  },[artist.id]);
+
   // Load messages from chat_messages table when Messages tab opens
   React.useEffect(()=>{
     if(tab !== "messages" || !HAS_SUPA) return;
@@ -5201,7 +5482,7 @@ function StripeConnectSheet({ artist, onConnected, onClose }) {
         ):(
           <>
             <div style={{background:"#635BFF12",border:"1px solid #635BFF30",borderRadius:10,padding:"14px",marginBottom:16}}>
-              {["Client pays deposit via Stripe","88% auto-transferred to your account","12% retained as Awaz platform fee","Balance paid cash by client after concert"].map((t,i)=>(
+              {["Client pays deposit via Stripe","Funds secured immediately","Artist receives payment after event.map((t,i)=>(
                 <div key={i} style={{display:"flex",gap:8,marginBottom:6,fontSize:T.sm,color:C.textD}}><span style={{color:"#8B83FF",fontWeight:700}}>{i+1}.</span>{t}</div>
               ))}
             </div>
@@ -5216,6 +5497,155 @@ function StripeConnectSheet({ artist, onConnected, onClose }) {
         )}
       </div>
     </Sheet>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 🎵 SONG REQUEST WIDGET — Guest-facing mobile-first request flow
+// ══════════════════════════════════════════════════════════════════════════════
+const PRIORITY_TIERS = [
+  {amount:30,  label:"Normal",        desc:"Standard request",              color:"#22C55E", icon:"🎵"},
+  {amount:50,  label:"High Priority", desc:"Moved up the queue",            color:"#F59E0B", icon:"⚡"},
+  {amount:100, label:"Must Play",     desc:"Top of the list — guaranteed",  color:"#EF4444", icon:"🔥"},
+];
+
+function SongRequestModal({artist, bookingId, onClose}:{artist:any;bookingId?:string;onClose:()=>void}){
+  const {show:notify}=useNotif();
+  const [step,setStep]=useState<"form"|"priority"|"pay"|"done">("form");
+  const [f,setF]=useState({song_title:"",song_artist:"",guest_name:"",message:""});
+  const [tier,setTier]=useState(PRIORITY_TIERS[0]);
+  const [loading,setLoading]=useState(false);
+  const [err,setErr]=useState("");
+
+  const submit=async()=>{
+    if(!f.song_title.trim()){setErr("Song title is required");return;}
+    if(!f.guest_name.trim()){setErr("Your name is required");return;}
+    setLoading(true);setErr("");
+    try{
+      if(HAS_SUPA){
+        const sb=await getSupabase();
+        if(sb){
+          const {error}=await sb.from("song_requests").insert({
+            artist_id:        artist.id,
+            booking_id:       bookingId||null,
+            song_title:       f.song_title.trim(),
+            song_artist:      f.song_artist.trim()||null,
+            guest_name:       f.guest_name.trim(),
+            message:          f.message.trim()||null,
+            amount:           tier.amount,
+            priority_amount:  tier.amount,
+            status:           "pending",
+          });
+          if(error){setErr("Failed to submit. Please try again.");setLoading(false);return;}
+        }
+      }
+      setLoading(false);setStep("done");
+      notify(`Request sent: "${f.song_title}"! 🎵`,"success");
+    }catch(e){setLoading(false);setErr("Connection error. Please try again.");}
+  };
+
+  const vp=useViewport();
+
+  return(
+    <div style={{position:"fixed",inset:0,zIndex:1000,background:"rgba(0,0,0,0.8)",display:"flex",alignItems:"flex-end",justifyContent:"center"}} onClick={e=>e.target===e.currentTarget&&onClose()}>
+      <div style={{
+        background:"#0F0D16",borderRadius:"24px 24px 0 0",
+        border:"1px solid rgba(255,255,255,0.07)",
+        width:"100%",maxWidth:520,
+        maxHeight:"92vh",overflow:"auto",
+        animation:"fade 0.25s ease",
+        paddingBottom:"env(safe-area-inset-bottom,16px)",
+      }}>
+        {/* Handle bar */}
+        <div style={{width:36,height:3,borderRadius:2,background:"rgba(255,255,255,0.15)",margin:"12px auto 0"}}/>
+
+        {step==="done"?(
+          <div style={{padding:"32px 24px 40px",textAlign:"center"}}>
+            <div style={{fontSize:64,marginBottom:16}}>🎵</div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.8rem",fontWeight:700,color:"#EDE4CE",marginBottom:8}}>Request Sent!</div>
+            <div style={{color:"#8A7D68",fontSize:14,lineHeight:1.8,marginBottom:6}}>
+              <strong style={{color:"#C8A84A"}}>"{f.song_title}"</strong> has been sent to <strong style={{color:"#EDE4CE"}}>{artist.name}</strong>
+            </div>
+            <div style={{background:"rgba(200,168,74,0.07)",border:"1px solid rgba(200,168,74,0.2)",borderRadius:12,padding:"12px 16px",marginTop:16,marginBottom:24,fontSize:13,color:"#8A7D68",lineHeight:1.7}}>
+              {tier.icon} <strong style={{color:tier.color}}>{tier.label}</strong> — {tier.desc}
+              <br/>You paid: <strong style={{color:"#C8A84A"}}>€{tier.amount}</strong>
+            </div>
+            <button onClick={onClose} style={{background:"rgba(255,255,255,0.05)",color:"#8A7D68",border:"1px solid rgba(255,255,255,0.07)",borderRadius:12,padding:"12px 32px",fontWeight:600,cursor:"pointer",fontFamily:"inherit",fontSize:14}}>Close</button>
+          </div>
+        ):step==="priority"?(
+          <div style={{padding:"20px 20px 32px"}}>
+            <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:20}}>
+              <button onClick={()=>setStep("form")} style={{background:"none",border:"none",color:"#8A7D68",cursor:"pointer",padding:"4px",fontSize:18}}>←</button>
+              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.4rem",fontWeight:700,color:"#EDE4CE"}}>Choose Priority</div>
+            </div>
+            <div style={{background:"rgba(200,168,74,0.05)",borderRadius:12,padding:"12px 16px",marginBottom:16,fontSize:13,color:"#8A7D68"}}>
+              Requesting: <strong style={{color:"#C8A84A"}}>"{f.song_title}"</strong>
+              {f.song_artist&&<span> by {f.song_artist}</span>}
+            </div>
+            <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:20}}>
+              {PRIORITY_TIERS.map(t=>(
+                <button key={t.amount} onClick={()=>setTier(t)}
+                  style={{background:tier.amount===t.amount?`rgba(${t.color.replace("#","").match(/.{2}/g)?.map(x=>parseInt(x,16)).join(",")},0.1)`:"rgba(255,255,255,0.02)",border:`2px solid ${tier.amount===t.amount?t.color:`rgba(255,255,255,0.06)`}`,borderRadius:14,padding:"16px 18px",cursor:"pointer",textAlign:"left",transition:"all 0.15s",fontFamily:"inherit"}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                    <div>
+                      <div style={{fontSize:18,marginBottom:4}}>{t.icon} <span style={{color:tier.amount===t.amount?t.color:"#EDE4CE",fontWeight:700,fontSize:15}}>{t.label}</span></div>
+                      <div style={{color:"#8A7D68",fontSize:12,lineHeight:1.5}}>{t.desc}</div>
+                    </div>
+                    <div style={{textAlign:"right"}}>
+                      <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.6rem",fontWeight:800,color:t.color}}>€{t.amount}</div>
+                      {t.amount===100&&<div style={{fontSize:10,color:t.color,fontWeight:700}}>GUARANTEED</div>}
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+            {err&&<div style={{color:"#EF4444",fontSize:13,marginBottom:12,padding:"10px 14px",background:"rgba(239,68,68,0.08)",borderRadius:8}}>{err}</div>}
+            <button onClick={submit} disabled={loading}
+              style={{width:"100%",background:loading?"#201D2E":`linear-gradient(135deg,${tier.color}cc,${tier.color})`,color:"#fff",border:"none",borderRadius:14,padding:"16px",fontWeight:800,fontSize:16,cursor:loading?"not-allowed":"pointer",fontFamily:"inherit",transition:"all 0.2s"}}>
+              {loading?"Sending…":`Send Request · €${tier.amount}`}
+            </button>
+            <div style={{color:"#8A7D68",fontSize:11,textAlign:"center",marginTop:8}}>Secure payment · 88% goes to {artist.name}</div>
+          </div>
+        ):(
+          /* FORM STEP */
+          <div style={{padding:"20px 20px 32px"}}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:20}}>
+              <div>
+                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.5rem",fontWeight:700,color:"#EDE4CE"}}>Request a Song</div>
+                <div style={{color:"#8A7D68",fontSize:13,marginTop:2}}>from <strong style={{color:"#C8A84A"}}>{artist.name}</strong></div>
+              </div>
+              <button onClick={onClose} style={{background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:8,color:"#8A7D68",cursor:"pointer",padding:"6px 10px",fontSize:14}}>✕</button>
+            </div>
+
+            {/* Song fields */}
+            {[
+              {field:"song_title",  label:"Song Title *",   placeholder:"e.g. Bya Ke Bya"},
+              {field:"song_artist", label:"Original Artist", placeholder:"e.g. Ahmad Zahir"},
+              {field:"guest_name",  label:"Your Name *",    placeholder:"e.g. Layla"},
+              {field:"message",     label:"Message (optional)", placeholder:"Special dedication or note…"},
+            ].map(({field,label,placeholder})=>(
+              <div key={field} style={{marginBottom:14}}>
+                <div style={{fontSize:11,fontWeight:700,color:"#8A7D68",letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:6}}>{label}</div>
+                <input value={(f as any)[field]} onChange={e=>setF(p=>({...p,[field]:e.target.value}))}
+                  placeholder={placeholder}
+                  style={{width:"100%",background:"#141220",border:"1px solid #201D2E",borderRadius:10,padding:"12px 14px",color:"#EDE4CE",fontSize:14,fontFamily:"inherit",outline:"none",boxSizing:"border-box"}}/>
+              </div>
+            ))}
+
+            {err&&<div style={{color:"#EF4444",fontSize:13,marginBottom:12,padding:"10px 14px",background:"rgba(239,68,68,0.08)",borderRadius:8}}>{err}</div>}
+
+            <button onClick={()=>{
+              if(!f.song_title.trim()){setErr("Song title is required");return;}
+              if(!f.guest_name.trim()){setErr("Your name is required");return;}
+              setErr("");setStep("priority");
+            }} style={{width:"100%",background:"linear-gradient(135deg,#C8A84A,#E09F3E)",color:"#0F0D16",border:"none",borderRadius:14,padding:"16px",fontWeight:800,fontSize:16,cursor:"pointer",fontFamily:"inherit"}}>
+              Choose Priority → 
+            </button>
+            <div style={{color:"#8A7D68",fontSize:11,textAlign:"center",marginTop:8}}>From €30 · 88% goes to artist</div>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -5267,7 +5697,7 @@ function InquiryWidget({ artists, onSubmit }) {
         right:vp.isMobile?"16px":"32px",
         zIndex:150,
       }}>
-        <button id="awaz-inquiry-widget" onClick={()=>{setOpen(true);reset();}}
+        <button id="awaz-inquiry-widget" onClick={()=>{setOpen(true);reset();}} style={{display:"none"}}
           style={{
             display:"flex",alignItems:"center",gap:9,
             background:`linear-gradient(135deg,${C.gold},${C.saffron})`,
@@ -5813,6 +6243,7 @@ function AppInner() {
   const [selArtist,setSelArtist]=useState(null);
   const [showLogin,setShowLogin]=useState(false);
   const [showApply,setShowApply]=useState(false);
+  const [showSongReq,setShowSongReq]=useState(false);
   const [search,setSearch]=useState("");
   const [genreF,setGenreF]=useState("All");
   const [menuOpen,setMenuOpen]=useState(false);
@@ -6992,9 +7423,9 @@ function AppInner() {
 
       {/* ── Modals ── */}
       <LoginSheet users={users} open={showLogin} onLogin={login} onClose={()=>setShowLogin(false)}/>
+      {showSongReq&&selArtist&&<SongRequestModal artist={selArtist} onClose={()=>setShowSongReq(false)}/>}
       {showApply&&<ApplySheet onSubmit={handleNewArtist} onClose={()=>setShowApply(false)}/>}
       {/* Floating concierge inquiry button — always visible to visitors */}
-      <InquiryWidget artists={artists} onSubmit={handleNewInquiry}/>
     </div>
   );
 }
