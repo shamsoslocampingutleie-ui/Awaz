@@ -7408,7 +7408,7 @@ function AppInner() {
   // Handle QR scan: /?request=ARTIST_ID
   const urlReqArtistId = new URLSearchParams(typeof window!=="undefined"?window.location.search:"").get("request");;
   const [showPrivacy,setShowPrivacy]=useState(false);
-  const [artists,setArtists]=useState(ARTISTS);
+  const [artists,setArtists]=useState<any[]>([]);
   const [bookings,setBookings]=useState(DEMO_BOOKINGS);
   const [inquiries,setInquiries]=useState(DEMO_INQUIRIES);
   const handleNewInquiry=inq=>{setInquiries(p=>[inq,...p]);notify(`New inquiry from ${inq.name||'a visitor'}!`,'inquiry'); sendBrowserNotif('New Inquiry — Awaz',`${inq.name||'Someone'} sent a private inquiry`);};
