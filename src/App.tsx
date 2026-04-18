@@ -5482,7 +5482,7 @@ function StripeConnectSheet({ artist, onConnected, onClose }) {
         ):(
           <>
             <div style={{background:"#635BFF12",border:"1px solid #635BFF30",borderRadius:10,padding:"14px",marginBottom:16}}>
-              {["Client pays deposit via Stripe","Funds secured immediately","Artist receives payment after event.map((t,i)=>(
+              {["Client pays deposit via Stripe","Funds secured immediately","Artist receives payment after event"].map((t,i)=>(
                 <div key={i} style={{display:"flex",gap:8,marginBottom:6,fontSize:T.sm,color:C.textD}}><span style={{color:"#8B83FF",fontWeight:700}}>{i+1}.</span>{t}</div>
               ))}
             </div>
