@@ -3158,11 +3158,9 @@ function LoginSheet({ users, open, onLogin, onClose }) {
         {!HAS_SUPA&&(
           <>
             <HR color={C.border} my={16}/>
-            <div style={{background:C.surface,borderRadius:10,padding:"14px",border:`1px solid ${C.border}`}}>
-              <div style={{fontSize:T.xs,color:C.muted,fontWeight:700,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:6,display:"flex",alignItems:"center",gap:6}}>
-                <span>⚠</span> Demo accounts — testing only
-              </div>
-                          </div>
+            <div style={{background:C.surface,borderRadius:10,padding:"14px",border:`1px solid ${C.border}`,fontSize:T.xs,color:C.muted,textAlign:"center"}}>
+              ⚠ Supabase not configured — login disabled
+            </div>
           </>
         )}
       </div>
