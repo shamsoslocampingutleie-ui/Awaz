@@ -3010,7 +3010,7 @@ function LoginSheet({ users, open, onLogin, onClose }) {
         }
       } catch(e){
         setLoading(false);
-        setErr("Connection error — check Supabase URL in Vercel settings."); }
+        setErr("Connection error — check Supabase URL in Vercel settings.");
       }
       return;
     }
