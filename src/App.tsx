@@ -1766,80 +1766,54 @@ function parseTikTokHandle(input="") {
 }
 
 // ── SpotifyEmbed: iframe with graceful load-detection fallback ─────────
-function SpotifyEmbed({ artistId, profileUrl }) {
-  const [status, setStatus] = useState("idle"); // idle|loading|loaded|blocked
-  const timerRef = useRef(null);
+function SpotifyEmbed({ artistId, profileUrl, artist }) {
+  if (!artistId && !profileUrl) return null;
 
-  const tryLoad = () => {
-    setStatus("loading");
-    // CSP blocks don't fire onError reliably on iframes.
-    // Use a 5s timeout: if onLoad hasn't fired, assume blocked.
-    timerRef.current = setTimeout(() => {
-      setStatus(s => s==="loading" ? "blocked" : s);
-    }, 5000);
-  };
+  const url = profileUrl || `https://open.spotify.com/artist/${artistId}`;
+  const listeners = artist?.spotify?.monthlyListeners;
+  const tracks = artist?.spotify?.topTracks?.filter(Boolean) || [];
 
-  useEffect(() => () => clearTimeout(timerRef.current), []);
-  // Auto-load when artistId is available
-  useEffect(() => { if (artistId && status === "idle") tryLoad(); }, [artistId]);
-
-  if (!artistId) return null;
-
-  if (status === "idle") return (
-    <button onClick={tryLoad} style={{
-      width:"100%",display:"flex",alignItems:"center",justifyContent:"center",
-      gap:10,background:"rgba(29,185,84,0.08)",border:"1px dashed rgba(29,185,84,0.3)",
-      borderRadius:10,padding:"14px",cursor:"pointer",
-      fontFamily:"'DM Sans',sans-serif",fontSize:14,fontWeight:600,color:"#1DB954",
-      WebkitTapHighlightColor:"transparent",marginTop:4,
+  return (
+    <div style={{
+      background:"linear-gradient(135deg,rgba(29,185,84,0.08),rgba(29,185,84,0.03))",
+      border:"1px solid rgba(29,185,84,0.2)",
+      borderRadius:12,padding:"16px 18px",
     }}>
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="#1DB954">
-        <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
-      </svg>
-      Load Spotify widget
-    </button>
-  );
-
-  if (status === "loading") return (
-    <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:10,padding:"24px 0"}}>
-      <div style={{width:28,height:28,border:"2px solid rgba(29,185,84,0.2)",borderTopColor:"#1DB954",borderRadius:"50%",animation:"spin 0.8s linear infinite"}}/>
-      <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,color:"#1DB954"}}>{t('loadingSpotify')}</span>
-    </div>
-  );
-
-  if (status === "blocked") return (
-    <div style={{background:"rgba(29,185,84,0.05)",border:"1px solid rgba(29,185,84,0.2)",borderRadius:10,padding:"16px",marginTop:4,textAlign:"center"}}>
-      <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:700,color:"#1DB954",marginBottom:6}}>{t('spotifyBlocked')}</div>
-      <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:12,color:C.muted,lineHeight:1.7,marginBottom:12}}>
-        This only happens in preview. On your published Vercel site the widget loads fully. Add <code style={{background:C.bg,padding:"1px 5px",borderRadius:3,fontSize:11}}>frame-src open.spotify.com</code> to vercel.json CSP.
-      </div>
-      {profileUrl && (
-        <a href={profileUrl} target="_blank" rel="noopener noreferrer" style={{
-          display:"inline-flex",alignItems:"center",gap:7,
-          background:"#1DB954",color:"#000",borderRadius:20,
-          padding:"10px 20px",fontSize:13,fontWeight:700,
-          textDecoration:"none",fontFamily:"'DM Sans',sans-serif",
-        }}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="black"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+      {/* Header */}
+      <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
+        <div style={{width:36,height:36,borderRadius:8,background:"#1DB954",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="black">
+            <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+          </svg>
+        </div>
+        <div style={{flex:1}}>
+          <div style={{fontWeight:700,color:"#EDE4CE",fontSize:14}}>Spotify</div>
+          {listeners&&<div style={{color:"rgba(237,228,206,0.6)",fontSize:12}}>{listeners} monthly listeners</div>}
+        </div>
+        <a href={url} target="_blank" rel="noopener noreferrer"
+          style={{display:"flex",alignItems:"center",gap:6,background:"#1DB954",color:"#000",borderRadius:20,padding:"8px 16px",fontSize:12,fontWeight:700,textDecoration:"none",flexShrink:0}}>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="black"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
           Open in Spotify
         </a>
+      </div>
+      {/* Top tracks */}
+      {tracks.length>0&&(
+        <div>
+          <div style={{fontSize:10,fontWeight:700,color:"rgba(29,185,84,0.7)",letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:8}}>TOP TRACKS</div>
+          <div style={{display:"flex",flexDirection:"column",gap:4}}>
+            {tracks.slice(0,3).map((track:string,i:number)=>(
+              <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"6px 0",borderBottom:"1px solid rgba(29,185,84,0.08)"}}>
+                <span style={{color:"rgba(29,185,84,0.5)",fontSize:11,fontWeight:700,width:16,flexShrink:0}}>{i+1}</span>
+                <span style={{color:"rgba(237,228,206,0.8)",fontSize:13}}>{track}</span>
+              </div>
+            ))}
+          </div>
+        </div>
       )}
     </div>
   );
-
-  // status === "loaded"
-  return (
-    <iframe
-      src={`https://open.spotify.com/embed/artist/${artistId}?utm_source=generator&theme=0`}
-      width="100%" height="352" frameBorder="0"
-      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-      loading="lazy"
-      onLoad={()=>{ clearTimeout(timerRef.current); setStatus("loaded"); }}
-      onError={()=>{ clearTimeout(timerRef.current); setStatus("blocked"); }}
-      style={{display:"block",borderRadius:10,border:"1px solid rgba(29,185,84,0.2)",marginTop:4}}
-    />
-  );
 }
+
 
 // ── SocialBar — primary display on public artist profile ──────────────
 function SocialBar({ artist }) {
@@ -1901,7 +1875,7 @@ function SocialBar({ artist }) {
 
           {/* Optional: load real iframe embed on demand */}
           <div style={{padding:"0 16px 16px"}}>
-            {spotifyId && <SpotifyEmbed artistId={spotifyId} profileUrl={spotify.profileUrl}/>}
+            {spotifyId && <SpotifyEmbed artistId={spotifyId} profileUrl={spotify.profileUrl} artist={artist}/>}
             {!spotifyId && spotify.profileUrl && (
               <a href={spotify.profileUrl} target="_blank" rel="noopener noreferrer" style={{
                 display:"flex",alignItems:"center",justifyContent:"center",gap:8,
