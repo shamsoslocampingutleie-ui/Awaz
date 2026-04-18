@@ -3935,7 +3935,7 @@ const MARKETS = [
 ];
 
 // ── Admin emails ──────────────────────────────────────────────────────────────
-const ADMIN_EMAILS = ["shams.nn@outlook.com"];
+const ADMIN_EMAILS = ["admin@awaz.com"];
 
 // ── Song priority tiers ───────────────────────────────────────────────────────
 const PRIORITY_TIERS = [
