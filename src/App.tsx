@@ -4192,27 +4192,51 @@ function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction,
   const [artistFilter,setArtistFilter]=useState("all"); // all|pending|approved|suspended
   const [searchQ,setSearchQ]=useState("");
 
-  const sendAdminChat=async()=>{
-    if(!adminChatArtist||!adminChatMsg.trim())return;
-    const msgText=adminChatMsg.trim();
-    const ts=new Date().toISOString();
+  const [adminChatImage,setAdminChatImage]=useState<string|null>(null);
 
-    // Update local UI immediately
-    const localMsg={from:"admin",text:msgText,time:new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})};
+  const sendAdminChat=async(imageUrl?:string)=>{
+    const text=adminChatMsg.trim();
+    const img=imageUrl||adminChatImage;
+    if(!adminChatArtist||((!text)&&!img)) return;
+    const localMsg={from:"admin",text:text||(img?"📷 Image":""),image:img||null,
+      time:new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})};
     setAdminChats(p=>({...p,[adminChatArtist.id]:[...(p[adminChatArtist.id]||[]),localMsg]}));
     setAdminChatMsg("");
-
+    setAdminChatImage(null);
     if(!HAS_SUPA) return;
     try{
       const sb=await getSupabase();
       if(!sb) return;
-      const {error}=await sb.from("chat_messages").insert({
-        artist_id: adminChatArtist.id,
-        from_role: "admin",
-        text:      msgText,
+      const{error}=await sb.from("chat_messages").insert({
+        artist_id:adminChatArtist.id,from_role:"admin",
+        text:text||(img?"📷 Image":""),image_url:img||null,
       });
-      if(error) console.error("Chat save error:", error.message, error.details);
-    }catch(e){ console.error("Chat exception:", e); }
+      if(error) console.error("Chat save error:",error.message);
+    }catch(e){console.error("Chat exception:",e);}
+  };
+
+  const handleAdminChatImg=async(e:React.ChangeEvent<HTMLInputElement>)=>{
+    const file=e.target.files?.[0]; if(!file) return;
+    const reader=new FileReader();
+    reader.onload=async(ev)=>{
+      const b64=ev.target?.result as string;
+      if(HAS_SUPA){
+        try{
+          const sb=await getSupabase();
+          if(sb){
+            const path=`chat/${Date.now()}_${file.name.replace(/\W/g,"_")}`;
+            const{data,error}=await sb.storage.from("chat-images").upload(path,file,{contentType:file.type,upsert:true});
+            if(!error&&data){
+              const{data:u}=sb.storage.from("chat-images").getPublicUrl(path);
+              if(u?.publicUrl){sendAdminChat(u.publicUrl);return;}
+            }
+          }
+        }catch{}
+      }
+      sendAdminChat(b64);
+    };
+    reader.readAsDataURL(file);
+    e.target.value="";
   };
 
   // Stats
@@ -4796,11 +4820,15 @@ function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction,
                       if(!confirm("Clear all messages with this artist?")) return;
                       setAdminChats(p=>({...p,[adminChatArtist.id]:[]}));
                       if(HAS_SUPA){
-                        const sb=await getSupabase();
-                        const {error:chatErr}=await sb.from("chat_messages").delete().eq("artist_id",adminChatArtist.id);
-                  if(chatErr){alert("Clear chat failed: "+chatErr.message);}
-                  else{notify("Chat cleared","success");}
-                      }
+                        try{
+                          const sb=await getSupabase();
+                          if(sb){
+                            const{error}=await sb.from("chat_messages").delete().eq("artist_id",adminChatArtist.id);
+                            if(error) notify("Delete blocked — run RLS SQL in Supabase first","error");
+                            else notify("Chat cleared ✅","success");
+                          }
+                        }catch(e:any){notify("Error: "+e.message,"error");}
+                      } else { notify("Chat cleared ✅","success"); }
                     }} style={{background:"rgba(168,44,56,0.08)",color:C.ruby,border:`1px solid ${C.ruby}33`,borderRadius:7,padding:"5px 10px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit",flexShrink:0}}>
                       🗑 Clear
                     </button>
@@ -4816,7 +4844,8 @@ function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction,
                           }} style={{background:"none",border:"none",color:C.ruby,cursor:"pointer",opacity:0,transition:"opacity 0.15s",fontSize:12,padding:"4px",flexShrink:0,marginTop:4}}>🗑</button>
                         )}
                         <div style={{maxWidth:"75%",background:msg.from==="admin"?C.goldS:C.surface,borderRadius:10,padding:"8px 12px",border:`1px solid ${msg.from==="admin"?C.gold+"44":C.border}`}}>
-                          <div style={{color:C.text,fontSize:T.sm,lineHeight:1.5}}>{msg.text}</div>
+                          {msg.image&&<img src={msg.image} style={{maxWidth:"100%",maxHeight:180,borderRadius:8,marginBottom:4,display:"block"}} alt="img"/>}
+                          {msg.text&&msg.text!=="📷 Image"&&<div style={{color:C.text,fontSize:T.sm,lineHeight:1.5}}>{msg.text}</div>}
                           <div style={{color:C.muted,fontSize:10,marginTop:3,textAlign:"right"}}>{msg.time}</div>
                         </div>
                       </div>
@@ -4825,12 +4854,15 @@ function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction,
                       <div style={{textAlign:"center",color:C.muted,fontSize:T.sm,marginTop:60,opacity:0.7}}>Start the conversation</div>
                     )}
                   </div>
-                  <div style={{padding:"12px 16px",borderTop:`1px solid ${C.border}`,display:"flex",gap:8}}>
+                  <div style={{padding:"12px 16px",borderTop:`1px solid ${C.border}`,display:"flex",gap:8,alignItems:"center"}}>
+                    <label style={{cursor:"pointer",padding:"8px 10px",borderRadius:8,background:C.surface,border:`1px solid ${C.border}`,color:C.muted,fontSize:16,display:"flex",alignItems:"center",flexShrink:0}} title="Attach image">
+                      📎<input type="file" accept="image/*" onChange={handleAdminChatImg} style={{display:"none"}}/>
+                    </label>
                     <input value={adminChatMsg} onChange={e=>setAdminChatMsg(e.target.value)}
-                      onKeyDown={e=>{if(e.key==="Enter"&&adminChatMsg.trim()) sendAdminChat();}}
-                      placeholder="Type a message…"
+                      onKeyDown={e=>{if(e.key==="Enter"&&(adminChatMsg.trim()||adminChatImage)) sendAdminChat();}}
+                      placeholder="Type a message or attach image…"
                       style={{flex:1,background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,padding:"10px 14px",color:C.text,fontSize:T.sm,outline:"none",fontFamily:"inherit"}}/>
-                    <button onClick={sendAdminChat} disabled={!adminChatMsg.trim()} style={{background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:8,padding:"10px 16px",fontWeight:700,cursor:adminChatMsg.trim()?"pointer":"not-allowed",opacity:adminChatMsg.trim()?1:0.4,fontFamily:"inherit",fontSize:T.sm}}>→</button>
+                    <button onClick={sendAdminChat} disabled={!adminChatMsg.trim()&&!adminChatImage} style={{background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:8,padding:"10px 16px",fontWeight:700,cursor:adminChatMsg.trim()?"pointer":"not-allowed",opacity:adminChatMsg.trim()?1:0.4,fontFamily:"inherit",fontSize:T.sm}}>→</button>
                   </div>
                 </>
               ):(
