@@ -3446,6 +3446,51 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
 
 // ── Admin Dashboard ────────────────────────────────────────────────────
 
+
+// ── Cancellation Policies ─────────────────────────────────────────────────────
+const POLICIES = [
+  {id:"flexible",  label:"Flexible",   desc:"Full refund up to 48h before event"},
+  {id:"moderate",  label:"Moderate",   desc:"Full refund 7 days before · 50% after"},
+  {id:"strict",    label:"Strict",     desc:"50% refund up to 14 days · No refund after"},
+  {id:"superstrict",label:"Super Strict",desc:"No refund after booking confirmed"},
+];
+
+// ── European diaspora markets ─────────────────────────────────────────────────
+const MARKETS = [
+  {code:"NO",name:"Norway",      flag:"🇳🇴",currency:"NOK",symbol:"kr",  depositMultiplier:1.0},
+  {code:"SE",name:"Sweden",      flag:"🇸🇪",currency:"SEK",symbol:"kr",  depositMultiplier:1.0},
+  {code:"DK",name:"Denmark",     flag:"🇩🇰",currency:"DKK",symbol:"kr",  depositMultiplier:1.0},
+  {code:"DE",name:"Germany",     flag:"🇩🇪",currency:"EUR",symbol:"€",   depositMultiplier:1.2},
+  {code:"AT",name:"Austria",     flag:"🇦🇹",currency:"EUR",symbol:"€",   depositMultiplier:1.1},
+  {code:"CH",name:"Switzerland", flag:"🇨🇭",currency:"CHF",symbol:"CHF", depositMultiplier:1.3},
+  {code:"GB",name:"United Kingdom",flag:"🇬🇧",currency:"GBP",symbol:"£",depositMultiplier:1.1},
+  {code:"NL",name:"Netherlands", flag:"🇳🇱",currency:"EUR",symbol:"€",   depositMultiplier:1.0},
+  {code:"BE",name:"Belgium",     flag:"🇧🇪",currency:"EUR",symbol:"€",   depositMultiplier:1.0},
+  {code:"FR",name:"France",      flag:"🇫🇷",currency:"EUR",symbol:"€",   depositMultiplier:1.0},
+  {code:"IT",name:"Italy",       flag:"🇮🇹",currency:"EUR",symbol:"€",   depositMultiplier:0.9},
+  {code:"ES",name:"Spain",       flag:"🇪🇸",currency:"EUR",symbol:"€",   depositMultiplier:0.9},
+  {code:"FI",name:"Finland",     flag:"🇫🇮",currency:"EUR",symbol:"€",   depositMultiplier:1.0},
+  {code:"US",name:"United States",flag:"🇺🇸",currency:"USD",symbol:"$",  depositMultiplier:1.1},
+  {code:"AE",name:"UAE",         flag:"🇦🇪",currency:"AED",symbol:"AED", depositMultiplier:1.2},
+];
+
+// ── Admin emails ──────────────────────────────────────────────────────────────
+const ADMIN_EMAILS = ["shams.nn@outlook.com"];
+
+// ── Song priority tiers ───────────────────────────────────────────────────────
+const PRIORITY_TIERS = [
+  {amount:0,  label:"Free",          desc:"1st song — free tonight!", color:"#22C55E", icon:"🎵"},
+  {amount:10, label:"€10",           desc:"2nd song",                 color:"#C8A84A", icon:"🎶"},
+  {amount:20, label:"€20",           desc:"3rd song+",                color:"#F59E0B", icon:"🎵"},
+];
+
+// ── Progressive song pricing ──────────────────────────────────────────────────
+const SONG_PRICING = [
+  {requestNum:1, base:0,  label:"1st Song",  desc:"Your first request tonight is on us!", color:"#22C55E", icon:"🎵"},
+  {requestNum:2, base:10, label:"2nd Song",  desc:"Second request — €10",                color:"#C8A84A", icon:"🎶"},
+  {requestNum:3, base:20, label:"3rd Song+", desc:"Third song and beyond — €20",         color:"#F59E0B", icon:"🎵"},
+];
+
 // ── Notification System ──────────────────────────────────────────────────────
 // Types: "booking" | "message" | "inquiry" | "approval" | "success" | "error"
 const NotifContext = React.createContext({show:(_msg:string,_type?:string)=>{}});
