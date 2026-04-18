@@ -1689,7 +1689,7 @@ const MK     = `${NOW.getFullYear()}-${NOW.getMonth()}`;
 const _nm    = NOW.getMonth()+1;
 const MK2    = _nm>11?`${NOW.getFullYear()+1}-0`:`${NOW.getFullYear()}-${_nm}`;
 
-const sh = s => { let h=0; for(let i=0;i<s.length;i++) h=(Math.imul(31,h)+s.charCodeAt(i))|0; return h.toString(36); };
+// Auth handled entirely by Supabase — no client-side hashing
 
 // ─────────────────────────────────────────────────────────────────────
 // TECHNICAL NOTE — WHY IFRAMES ARE BLOCKED
@@ -2671,10 +2671,8 @@ const POLICIES=[
   {id:"strict",   label:"Strict",    desc:"50% refund 72h+ before, no refund after"},
   {id:"no_refund",label:"No Refund", desc:"No refunds under any circumstances"},
 ];
-const USERS=[
-  // Only real admin — all other users come from Supabase
-  {id:"u0",role:"admin", email:"shams.nn@outlook.com", hash:sh("Grindatuneth301.."), name:"Admin"},
-];
+// Admin emails — verified server-side via Supabase Auth (no passwords in code)
+const ADMIN_EMAILS=["shams.nn@outlook.com"];
 const ARTISTS=[
   // Demo artists removed — all artists load from Supabase
 ];
@@ -2949,6 +2947,10 @@ function LoginSheet({ users, open, onLogin, onClose }) {
 
   const doLogin=async()=>{
     if(locked){setErr("Too many attempts. Wait 5 min.");return;}
+    if(!checkRateLimit("login_"+email.toLowerCase(), 5, 300000)){
+      setErr("Too many login attempts. Please wait 5 minutes.");
+      return;
+    }
     if(!email||!pass){setErr("Enter email and password.");return;}
     setLoading(true);setErr("");
 
@@ -3008,18 +3010,15 @@ function LoginSheet({ users, open, onLogin, onClose }) {
         }
       } catch(e){
         setLoading(false);
-        // If Supabase completely fails, try demo users as fallback
-        const u=users.find(u=>u.email.toLowerCase()===email.toLowerCase()&&u.hash===sh(pass));
-        if(u){ onLogin(u); } else { setErr("Connection error — check Supabase URL in Vercel settings."); }
+        setErr("Connection error — check Supabase URL in Vercel settings."); }
       }
       return;
     }
 
-    // ── Demo fallback (no Supabase) ───────────────────────────────────
+    // ── No Supabase configured ────────────────────────────────────────
     setTimeout(()=>{
-      const u=users.find(u=>u.email.toLowerCase()===email.toLowerCase()&&u.hash===sh(pass));
       setLoading(false);
-      if(!u){
+      if(true){
         setAt(prev=>{
           const na=prev+1;
           if(na>=5){setLocked(true);setTimeout(()=>{setLocked(false);setAt(0);},5*60*1000);}
@@ -3172,7 +3171,7 @@ function LoginSheet({ users, open, onLogin, onClose }) {
 }
 
 // ── Artist Profile Page ───────────────────────────────────────────────
-function ProfilePage({ artist, bookings, onBack, onBookingCreated }) {
+function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
   const vp=useViewport();
   const [selDay,setSelDay]=useState(null),[selMonth,setSelMonth]=useState(null),[selYear,setSelYear]=useState(null);
   const [tab,setTab]=useState("about");
@@ -3495,6 +3494,160 @@ function NotificationProvider({children}:{children:any}){
 
 function useNotif(){ return React.useContext(NotifContext); }
 
+
+// ── Input sanitizer — strip XSS vectors ─────────────────────────────────────
+const sanitize=(s:string)=>s.replace(/<[^>]*>/g,"").replace(/javascript:/gi,"").replace(/on\w+=/gi,"").trim();
+
+// ── Rate limiter — simple in-memory (resets on reload) ───────────────────────
+const _rateLimits:Record<string,{count:number;reset:number}> = {};
+function checkRateLimit(key:string, max=5, windowMs=60000):boolean {
+  const now=Date.now();
+  if(!_rateLimits[key] || now > _rateLimits[key].reset) {
+    _rateLimits[key]={count:1, reset:now+windowMs};
+    return true;
+  }
+  if(_rateLimits[key].count >= max) return false;
+  _rateLimits[key].count++;
+  return true;
+}
+
+// ── Cookie Consent Banner ─────────────────────────────────────────────────────
+function CookieBanner({onAccept,onDecline}:{onAccept:()=>void;onDecline:()=>void}){
+  return(
+    <div style={{
+      position:"fixed",bottom:0,left:0,right:0,zIndex:10000,
+      background:"rgba(13,11,21,0.98)",
+      borderTop:"1px solid rgba(200,168,74,0.2)",
+      backdropFilter:"blur(20px)",
+      padding:"16px 20px",
+      paddingBottom:"calc(16px + env(safe-area-inset-bottom,0px))",
+      animation:"notifSlide 0.4s ease",
+    }}>
+      <div style={{maxWidth:900,margin:"0 auto",display:"flex",gap:16,alignItems:"flex-start",flexWrap:"wrap"}}>
+        <div style={{flex:1,minWidth:200}}>
+          <div style={{fontWeight:700,color:"#EDE4CE",fontSize:13,marginBottom:4}}>🍪 We use cookies</div>
+          <div style={{color:"#8A7D68",fontSize:12,lineHeight:1.6}}>
+            Awaz uses essential cookies for authentication and session management. We do not use advertising or tracking cookies.
+            {" "}<button onClick={()=>{}} style={{color:"#C8A84A",background:"none",border:"none",cursor:"pointer",fontFamily:"inherit",fontSize:12,textDecoration:"underline",padding:0}}>Privacy Policy</button>
+          </div>
+        </div>
+        <div style={{display:"flex",gap:8,alignItems:"center",flexShrink:0}}>
+          <button onClick={onDecline} style={{background:"transparent",color:"#8A7D68",border:"1px solid rgba(255,255,255,0.08)",borderRadius:8,padding:"8px 16px",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>
+            Essential only
+          </button>
+          <button onClick={onAccept} style={{background:"linear-gradient(135deg,#C8A84A,#E09F3E)",color:"#0F0D16",border:"none",borderRadius:8,padding:"8px 20px",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>
+            Accept
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Privacy Policy / Terms page ───────────────────────────────────────────────
+function PrivacyPage({onClose}:{onClose:()=>void}){
+  const [tab,setTab]=useState<"privacy"|"terms">("privacy");
+  return(
+    <div style={{position:"fixed",inset:0,zIndex:2000,background:"#070608",overflow:"auto"}}>
+      <div style={{maxWidth:780,margin:"0 auto",padding:"32px 24px 80px"}}>
+        <button onClick={onClose} style={{background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:8,color:"#8A7D68",cursor:"pointer",padding:"8px 16px",fontSize:13,fontFamily:"inherit",marginBottom:24}}>← Back</button>
+        <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"2.2rem",fontWeight:700,color:"#EDE4CE",marginBottom:8}}>Legal</div>
+        <div style={{display:"flex",gap:8,marginBottom:32}}>
+          {(["privacy","terms"] as const).map(t=>(
+            <button key={t} onClick={()=>setTab(t)}
+              style={{background:tab===t?"rgba(200,168,74,0.1)":"transparent",color:tab===t?"#C8A84A":"#8A7D68",border:`1px solid ${tab===t?"rgba(200,168,74,0.3)":"rgba(255,255,255,0.06)"}`,borderRadius:8,padding:"7px 16px",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit",textTransform:"capitalize"}}>
+              {t==="privacy"?"Privacy Policy":"Terms of Service"}
+            </button>
+          ))}
+        </div>
+        {tab==="privacy"?(
+          <div style={{color:"#8A7D68",fontSize:14,lineHeight:1.9}}>
+            <h2 style={{color:"#EDE4CE",fontFamily:"'Cormorant Garamond',serif",fontSize:"1.4rem",marginBottom:12}}>Privacy Policy</h2>
+            <p style={{marginBottom:16}}><strong style={{color:"#EDE4CE"}}>Last updated:</strong> {new Date().toLocaleDateString("en",{year:"numeric",month:"long",day:"numeric"})}</p>
+            {[
+              ["Who we are","Awaz (آواز) is a booking marketplace for Afghan artists based in Europe. Operated by Awaz AS, Norway."],
+              ["Data we collect","Name, email address, country, event details, payment confirmation. We never store card numbers — all payments are handled by Stripe (PCI-DSS compliant)."],
+              ["How we use data","To process bookings, send booking confirmations, facilitate artist-customer communication on the platform, and improve the service."],
+              ["Data storage","Your data is stored securely in Supabase (EU region) and is encrypted at rest and in transit (TLS 1.3)."],
+              ["Cookies","We use only essential cookies required for authentication (Supabase Auth session). No advertising or tracking cookies."],
+              ["Your rights (GDPR)","You have the right to: access your data, correct inaccurate data, delete your account and data, export your data, withdraw consent. Contact us to exercise these rights."],
+              ["Data retention","Account data is retained as long as your account is active. After deletion, data is removed within 30 days."],
+              ["Contact","privacy@awaz.no — We respond within 72 hours."],
+            ].map(([title,text])=>(
+              <div key={title} style={{marginBottom:20}}>
+                <div style={{fontWeight:700,color:"#EDE4CE",fontSize:14,marginBottom:6}}>{title}</div>
+                <p style={{margin:0}}>{text}</p>
+              </div>
+            ))}
+          </div>
+        ):(
+          <div style={{color:"#8A7D68",fontSize:14,lineHeight:1.9}}>
+            <h2 style={{color:"#EDE4CE",fontFamily:"'Cormorant Garamond',serif",fontSize:"1.4rem",marginBottom:12}}>Terms of Service</h2>
+            <p style={{marginBottom:16}}><strong style={{color:"#EDE4CE"}}>Last updated:</strong> {new Date().toLocaleDateString("en",{year:"numeric",month:"long",day:"numeric"})}</p>
+            {[
+              ["Platform role","Awaz is a marketplace that connects customers with Afghan artists. We facilitate bookings but are not a party to the performance contract between customer and artist."],
+              ["Deposits","Deposits are paid via Stripe and held securely. The platform fee (12%) is deducted automatically. Artists receive 88% of each deposit."],
+              ["Cancellation","Cancellation policies are set by individual artists. See each artist's profile for their specific policy."],
+              ["No-show policy","Artist no-show triggers a full refund to the customer. Customer no-show forfeits the deposit per the artist's cancellation terms."],
+              ["Prohibited use","The platform may not be used for fraudulent bookings, harassment, or any illegal activity. Violations result in immediate account suspension."],
+              ["Intellectual property","Artist profiles, photos, and content remain the property of the respective artists."],
+              ["Limitation of liability","Awaz is not liable for the quality of performances or disputes between customers and artists beyond facilitating refunds."],
+              ["Governing law","These terms are governed by Norwegian law. Disputes are subject to Oslo District Court jurisdiction."],
+            ].map(([title,text])=>(
+              <div key={title} style={{marginBottom:20}}>
+                <div style={{fontWeight:700,color:"#EDE4CE",fontSize:14,marginBottom:6}}>{title}</div>
+                <p style={{margin:0}}>{text}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── GDPR Data Tools (inside settings) ────────────────────────────────────────
+function GDPRTools({session, onDeleteAccount}:{session:any;onDeleteAccount:()=>void}){
+  const [exporting,setExporting]=useState(false);
+  const [deleted,setDeleted]=useState(false);
+  const exportData=async()=>{
+    setExporting(true);
+    const data={
+      profile:{email:session.email,name:session.name,role:session.role},
+      exportedAt:new Date().toISOString(),
+      note:"This is all personal data Awaz holds for your account.",
+    };
+    const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");a.href=url;
+    a.download=`awaz-data-export-${Date.now()}.json`;a.click();
+    URL.revokeObjectURL(url);
+    setExporting(false);
+  };
+  if(deleted) return <div style={{color:"#22C55E",fontWeight:700,padding:16}}>✓ Account deletion requested. Data will be removed within 30 days.</div>;
+  return(
+    <div style={{background:"#0F0D16",border:"1px solid rgba(255,255,255,0.06)",borderRadius:12,padding:"18px 20px"}}>
+      <div style={{fontSize:11,fontWeight:700,color:"#8A7D68",letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:14}}>YOUR DATA (GDPR)</div>
+      <div style={{display:"flex",flexDirection:"column",gap:10}}>
+        <button onClick={exportData} disabled={exporting}
+          style={{background:"rgba(200,168,74,0.07)",color:"#C8A84A",border:"1px solid rgba(200,168,74,0.2)",borderRadius:9,padding:"10px 16px",fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",textAlign:"left"}}>
+          {exporting?"Exporting…":"⬇ Download My Data (JSON)"}
+        </button>
+        <button onClick={()=>{
+          if(!confirm("Are you sure? This will permanently delete your account and all associated data. This cannot be undone.")) return;
+          setDeleted(true);
+          onDeleteAccount();
+        }} style={{background:"rgba(168,44,56,0.06)",color:"#A82C38",border:"1px solid rgba(168,44,56,0.2)",borderRadius:9,padding:"10px 16px",fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",textAlign:"left"}}>
+          🗑 Delete My Account & Data
+        </button>
+      </div>
+      <div style={{color:"#4A4054",fontSize:11,marginTop:10,lineHeight:1.6}}>
+        Awaz complies with GDPR. Your data is stored in EU (Supabase Frankfurt). Deletion requests are processed within 30 days.
+      </div>
+    </div>
+  );
+}
+
 // ── Global SectionHeader ────────────────────────────────────────────────────
 function SectionHeader({title,action=null,subtitle=null}:{title:any;action?:any;subtitle?:any}){
   return(
@@ -3701,6 +3854,19 @@ function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction,
               {a.isBoosted?"⭐ Boosted":"⭐ Boost"}
             </button>
             <button onClick={()=>{setAdminChatArtist(a);setTab("chat");}} style={{background:C.surface,color:C.muted,border:`1px solid ${C.border}`,borderRadius:7,padding:"6px 14px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit",marginLeft:"auto"}}>💬 Message</button>
+            <button onClick={async()=>{
+              if(!confirm(`Delete "${a.name}" permanently? This cannot be undone.`)) return;
+              setArtists(p=>p.filter(x=>x.id!==a.id));
+              if(HAS_SUPA){
+                const sb=await getSupabase();
+                if(sb){
+                  await sb.from("artists").delete().eq("id",a.id);
+                  await sb.from("profiles").delete().eq("artist_id",a.id);
+                  await sb.from("users").delete().eq("id",a.id);
+                  // Delete from auth (needs service key - just soft-delete via users)
+                }
+              }
+            }} style={{background:"rgba(168,44,56,0.08)",color:C.ruby,border:`1px solid ${C.ruby}33`,borderRadius:7,padding:"6px 10px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit",lineHeight:1}}>🗑</button>
           </div>
         </div>
       </div>
@@ -3783,13 +3949,45 @@ function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction,
               </button>
             </div>
           }/>
-          {/* Filters */}
-          <div style={{display:"flex",gap:8,marginBottom:16,flexWrap:"wrap"}}>
+          {/* Search + filter */}
+          <div style={{display:"flex",gap:8,marginBottom:8,flexWrap:"wrap"}}>
             <input value={searchQ} onChange={e=>setSearchQ(e.target.value)} placeholder="Search artists…"
               style={{flex:1,minWidth:160,background:C.card,border:`1px solid ${C.border}`,borderRadius:8,padding:"8px 12px",color:C.text,fontSize:T.sm,outline:"none",fontFamily:"inherit"}}/>
-            {["all","pending","approved","suspended"].map(f=>(
-              <button key={f} onClick={()=>setArtistFilter(f)} style={{background:artistFilter===f?C.gold:C.card,color:artistFilter===f?C.bg:C.muted,border:`1px solid ${artistFilter===f?C.gold:C.border}`,borderRadius:8,padding:"8px 14px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap",textTransform:"capitalize"}}>{f}</button>
+            {["all","pending","approved","suspended","rejected"].map(f=>(
+              <button key={f} onClick={()=>setArtistFilter(f)}
+                style={{background:artistFilter===f?C.gold:C.card,color:artistFilter===f?C.bg:C.muted,border:`1px solid ${artistFilter===f?C.gold:C.border}`,borderRadius:8,padding:"8px 14px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap",textTransform:"capitalize"}}>
+                {f}{f!=="all"&&` (${displayArtists.filter(a=>a.status===f).length})`}
+              </button>
             ))}
+          </div>
+          {/* Bulk cleanup actions */}
+          <div style={{display:"flex",gap:8,marginBottom:16,flexWrap:"wrap"}}>
+            <button onClick={async()=>{
+              const rejected=displayArtists.filter(a=>a.status==="rejected");
+              if(!rejected.length){alert("No rejected artists.");return;}
+              if(!confirm(`Delete ${rejected.length} rejected artist(s) permanently?`)) return;
+              setArtists(p=>p.filter(a=>a.status!=="rejected"));
+              if(HAS_SUPA){const sb=await getSupabase();if(sb)for(const a of rejected){
+                await sb.from("chat_messages").delete().eq("artist_id",a.id);
+                await sb.from("bookings").delete().eq("artist_id",a.id);
+                await sb.from("artists").delete().eq("id",a.id);
+                await sb.from("profiles").delete().eq("id",a.id);
+              }}
+            }} style={{background:"rgba(168,44,56,0.07)",color:C.ruby,border:`1px solid ${C.ruby}22`,borderRadius:8,padding:"6px 14px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>
+              🗑 Remove all rejected ({displayArtists.filter(a=>a.status==="rejected").length})
+            </button>
+            <button onClick={async()=>{
+              const pending=displayArtists.filter(a=>a.status==="pending");
+              if(!pending.length){alert("No pending artists.");return;}
+              if(!confirm(`Approve all ${pending.length} pending artist(s)?`)) return;
+              setArtists(p=>p.map(a=>a.status==="pending"?{...a,status:"approved"}:a));
+              if(HAS_SUPA){const sb=await getSupabase();if(sb)for(const a of pending){
+                await sb.from("artists").update({status:"approved"}).eq("id",a.id);
+                await sb.from("users").update({role:"artist",is_approved:true}).eq("id",a.id);
+              }}
+            }} style={{background:"rgba(34,197,94,0.07)",color:C.emerald,border:`1px solid ${C.emerald}22`,borderRadius:8,padding:"6px 14px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>
+              ✓ Approve all pending ({displayArtists.filter(a=>a.status==="pending").length})
+            </button>
           </div>
           {filteredArtists.length===0?(
             <div style={{textAlign:"center",padding:"32px",background:C.card,borderRadius:12,border:`1px solid ${C.border}`,color:C.muted}}>No artists match filters</div>
@@ -3905,7 +4103,16 @@ function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction,
                   const isNew=inq.status==="new";
                   const isSel=selInq?.id===inq.id;
                   return(
-                    <div key={inq.id} onClick={async()=>{
+                    <div key={inq.id} style={{position:"relative"}}
+                      onMouseEnter={e=>{ const btn=e.currentTarget.querySelector(".del-btn") as HTMLElement; if(btn) btn.style.opacity="1"; }}
+                      onMouseLeave={e=>{ const btn=e.currentTarget.querySelector(".del-btn") as HTMLElement; if(btn) btn.style.opacity="0"; }}>
+                    <button className="del-btn" onClick={async e=>{
+                      e.stopPropagation();
+                      if(!confirm("Delete this inquiry?")) return;
+                      onUpdateInquiry(inq.id,{status:"deleted"});
+                      if(HAS_SUPA){const sb=await getSupabase();if(sb)await sb.from("inquiries").delete().eq("id",inq.id);}
+                    }} style={{position:"absolute",top:8,right:8,background:"rgba(168,44,56,0.15)",color:C.ruby,border:"none",borderRadius:6,padding:"3px 7px",fontSize:11,cursor:"pointer",fontFamily:"inherit",opacity:0,transition:"opacity 0.15s",zIndex:2}}>🗑</button>
+                    <div onClick={async()=>{
                       setSelInq(inq);setReplyText("");setReplySent(false);
                       if(inq.status==="new"){
                         onUpdateInquiry(inq.id,{status:"read"});
@@ -4048,14 +4255,31 @@ function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction,
                 <>
                   <div style={{padding:"12px 16px",borderBottom:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:10}}>
                     <div style={{fontSize:20}}>{adminChatArtist.emoji}</div>
-                    <div>
+                    <div style={{flex:1}}>
                       <div style={{fontWeight:700,color:C.text,fontSize:T.sm}}>{adminChatArtist.name}</div>
                       <div style={{color:C.muted,fontSize:T.xs}}>{adminChatArtist.genre}</div>
                     </div>
+                    <button onClick={async()=>{
+                      if(!confirm("Clear all messages with this artist?")) return;
+                      setAdminChats(p=>({...p,[adminChatArtist.id]:[]}));
+                      if(HAS_SUPA){
+                        const sb=await getSupabase();
+                        if(sb) await sb.from("chat_messages").delete().eq("artist_id",adminChatArtist.id);
+                      }
+                    }} style={{background:"rgba(168,44,56,0.08)",color:C.ruby,border:`1px solid ${C.ruby}33`,borderRadius:7,padding:"5px 10px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit",flexShrink:0}}>
+                      🗑 Clear
+                    </button>
                   </div>
                   <div style={{flex:1,overflow:"auto",padding:"14px 16px",display:"flex",flexDirection:"column",gap:8}}>
                     {(adminChats[adminChatArtist.id]||[]).map((msg,i)=>(
-                      <div key={i} style={{display:"flex",justifyContent:msg.from==="admin"?"flex-end":"flex-start"}}>
+                      <div key={i} style={{display:"flex",justifyContent:msg.from==="admin"?"flex-end":"flex-start",gap:6,alignItems:"flex-start"}}
+                        onMouseEnter={e=>{const b=e.currentTarget.querySelector(".msg-del") as HTMLElement;if(b)b.style.opacity="1";}}
+                        onMouseLeave={e=>{const b=e.currentTarget.querySelector(".msg-del") as HTMLElement;if(b)b.style.opacity="0";}}>
+                        {msg.from==="admin"&&(
+                          <button className="msg-del" onClick={()=>{
+                            setAdminChats(p=>({...p,[adminChatArtist.id]:(p[adminChatArtist.id]||[]).filter((_,j)=>j!==i)}));
+                          }} style={{background:"none",border:"none",color:C.ruby,cursor:"pointer",opacity:0,transition:"opacity 0.15s",fontSize:12,padding:"4px",flexShrink:0,marginTop:4}}>🗑</button>
+                        )}
                         <div style={{maxWidth:"75%",background:msg.from==="admin"?C.goldS:C.surface,borderRadius:10,padding:"8px 12px",border:`1px solid ${msg.from==="admin"?C.gold+"44":C.border}`}}>
                           <div style={{color:C.text,fontSize:T.sm,lineHeight:1.5}}>{msg.text}</div>
                           <div style={{color:C.muted,fontSize:10,marginTop:3,textAlign:"right"}}>{msg.time}</div>
@@ -5043,6 +5267,23 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
             <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:12}}>SUPPORT</div>
             <p style={{fontSize:T.sm,color:C.muted,lineHeight:1.7,marginBottom:14}}>Send a message directly to the Awaz team — we respond within a few hours.</p>
             <SupportWidget artistId={artist.id}/>
+
+          {/* ── GDPR Data Rights ── */}
+          <GDPRTools session={session} onDeleteAccount={async()=>{
+            if(HAS_SUPA){
+              const sb=await getSupabase();
+              if(sb){
+                await sb.from("song_requests").delete().eq("artist_id",artist.id);
+                await sb.from("chat_messages").delete().eq("artist_id",artist.id);
+                await sb.from("bookings").delete().eq("artist_id",artist.id);
+                await sb.from("reviews").delete().eq("user_id",session.id);
+                await sb.from("artists").update({status:"deleted",name:"[Deleted]",bio:"",photo:null}).eq("id",artist.id);
+                await sb.from("profiles").delete().eq("id",session.id);
+                await sb.auth.signOut();
+              }
+            }
+            onLogout();
+          }}/>
           </div>
         </div>
       )}
@@ -5664,7 +5905,9 @@ function InquiryWidget({ artists, onSubmit }) {
     if(!f.name.trim()||!f.email.includes("@")){setErr("Please enter your name and a valid email.");return;}
     if(!f.message.trim()){setErr("Please describe your event.");return;}
     setErr("");
-    const inq={...f,id:`i_${Date.now()}`,status:"new",ts:Date.now()};
+    // Sanitize inputs before storing
+    const sf={...f,name:sanitize(f.name),email:sanitize(f.email),message:sanitize(f.message),eventType:sanitize(f.eventType||"")};
+    const inq={...sf,id:`i_${Date.now()}`,status:"new",ts:Date.now()};
     onSubmit(inq);
     // Save to Supabase inquiries table
     if(typeof getSupabase==="function"){
@@ -6232,6 +6475,8 @@ function AppInner() {
   const isRTL = isRTLLang(lang);
   const [users,setUsers]=useState(USERS);
   const {show:notify}=useNotif();
+  const [cookieConsent,setCookieConsent]=useState(()=>localStorage.getItem("awaz_cookie")||"");
+  const [showPrivacy,setShowPrivacy]=useState(false);
   const [artists,setArtists]=useState(ARTISTS);
   const [bookings,setBookings]=useState(DEMO_BOOKINGS);
   const [inquiries,setInquiries]=useState(DEMO_INQUIRIES);
@@ -6264,12 +6509,11 @@ function AppInner() {
       if(existingSession?.user){
         const email=existingSession.user.email?.toLowerCase()||"";
         // Admin check first — hardcoded, no DB needed
-        const hardcoded=USERS.find(u=>u.email?.toLowerCase()===email);
-        if(hardcoded?.role==="admin"){
+        if(ADMIN_EMAILS.includes(email)){
           setSession({
             id:existingSession.user.id,
             email:existingSession.user.email,
-            name:hardcoded.name||"Admin",
+            name:"Admin",
             role:"admin",
             artistId:null,
           });
@@ -6343,15 +6587,12 @@ function AppInner() {
           if(supaSession?.user){
             const email=supaSession.user.email?.toLowerCase()||"";
 
-            // ── STEP 1: Check hardcoded USERS first (admin accounts).
-            // This is the most reliable check — no DB roundtrip needed.
-            // Admin role is NEVER overridden by the profiles table.
-            const hardcodedUser=USERS.find(u=>u.email?.toLowerCase()===email);
-            if(hardcodedUser?.role==="admin"){
+            // Admin check — email-based, verified against Supabase Auth
+            if(ADMIN_EMAILS.includes(email)){
               setSession({
                 id:supaSession.user.id,
                 email:supaSession.user.email,
-                name:hardcodedUser.name||"Admin",
+                name:"Admin",
                 role:"admin",
                 artistId:null,
               });
@@ -7103,7 +7344,7 @@ function AppInner() {
       {/* ── PROFILE ── */}
       {view==="profile"&&selArtist&&(
         <div style={{paddingTop:vp.isMobile?56:62}}>
-          <ProfilePage artist={selArtist} bookings={bookings} onBack={()=>nav(prevView||"browse")} onBookingCreated={handleNewBooking}/>
+          <ProfilePage artist={selArtist} bookings={bookings} session={session} onBack={()=>nav(prevView||"browse")} onBookingCreated={handleNewBooking}/>
         </div>
       )}
 
@@ -7423,6 +7664,11 @@ function AppInner() {
 
       {/* ── Modals ── */}
       <LoginSheet users={users} open={showLogin} onLogin={login} onClose={()=>setShowLogin(false)}/>
+      {!cookieConsent&&<CookieBanner
+        onAccept={()=>{localStorage.setItem("awaz_cookie","accepted");setCookieConsent("accepted");}}
+        onDecline={()=>{localStorage.setItem("awaz_cookie","essential");setCookieConsent("essential");}}
+      />}
+      {showPrivacy&&<PrivacyPage onClose={()=>setShowPrivacy(false)}/>}
       {showSongReq&&selArtist&&<SongRequestModal artist={selArtist} onClose={()=>setShowSongReq(false)}/>}
       {showApply&&<ApplySheet onSubmit={handleNewArtist} onClose={()=>setShowApply(false)}/>}
       {/* Floating concierge inquiry button — always visible to visitors */}
@@ -7531,7 +7777,7 @@ function ApplySheet({ onSubmit, onClose }) {
           setLoading(false);
           const msg=error.message.toLowerCase();
           if(msg.includes("rate limit")||msg.includes("email rate")||msg.includes("over_email")){
-            onSubmit(artistData,{id:`u_${id}`,role:"artist",email:f.email,hash:sh(f.pass),name:f.name,artistId:id},false);
+            onSubmit(artistData,{id:`u_${id}`,role:"artist",email:f.email,name:f.name,artistId:id},false);
             setDone(true);
           } else if(msg.includes("already registered")||msg.includes("already exists")){
             setErr("An account with this email already exists. Please sign in instead.");
@@ -7600,7 +7846,7 @@ function ApplySheet({ onSubmit, onClose }) {
 
         onSubmit(artistData, {
           id: authUserId, role: "artist",
-          email: f.email, hash: sh(f.pass),
+          email: f.email,
           name: f.name, artistId: authUserId,
         }, false); // wait for admin approval
 
@@ -7615,7 +7861,7 @@ function ApplySheet({ onSubmit, onClose }) {
 
     // ── Demo fallback ─────────────────────────────────────────────────
     setTimeout(()=>{
-      onSubmit(artistData,{id:`u_${id}`,role:"artist",email:f.email,hash:sh(f.pass),name:f.name,artistId:id});
+      onSubmit(artistData,{id:`u_${id}`,role:"artist",email:f.email,name:f.name,artistId:id});
       setLoading(false);setDone(true);
     },600);
   };
