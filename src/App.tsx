@@ -5008,6 +5008,7 @@ function ArtistPortal({ user, artist, bookings, onLogout, onToggleDay, onMsg, on
       {tab==="pricing"&&(
         <div>
           <CountryPricingTab artist={artist} onUpdateArtist={onUpdateArtist} vp={vp}/>
+          <ArtistQRPanel artist={artist}/>
 
           {/* ── Artist Boost ── */}
           <div style={{marginTop:24,background:artist.isBoosted?`linear-gradient(135deg,rgba(200,168,74,0.1),${C.card})`:`linear-gradient(135deg,rgba(200,168,74,0.04),${C.card})`,border:`2px solid ${artist.isBoosted?C.gold:C.gold+"33"}`,borderRadius:16,padding:"22px 24px"}}>
@@ -5890,6 +5891,261 @@ function SongRequestModal({artist, bookingId, onClose}:{artist:any;bookingId?:st
   );
 }
 
+// ══════════════════════════════════════════════════════════════════════════════
+// 🎵 QR SONG REQUEST SYSTEM
+// ══════════════════════════════════════════════════════════════════════════════
+
+// Generate QR code as SVG using a simple URL-based approach
+// Uses api.qrserver.com (free, no API key needed)
+function QRCode({url, size=200}:{url:string;size?:number}){
+  const qrUrl=`https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(url)}&bgcolor=0F0D16&color=C8A84A&margin=2&format=png&qzone=1`;
+  return(
+    <img src={qrUrl} alt="QR Code" width={size} height={size}
+      style={{borderRadius:12,display:"block",imageRendering:"pixelated"}}/>
+  );
+}
+
+// ── Song Request Landing Page (scanned from QR) ──────────────────────────────
+function SongRequestPage({artistId, artists, onBack}:{artistId:string;artists:any[];onBack:()=>void}){
+  const artist = artists.find(a=>a.id===artistId);
+  const [step,setStep]=useState<"form"|"priority"|"done">("form");
+  const [f,setF]=useState({song_title:"",song_artist:"",guest_name:"",message:""});
+  const [tier,setTier]=useState(PRIORITY_TIERS[0]);
+  const [loading,setLoading]=useState(false);
+  const [err,setErr]=useState("");
+  const {show:notify}=useNotif();
+
+  if(!artist) return(
+    <div style={{minHeight:"100vh",background:"#070608",display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
+      <div style={{textAlign:"center",color:"#8A7D68"}}>
+        <div style={{fontSize:48,marginBottom:12}}>🎵</div>
+        <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.4rem",color:"#EDE4CE"}}>Artist not found</div>
+      </div>
+    </div>
+  );
+
+  const submit=async()=>{
+    if(!f.song_title.trim()||!f.guest_name.trim()){setErr("Please fill in all required fields");return;}
+    setLoading(true);setErr("");
+    try{
+      if(HAS_SUPA){
+        const sb=await getSupabase();
+        if(sb){
+          const{error}=await sb.from("song_requests").insert({
+            artist_id:       artist.id,
+            song_title:      sanitize(f.song_title.trim()),
+            song_artist:     sanitize(f.song_artist.trim())||null,
+            guest_name:      sanitize(f.guest_name.trim()),
+            message:         sanitize(f.message.trim())||null,
+            amount:          tier.amount,
+            priority_amount: tier.amount,
+            status:          "pending",
+          });
+          if(error){setErr("Failed to send. Please try again.");setLoading(false);return;}
+        }
+      }
+      setLoading(false);setStep("done");
+    }catch(e){setLoading(false);setErr("Connection error. Please try again.");}
+  };
+
+  return(
+    <div style={{minHeight:"100vh",background:"#070608",fontFamily:"'DM Sans',sans-serif",color:"#EDE4CE"}}>
+      {/* Header */}
+      <div style={{background:"linear-gradient(180deg,rgba(200,168,74,0.08),transparent)",borderBottom:"1px solid rgba(200,168,74,0.1)",padding:"20px 24px",display:"flex",alignItems:"center",gap:14}}>
+        <div style={{width:52,height:52,borderRadius:12,background:`${artist.color}20`,border:`2px solid ${artist.color}40`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:26,flexShrink:0,overflow:"hidden"}}>
+          {artist.photo?<img src={artist.photo} style={{width:"100%",height:"100%",objectFit:"cover"}} alt=""/>:artist.emoji}
+        </div>
+        <div>
+          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.4rem",fontWeight:700,color:"#EDE4CE"}}>{artist.name}</div>
+          <div style={{color:"#8A7D68",fontSize:13}}>🎵 Song Request</div>
+        </div>
+      </div>
+
+      <div style={{maxWidth:480,margin:"0 auto",padding:"24px 20px 48px"}}>
+        {step==="done"?(
+          <div style={{textAlign:"center",paddingTop:40}}>
+            <div style={{fontSize:72,marginBottom:16}}>🎶</div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"2rem",fontWeight:700,marginBottom:8}}>Request Sent!</div>
+            <div style={{color:"#8A7D68",fontSize:14,lineHeight:1.8,marginBottom:8}}>
+              <strong style={{color:"#C8A84A"}}>"{f.song_title}"</strong> sent to <strong style={{color:"#EDE4CE"}}>{artist.name}</strong>
+            </div>
+            <div style={{background:"rgba(200,168,74,0.08)",border:"1px solid rgba(200,168,74,0.2)",borderRadius:14,padding:"16px",marginTop:20,marginBottom:28}}>
+              <div style={{fontSize:18,marginBottom:4}}>{tier.icon} <span style={{color:tier.color,fontWeight:700}}>{tier.label}</span></div>
+              <div style={{color:"#8A7D68",fontSize:13}}>{tier.desc}</div>
+              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.6rem",color:"#C8A84A",fontWeight:800,marginTop:6}}>€{tier.amount} paid</div>
+            </div>
+            <button onClick={()=>{setStep("form");setF({song_title:"",song_artist:"",guest_name:"",message:""});setTier(PRIORITY_TIERS[0]);}}
+              style={{background:"rgba(200,168,74,0.1)",color:"#C8A84A",border:"1px solid rgba(200,168,74,0.3)",borderRadius:12,padding:"12px 28px",fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>
+              + Request another song
+            </button>
+          </div>
+        ):step==="priority"?(
+          <div>
+            <button onClick={()=>setStep("form")} style={{background:"none",border:"none",color:"#8A7D68",cursor:"pointer",fontSize:13,fontFamily:"inherit",marginBottom:20,display:"flex",alignItems:"center",gap:6}}>← Back</button>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.6rem",fontWeight:700,marginBottom:6}}>Choose Priority</div>
+            <div style={{background:"rgba(200,168,74,0.05)",border:"1px solid rgba(200,168,74,0.15)",borderRadius:10,padding:"10px 14px",marginBottom:20,fontSize:13,color:"#8A7D68"}}>
+              Requesting: <strong style={{color:"#C8A84A"}}>"{f.song_title}"</strong>{f.song_artist&&` by ${f.song_artist}`}
+            </div>
+            <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:20}}>
+              {PRIORITY_TIERS.map(t=>{
+                const isSelected=tier.amount===t.amount;
+                return(
+                  <button key={t.amount} onClick={()=>setTier(t)} style={{
+                    background:isSelected?`rgba(${t.color.replace("#","").match(/.{2}/g)?.map((x:string)=>parseInt(x,16)).join(",")},0.12)`:"rgba(255,255,255,0.02)",
+                    border:`2px solid ${isSelected?t.color:"rgba(255,255,255,0.07)"}`,
+                    borderRadius:14,padding:"18px 20px",cursor:"pointer",textAlign:"left",fontFamily:"inherit",
+                    transition:"all 0.15s",
+                  }}>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                      <div>
+                        <div style={{fontSize:20,marginBottom:4}}>{t.icon} <span style={{color:isSelected?t.color:"#EDE4CE",fontWeight:700,fontSize:16}}>{t.label}</span></div>
+                        <div style={{color:"#8A7D68",fontSize:13,lineHeight:1.5}}>{t.desc}</div>
+                        {t.amount===100&&<div style={{color:t.color,fontSize:11,fontWeight:700,marginTop:4}}>🔥 GUARANTEED PERFORMANCE</div>}
+                      </div>
+                      <div style={{textAlign:"right",flexShrink:0,marginLeft:16}}>
+                        <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"2rem",fontWeight:800,color:t.color}}>€{t.amount}</div>
+                        <div style={{color:"#8A7D68",fontSize:11,marginTop:2}}>88% to artist</div>
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+            {err&&<div style={{color:"#EF4444",fontSize:13,marginBottom:12,padding:"10px 14px",background:"rgba(239,68,68,0.08)",borderRadius:8}}>{err}</div>}
+            <button onClick={submit} disabled={loading}
+              style={{width:"100%",background:loading?"#1A1728":`linear-gradient(135deg,${tier.color},${tier.color}cc)`,color:"#fff",border:"none",borderRadius:14,padding:"18px",fontWeight:800,fontSize:16,cursor:loading?"not-allowed":"pointer",fontFamily:"inherit",letterSpacing:"0.3px"}}>
+              {loading?"Sending…":`🎵 Send Request · €${tier.amount}`}
+            </button>
+            <div style={{color:"#4A4054",fontSize:11,textAlign:"center",marginTop:10}}>
+              Secure payment via Stripe · 88% goes directly to {artist.name}
+            </div>
+          </div>
+        ):(
+          /* FORM */
+          <div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.8rem",fontWeight:700,marginBottom:4}}>Request a Song</div>
+            <div style={{color:"#8A7D68",fontSize:14,marginBottom:24}}>Your request goes directly to {artist.name} on stage</div>
+            {[
+              {field:"song_title",  label:"Song Title *",    placeholder:"e.g. Bya Ke Bya, Leili Jan…"},
+              {field:"song_artist", label:"Original Artist", placeholder:"e.g. Ahmad Zahir, Farhad Darya…"},
+              {field:"guest_name",  label:"Your Name *",     placeholder:"e.g. Layla, Ahmad…"},
+              {field:"message",     label:"Dedication / Note", placeholder:"For my mother's birthday… 💛"},
+            ].map(({field,label,placeholder})=>(
+              <div key={field} style={{marginBottom:16}}>
+                <div style={{fontSize:11,fontWeight:700,color:"#8A7D68",letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:7}}>{label}</div>
+                {field==="message"?(
+                  <textarea value={(f as any)[field]} onChange={e=>setF(p=>({...p,[field]:e.target.value}))}
+                    placeholder={placeholder} rows={2}
+                    style={{width:"100%",background:"#141220",border:"1px solid #201D2E",borderRadius:10,padding:"12px 14px",color:"#EDE4CE",fontSize:15,fontFamily:"inherit",outline:"none",resize:"none",lineHeight:1.6,boxSizing:"border-box"}}/>
+                ):(
+                  <input value={(f as any)[field]} onChange={e=>setF(p=>({...p,[field]:e.target.value}))}
+                    placeholder={placeholder}
+                    style={{width:"100%",background:"#141220",border:"1px solid #201D2E",borderRadius:10,padding:"13px 14px",color:"#EDE4CE",fontSize:15,fontFamily:"inherit",outline:"none",boxSizing:"border-box"}}/>
+                )}
+              </div>
+            ))}
+            {err&&<div style={{color:"#EF4444",fontSize:13,marginBottom:12,padding:"10px 14px",background:"rgba(239,68,68,0.08)",borderRadius:8}}>{err}</div>}
+            <button onClick={()=>{
+              if(!f.song_title.trim()){setErr("Song title is required");return;}
+              if(!f.guest_name.trim()){setErr("Your name is required");return;}
+              setErr("");setStep("priority");
+            }} style={{width:"100%",background:"linear-gradient(135deg,#C8A84A,#E09F3E)",color:"#0F0D16",border:"none",borderRadius:14,padding:"18px",fontWeight:800,fontSize:16,cursor:"pointer",fontFamily:"inherit",letterSpacing:"0.3px"}}>
+              Continue to Payment →
+            </button>
+            <div style={{color:"#4A4054",fontSize:12,textAlign:"center",marginTop:12}}>From €30 · Secure · 88% goes to the artist</div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── QR Code Panel — shown in artist portal ──────────────────────────────────
+function ArtistQRPanel({artist}:{artist:any}){
+  const [copied,setCopied]=useState(false);
+  const baseUrl = typeof window !== "undefined" ? window.location.origin : "https://awaz-beryl.vercel.app";
+  const requestUrl = `${baseUrl}/?request=${artist.id}`;
+
+  const copyUrl=()=>{
+    navigator.clipboard.writeText(requestUrl);
+    setCopied(true);
+    setTimeout(()=>setCopied(false),2000);
+  };
+
+  const printQR=()=>{
+    const w=window.open("","_blank");
+    if(!w) return;
+    w.document.write(`
+      <!DOCTYPE html><html><head><title>QR – ${artist.name}</title>
+      <style>
+        body{margin:0;padding:40px;font-family:'Georgia',serif;background:#fff;color:#111;text-align:center;}
+        .card{max-width:400px;margin:0 auto;padding:40px;border:2px solid #111;border-radius:16px;}
+        h1{font-size:2rem;margin:20px 0 4px;}
+        p{color:#666;margin:0 0 24px;font-size:1rem;}
+        img{width:240px;height:240px;border-radius:8px;display:block;margin:0 auto 20px;}
+        .url{font-size:11px;color:#888;word-break:break-all;margin-top:16px;}
+        .steps{text-align:left;margin-top:24px;font-size:14px;color:#444;}
+        .steps li{margin-bottom:8px;}
+        @media print{.noprint{display:none;}}
+      </style></head><body>
+      <div class="card">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(requestUrl)}&bgcolor=ffffff&color=111111&margin=2&format=png" alt="QR"/>
+        <h1>${artist.name}</h1>
+        <p>🎵 Request a song</p>
+        <ol class="steps">
+          <li>Scan the QR code with your phone</li>
+          <li>Choose your song and dedication</li>
+          <li>Pay to have it played live</li>
+        </ol>
+        <div class="url">${requestUrl}</div>
+      </div>
+      <button class="noprint" onclick="window.print()" style="margin-top:24px;padding:12px 32px;font-size:16px;cursor:pointer;background:#111;color:#fff;border:none;border-radius:8px;">Print / Save as PDF</button>
+      </body></html>
+    `);
+    w.document.close();
+  };
+
+  return(
+    <div style={{background:"rgba(200,168,74,0.04)",border:"1px solid rgba(200,168,74,0.2)",borderRadius:16,padding:"24px",marginTop:24}}>
+      <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16}}>
+        <div style={{fontSize:28}}>📱</div>
+        <div>
+          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.3rem",fontWeight:700,color:"#EDE4CE"}}>Your Song Request QR</div>
+          <div style={{color:"#8A7D68",fontSize:13,marginTop:2}}>Show this at events — guests scan to request and pay</div>
+        </div>
+      </div>
+
+      <div style={{display:"flex",gap:20,alignItems:"flex-start",flexWrap:"wrap"}}>
+        {/* QR Code */}
+        <div style={{background:"#fff",borderRadius:14,padding:12,display:"inline-block",flexShrink:0}}>
+          <QRCode url={requestUrl} size={160}/>
+        </div>
+
+        {/* Info + actions */}
+        <div style={{flex:1,minWidth:200}}>
+          <div style={{marginBottom:14}}>
+            <div style={{fontSize:11,fontWeight:700,color:"#8A7D68",letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:6}}>REQUEST LINK</div>
+            <div style={{background:"#141220",border:"1px solid #201D2E",borderRadius:8,padding:"10px 12px",fontSize:12,color:"#8A7D68",wordBreak:"break-all",lineHeight:1.5,marginBottom:8}}>
+              {requestUrl}
+            </div>
+            <button onClick={copyUrl}
+              style={{background:copied?"rgba(34,197,94,0.1)":"rgba(200,168,74,0.08)",color:copied?"#22C55E":"#C8A84A",border:`1px solid ${copied?"rgba(34,197,94,0.3)":"rgba(200,168,74,0.2)"}`,borderRadius:8,padding:"8px 16px",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit",width:"100%",marginBottom:8}}>
+              {copied?"✓ Copied!":"📋 Copy Link"}
+            </button>
+            <button onClick={printQR}
+              style={{background:"rgba(255,255,255,0.04)",color:"#EDE4CE",border:"1px solid rgba(255,255,255,0.08)",borderRadius:8,padding:"8px 16px",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit",width:"100%"}}>
+              🖨 Print / Save QR Card
+            </button>
+          </div>
+          <div style={{color:"#4A4054",fontSize:11,lineHeight:1.7}}>
+            💡 <strong style={{color:"#8A7D68"}}>How to use:</strong> Print the QR card and place it on tables at your event. Guests scan, choose a song, pick priority (€30–€100) and pay. You see requests live in your Requests tab.
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Private Inquiry Widget (floating concierge button + form) ─────────
 function InquiryWidget({ artists, onSubmit }) {
   const [open,setOpen]=useState(false);
@@ -6476,6 +6732,8 @@ function AppInner() {
   const [users,setUsers]=useState(USERS);
   const {show:notify}=useNotif();
   const [cookieConsent,setCookieConsent]=useState(()=>localStorage.getItem("awaz_cookie")||"");
+  // Handle QR scan: /?request=ARTIST_ID
+  const urlReqArtistId = new URLSearchParams(typeof window!=="undefined"?window.location.search:"").get("request");;
   const [showPrivacy,setShowPrivacy]=useState(false);
   const [artists,setArtists]=useState(ARTISTS);
   const [bookings,setBookings]=useState(DEMO_BOOKINGS);
@@ -7010,6 +7268,16 @@ function AppInner() {
   }
 
 
+
+  // If URL has ?request=ARTIST_ID — show song request landing page
+  if(urlReqArtistId && artists.length > 0){
+    const reqArtist = artists.find(a=>a.id===urlReqArtistId);
+    if(reqArtist) return(
+      <NotifContext.Provider value={{show:notify}}>
+        <SongRequestPage artistId={urlReqArtistId} artists={artists} onBack={()=>window.history.pushState({},"",window.location.pathname)}/>
+      </NotifContext.Provider>
+    );
+  }
 
   return(
     <div key={lang} dir={isRTL?'rtl':'ltr'} translate="no" style={{background:C.bg,minHeight:"100vh",width:"100%",maxWidth:"100%",margin:0,padding:0,overflowX:"hidden",fontFamily:isRTL?"'Noto Naskh Arabic','DM Sans',sans-serif":"'DM Sans',sans-serif",color:C.text}}>
