@@ -4121,8 +4121,8 @@ function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction,
                       <div style={{color:C.textD,fontSize:T.xs,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
                         {inq.eventType&&<span style={{color:C.gold,fontWeight:600}}>{inq.eventType} · </span>}{inq.message}
                       </div>
-                    </div>{/* closes onClick div */}
-                    </div>{/* closes position:relative wrapper */}
+                    </div>
+                    </div>
                   );
                 })}
               </div>
