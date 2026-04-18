@@ -3441,12 +3441,11 @@ function LoginSheet({ users, open, onLogin, onClose }) {
           });
           return;
         }
-        // ── Admin check first — hardcoded, no DB needed ─────────────────
+        // ── Admin check first — email-based, same as session restore ────────
         const loginEmail=data.user.email?.toLowerCase()||"";
-        const hardcodedUser=users.find(u=>u.email?.toLowerCase()===loginEmail);
-        if(hardcodedUser?.role==="admin"){
+        if(ADMIN_EMAILS.includes(loginEmail)){
           setLoading(false);
-          onLogin({id:data.user.id,email:data.user.email,name:hardcodedUser.name||"Admin",role:"admin",artistId:null});
+          onLogin({id:data.user.id,email:data.user.email,name:"Admin",role:"admin",artistId:null});
         } else {
           // Check users table first (new schema), then profiles (old schema)
           const {data:dbUser}=await sb.from("users").select("*").eq("id",data.user.id).single();
@@ -8084,7 +8083,6 @@ function AppInner() {
         const email=existingSession.user.email?.toLowerCase()||"";
         // Admin check first — hardcoded, no DB needed
         if(ADMIN_EMAILS.includes(email)){
-          // Admin identified — session set. Continue to load all data below.
           setSession({
             id:existingSession.user.id,
             email:existingSession.user.email,
@@ -8092,7 +8090,45 @@ function AppInner() {
             role:"admin",
             artistId:null,
           });
-          // DO NOT return — fall through to load artists/bookings/inquiries
+          // Admin: load all data then set ready
+          try{
+            const[artistRes,inquiryRes,bookingRes]=await Promise.all([
+              sb.from("artists").select("*"),
+              sb.from("inquiries").select("*").order("created_at",{ascending:false}),
+              sb.from("bookings").select("*").neq("status","admin_chat"),
+            ]);
+            if(artistRes.data?.length>0) setArtists(artistRes.data.map((a:any)=>({
+              id:a.id,name:a.name,nameDari:a.name_dari||"",genre:a.genre||"",location:a.location||"",
+              rating:a.rating||0,reviews:a.reviews||0,priceInfo:a.price_info||"On request",
+              deposit:a.deposit||1000,emoji:a.emoji||"🎤",color:a.color||"#A82C38",
+              photo:a.photo||null,bio:a.bio||"",tags:Array.isArray(a.tags)?a.tags:[],
+              instruments:Array.isArray(a.instruments)?a.instruments:[],
+              superhost:a.superhost||false,status:a.status||"pending",joined:a.joined_date||"",
+              isBoosted:a.is_boosted||false,available:a.available||{},blocked:a.blocked||{},
+              earnings:a.earnings||0,totalBookings:a.total_bookings||0,verified:a.verified||false,
+              isHidden:a.is_hidden||false,boostedUntil:a.boosted_until||null,
+              stripeConnected:a.stripe_connected||false,stripeAccount:a.stripe_account||null,
+              cancellationPolicy:a.cancellation_policy||"moderate",
+              spotify:a.spotify_data||null,instagram:a.instagram_data||null,
+              youtube:a.youtube_data||null,tiktok:a.tiktok_data||null,
+              countryPricing:a.country_pricing||[],currency:a.currency||"EUR",
+            })));
+            if(inquiryRes.data?.length>0) setInquiries(inquiryRes.data.map((r:any)=>({
+              id:r.id,name:r.name,email:r.email,country:r.country||"",
+              eventType:r.event_type||"",date:r.date||"",budget:r.budget||"",
+              artistId:r.artist_id||"",message:r.message||"",
+              status:r.status||"new",reply:r.reply||"",ts:new Date(r.created_at).getTime(),
+            })));
+            if(bookingRes.data?.length>0) setBookings(bookingRes.data.map((b:any)=>({
+              id:b.id,artistId:b.artist_id,customerName:b.customer_name,
+              customerEmail:b.customer_email,date:b.date,eventType:b.event_type||b.event||"",
+              notes:b.notes||"",deposit:b.deposit||0,status:b.status||"pending",
+              depositPaid:b.paid||false,chatUnlocked:b.chat_unlocked||b.paid||false,
+              country:b.country||"NO",messages:Array.isArray(b.messages)?b.messages:[],
+            })));
+          }catch(e){console.warn("Admin init load error:",e);}
+          setAppReady(true);
+          return; // Admin done — skip non-admin path below
         } else {
         // Check users table first (new schema), then profiles (old schema)
         const{data:dbUser}=await sb.from("users").select("*").eq("id",existingSession.user.id).single();
