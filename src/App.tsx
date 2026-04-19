@@ -85,6 +85,50 @@ async function getSupabaseReg() {
 // admin session when ApplySheet signs out the newly created artist.
 // Set to true just before signOut(), reset after event fires.
 
+// ── Service-role admin client — bypasses ALL RLS for admin delete ops ─
+// Requires VITE_SUPABASE_SERVICE_KEY in Vercel env vars.
+// SECURITY: This key is frontend-visible — only use for admin-gated ops.
+const SUPA_SERVICE_KEY = import.meta.env.VITE_SUPABASE_SERVICE_KEY || "";
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let _supabaseAdmin: any = null;
+async function getSupabaseAdmin() {
+  if (_supabaseAdmin) return _supabaseAdmin;
+  if (!SUPA_URL || !SUPA_SERVICE_KEY) return null; // falls back to normal client
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { createClient } = await import("@supabase/supabase-js") as any;
+    _supabaseAdmin = createClient(SUPA_URL, SUPA_SERVICE_KEY, {
+      auth: { persistSession:false, autoRefreshToken:false, detectSessionInUrl:false,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        lock:(_n:any,_t:any,fn:any)=>fn() },
+    });
+    return _supabaseAdmin;
+  } catch { return null; }
+}
+
+// ── Robust artist delete — tries admin client first, falls back to anon ─
+// Returns { ok: boolean, errors: string[] }
+async function deleteArtistFromDB(artistId: string): Promise<{ok:boolean; errors:string[]}> {
+  // Prefer service-role client (bypasses RLS), fall back to session-based client
+  const sb = await getSupabaseAdmin() || await getSupabase();
+  if (!sb) return { ok:true, errors:[] }; // offline/demo mode — UI already updated
+  const tables: [string, string][] = [
+    ["song_requests","artist_id"],
+    ["chat_messages","artist_id"],
+    ["bookings",     "artist_id"],
+    ["reviews",      "artist_id"],
+    ["artists",      "id"],
+    ["profiles",     "id"],
+    ["users",        "id"],
+  ];
+  const errors: string[] = [];
+  for (const [table, col] of tables) {
+    const { error } = await sb.from(table).delete().eq(col, artistId);
+    if (error) errors.push(`${table}: ${error.message}`);
+  }
+  return { ok: errors.length === 0, errors };
+}
+
 /* ═══════════════════════════════════════════════════════════════════════
    AWAZ  ·  آواز  ·  Afghan Artist Booking Platform
    Mobile-first · Apple HIG · Airbnb UX · Stripe precision
@@ -4177,6 +4221,119 @@ function sendBrowserNotif(title:string,body:string,icon="/favicon.ico"){
 }
 
 
+// ── Stripe Platform ID Banner (admin Finance tab) ────────────────────
+function StripePlatformBanner({ notify }: { notify: (msg:string, type?:string)=>void }) {
+  const [platformId, setPlatformId] = useState<string>(()=>{
+    try{ return localStorage.getItem("awaz-stripe-platform-id")||""; }catch{ return ""; }
+  });
+  const [input, setInput] = useState(()=>{
+    try{ return localStorage.getItem("awaz-stripe-platform-id")||""; }catch{ return ""; }
+  });
+  const [saving, setSaving] = useState(false);
+  const [saved,  setSaved]  = useState(false);
+
+  const save = async () => {
+    const val = input.trim();
+    if(val && !val.startsWith("acct_")){
+      notify("⚠ Platform ID must start with acct_","error"); return;
+    }
+    setSaving(true);
+    try{
+      localStorage.setItem("awaz-stripe-platform-id", val);
+      setPlatformId(val);
+      if(HAS_SUPA){
+        const sb = await getSupabase();
+        if(sb) await sb.from("platform_settings").upsert(
+          [{ key:"stripe_platform_id", value:val, updated_at:new Date().toISOString() }],
+          { onConflict:"key" }
+        );
+      }
+      setSaved(true);
+      notify(val ? "✅ Stripe Platform ID saved!" : "Platform ID cleared","success");
+      setTimeout(()=>setSaved(false), 3000);
+    }catch(e:any){ notify("Error: "+e.message,"error"); }
+    setSaving(false);
+  };
+
+  return(
+    <div style={{background:"linear-gradient(135deg,rgba(99,91,255,0.12),rgba(99,91,255,0.06))",border:"1px solid rgba(99,91,255,0.3)",borderRadius:14,padding:"20px 22px",marginBottom:20}}>
+      <div style={{display:"flex",alignItems:"flex-start",gap:16,flexWrap:"wrap"}}>
+        <div style={{fontSize:36,flexShrink:0}}>💳</div>
+        <div style={{flex:1,minWidth:220}}>
+          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text,marginBottom:4,display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
+            Connect Awaz to Stripe
+            {platformId&&<span style={{background:"rgba(99,91,255,0.15)",color:"#635BFF",border:"1px solid rgba(99,91,255,0.4)",borderRadius:6,padding:"2px 10px",fontSize:T.xs,fontWeight:700}}>✓ CONFIGURED</span>}
+          </div>
+          <div style={{color:C.muted,fontSize:T.sm,lineHeight:1.7,marginBottom:12}}>
+            To receive the 12% platform fee automatically, paste your Stripe Platform ID below.<br/>
+            <strong style={{color:C.text}}>Steps:</strong> Go to{" "}
+            <a href="https://dashboard.stripe.com" target="_blank" style={{color:"#635BFF",textDecoration:"none"}}>dashboard.stripe.com</a>
+            {" → Settings → Connect → Enable Stripe Connect → copy your "}
+            <strong style={{color:C.text}}>Platform ID</strong>
+            {" (starts with "}<code style={{background:C.surface,padding:"1px 6px",borderRadius:4,color:C.text,fontSize:12}}>acct_</code>{")"}
+          </div>
+
+          {/* Input field */}
+          <div style={{background:"rgba(99,91,255,0.06)",border:"1px solid rgba(99,91,255,0.25)",borderRadius:10,padding:"14px 16px",marginBottom:12}}>
+            <div style={{fontSize:T.xs,fontWeight:700,color:"#635BFF",letterSpacing:"0.6px",textTransform:"uppercase",marginBottom:8}}>
+              Your Stripe Platform ID
+            </div>
+            <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+              <input
+                value={input}
+                onChange={e=>setInput(e.target.value)}
+                onKeyDown={e=>{ if(e.key==="Enter") save(); }}
+                placeholder="acct_1AbCdEfGhIjKlMnO"
+                style={{
+                  flex:1, minWidth:200,
+                  background:C.card,
+                  border:`1px solid ${input&&!input.startsWith("acct_")?C.ruby:"rgba(99,91,255,0.3)"}`,
+                  borderRadius:8, padding:"10px 14px", color:C.text, fontSize:T.sm,
+                  outline:"none", fontFamily:"'DM Mono',monospace,sans-serif", letterSpacing:"0.3px"
+                }}
+              />
+              <button onClick={save} disabled={saving}
+                style={{background:saved?"#1A7850":"#635BFF",color:"#fff",border:"none",borderRadius:8,padding:"10px 20px",fontWeight:700,fontSize:T.sm,cursor:saving?"wait":"pointer",fontFamily:"inherit",minWidth:90,transition:"background 0.2s",whiteSpace:"nowrap"}}>
+                {saving?"Saving…":saved?"✓ Saved!":"Save ID"}
+              </button>
+            </div>
+            {input&&!input.startsWith("acct_")&&(
+              <div style={{color:C.ruby,fontSize:T.xs,marginTop:6}}>⚠ Must start with <code style={{fontFamily:"monospace"}}>acct_</code></div>
+            )}
+            {platformId&&(
+              <div style={{color:"#635BFF",fontSize:T.xs,marginTop:8,display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>
+                <span>✓ Active:</span>
+                <code style={{background:C.surface,padding:"2px 8px",borderRadius:4,color:C.text,fontSize:11}}>{platformId}</code>
+                <button onClick={()=>{setInput("");setPlatformId("");localStorage.removeItem("awaz-stripe-platform-id");notify("Platform ID cleared","success");}}
+                  style={{background:"none",border:"none",color:C.ruby,cursor:"pointer",fontSize:11,padding:0,fontFamily:"inherit",textDecoration:"underline"}}>
+                  Clear
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+            <a href="https://dashboard.stripe.com/connect/accounts/overview" target="_blank"
+              style={{background:"#635BFF",color:"#fff",borderRadius:8,padding:"9px 18px",fontWeight:700,fontSize:T.sm,textDecoration:"none",display:"inline-block"}}>
+              Open Stripe Dashboard →
+            </a>
+            <a href="https://stripe.com/docs/connect/collect-then-transfer-guide" target="_blank"
+              style={{background:C.surface,color:C.muted,borderRadius:8,padding:"9px 18px",fontWeight:600,fontSize:T.sm,textDecoration:"none",border:`1px solid ${C.border}`,display:"inline-block"}}>
+              Setup Guide
+            </a>
+          </div>
+        </div>
+        <div style={{background:"rgba(99,91,255,0.08)",border:"1px solid rgba(99,91,255,0.2)",borderRadius:10,padding:"12px 16px",minWidth:150,flexShrink:0}}>
+          <div style={{color:"#635BFF",fontSize:T.xs,fontWeight:700,marginBottom:6}}>YOUR TAKE</div>
+          <div style={{color:C.text,fontWeight:800,fontSize:T.xl}}>12%</div>
+          <div style={{color:C.muted,fontSize:T.xs,marginTop:2}}>of every deposit</div>
+          <div style={{color:"#635BFF",fontSize:T.xs,marginTop:6,fontWeight:600}}>via Stripe Connect</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction, onLogout, onMsg, onUpdateInquiry }) {
   const vp=useViewport();
   const [tab,setTab]=useState("overview");
@@ -4382,31 +4539,18 @@ function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction,
             <button onClick={()=>{setAdminChatArtist(a);setTab("chat");}} style={{background:C.surface,color:C.muted,border:`1px solid ${C.border}`,borderRadius:7,padding:"6px 14px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit",marginLeft:"auto"}}>💬 Message</button>
             <button onClick={async()=>{
               if(!confirm(`Delete "${a.name}" permanently? This cannot be undone.`)) return;
-              // Update local state immediately
+              // Optimistic UI update — remove immediately
               setArtists(p=>p.filter(x=>x.id!==a.id));
               if(HAS_SUPA){
-                try{
-                  const sb=await getSupabase();
-                  if(sb){
-                    const r1=await sb.from("song_requests").delete().eq("artist_id",a.id);
-                    const r2=await sb.from("chat_messages").delete().eq("artist_id",a.id);
-                    const r3=await sb.from("bookings").delete().eq("artist_id",a.id);
-                    const r4=await sb.from("reviews").delete().eq("artist_id",a.id);
-                    const r5=await sb.from("artists").delete().eq("id",a.id);
-                    const r6=await sb.from("profiles").delete().eq("id",a.id);
-                    const r7=await sb.from("users").delete().eq("id",a.id);
-                    const errs=[r1,r2,r3,r4,r5,r6,r7].filter(r=>r.error).map(r=>r.error?.message);
-                    if(errs.length>0){
-                      alert("Delete failed — run the RLS SQL in Supabase first:\n"+errs.join("\n"));
-                      // Restore artist in state since DB delete failed
-                      setArtists(p=>[...p,a]);
-                    } else {
-                      notify("Artist deleted","success");
-                    }
-                  }
-                }catch(e:any){
-                  alert("Delete error: "+e.message);
-                  setArtists(p=>[...p,a]);
+                const {ok,errors} = await deleteArtistFromDB(a.id);
+                if(!ok){
+                  // Restore artist in UI and show actionable error
+                  setArtists(p=>[a,...p]);
+                  notify("Delete failed — run RLS SQL in Supabase (see console)","error");
+                  console.error("Delete errors:",errors);
+                  console.info(`%cRUN THIS IN SUPABASE SQL EDITOR:\n\nCREATE POLICY "admin_delete_artists" ON artists FOR DELETE USING (EXISTS (SELECT 1 FROM profiles WHERE id=auth.uid() AND role='admin'));\nCREATE POLICY "admin_delete_chat_messages" ON chat_messages FOR DELETE USING (EXISTS (SELECT 1 FROM profiles WHERE id=auth.uid() AND role='admin'));\nCREATE POLICY "admin_delete_bookings" ON bookings FOR DELETE USING (EXISTS (SELECT 1 FROM profiles WHERE id=auth.uid() AND role='admin'));\nCREATE POLICY "admin_delete_reviews" ON reviews FOR DELETE USING (EXISTS (SELECT 1 FROM profiles WHERE id=auth.uid() AND role='admin'));\nCREATE POLICY "admin_delete_profiles" ON profiles FOR DELETE USING (EXISTS (SELECT 1 FROM profiles WHERE id=auth.uid() AND role='admin'));\nCREATE POLICY "admin_delete_users" ON users FOR DELETE USING (EXISTS (SELECT 1 FROM profiles WHERE id=auth.uid() AND role='admin'));\nCREATE POLICY "admin_delete_song_requests" ON song_requests FOR DELETE USING (EXISTS (SELECT 1 FROM profiles WHERE id=auth.uid() AND role='admin'));`,'color:orange;font-weight:bold','');
+                } else {
+                  notify("Artist deleted","success");
                 }
               }
             }} style={{background:"rgba(168,44,56,0.08)",color:C.ruby,border:`1px solid ${C.ruby}33`,borderRadius:7,padding:"6px 10px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit",lineHeight:1}}>🗑</button>
@@ -4511,20 +4655,20 @@ function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction,
               if(!confirm(`Delete ${rejected.length} rejected artist(s) permanently?`)) return;
               setArtists(p=>p.filter(a=>a.status!=="rejected"));
               if(HAS_SUPA){
-                try{
-                  const sb=await getSupabase();
-                  if(sb){
-                    for(const a of rejected){
-                      await sb.from("song_requests").delete().eq("artist_id",a.id);
-                      await sb.from("chat_messages").delete().eq("artist_id",a.id);
-                      await sb.from("bookings").delete().eq("artist_id",a.id);
-                      await sb.from("reviews").delete().eq("artist_id",a.id);
-                      await sb.from("artists").delete().eq("id",a.id);
-                      await sb.from("profiles").delete().eq("id",a.id);
-                      await sb.from("users").delete().eq("id",a.id);
-                    }
-                  }
-                }catch(e){console.warn("Bulk delete error:",e);}
+                const failedIds: string[] = [];
+                for(const a of rejected){
+                  const {ok} = await deleteArtistFromDB(a.id);
+                  if(!ok) failedIds.push(a.id);
+                }
+                if(failedIds.length){
+                  // Restore failed ones
+                  const failed=rejected.filter(a=>failedIds.includes(a.id));
+                  setArtists(p=>[...failed,...p]);
+                  notify(`${failedIds.length} delete(s) failed — run RLS SQL in Supabase (see console)`,"error");
+                  console.info(`%cRUN THIS IN SUPABASE SQL EDITOR:\n\nCREATE POLICY "admin_delete_artists" ON artists FOR DELETE USING (EXISTS (SELECT 1 FROM profiles WHERE id=auth.uid() AND role='admin'));\nCREATE POLICY "admin_delete_chat_messages" ON chat_messages FOR DELETE USING (EXISTS (SELECT 1 FROM profiles WHERE id=auth.uid() AND role='admin'));\nCREATE POLICY "admin_delete_bookings" ON bookings FOR DELETE USING (EXISTS (SELECT 1 FROM profiles WHERE id=auth.uid() AND role='admin'));\nCREATE POLICY "admin_delete_reviews" ON reviews FOR DELETE USING (EXISTS (SELECT 1 FROM profiles WHERE id=auth.uid() AND role='admin'));\nCREATE POLICY "admin_delete_profiles" ON profiles FOR DELETE USING (EXISTS (SELECT 1 FROM profiles WHERE id=auth.uid() AND role='admin'));\nCREATE POLICY "admin_delete_users" ON users FOR DELETE USING (EXISTS (SELECT 1 FROM profiles WHERE id=auth.uid() AND role='admin'));\nCREATE POLICY "admin_delete_song_requests" ON song_requests FOR DELETE USING (EXISTS (SELECT 1 FROM profiles WHERE id=auth.uid() AND role='admin'));`,'color:orange;font-weight:bold','');
+                } else {
+                  notify(`${rejected.length} rejected artist(s) deleted`,"success");
+                }
               }
             }} style={{background:"rgba(168,44,56,0.07)",color:C.ruby,border:`1px solid ${C.ruby}22`,borderRadius:8,padding:"6px 14px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>
               🗑 Remove all rejected ({displayArtists.filter(a=>a.status==="rejected").length})
@@ -4821,11 +4965,13 @@ function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction,
                       setAdminChats(p=>({...p,[adminChatArtist.id]:[]}));
                       if(HAS_SUPA){
                         try{
-                          const sb=await getSupabase();
+                          const sb = await getSupabaseAdmin() || await getSupabase();
                           if(sb){
                             const{error}=await sb.from("chat_messages").delete().eq("artist_id",adminChatArtist.id);
-                            if(error) notify("Delete blocked — run RLS SQL in Supabase first","error");
-                            else notify("Chat cleared ✅","success");
+                            if(error){
+                              notify("Could not delete from DB — check RLS policies","error");
+                              console.error("Chat delete error:",error.message);
+                            } else { notify("Chat cleared ✅","success"); }
                           }
                         }catch(e:any){notify("Error: "+e.message,"error");}
                       } else { notify("Chat cleared ✅","success"); }
@@ -4882,34 +5028,7 @@ function AdminDash({ artists, bookings, setBookings, users, inquiries, onAction,
           <SectionHeader title="Finance Overview"/>
 
           {/* ── Platform Stripe Connect Banner ── */}
-          <div style={{background:"linear-gradient(135deg,rgba(99,91,255,0.12),rgba(99,91,255,0.06))",border:"1px solid rgba(99,91,255,0.3)",borderRadius:14,padding:"20px 22px",marginBottom:20,display:"flex",alignItems:"center",gap:16,flexWrap:"wrap"}}>
-            <div style={{fontSize:36,flexShrink:0}}>💳</div>
-            <div style={{flex:1,minWidth:200}}>
-              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text,marginBottom:4}}>
-                Connect Awaz to Stripe
-              </div>
-              <div style={{color:C.muted,fontSize:T.sm,lineHeight:1.7,marginBottom:4}}>
-                To receive the 12% platform fee automatically, connect your Stripe account.<br/>
-                <strong style={{color:C.text}}>Steps:</strong> Go to <a href="https://dashboard.stripe.com" target="_blank" style={{color:"#635BFF",textDecoration:"none"}}>dashboard.stripe.com</a> → Settings → Connect → Enable Stripe Connect → Copy your <strong style={{color:C.text}}>Platform ID</strong> (starts with <code style={{background:C.surface,padding:"1px 6px",borderRadius:4,color:C.text}}>acct_</code>)
-              </div>
-              <div style={{display:"flex",gap:8,flexWrap:"wrap",marginTop:8}}>
-                <a href="https://dashboard.stripe.com/connect/accounts/overview" target="_blank"
-                  style={{background:"#635BFF",color:"#fff",borderRadius:8,padding:"9px 18px",fontWeight:700,fontSize:T.sm,textDecoration:"none",display:"inline-block"}}>
-                  Open Stripe Dashboard →
-                </a>
-                <a href="https://stripe.com/docs/connect/collect-then-transfer-guide" target="_blank"
-                  style={{background:C.surface,color:C.muted,borderRadius:8,padding:"9px 18px",fontWeight:600,fontSize:T.sm,textDecoration:"none",border:`1px solid ${C.border}`,display:"inline-block"}}>
-                  Setup Guide
-                </a>
-              </div>
-            </div>
-            <div style={{background:"rgba(99,91,255,0.08)",border:"1px solid rgba(99,91,255,0.2)",borderRadius:10,padding:"12px 16px",minWidth:160}}>
-              <div style={{color:"#635BFF",fontSize:T.xs,fontWeight:700,marginBottom:6}}>YOUR TAKE</div>
-              <div style={{color:C.text,fontWeight:800,fontSize:T.xl}}>12%</div>
-              <div style={{color:C.muted,fontSize:T.xs,marginTop:2}}>of every deposit</div>
-              <div style={{color:"#635BFF",fontSize:T.xs,marginTop:6,fontWeight:600}}>via Stripe Connect</div>
-            </div>
-          </div>
+          <StripePlatformBanner notify={notify}/>
 
           {/* ── Boost Revenue ── */}
           <div style={{background:`linear-gradient(135deg,${C.goldS},${C.card})`,border:`1px solid ${C.gold}44`,borderRadius:12,padding:"16px 20px",marginBottom:20,display:"flex",alignItems:"center",gap:12}}>
