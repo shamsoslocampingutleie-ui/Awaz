@@ -3965,23 +3965,38 @@ const POLICIES = [
   {id:"superstrict",label:"Super Strict",desc:"No refund after booking confirmed"},
 ];
 
-// ── European diaspora markets ─────────────────────────────────────────────────
+// ── European diaspora markets — ALL prices in EUR ────────────────────────────
 const MARKETS = [
-  {code:"NO",name:"Norway",      flag:"🇳🇴",currency:"NOK",symbol:"kr",  depositMultiplier:1.0},
-  {code:"SE",name:"Sweden",      flag:"🇸🇪",currency:"SEK",symbol:"kr",  depositMultiplier:1.0},
-  {code:"DK",name:"Denmark",     flag:"🇩🇰",currency:"DKK",symbol:"kr",  depositMultiplier:1.0},
-  {code:"DE",name:"Germany",     flag:"🇩🇪",currency:"EUR",symbol:"€",   depositMultiplier:1.2},
-  {code:"AT",name:"Austria",     flag:"🇦🇹",currency:"EUR",symbol:"€",   depositMultiplier:1.1},
-  {code:"CH",name:"Switzerland", flag:"🇨🇭",currency:"CHF",symbol:"CHF", depositMultiplier:1.3},
-  {code:"GB",name:"United Kingdom",flag:"🇬🇧",currency:"GBP",symbol:"£",depositMultiplier:1.1},
-  {code:"NL",name:"Netherlands", flag:"🇳🇱",currency:"EUR",symbol:"€",   depositMultiplier:1.0},
-  {code:"BE",name:"Belgium",     flag:"🇧🇪",currency:"EUR",symbol:"€",   depositMultiplier:1.0},
-  {code:"FR",name:"France",      flag:"🇫🇷",currency:"EUR",symbol:"€",   depositMultiplier:1.0},
-  {code:"IT",name:"Italy",       flag:"🇮🇹",currency:"EUR",symbol:"€",   depositMultiplier:0.9},
-  {code:"ES",name:"Spain",       flag:"🇪🇸",currency:"EUR",symbol:"€",   depositMultiplier:0.9},
-  {code:"FI",name:"Finland",     flag:"🇫🇮",currency:"EUR",symbol:"€",   depositMultiplier:1.0},
-  {code:"US",name:"United States",flag:"🇺🇸",currency:"USD",symbol:"$",  depositMultiplier:1.1},
-  {code:"AE",name:"UAE",         flag:"🇦🇪",currency:"AED",symbol:"AED", depositMultiplier:1.2},
+  {code:"NO",name:"Norway",         flag:"🇳🇴",currency:"EUR",symbol:"€",depositMultiplier:1.0},
+  {code:"SE",name:"Sweden",         flag:"🇸🇪",currency:"EUR",symbol:"€",depositMultiplier:1.0},
+  {code:"DK",name:"Denmark",        flag:"🇩🇰",currency:"EUR",symbol:"€",depositMultiplier:1.0},
+  {code:"DE",name:"Germany",        flag:"🇩🇪",currency:"EUR",symbol:"€",depositMultiplier:1.0},
+  {code:"AT",name:"Austria",        flag:"🇦🇹",currency:"EUR",symbol:"€",depositMultiplier:1.0},
+  {code:"CH",name:"Switzerland",    flag:"🇨🇭",currency:"EUR",symbol:"€",depositMultiplier:1.0},
+  {code:"GB",name:"United Kingdom", flag:"🇬🇧",currency:"EUR",symbol:"€",depositMultiplier:1.0},
+  {code:"NL",name:"Netherlands",    flag:"🇳🇱",currency:"EUR",symbol:"€",depositMultiplier:1.0},
+  {code:"BE",name:"Belgium",        flag:"🇧🇪",currency:"EUR",symbol:"€",depositMultiplier:1.0},
+  {code:"FR",name:"France",         flag:"🇫🇷",currency:"EUR",symbol:"€",depositMultiplier:1.0},
+  {code:"IT",name:"Italy",          flag:"🇮🇹",currency:"EUR",symbol:"€",depositMultiplier:1.0},
+  {code:"ES",name:"Spain",          flag:"🇪🇸",currency:"EUR",symbol:"€",depositMultiplier:1.0},
+  {code:"FI",name:"Finland",        flag:"🇫🇮",currency:"EUR",symbol:"€",depositMultiplier:1.0},
+  {code:"PL",name:"Poland",         flag:"🇵🇱",currency:"EUR",symbol:"€",depositMultiplier:1.0},
+  {code:"CZ",name:"Czech Republic", flag:"🇨🇿",currency:"EUR",symbol:"€",depositMultiplier:1.0},
+  {code:"GR",name:"Greece",         flag:"🇬🇷",currency:"EUR",symbol:"€",depositMultiplier:1.0},
+  {code:"PT",name:"Portugal",       flag:"🇵🇹",currency:"EUR",symbol:"€",depositMultiplier:1.0},
+  {code:"IE",name:"Ireland",        flag:"🇮🇪",currency:"EUR",symbol:"€",depositMultiplier:1.0},
+  {code:"HU",name:"Hungary",        flag:"🇭🇺",currency:"EUR",symbol:"€",depositMultiplier:1.0},
+  {code:"RO",name:"Romania",        flag:"🇷🇴",currency:"EUR",symbol:"€",depositMultiplier:1.0},
+  {code:"HR",name:"Croatia",        flag:"🇭🇷",currency:"EUR",symbol:"€",depositMultiplier:1.0},
+  {code:"SK",name:"Slovakia",       flag:"🇸🇰",currency:"EUR",symbol:"€",depositMultiplier:1.0},
+  {code:"SI",name:"Slovenia",       flag:"🇸🇮",currency:"EUR",symbol:"€",depositMultiplier:1.0},
+  {code:"LU",name:"Luxembourg",     flag:"🇱🇺",currency:"EUR",symbol:"€",depositMultiplier:1.0},
+  {code:"IS",name:"Iceland",        flag:"🇮🇸",currency:"EUR",symbol:"€",depositMultiplier:1.0},
+  {code:"US",name:"United States",  flag:"🇺🇸",currency:"EUR",symbol:"€",depositMultiplier:1.0},
+  {code:"CA",name:"Canada",         flag:"🇨🇦",currency:"EUR",symbol:"€",depositMultiplier:1.0},
+  {code:"AE",name:"UAE",            flag:"🇦🇪",currency:"EUR",symbol:"€",depositMultiplier:1.0},
+  {code:"AU",name:"Australia",      flag:"🇦🇺",currency:"EUR",symbol:"€",depositMultiplier:1.0},
+  {code:"OTHER",name:"Other",       flag:"🌍", currency:"EUR",symbol:"€",depositMultiplier:1.0},
 ];
 
 // ── Admin emails ──────────────────────────────────────────────────────────────
@@ -5539,7 +5554,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
             </div>
           )}
           <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10,marginBottom:16}}>
-            {[["💶",`Earnings (88%)`,`${artist.currency==="EUR"?"€":artist.currency==="NOK"||artist.currency==="SEK"||artist.currency==="DKK"?"kr":artist.currency==="GBP"?"£":artist.currency==="USD"?"$":"€"}${depositsIn}`,C.gold],["📅","Bookings",myB.length,C.gold],["💬","Active Chats",myB.filter(b=>b.chatUnlocked).length,C.gold],["⭐","Rating",artist.reviews>0?artist.rating:"—",C.gold]].map(([icon,label,value,color])=>(
+            {[["💶",`Earnings (88%)`,`€${depositsIn}`,C.gold],["📅","Bookings",myB.length,C.gold],["💬","Active Chats",myB.filter(b=>b.chatUnlocked).length,C.gold],["⭐","Rating",artist.reviews>0?artist.rating:"—",C.gold]].map(([icon,label,value,color])=>(
               <div key={label} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:10,padding:"14px",borderTop:`3px solid ${C.border}38`}}>
                 <div style={{fontSize:18,marginBottom:5}}>{icon}</div>
                 <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:800,color,lineHeight:1}}>{value}</div>
@@ -6462,8 +6477,9 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
                   <Inp label="Starting Price" value={editF.priceInfo} onChange={e=>setEditF(f=>({...f,priceInfo:e.target.value}))} placeholder="From €2,500"/>
                   <div style={{display:"flex",gap:8}}>
                     <Inp label="Deposit (min €500)" type="number" value={editF.deposit} onChange={e=>setEditF(f=>({...f,deposit:String(Math.max(500,parseInt(e.target.value)||500))}))} hint="Customers pay this at booking — minimum €500"/>
-                    <Sel label="Currency" value={editF.currency||"EUR"} onChange={e=>setEditF(f=>({...f,currency:e.target.value}))}
-                      options={[["EUR","€ EUR"],["NOK","kr NOK"],["SEK","kr SEK"],["DKK","kr DKK"],["GBP","£ GBP"],["USD","$ USD"],["CHF","Fr CHF"],["AED","AED"],["AUD","A$"]]}/>
+                    <Sel label="Currency" value="EUR" onChange={()=>{}} disabled
+                      options={[["EUR","€ EUR — Euro (all markets)"]]}/>
+                    <div style={{fontSize:11,color:C.muted,marginTop:4}}>All prices on Awaz are in Euro (€)</div>
                     <CountrySelect label="Your Country" value={editF.country||"NO"} onChange={v=>setEditF(f=>({...f,country:v}))}/>
                   </div>
                   <Sel label="Cancellation Policy" value={editF.cancellationPolicy} onChange={e=>setEditF(f=>({...f,cancellationPolicy:e.target.value}))}
@@ -10042,8 +10058,9 @@ function ApplySheet({ onSubmit, onClose }) {
                 options={[["","Select genre…"],["Ghazal","Ghazal — Classical vocal"],["Herati","Herati — Western Afghan folk"],["Mast","Mast — Dance & celebratory"],["Pashto","Pashto — Pashtun traditional"],["Logari","Logari — Southern Afghan"],["Qarsak","Qarsak — Party & wedding"],["Rubab","Rubab — Instrumental"],["Tabla","Tabla — Percussion"],["Sufi","Sufi — Devotional"],["Classical","Classical Afghan"],["Folk","Afghan Folk"],["Pop","Afghan Pop"],["Fusion","Afghan Fusion"],["Other","Other / Mixed"]]}/>
                 <Inp label="Location / City" placeholder="Oslo, Norway" value={f.location} onChange={e=>setF(p=>({...p,location:e.target.value}))}/>
                 <CountrySelect label="Country" value={f.country||"NO"} onChange={v=>setF(p=>({...p,country:v}))}/>
-                <Sel label="Preferred Currency (you get paid in this)" value={f.currency} onChange={e=>setF(p=>({...p,currency:e.target.value}))}
-                  options={[["EUR","€ Euro (recommended)"],["NOK","kr Norwegian Krone"],["SEK","kr Swedish Krone"],["DKK","kr Danish Krone"],["GBP","£ British Pound"],["CHF","Fr Swiss Franc"],["USD","$ US Dollar"],["AED","د.إ UAE Dirham"]]}/>
+                <Sel label="Currency (all Awaz payments are in €)" value="EUR" onChange={()=>{}}
+                  options={[["EUR","€ Euro — all markets"]]}/>
+                <div style={{fontSize:11,color:"#8A7D68",marginTop:-8,paddingLeft:2}}>Awaz uses Euro for all transactions across Europe</div>
                 <Inp label="Starting Price" placeholder="From €2,500" value={f.priceInfo} onChange={e=>setF(p=>({...p,priceInfo:e.target.value}))}/>
                 <Inp label="Minimum Deposit (€ equivalent)" type="number" value={f.deposit} onChange={e=>setF(p=>({...p,deposit:e.target.value}))} hint="Minimum €500 — customers pay this when booking"/>
                 <Inp label="Instruments (comma-separated)" placeholder="Vocals, Harmonium" value={f.instruments} onChange={e=>setF(p=>({...p,instruments:e.target.value}))}/>
