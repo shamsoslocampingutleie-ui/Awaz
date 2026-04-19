@@ -7046,12 +7046,12 @@ function SongRequestPage({artistId, artists, onBack}:{artistId:string;artists:an
             const isActive = guestReqCount===i || (i===2 && guestReqCount>=2);
             const isDone = guestReqCount > i && !(i===2 && guestReqCount>=2);
             return(
-              <div key={i} style={{background:isActive?"rgba(200,168,74,0.1)":"rgba(255,255,255,0.02)",border:`1px solid ${isActive?"rgba(200,168,74,0.4)":isDone?"rgba(34,197,94,0.2)":${C.border}}`,borderRadius:10,padding:"10px 8px",textAlign:"center"}}>
+              <div key={i} style={{background:isActive?C.goldS:C.surface,border:`1px solid ${isActive?C.gold+"44":isDone?C.emerald+"33":C.border}`,borderRadius:10,padding:"10px 8px",textAlign:"center"}}>
                 <div style={{fontSize:isDone?16:14,marginBottom:2}}>{isDone?"✓":p.icon}</div>
-                <div style={{fontWeight:700,fontSize:13,color:isActive?"#C8A84A":isDone?"#22C55E":"#8A7D68"}}>
+                <div style={{fontWeight:700,fontSize:13,color:isActive?C.gold:isDone?C.emerald:C.muted}}>
                   {p.base===0?"Free":`€${p.base}`}
                 </div>
-                <div style={{fontSize:10,color:"#4A4054",marginTop:1}}>{p.label}</div>
+                <div style={{fontSize:10,color:C.faint,marginTop:1}}>{p.label}</div>
               </div>
             );
           })}
@@ -7550,7 +7550,7 @@ function DemoPage({onBook, onApply, vp}:{onBook:()=>void;onApply:()=>void;vp:any
               <div style={{display:"flex",gap:4,overflowX:"auto",marginBottom:16,scrollbarWidth:"none"}}>
                 {["overview","bookings","calendar","earnings"].map(tab=>(
                   <button key={tab} onClick={()=>setDemoTab(tab)}
-                    style={{background:demoTab===tab?C.goldS:"transparent",color:demoTab===tab?C.gold:C.muted,border:`1px solid ${demoTab===tab?${C.gold}+"44":${C.border}}`,borderRadius:8,padding:"8px 14px",cursor:"pointer",fontFamily:"inherit",fontSize:12,fontWeight:600,whiteSpace:"nowrap",textTransform:"capitalize"}}>
+                    style={{background:demoTab===tab?C.goldS:"transparent",color:demoTab===tab?C.gold:C.muted,border:`1px solid ${demoTab===tab?C.gold+"44":C.border}`,borderRadius:8,padding:"8px 14px",cursor:"pointer",fontFamily:"inherit",fontSize:12,fontWeight:600,whiteSpace:"nowrap",textTransform:"capitalize"}}>
                     {tab}
                   </button>
                 ))}
