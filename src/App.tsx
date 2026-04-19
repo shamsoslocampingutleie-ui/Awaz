@@ -2705,7 +2705,7 @@ function BottomNav({ active, onNav, items }) {
         position:"fixed",bottom:0,left:0,right:0,zIndex:200,
         background:"rgba(10,8,18,0.97)",
         backdropFilter:"blur(24px)",WebkitBackdropFilter:"blur(24px)",
-        borderTop:"1px solid rgba(255,255,255,0.05)",
+        borderTop:`1px solid ${C.border}`,
         display:"flex",alignItems:"stretch",
         paddingBottom:"env(safe-area-inset-bottom,0px)",
         boxShadow:"0 -1px 0 rgba(255,255,255,0.04), 0 -8px 32px rgba(0,0,0,0.5)",
@@ -3083,6 +3083,11 @@ function StripeCheckout({ booking, artist, onSuccess, onClose }) {
       const SUPA_URL = import.meta.env.VITE_SUPABASE_URL;
       const SUPA_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
+      // Read platform ID from localStorage (set in Finance tab)
+      const platformAccountId = (() => {
+        try{ return localStorage.getItem("awaz-stripe-platform-id")||null; }catch{ return null; }
+      })();
+
       const res = await fetch(`${SUPA_URL}/functions/v1/create-payment-intent`, {
         method: "POST",
         headers: {
@@ -3093,9 +3098,11 @@ function StripeCheckout({ booking, artist, onSuccess, onClose }) {
         body: JSON.stringify({
           amount:              deposit,
           artistStripeAccount: artist.stripeAccount || null,
+          platformAccountId:   platformAccountId,   // ← Awaz platform acct_ for fee split
           bookingId:           booking.id,
           customerEmail:       booking.customerEmail || "",
           artistName:          artist.name,
+          platformFeePercent:  12,                  // ← 12% to Awaz, 88% to artist
         }),
       });
 
@@ -4077,10 +4084,10 @@ function CookieBanner({onAccept,onDecline}:{onAccept:()=>void;onDecline:()=>void
           </div>
         </div>
         <div style={{display:"flex",gap:8,alignItems:"center",flexShrink:0}}>
-          <button onClick={onDecline} style={{background:"transparent",color:"#8A7D68",border:"1px solid rgba(255,255,255,0.08)",borderRadius:8,padding:"8px 16px",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>
+          <button onClick={onDecline} style={{background:"transparent",color:"#8A7D68",border:`1px solid ${C.border}`,borderRadius:8,padding:"8px 16px",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>
             Essential only
           </button>
-          <button onClick={onAccept} style={{background:"linear-gradient(135deg,#C8A84A,#E09F3E)",color:"#0F0D16",border:"none",borderRadius:8,padding:"8px 20px",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>
+          <button onClick={onAccept} style={{background:"linear-gradient(135deg,#C8A84A,${C.saffron})",color:C.bg,border:"none",borderRadius:8,padding:"8px 20px",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>
             Accept
           </button>
         </div>
@@ -4095,12 +4102,12 @@ function PrivacyPage({onClose}:{onClose:()=>void}){
   return(
     <div style={{position:"fixed",inset:0,zIndex:2000,background:"#070608",overflow:"auto"}}>
       <div style={{maxWidth:780,margin:"0 auto",padding:"32px 24px 80px"}}>
-        <button onClick={onClose} style={{background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:8,color:"#8A7D68",cursor:"pointer",padding:"8px 16px",fontSize:13,fontFamily:"inherit",marginBottom:24}}>← Back</button>
+        <button onClick={onClose} style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,color:"#8A7D68",cursor:"pointer",padding:"8px 16px",fontSize:13,fontFamily:"inherit",marginBottom:24}}>← Back</button>
         <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"2.2rem",fontWeight:700,color:"#EDE4CE",marginBottom:8}}>Legal</div>
         <div style={{display:"flex",gap:8,marginBottom:32}}>
           {(["privacy","terms"] as const).map(t=>(
             <button key={t} onClick={()=>setTab(t)}
-              style={{background:tab===t?"rgba(200,168,74,0.1)":"transparent",color:tab===t?"#C8A84A":"#8A7D68",border:`1px solid ${tab===t?"rgba(200,168,74,0.3)":"rgba(255,255,255,0.06)"}`,borderRadius:8,padding:"7px 16px",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit",textTransform:"capitalize"}}>
+              style={{background:tab===t?"rgba(200,168,74,0.1)":"transparent",color:tab===t?"#C8A84A":"#8A7D68",border:`1px solid ${tab===t?${C.gold}+"44":${C.border}}`,borderRadius:8,padding:"7px 16px",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit",textTransform:"capitalize"}}>
               {t==="privacy"?"Privacy Policy":"Terms of Service"}
             </button>
           ))}
@@ -4171,7 +4178,7 @@ function GDPRTools({session, onDeleteAccount}:{session:any;onDeleteAccount:()=>v
   };
   if(deleted) return <div style={{color:"#22C55E",fontWeight:700,padding:16}}>✓ Account deletion requested. Data will be removed within 30 days.</div>;
   return(
-    <div style={{background:"#0F0D16",border:"1px solid rgba(255,255,255,0.06)",borderRadius:12,padding:"18px 20px"}}>
+    <div style={{background:C.bg,border:`1px solid ${C.border}`,borderRadius:12,padding:"18px 20px"}}>
       <div style={{fontSize:11,fontWeight:700,color:"#8A7D68",letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:14}}>YOUR DATA (GDPR)</div>
       <div style={{display:"flex",flexDirection:"column",gap:10}}>
         <button onClick={exportData} disabled={exporting}
@@ -4239,20 +4246,30 @@ function StripePlatformBanner({ notify }: { notify: (msg:string, type?:string)=>
     }
     setSaving(true);
     try{
-      localStorage.setItem("awaz-stripe-platform-id", val);
+      // 1. Save locally first
+      if(val) localStorage.setItem("awaz-stripe-platform-id", val);
+      else localStorage.removeItem("awaz-stripe-platform-id");
       setPlatformId(val);
-      if(HAS_SUPA){
-        const sb = await getSupabase();
-        if(sb) await sb.from("platform_settings").upsert(
-          [{ key:"stripe_platform_id", value:val, updated_at:new Date().toISOString() }],
-          { onConflict:"key" }
-        );
+
+      // 2. Save to Supabase (non-blocking — don't crash if table missing)
+      if(HAS_SUPA && val){
+        try{
+          const sb = await getSupabase();
+          if(sb) await sb.from("platform_settings").upsert(
+            [{ key:"stripe_platform_id", value:val, updated_at:new Date().toISOString() }],
+            { onConflict:"key" }
+          );
+        }catch{ /* table may not exist yet — localStorage is the fallback */ }
       }
+
       setSaved(true);
-      notify(val ? "✅ Stripe Platform ID saved!" : "Platform ID cleared","success");
-      setTimeout(()=>setSaved(false), 3000);
-    }catch(e:any){ notify("Error: "+e.message,"error"); }
-    setSaving(false);
+      notify(val ? "✅ Stripe Platform ID saved! Payments will now use this account." : "Platform ID cleared","success");
+      setTimeout(()=>setSaved(false), 4000);
+    }catch(e:any){
+      notify("Error saving: "+e.message,"error");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return(
@@ -5202,7 +5219,7 @@ function CountrySelect({value,onChange,label="Country"}:{value:string;onChange:(
     <div ref={ref} style={{position:"relative"}}>
       <div style={{fontSize:10,fontWeight:700,color:"#8A7D68",letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:6}}>{label}</div>
       <button type="button" onClick={()=>setOpen(o=>!o)}
-        style={{width:"100%",background:"#0F0D16",border:`1px solid ${open?"#C8A84A":"#201D2E"}`,borderRadius:12,padding:"12px 16px",color:"#EDE4CE",fontSize:14,textAlign:"left",cursor:"pointer",fontFamily:"inherit",display:"flex",justifyContent:"space-between",alignItems:"center",transition:"border-color 0.15s"}}>
+        style={{width:"100%",background:C.bg,border:`1px solid ${open?"#C8A84A":"#201D2E"}`,borderRadius:12,padding:"12px 16px",color:"#EDE4CE",fontSize:14,textAlign:"left",cursor:"pointer",fontFamily:"inherit",display:"flex",justifyContent:"space-between",alignItems:"center",transition:"border-color 0.15s"}}>
         <span>{sel?sel[1]:"Select country…"}</span>
         <span style={{color:"#8A7D68",fontSize:12}}>{open?"▲":"▼"}</span>
       </button>
@@ -5211,7 +5228,7 @@ function CountrySelect({value,onChange,label="Country"}:{value:string;onChange:(
           <div style={{padding:"8px 10px",borderBottom:"1px solid #201D2E"}}>
             <input autoFocus value={q} onChange={e=>setQ(e.target.value)}
               placeholder="Search country…"
-              style={{width:"100%",background:"#0F0D16",border:"1px solid #201D2E",borderRadius:8,padding:"8px 12px",color:"#EDE4CE",fontSize:13,outline:"none",fontFamily:"inherit"}}/>
+              style={{width:"100%",background:C.bg,border:"1px solid #201D2E",borderRadius:8,padding:"8px 12px",color:"#EDE4CE",fontSize:13,outline:"none",fontFamily:"inherit"}}/>
           </div>
           <div style={{maxHeight:220,overflowY:"auto"}}>
             {filtered.map(([code,label])=>(
@@ -5244,7 +5261,7 @@ function SupportWidget({artistId}:{artistId:string}){
     <div>
       <textarea value={msg} onChange={e=>setMsg(e.target.value)}
         placeholder="Describe your issue or question…" rows={3}
-        style={{width:"100%",background:"#0F0D16",border:"1px solid #201D2E",borderRadius:10,padding:"10px 14px",color:"#EDE4CE",fontSize:14,fontFamily:"inherit",resize:"vertical",outline:"none",lineHeight:1.6,boxSizing:"border-box",marginBottom:10}}
+        style={{width:"100%",background:C.bg,border:"1px solid #201D2E",borderRadius:10,padding:"10px 14px",color:"#EDE4CE",fontSize:14,fontFamily:"inherit",resize:"vertical",outline:"none",lineHeight:1.6,boxSizing:"border-box",marginBottom:10}}
       />
       <button onClick={async()=>{
         if(!msg.trim()) return;
@@ -5275,7 +5292,7 @@ function SupportWidget({artistId}:{artistId:string}){
           setSent(true); // Still show success to user
         }
       }} disabled={!msg.trim()}
-        style={{width:"100%",background:msg.trim()?"linear-gradient(135deg,#C8A84A,#E09F3E)":"#141220",color:msg.trim()?"#0F0D16":"#8A7D68",border:`1px solid ${msg.trim()?"#C8A84A":"#201D2E"}`,borderRadius:10,padding:"11px",fontWeight:700,fontSize:14,cursor:msg.trim()?"pointer":"not-allowed",fontFamily:"inherit"}}>
+        style={{width:"100%",background:msg.trim()?"linear-gradient(135deg,#C8A84A,${C.saffron})":"#141220",color:msg.trim()?C.bg:"#8A7D68",border:`1px solid ${msg.trim()?"#C8A84A":"#201D2E"}`,borderRadius:10,padding:"11px",fontWeight:700,fontSize:14,cursor:msg.trim()?"pointer":"not-allowed",fontFamily:"inherit"}}>
         Send to Awaz Support →
       </button>
     </div>
@@ -6726,8 +6743,8 @@ function SongRequestModal({artist, bookingId, onClose}:{artist:any;bookingId?:st
   return(
     <div style={{position:"fixed",inset:0,zIndex:1000,background:"rgba(0,0,0,0.8)",display:"flex",alignItems:"flex-end",justifyContent:"center"}} onClick={e=>e.target===e.currentTarget&&onClose()}>
       <div style={{
-        background:"#0F0D16",borderRadius:"24px 24px 0 0",
-        border:"1px solid rgba(255,255,255,0.07)",
+        background:C.bg,borderRadius:"24px 24px 0 0",
+        border:`1px solid ${C.border}`,
         width:"100%",maxWidth:520,
         maxHeight:"92vh",overflow:"auto",
         animation:"fade 0.25s ease",
@@ -6747,7 +6764,7 @@ function SongRequestModal({artist, bookingId, onClose}:{artist:any;bookingId?:st
               {tier.icon} <strong style={{color:tier.color}}>{tier.label}</strong> — {tier.desc}
               <br/>You paid: <strong style={{color:"#C8A84A"}}>€{tier.amount}</strong>
             </div>
-            <button onClick={onClose} style={{background:"rgba(255,255,255,0.05)",color:"#8A7D68",border:"1px solid rgba(255,255,255,0.07)",borderRadius:12,padding:"12px 32px",fontWeight:600,cursor:"pointer",fontFamily:"inherit",fontSize:14}}>Close</button>
+            <button onClick={onClose} style={{background:C.surface,color:"#8A7D68",border:`1px solid ${C.border}`,borderRadius:12,padding:"12px 32px",fontWeight:600,cursor:"pointer",fontFamily:"inherit",fontSize:14}}>Close</button>
           </div>
         ):step==="priority"?(
           <div style={{padding:"20px 20px 32px"}}>
@@ -6773,7 +6790,7 @@ function SongRequestModal({artist, bookingId, onClose}:{artist:any;bookingId?:st
             </div>
             {err&&<div style={{color:"#EF4444",fontSize:13,marginBottom:12,padding:"10px 14px",background:"rgba(239,68,68,0.08)",borderRadius:8}}>{err}</div>}
             <button onClick={submit} disabled={loading}
-              style={{width:"100%",background:loading?"#201D2E":"linear-gradient(135deg,#C8A84A,#E09F3E)",color:"#0F0D16",border:"none",borderRadius:14,padding:"16px",fontWeight:800,fontSize:16,cursor:loading?"not-allowed":"pointer",fontFamily:"inherit"}}>
+              style={{width:"100%",background:loading?"#201D2E":"linear-gradient(135deg,#C8A84A,${C.saffron})",color:C.bg,border:"none",borderRadius:14,padding:"16px",fontWeight:800,fontSize:16,cursor:loading?"not-allowed":"pointer",fontFamily:"inherit"}}>
               {loading?"Sending…":tier.amount===0?"Send Request (Free) →":`Send Request · €${tier.amount}`}
             </button>
             <div style={{color:"#8A7D68",fontSize:11,textAlign:"center",marginTop:8}}>88% goes to {artist.name}</div>
@@ -6786,7 +6803,7 @@ function SongRequestModal({artist, bookingId, onClose}:{artist:any;bookingId?:st
                 <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.5rem",fontWeight:700,color:"#EDE4CE"}}>Request a Song</div>
                 <div style={{color:"#8A7D68",fontSize:13,marginTop:2}}>from <strong style={{color:"#C8A84A"}}>{artist.name}</strong></div>
               </div>
-              <button onClick={onClose} style={{background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:8,color:"#8A7D68",cursor:"pointer",padding:"6px 10px",fontSize:14}}>✕</button>
+              <button onClick={onClose} style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,color:"#8A7D68",cursor:"pointer",padding:"6px 10px",fontSize:14}}>✕</button>
             </div>
 
             {/* Song fields */}
@@ -6810,7 +6827,7 @@ function SongRequestModal({artist, bookingId, onClose}:{artist:any;bookingId?:st
               if(!f.song_title.trim()){setErr("Song title is required");return;}
               if(!f.guest_name.trim()){setErr("Your name is required");return;}
               setErr("");setStep("priority");
-            }} style={{width:"100%",background:"linear-gradient(135deg,#C8A84A,#E09F3E)",color:"#0F0D16",border:"none",borderRadius:14,padding:"16px",fontWeight:800,fontSize:16,cursor:"pointer",fontFamily:"inherit"}}>
+            }} style={{width:"100%",background:"linear-gradient(135deg,#C8A84A,${C.saffron})",color:C.bg,border:"none",borderRadius:14,padding:"16px",fontWeight:800,fontSize:16,cursor:"pointer",fontFamily:"inherit"}}>
               Choose Priority → 
             </button>
             <div style={{color:"#8A7D68",fontSize:11,textAlign:"center",marginTop:8}}>From €30 · 88% goes to artist</div>
@@ -6920,7 +6937,7 @@ function SongRequestPage({artistId, artists, onBack}:{artistId:string;artists:an
             const isActive = guestReqCount===i || (i===2 && guestReqCount>=2);
             const isDone = guestReqCount > i && !(i===2 && guestReqCount>=2);
             return(
-              <div key={i} style={{background:isActive?"rgba(200,168,74,0.1)":"rgba(255,255,255,0.02)",border:`1px solid ${isActive?"rgba(200,168,74,0.4)":isDone?"rgba(34,197,94,0.2)":"rgba(255,255,255,0.06)"}`,borderRadius:10,padding:"10px 8px",textAlign:"center"}}>
+              <div key={i} style={{background:isActive?"rgba(200,168,74,0.1)":"rgba(255,255,255,0.02)",border:`1px solid ${isActive?"rgba(200,168,74,0.4)":isDone?"rgba(34,197,94,0.2)":${C.border}}`,borderRadius:10,padding:"10px 8px",textAlign:"center"}}>
                 <div style={{fontSize:isDone?16:14,marginBottom:2}}>{isDone?"✓":p.icon}</div>
                 <div style={{fontWeight:700,fontSize:13,color:isActive?"#C8A84A":isDone?"#22C55E":"#8A7D68"}}>
                   {p.base===0?"Free":`€${p.base}`}
@@ -6990,7 +7007,7 @@ function SongRequestPage({artistId, artists, onBack}:{artistId:string;artists:an
             </div>
 
             {/* Total */}
-            <div style={{background:"rgba(255,255,255,0.02)",border:"1px solid rgba(255,255,255,0.06)",borderRadius:12,padding:"14px 16px",marginBottom:20,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,padding:"14px 16px",marginBottom:20,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
               <div>
                 <div style={{color:"#8A7D68",fontSize:12}}>Total</div>
                 {currentBase>0&&<div style={{color:"#4A4054",fontSize:11}}>€{currentBase} song + €{customTip||tip} tip</div>}
@@ -7005,7 +7022,7 @@ function SongRequestPage({artistId, artists, onBack}:{artistId:string;artists:an
               if(customTip) setTip(parseInt(customTip)||0);
               submit();
             }} disabled={loading}
-              style={{width:"100%",background:loading?"#1A1728":"linear-gradient(135deg,#C8A84A,#E09F3E)",color:"#0F0D16",border:"none",borderRadius:14,padding:"18px",fontWeight:800,fontSize:16,cursor:loading?"not-allowed":"pointer",fontFamily:"inherit"}}>
+              style={{width:"100%",background:loading?"#1A1728":"linear-gradient(135deg,#C8A84A,${C.saffron})",color:C.bg,border:"none",borderRadius:14,padding:"18px",fontWeight:800,fontSize:16,cursor:loading?"not-allowed":"pointer",fontFamily:"inherit"}}>
               {loading?"Sending…":currentBase===0&&!tip&&!customTip?"Send Free Request →":`Send · €${currentBase+(parseInt(customTip||"0")||tip)}`}
             </button>
             <div style={{color:"#4A4054",fontSize:11,textAlign:"center",marginTop:10}}>
@@ -7046,7 +7063,7 @@ function SongRequestPage({artistId, artists, onBack}:{artistId:string;artists:an
               if(!f.song_title.trim()){setErr("Song title is required");return;}
               if(!f.guest_name.trim()){setErr("Your name is required");return;}
               setErr("");setStep("tip");
-            }} style={{width:"100%",background:"linear-gradient(135deg,#C8A84A,#E09F3E)",color:"#0F0D16",border:"none",borderRadius:14,padding:"18px",fontWeight:800,fontSize:16,cursor:"pointer",fontFamily:"inherit"}}>
+            }} style={{width:"100%",background:"linear-gradient(135deg,#C8A84A,${C.saffron})",color:C.bg,border:"none",borderRadius:14,padding:"18px",fontWeight:800,fontSize:16,cursor:"pointer",fontFamily:"inherit"}}>
               {currentBase===0?"Continue — Free ✓ →":"Continue →"}
             </button>
             <div style={{color:"#4A4054",fontSize:12,textAlign:"center",marginTop:12}}>
@@ -7133,7 +7150,7 @@ function ArtistQRPanel({artist}:{artist:any}){
               {copied?"✓ Copied!":"📋 Copy Link"}
             </button>
             <button onClick={printQR}
-              style={{background:"rgba(255,255,255,0.04)",color:"#EDE4CE",border:"1px solid rgba(255,255,255,0.08)",borderRadius:8,padding:"8px 16px",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit",width:"100%"}}>
+              style={{background:C.surface,color:"#EDE4CE",border:`1px solid ${C.border}`,borderRadius:8,padding:"8px 16px",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit",width:"100%"}}>
               🖨 Print / Save QR Card
             </button>
           </div>
@@ -7187,36 +7204,37 @@ function DemoPage({onBook, onApply, vp}:{onBook:()=>void;onApply:()=>void;vp:any
     {id:"songreq",   label:t('demoSongTab'),icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>},
   ];
 
+  // Use global C proxy so theme-toggle (dark/light) works here too
   const S = {
-    card: {background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:14,padding:"20px"},
-    gold: "#C8A84A",
-    ruby: "#A82C38",
-    muted:"#8A7D68",
-    text: "#EDE4CE",
-    green:"#22C55E",
+    card: {background:C.card, border:`1px solid ${C.border}`, borderRadius:14, padding:"20px"},
+    gold:  C.gold,
+    ruby:  C.ruby,
+    muted: C.muted,
+    text:  C.text,
+    green: C.emerald,
   };
 
   return(
-    <div style={{minHeight:"100vh",background:"#070608",color:"#EDE4CE",fontFamily:"'DM Sans',sans-serif",paddingTop:62,paddingBottom:80}}>
+    <div style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:"'DM Sans',sans-serif",paddingTop:62,paddingBottom:80}}>
       {/* Hero */}
-      <div style={{background:"linear-gradient(135deg,rgba(168,44,56,0.15),rgba(200,168,74,0.08))",borderBottom:"1px solid rgba(200,168,74,0.1)",padding:vp.isMobile?"32px 20px":"48px 0",textAlign:"center"}}>
+      <div style={{background:`linear-gradient(135deg,${C.rubyS},${C.goldS})`,borderBottom:`1px solid ${C.gold}18`,padding:vp.isMobile?"32px 20px":"48px 0",textAlign:"center"}}>
         <div style={{maxWidth:700,margin:"0 auto",padding:"0 24px"}}>
-          <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(200,168,74,0.1)",border:"1px solid rgba(200,168,74,0.25)",borderRadius:20,padding:"5px 14px",marginBottom:18}}>
-            <span style={{fontSize:12,fontWeight:700,color:S.gold,letterSpacing:"1px",textTransform:"uppercase"}}>✦ Live Demo</span>
+          <div style={{display:"inline-flex",alignItems:"center",gap:8,background:C.goldS,border:`1px solid ${C.gold}44`,borderRadius:20,padding:"5px 14px",marginBottom:18}}>
+            <span style={{fontSize:12,fontWeight:700,color:C.gold,letterSpacing:"1px",textTransform:"uppercase"}}>✦ Live Demo</span>
           </div>
-          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:vp.isMobile?"2.2rem":"3rem",fontWeight:700,lineHeight:1.2,marginBottom:14}}>
+          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:vp.isMobile?"2.2rem":"3rem",fontWeight:700,lineHeight:1.2,marginBottom:14,color:C.text}}>
             Experience Awaz as an Artist
           </div>
-          <div style={{color:S.muted,fontSize:16,lineHeight:1.8,marginBottom:28,maxWidth:540,margin:"0 auto 28px"}}>
+          <div style={{color:C.muted,fontSize:16,lineHeight:1.8,marginBottom:28,maxWidth:540,margin:"0 auto 28px"}}>
             See exactly how artists use the platform — from profile to bookings, live song requests and earnings dashboard.
           </div>
           <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}>
             <button onClick={onApply}
-              style={{background:`linear-gradient(135deg,${S.ruby},${S.ruby}cc)`,color:"#fff",border:"none",borderRadius:12,padding:"13px 28px",fontWeight:800,fontSize:15,cursor:"pointer",fontFamily:"inherit"}}>
+              style={{background:`linear-gradient(135deg,${C.ruby},${C.ruby}cc)`,color:"#fff",border:"none",borderRadius:12,padding:"13px 28px",fontWeight:800,fontSize:15,cursor:"pointer",fontFamily:"inherit"}}>
               Apply as Artist →
             </button>
             <button onClick={onBook}
-              style={{background:"rgba(255,255,255,0.05)",color:S.text,border:"1px solid rgba(255,255,255,0.1)",borderRadius:12,padding:"13px 28px",fontWeight:700,fontSize:15,cursor:"pointer",fontFamily:"inherit"}}>
+              style={{background:C.surface,color:C.text,border:`1px solid ${C.border}`,borderRadius:12,padding:"13px 28px",fontWeight:700,fontSize:15,cursor:"pointer",fontFamily:"inherit"}}>
               Browse Artists
             </button>
           </div>
@@ -7228,7 +7246,7 @@ function DemoPage({onBook, onApply, vp}:{onBook:()=>void;onApply:()=>void;vp:any
         <div style={{display:"flex",overflowX:"auto",gap:4,padding:"20px 20px 0",scrollbarWidth:"none"}}>
           {steps.map((s,i)=>(
             <button key={s.id} onClick={()=>setDemoStep(s.id as any)}
-              style={{display:"flex",alignItems:"center",gap:7,background:demoStep===s.id?"rgba(200,168,74,0.12)":"transparent",color:demoStep===s.id?S.gold:S.muted,border:`1px solid ${demoStep===s.id?"rgba(200,168,74,0.3)":"transparent"}`,borderRadius:10,padding:"9px 16px",cursor:"pointer",fontFamily:"inherit",fontSize:13,fontWeight:demoStep===s.id?700:500,whiteSpace:"nowrap",flexShrink:0}}>
+              style={{display:"flex",alignItems:"center",gap:7,background:demoStep===s.id?C.goldS:"transparent",color:demoStep===s.id?C.gold:C.muted,border:`1px solid ${demoStep===s.id?C.gold+"44":C.border}`,borderRadius:10,padding:"9px 16px",cursor:"pointer",fontFamily:"inherit",fontSize:13,fontWeight:demoStep===s.id?700:500,whiteSpace:"nowrap",flexShrink:0}}>
               {s.icon}{s.label}
             </button>
           ))}
@@ -7240,7 +7258,7 @@ function DemoPage({onBook, onApply, vp}:{onBook:()=>void;onApply:()=>void;vp:any
           {demoStep==="intro"&&(
             <div style={{paddingTop:28}}>
               <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.6rem",fontWeight:700,marginBottom:6}}>{t('demoPlatformOverview')}</div>
-              <div style={{color:S.muted,fontSize:14,marginBottom:24}}>{t('demoPlatformSub')}</div>
+              <div style={{color:C.muted,fontSize:14,marginBottom:24}}>{t('demoPlatformSub')}</div>
               <div style={{display:"grid",gridTemplateColumns:vp.isMobile?"1fr":"1fr 1fr",gap:12}}>
                 {[
                   {icon:"🎤",title:t('demoFeat1Title'),desc:t('demoFeat1Desc')},
@@ -7255,15 +7273,15 @@ function DemoPage({onBook, onApply, vp}:{onBook:()=>void;onApply:()=>void;vp:any
                   <div key={title} style={{...S.card,display:"flex",gap:14,alignItems:"flex-start"}}>
                     <div style={{fontSize:28,flexShrink:0,marginTop:2}}>{icon}</div>
                     <div>
-                      <div style={{fontWeight:700,color:S.text,fontSize:14,marginBottom:5}}>{title}</div>
-                      <div style={{color:S.muted,fontSize:13,lineHeight:1.7}}>{desc}</div>
+                      <div style={{fontWeight:700,color:C.text,fontSize:14,marginBottom:5}}>{title}</div>
+                      <div style={{color:C.muted,fontSize:13,lineHeight:1.7}}>{desc}</div>
                     </div>
                   </div>
                 ))}
               </div>
               <div style={{marginTop:24,textAlign:"center"}}>
                 <button onClick={()=>setDemoStep("profile")}
-                  style={{background:`linear-gradient(135deg,${S.gold},#E09F3E)`,color:"#0F0D16",border:"none",borderRadius:12,padding:"13px 32px",fontWeight:800,fontSize:15,cursor:"pointer",fontFamily:"inherit"}}>
+                  style={{background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:12,padding:"13px 32px",fontWeight:800,fontSize:15,cursor:"pointer",fontFamily:"inherit"}}>
                   See Artist Profile Demo →
                 </button>
               </div>
@@ -7276,65 +7294,65 @@ function DemoPage({onBook, onApply, vp}:{onBook:()=>void;onApply:()=>void;vp:any
               <div style={{marginBottom:16,display:"flex",alignItems:"center",gap:8}}>
                 <div style={{flex:1}}>
                   <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.5rem",fontWeight:700}}>{t('demoProfileTitle')}</div>
-                  <div style={{color:S.muted,fontSize:13}}>{t('demoProfileSub')}</div>
+                  <div style={{color:C.muted,fontSize:13}}>{t('demoProfileSub')}</div>
                 </div>
-                <span style={{background:"rgba(200,168,74,0.1)",color:S.gold,border:"1px solid rgba(200,168,74,0.2)",borderRadius:8,padding:"4px 10px",fontSize:11,fontWeight:700}}>{t('demoLivePreview')}</span>
+                <span style={{background:"rgba(200,168,74,0.1)",color:C.gold,border:"1px solid rgba(200,168,74,0.2)",borderRadius:8,padding:"4px 10px",fontSize:11,fontWeight:700}}>{t('demoLivePreview')}</span>
               </div>
               {/* Demo profile card */}
-              <div style={{background:"#0F0D16",border:"1px solid rgba(255,255,255,0.06)",borderRadius:16,overflow:"hidden"}}>
+              <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:16,overflow:"hidden"}}>
                 {/* Profile header */}
-                <div style={{background:"linear-gradient(135deg,rgba(168,44,56,0.2),rgba(200,168,74,0.05))",padding:vp.isMobile?"20px":"28px 32px",display:"flex",gap:20,alignItems:"flex-start",flexWrap:"wrap"}}>
-                  <div style={{width:80,height:80,borderRadius:14,background:"rgba(168,44,56,0.2)",border:"2px solid rgba(168,44,56,0.4)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:36,flexShrink:0}}>
+                <div style={{background:`linear-gradient(135deg,${C.rubyS},${C.goldS})`,padding:vp.isMobile?"20px":"28px 32px",display:"flex",gap:20,alignItems:"flex-start",flexWrap:"wrap"}}>
+                  <div style={{width:80,height:80,borderRadius:14,background:`${C.ruby}20`,border:`2px solid ${C.ruby}44`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:36,flexShrink:0}}>
                     🎤
                   </div>
                   <div style={{flex:1,minWidth:200}}>
                     <div style={{display:"flex",alignItems:"center",gap:10,flexWrap:"wrap",marginBottom:4}}>
                       <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.8rem",fontWeight:700}}>{demoArtist.name}</div>
-                      <div style={{fontFamily:"'Noto Naskh Arabic',serif",color:S.muted,fontSize:16}}>{demoArtist.nameDari}</div>
+                      <div style={{fontFamily:"'Noto Naskh Arabic',serif",color:C.muted,fontSize:16}}>{demoArtist.nameDari}</div>
                     </div>
-                    <div style={{color:S.muted,fontSize:13,marginBottom:8}}>{demoArtist.genre} · {demoArtist.location}</div>
+                    <div style={{color:C.muted,fontSize:13,marginBottom:8}}>{demoArtist.genre} · {demoArtist.location}</div>
                     <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:12}}>
                       {demoArtist.tags.map(t=>(
-                        <span key={t} style={{background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:20,padding:"3px 10px",fontSize:11,color:S.muted}}>{t}</span>
+                        <span key={t} style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:20,padding:"3px 10px",fontSize:11,color:C.muted}}>{t}</span>
                       ))}
                     </div>
                     <div style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
                       <div style={{display:"flex",gap:2}}>
                         {"★★★★★".split("").map((s,i)=>(
-                          <span key={i} style={{color:S.gold,fontSize:14}}>{s}</span>
+                          <span key={i} style={{color:C.gold,fontSize:14}}>{s}</span>
                         ))}
-                        <span style={{color:S.muted,fontSize:12,marginLeft:6}}>{demoArtist.rating} ({demoArtist.reviews} reviews)</span>
+                        <span style={{color:C.muted,fontSize:12,marginLeft:6}}>{demoArtist.rating} ({demoArtist.reviews} reviews)</span>
                       </div>
-                      <span style={{background:"rgba(34,197,94,0.1)",color:S.green,border:"1px solid rgba(34,197,94,0.2)",borderRadius:6,fontSize:11,fontWeight:700,padding:"2px 8px"}}>✓ VERIFIED</span>
-                      <span style={{background:"rgba(200,168,74,0.1)",color:S.gold,border:"1px solid rgba(200,168,74,0.2)",borderRadius:6,fontSize:11,fontWeight:700,padding:"2px 8px"}}>⭐ FEATURED</span>
+                      <span style={{background:"rgba(34,197,94,0.1)",color:C.emerald,border:"1px solid rgba(34,197,94,0.2)",borderRadius:6,fontSize:11,fontWeight:700,padding:"2px 8px"}}>✓ VERIFIED</span>
+                      <span style={{background:"rgba(200,168,74,0.1)",color:C.gold,border:"1px solid rgba(200,168,74,0.2)",borderRadius:6,fontSize:11,fontWeight:700,padding:"2px 8px"}}>⭐ FEATURED</span>
                     </div>
                   </div>
                   <div style={{textAlign:"right",flexShrink:0}}>
-                    <div style={{color:S.muted,fontSize:11,textTransform:"uppercase",letterSpacing:"0.8px",marginBottom:4}}>FROM</div>
-                    <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.6rem",fontWeight:800,color:S.ruby}}>{demoArtist.priceInfo}</div>
-                    <div style={{color:S.muted,fontSize:11,marginBottom:12}}>€{demoArtist.deposit} deposit · Balance cash</div>
+                    <div style={{color:C.muted,fontSize:11,textTransform:"uppercase",letterSpacing:"0.8px",marginBottom:4}}>FROM</div>
+                    <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.6rem",fontWeight:800,color:C.ruby}}>{demoArtist.priceInfo}</div>
+                    <div style={{color:C.muted,fontSize:11,marginBottom:12}}>€{demoArtist.deposit} deposit · Balance cash</div>
                     <button onClick={()=>setDemoStep("booking")}
-                      style={{background:`linear-gradient(135deg,${S.gold},#E09F3E)`,color:"#0F0D16",border:"none",borderRadius:10,padding:"11px 22px",fontWeight:800,fontSize:14,cursor:"pointer",fontFamily:"inherit",display:"block",width:"100%",marginBottom:8}}>
+                      style={{background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:10,padding:"11px 22px",fontWeight:800,fontSize:14,cursor:"pointer",fontFamily:"inherit",display:"block",width:"100%",marginBottom:8}}>
                       Book Now
                     </button>
                     <button onClick={()=>setDemoStep("songreq")}
-                      style={{background:"rgba(255,255,255,0.04)",color:S.text,border:"1px solid rgba(255,255,255,0.08)",borderRadius:10,padding:"9px 22px",fontWeight:600,fontSize:13,cursor:"pointer",fontFamily:"inherit",display:"block",width:"100%"}}>
+                      style={{background:C.surface,color:C.text,border:`1px solid ${C.border}`,borderRadius:10,padding:"9px 22px",fontWeight:600,fontSize:13,cursor:"pointer",fontFamily:"inherit",display:"block",width:"100%"}}>
                       🎵 Request a Song
                     </button>
                   </div>
                 </div>
                 {/* Bio + Social */}
-                <div style={{padding:vp.isMobile?"16px":"24px 32px",borderTop:"1px solid rgba(255,255,255,0.05)"}}>
+                <div style={{padding:vp.isMobile?"16px":"24px 32px",borderTop:`1px solid ${C.border}`}}>
                   <div style={{marginBottom:16}}>
-                    <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.1rem",fontWeight:700,color:S.gold,marginBottom:8}}>About {demoArtist.name}</div>
+                    <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.1rem",fontWeight:700,color:C.gold,marginBottom:8}}>About {demoArtist.name}</div>
                     <div style={{color:"rgba(237,228,206,0.75)",fontSize:14,lineHeight:1.85}}>{demoArtist.bio}</div>
                   </div>
                   <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
                     {[["🎵 Spotify","12,400 monthly listeners"],["📸 Instagram","8,200 followers"]].map(([label,sub])=>(
-                      <div key={label} style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.06)",borderRadius:10,padding:"10px 14px",display:"flex",gap:8,alignItems:"center"}}>
+                      <div key={label} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:10,padding:"10px 14px",display:"flex",gap:8,alignItems:"center"}}>
                         <div>
-                          <div style={{fontWeight:700,color:S.text,fontSize:13}}>{label}</div>
-                          <div style={{color:S.muted,fontSize:11}}>{sub}</div>
+                          <div style={{fontWeight:700,color:C.text,fontSize:13}}>{label}</div>
+                          <div style={{color:C.muted,fontSize:11}}>{sub}</div>
                         </div>
                       </div>
                     ))}
@@ -7343,7 +7361,7 @@ function DemoPage({onBook, onApply, vp}:{onBook:()=>void;onApply:()=>void;vp:any
               </div>
               <div style={{marginTop:16,textAlign:"center"}}>
                 <button onClick={()=>setDemoStep("booking")}
-                  style={{background:`linear-gradient(135deg,${S.gold},#E09F3E)`,color:"#0F0D16",border:"none",borderRadius:12,padding:"12px 28px",fontWeight:800,fontSize:14,cursor:"pointer",fontFamily:"inherit"}}>
+                  style={{background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:12,padding:"12px 28px",fontWeight:800,fontSize:14,cursor:"pointer",fontFamily:"inherit"}}>
                   Try Booking Flow →
                 </button>
               </div>
@@ -7355,35 +7373,35 @@ function DemoPage({onBook, onApply, vp}:{onBook:()=>void;onApply:()=>void;vp:any
             <div style={{paddingTop:24}}>
               <div style={{marginBottom:20}}>
                 <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.5rem",fontWeight:700}}>{t('demoBookingTitle')}</div>
-                <div style={{color:S.muted,fontSize:13}}>{t('demoBookingSub')}</div>
+                <div style={{color:C.muted,fontSize:13}}>{t('demoBookingSub')}</div>
               </div>
               {bookingDone?(
                 <div style={{textAlign:"center",padding:"48px 24px",...S.card}}>
                   <div style={{fontSize:64,marginBottom:16}}>🎉</div>
                   <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.8rem",fontWeight:700,marginBottom:8}}>{t('demoConfirmed')}</div>
-                  <div style={{color:S.muted,fontSize:14,lineHeight:1.8,marginBottom:24}}>
+                  <div style={{color:C.muted,fontSize:14,lineHeight:1.8,marginBottom:24}}>
                     The artist receives a notification instantly.<br/>
-                    <strong style={{color:S.gold}}>€{demoArtist.deposit}</strong> deposit secured via Stripe.<br/>
-                    Artist gets <strong style={{color:S.green}}>€{Math.round(demoArtist.deposit*0.88)}</strong> (88%) — Awaz keeps €{Math.round(demoArtist.deposit*0.12)} (12%).
+                    <strong style={{color:C.gold}}>€{demoArtist.deposit}</strong> deposit secured via Stripe.<br/>
+                    Artist gets <strong style={{color:C.emerald}}>€{Math.round(demoArtist.deposit*0.88)}</strong> (88%) — Awaz keeps €{Math.round(demoArtist.deposit*0.12)} (12%).
                   </div>
                   <div style={{display:"flex",gap:8,justifyContent:"center",flexWrap:"wrap"}}>
                     <button onClick={()=>setDemoStep("dashboard")}
-                      style={{background:`linear-gradient(135deg,${S.gold},#E09F3E)`,color:"#0F0D16",border:"none",borderRadius:12,padding:"12px 24px",fontWeight:800,fontSize:14,cursor:"pointer",fontFamily:"inherit"}}>
+                      style={{background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:12,padding:"12px 24px",fontWeight:800,fontSize:14,cursor:"pointer",fontFamily:"inherit"}}>
                       See Artist Dashboard →
                     </button>
                     <button onClick={()=>setBookingDone(false)}
-                      style={{background:"rgba(255,255,255,0.04)",color:S.text,border:"1px solid rgba(255,255,255,0.08)",borderRadius:12,padding:"12px 20px",fontWeight:600,fontSize:13,cursor:"pointer",fontFamily:"inherit"}}>
+                      style={{background:C.surface,color:C.text,border:`1px solid ${C.border}`,borderRadius:12,padding:"12px 20px",fontWeight:600,fontSize:13,cursor:"pointer",fontFamily:"inherit"}}>
                       Try Again
                     </button>
                   </div>
                 </div>
               ):(
                 <div style={{...S.card,maxWidth:440}}>
-                  <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:20,paddingBottom:16,borderBottom:"1px solid rgba(255,255,255,0.06)"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:20,paddingBottom:16,borderBottom:`1px solid ${C.border}`}}>
                     <div style={{width:44,height:44,borderRadius:10,background:"rgba(168,44,56,0.2)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22}}>🎤</div>
                     <div>
-                      <div style={{fontWeight:700,color:S.text,fontSize:14}}>{demoArtist.name}</div>
-                      <div style={{color:S.muted,fontSize:12}}>Deposit: €{demoArtist.deposit}</div>
+                      <div style={{fontWeight:700,color:C.text,fontSize:14}}>{demoArtist.name}</div>
+                      <div style={{color:C.muted,fontSize:12}}>Deposit: €{demoArtist.deposit}</div>
                     </div>
                   </div>
                   {[
@@ -7393,17 +7411,17 @@ function DemoPage({onBook, onApply, vp}:{onBook:()=>void;onApply:()=>void;vp:any
                     {label:t('demoFieldDate'),    placeholder:t('demoFieldDatePh'),     type:"text"},
                   ].map(({label,placeholder,type})=>(
                     <div key={label} style={{marginBottom:14}}>
-                      <div style={{fontSize:11,fontWeight:700,color:S.muted,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:6}}>{label}</div>
+                      <div style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:6}}>{label}</div>
                       <input type={type} placeholder={placeholder}
-                        style={{width:"100%",background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:10,padding:"12px 14px",color:S.text,fontSize:14,fontFamily:"inherit",outline:"none",boxSizing:"border-box"}}/>
+                        style={{width:"100%",background:C.card,border:`1px solid ${C.border}`,borderRadius:10,padding:"12px 14px",color:C.text,fontSize:14,fontFamily:"inherit",outline:"none",boxSizing:"border-box"}}/>
                     </div>
                   ))}
                   <div style={{background:"rgba(200,168,74,0.06)",border:"1px solid rgba(200,168,74,0.15)",borderRadius:10,padding:"12px 14px",marginBottom:16,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                    <div style={{color:S.muted,fontSize:13}}>{t('demoDepositNow')}</div>
-                    <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.5rem",fontWeight:800,color:S.gold}}>€{demoArtist.deposit}</div>
+                    <div style={{color:C.muted,fontSize:13}}>{t('demoDepositNow')}</div>
+                    <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.5rem",fontWeight:800,color:C.gold}}>€{demoArtist.deposit}</div>
                   </div>
                   <button onClick={()=>setBookingDone(true)}
-                    style={{width:"100%",background:`linear-gradient(135deg,${S.gold},#E09F3E)`,color:"#0F0D16",border:"none",borderRadius:12,padding:"14px",fontWeight:800,fontSize:15,cursor:"pointer",fontFamily:"inherit"}}>
+                    style={{width:"100%",background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:12,padding:"14px",fontWeight:800,fontSize:15,cursor:"pointer",fontFamily:"inherit"}}>
                     Pay Deposit · €{demoArtist.deposit} →
                   </button>
                   <div style={{color:"rgba(138,125,104,0.7)",fontSize:11,textAlign:"center",marginTop:8}}>🔒 Secured by Stripe · PCI compliant</div>
@@ -7417,13 +7435,13 @@ function DemoPage({onBook, onApply, vp}:{onBook:()=>void;onApply:()=>void;vp:any
             <div style={{paddingTop:24}}>
               <div style={{marginBottom:20}}>
                 <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.5rem",fontWeight:700}}>{t('demoDashTitle')}</div>
-                <div style={{color:S.muted,fontSize:13}}>What {demoArtist.name} sees when she logs in</div>
+                <div style={{color:C.muted,fontSize:13}}>What {demoArtist.name} sees when she logs in</div>
               </div>
               {/* Mini nav */}
               <div style={{display:"flex",gap:4,overflowX:"auto",marginBottom:16,scrollbarWidth:"none"}}>
                 {["overview","bookings","calendar","earnings"].map(tab=>(
                   <button key={tab} onClick={()=>setDemoTab(tab)}
-                    style={{background:demoTab===tab?"rgba(200,168,74,0.12)":"rgba(255,255,255,0.02)",color:demoTab===tab?S.gold:S.muted,border:`1px solid ${demoTab===tab?"rgba(200,168,74,0.3)":"rgba(255,255,255,0.06)"}`,borderRadius:8,padding:"8px 14px",cursor:"pointer",fontFamily:"inherit",fontSize:12,fontWeight:600,whiteSpace:"nowrap",textTransform:"capitalize"}}>
+                    style={{background:demoTab===tab?C.goldS:"transparent",color:demoTab===tab?C.gold:C.muted,border:`1px solid ${demoTab===tab?${C.gold}+"44":${C.border}}`,borderRadius:8,padding:"8px 14px",cursor:"pointer",fontFamily:"inherit",fontSize:12,fontWeight:600,whiteSpace:"nowrap",textTransform:"capitalize"}}>
                     {tab}
                   </button>
                 ))}
@@ -7433,38 +7451,38 @@ function DemoPage({onBook, onApply, vp}:{onBook:()=>void;onApply:()=>void;vp:any
                 <div>
                   <div style={{display:"grid",gridTemplateColumns:vp.isMobile?"1fr 1fr":"repeat(4,1fr)",gap:10,marginBottom:20}}>
                     {[
-                      {label:t('demoTotalEarned'),  val:"€8,580",   sub:t('demoThisYear'),       color:S.gold},
-                      {label:t('demoBookingTab'),       val:"9",         sub:t('demoConfirmedLabel'),       color:S.green},
+                      {label:t('demoTotalEarned'),  val:"€8,580",   sub:t('demoThisYear'),       color:C.gold},
+                      {label:t('demoBookingTab'),       val:"9",         sub:t('demoConfirmedLabel'),       color:C.emerald},
                       {label:t('demoPendingLabel').charAt(0).toUpperCase()+t('demoPendingLabel').slice(1),        val:"2",         sub:t('demoNewRequests'),    color:"#F59E0B"},
-                      {label:t('demoRatingLabel'),         val:"4.9 ★",     sub:"47 "+t('demoRatingLabel'),      color:S.ruby},
+                      {label:t('demoRatingLabel'),         val:"4.9 ★",     sub:"47 "+t('demoRatingLabel'),      color:C.ruby},
                     ].map(({label,val,sub,color})=>(
                       <div key={label} style={{...S.card,textAlign:"center"}}>
                         <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.6rem",fontWeight:800,color,marginBottom:2}}>{val}</div>
-                        <div style={{fontWeight:700,color:S.text,fontSize:12}}>{label}</div>
-                        <div style={{color:S.muted,fontSize:11,marginTop:1}}>{sub}</div>
+                        <div style={{fontWeight:700,color:C.text,fontSize:12}}>{label}</div>
+                        <div style={{color:C.muted,fontSize:11,marginTop:1}}>{sub}</div>
                       </div>
                     ))}
                   </div>
                   <div style={{...S.card,marginBottom:12}}>
-                    <div style={{color:S.gold,fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.8px",marginBottom:12}}>{t('demoUpcoming')}</div>
+                    <div style={{color:C.gold,fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.8px",marginBottom:12}}>{t('demoUpcoming')}</div>
                     {[
                       {name:"Karimi Family Wedding",date:"14 Jun 2025",deposit:1200,status:"confirmed"},
                       {name:"Eid Gala — Oslo Kulturhus",date:"28 May 2025",deposit:1500,status:"pending"},
                     ].map(b=>(
-                      <div key={b.name} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 0",borderBottom:"1px solid rgba(255,255,255,0.04)"}}>
+                      <div key={b.name} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 0",borderBottom:`1px solid ${C.border}`}}>
                         <div>
-                          <div style={{fontWeight:600,color:S.text,fontSize:13}}>{b.name}</div>
-                          <div style={{color:S.muted,fontSize:11,marginTop:1}}>📅 {b.date}</div>
+                          <div style={{fontWeight:600,color:C.text,fontSize:13}}>{b.name}</div>
+                          <div style={{color:C.muted,fontSize:11,marginTop:1}}>📅 {b.date}</div>
                         </div>
                         <div style={{textAlign:"right"}}>
-                          <div style={{fontWeight:700,color:S.gold,fontSize:13}}>€{Math.round(b.deposit*0.88)}</div>
-                          <span style={{background:b.status==="confirmed"?"rgba(34,197,94,0.1)":"rgba(245,158,11,0.1)",color:b.status==="confirmed"?S.green:"#F59E0B",fontSize:10,fontWeight:700,borderRadius:4,padding:"2px 6px"}}>{b.status.toUpperCase()}</span>
+                          <div style={{fontWeight:700,color:C.gold,fontSize:13}}>€{Math.round(b.deposit*0.88)}</div>
+                          <span style={{background:b.status==="confirmed"?"rgba(34,197,94,0.1)":"rgba(245,158,11,0.1)",color:b.status==="confirmed"?C.emerald:"#F59E0B",fontSize:10,fontWeight:700,borderRadius:4,padding:"2px 6px"}}>{b.status.toUpperCase()}</span>
                         </div>
                       </div>
                     ))}
                   </div>
                   <button onClick={()=>setDemoStep("songreq")}
-                    style={{background:`linear-gradient(135deg,${S.gold},#E09F3E)`,color:"#0F0D16",border:"none",borderRadius:12,padding:"12px 24px",fontWeight:800,fontSize:14,cursor:"pointer",fontFamily:"inherit",width:"100%"}}>
+                    style={{background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:12,padding:"12px 24px",fontWeight:800,fontSize:14,cursor:"pointer",fontFamily:"inherit",width:"100%"}}>
                     See Song Requests →
                   </button>
                 </div>
@@ -7472,21 +7490,21 @@ function DemoPage({onBook, onApply, vp}:{onBook:()=>void;onApply:()=>void;vp:any
 
               {demoTab==="bookings"&&(
                 <div style={{...S.card}}>
-                  <div style={{color:S.gold,fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.8px",marginBottom:14}}>{t('demoAllBookings')}</div>
+                  <div style={{color:C.gold,fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.8px",marginBottom:14}}>{t('demoAllBookings')}</div>
                   {[
                     {name:"Rahimi Wedding",      date:"14 Jun",price:1056,status:"confirmed"},
                     {name:"Eid Gala Oslo",        date:"28 May",price:1320,status:"pending"},
                     {name:"Ahmadi 50th Birthday", date:"3 Apr", price:880, status:"completed"},
                     {name:"Cultural Night — Berlin",date:"15 Mar",price:1760,status:"completed"},
                   ].map(b=>(
-                    <div key={b.name} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 0",borderBottom:"1px solid rgba(255,255,255,0.04)"}}>
+                    <div key={b.name} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 0",borderBottom:`1px solid ${C.border}`}}>
                       <div>
-                        <div style={{fontWeight:600,color:S.text,fontSize:13}}>{b.name}</div>
-                        <div style={{color:S.muted,fontSize:11,marginTop:2}}>📅 {b.date} 2025</div>
+                        <div style={{fontWeight:600,color:C.text,fontSize:13}}>{b.name}</div>
+                        <div style={{color:C.muted,fontSize:11,marginTop:2}}>📅 {b.date} 2025</div>
                       </div>
                       <div style={{textAlign:"right"}}>
-                        <div style={{fontWeight:700,color:S.gold,fontSize:13}}>€{b.price}</div>
-                        <span style={{fontSize:10,fontWeight:700,borderRadius:4,padding:"2px 6px",background:b.status==="completed"?"rgba(34,197,94,0.1)":b.status==="confirmed"?"rgba(200,168,74,0.1)":"rgba(245,158,11,0.1)",color:b.status==="completed"?S.green:b.status==="confirmed"?S.gold:"#F59E0B"}}>{b.status.toUpperCase()}</span>
+                        <div style={{fontWeight:700,color:C.gold,fontSize:13}}>€{b.price}</div>
+                        <span style={{fontSize:10,fontWeight:700,borderRadius:4,padding:"2px 6px",background:b.status==="completed"?"rgba(34,197,94,0.1)":b.status==="confirmed"?"rgba(200,168,74,0.1)":"rgba(245,158,11,0.1)",color:b.status==="completed"?C.emerald:b.status==="confirmed"?C.gold:"#F59E0B"}}>{b.status.toUpperCase()}</span>
                       </div>
                     </div>
                   ))}
@@ -7495,24 +7513,24 @@ function DemoPage({onBook, onApply, vp}:{onBook:()=>void;onApply:()=>void;vp:any
 
               {demoTab==="calendar"&&(
                 <div style={{...S.card}}>
-                  <div style={{color:S.gold,fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.8px",marginBottom:14}}>{t('demoCalTitle')+' — MAY 2025'}</div>
+                  <div style={{color:C.gold,fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.8px",marginBottom:14}}>{t('demoCalTitle')+' — MAY 2025'}</div>
                   <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:4,marginBottom:12}}>
                     {["M","T","W","T","F","S","S"].map((d,i)=>(
-                      <div key={i} style={{textAlign:"center",color:S.muted,fontSize:11,fontWeight:700,paddingBottom:6}}>{d}</div>
+                      <div key={i} style={{textAlign:"center",color:C.muted,fontSize:11,fontWeight:700,paddingBottom:6}}>{d}</div>
                     ))}
                     {Array.from({length:31},(_,i)=>i+1).map(d=>{
                       const booked=[14,28].includes(d);
                       const available=[10,11,12,15,16,17,18,20,21,22].includes(d);
                       return(
-                        <div key={d} style={{textAlign:"center",padding:"6px 2px",borderRadius:6,fontSize:12,fontWeight:600,background:booked?"rgba(168,44,56,0.2)":available?"rgba(34,197,94,0.1)":"transparent",color:booked?S.ruby:available?S.green:S.muted,border:`1px solid ${booked?"rgba(168,44,56,0.3)":available?"rgba(34,197,94,0.2)":"transparent"}`}}>
+                        <div key={d} style={{textAlign:"center",padding:"6px 2px",borderRadius:6,fontSize:12,fontWeight:600,background:booked?"rgba(168,44,56,0.2)":available?"rgba(34,197,94,0.1)":"transparent",color:booked?C.ruby:available?C.emerald:C.muted,border:`1px solid ${booked?"rgba(168,44,56,0.3)":available?"rgba(34,197,94,0.2)":"transparent"}`}}>
                           {d}
                         </div>
                       );
                     })}
                   </div>
-                  <div style={{display:"flex",gap:16,fontSize:11,color:S.muted}}>
-                    <span style={{color:S.green}}>■ Available</span>
-                    <span style={{color:S.ruby}}>■ Booked</span>
+                  <div style={{display:"flex",gap:16,fontSize:11,color:C.muted}}>
+                    <span style={{color:C.emerald}}>■ Available</span>
+                    <span style={{color:C.ruby}}>■ Booked</span>
                   </div>
                 </div>
               )}
@@ -7520,20 +7538,20 @@ function DemoPage({onBook, onApply, vp}:{onBook:()=>void;onApply:()=>void;vp:any
               {demoTab==="earnings"&&(
                 <div>
                   <div style={{...S.card,marginBottom:12}}>
-                    <div style={{color:S.gold,fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.8px",marginBottom:14}}>2025 EARNINGS</div>
+                    <div style={{color:C.gold,fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.8px",marginBottom:14}}>2025 EARNINGS</div>
                     {[["January","€880"],["February","€1,056"],["March","€1,760"],["April","€880"],["May","€2,376 (est.)"]].map(([m,v])=>(
-                      <div key={m} style={{display:"flex",justifyContent:"space-between",padding:"9px 0",borderBottom:"1px solid rgba(255,255,255,0.04)"}}>
-                        <span style={{color:S.muted,fontSize:13}}>{m}</span>
-                        <span style={{fontWeight:700,color:S.gold,fontSize:13}}>{v}</span>
+                      <div key={m} style={{display:"flex",justifyContent:"space-between",padding:"9px 0",borderBottom:`1px solid ${C.border}`}}>
+                        <span style={{color:C.muted,fontSize:13}}>{m}</span>
+                        <span style={{fontWeight:700,color:C.gold,fontSize:13}}>{v}</span>
                       </div>
                     ))}
                     <div style={{display:"flex",justifyContent:"space-between",padding:"12px 0",borderTop:"1px solid rgba(200,168,74,0.2)",marginTop:4}}>
-                      <span style={{fontWeight:700,color:S.text,fontSize:14}}>{t('demoTotal2025')}</span>
-                      <span style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:800,color:S.gold,fontSize:"1.4rem"}}>€8,952</span>
+                      <span style={{fontWeight:700,color:C.text,fontSize:14}}>{t('demoTotal2025')}</span>
+                      <span style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:800,color:C.gold,fontSize:"1.4rem"}}>€8,952</span>
                     </div>
                   </div>
-                  <div style={{background:"rgba(34,197,94,0.05)",border:"1px solid rgba(34,197,94,0.15)",borderRadius:12,padding:"14px 16px",fontSize:13,color:S.muted,lineHeight:1.7}}>
-                    💡 <strong style={{color:S.text}}>88% split:</strong> For every €1,000 deposit, you receive <strong style={{color:S.green}}>€880</strong> directly to your Stripe account. Awaz keeps €120 (12%) as platform fee.
+                  <div style={{background:"rgba(34,197,94,0.05)",border:"1px solid rgba(34,197,94,0.15)",borderRadius:12,padding:"14px 16px",fontSize:13,color:C.muted,lineHeight:1.7}}>
+                    💡 <strong style={{color:C.text}}>88% split:</strong> For every €1,000 deposit, you receive <strong style={{color:C.emerald}}>€880</strong> directly to your Stripe account. Awaz keeps €120 (12%) as platform fee.
                   </div>
                 </div>
               )}
@@ -7545,34 +7563,34 @@ function DemoPage({onBook, onApply, vp}:{onBook:()=>void;onApply:()=>void;vp:any
             <div style={{paddingTop:24}}>
               <div style={{marginBottom:20}}>
                 <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.5rem",fontWeight:700}}>{t('demoSongTitle')}</div>
-                <div style={{color:S.muted,fontSize:13}}>{t('demoSongSub')}</div>
+                <div style={{color:C.muted,fontSize:13}}>{t('demoSongSub')}</div>
               </div>
               <div style={{display:"grid",gridTemplateColumns:vp.isMobile?"1fr":"1fr 1fr",gap:16}}>
                 {/* Guest side */}
                 <div>
-                  <div style={{color:S.gold,fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.8px",marginBottom:12}}>{t('demoGuestSide')}</div>
+                  <div style={{color:C.gold,fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.8px",marginBottom:12}}>{t('demoGuestSide')}</div>
                   {!songDone?(
                     <div style={{...S.card}}>
                       <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.2rem",fontWeight:700,marginBottom:4}}>{t('demoRequestSong')}</div>
-                      <div style={{color:S.muted,fontSize:12,marginBottom:16}}>from {demoArtist.name} · 1st song free</div>
+                      <div style={{color:C.muted,fontSize:12,marginBottom:16}}>from {demoArtist.name} · 1st song free</div>
                       <div style={{marginBottom:12}}>
-                        <div style={{fontSize:11,fontWeight:700,color:S.muted,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:6}}>{t('demoSongTitleField')}</div>
+                        <div style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:6}}>{t('demoSongTitleField')}</div>
                         <input value={songTitle} onChange={e=>setSongTitle(e.target.value)}
                           placeholder={t('demoSongPh')}
-                          style={{width:"100%",background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:10,padding:"11px 14px",color:S.text,fontSize:14,fontFamily:"inherit",outline:"none",boxSizing:"border-box"}}/>
+                          style={{width:"100%",background:C.card,border:`1px solid ${C.border}`,borderRadius:10,padding:"11px 14px",color:C.text,fontSize:14,fontFamily:"inherit",outline:"none",boxSizing:"border-box"}}/>
                       </div>
                       <div style={{marginBottom:16}}>
-                        <div style={{fontSize:11,fontWeight:700,color:S.muted,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:6}}>{t('demoYourName')}</div>
+                        <div style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:6}}>{t('demoYourName')}</div>
                         <input value={guestName} onChange={e=>setGuestName(e.target.value)}
                           placeholder={t('demoNamePh')}
-                          style={{width:"100%",background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:10,padding:"11px 14px",color:S.text,fontSize:14,fontFamily:"inherit",outline:"none",boxSizing:"border-box"}}/>
+                          style={{width:"100%",background:C.card,border:`1px solid ${C.border}`,borderRadius:10,padding:"11px 14px",color:C.text,fontSize:14,fontFamily:"inherit",outline:"none",boxSizing:"border-box"}}/>
                       </div>
-                      <div style={{background:"rgba(34,197,94,0.06)",border:"1px solid rgba(34,197,94,0.15)",borderRadius:10,padding:"10px 12px",marginBottom:14,fontSize:12,color:S.green,fontWeight:700}}>
+                      <div style={{background:"rgba(34,197,94,0.06)",border:"1px solid rgba(34,197,94,0.15)",borderRadius:10,padding:"10px 12px",marginBottom:14,fontSize:12,color:C.emerald,fontWeight:700}}>
                         🎵 1st song tonight is FREE!
                       </div>
                       <button onClick={()=>{ if(songTitle&&guestName) setSongDone(true); }}
                         disabled={!songTitle||!guestName}
-                        style={{width:"100%",background:songTitle&&guestName?`linear-gradient(135deg,${S.gold},#E09F3E)`:"rgba(255,255,255,0.04)",color:songTitle&&guestName?"#0F0D16":S.muted,border:"none",borderRadius:10,padding:"12px",fontWeight:800,fontSize:14,cursor:songTitle&&guestName?"pointer":"not-allowed",fontFamily:"inherit"}}>
+                        style={{width:"100%",background:songTitle&&guestName?`linear-gradient(135deg,${C.gold},${C.saffron})`:C.surface,color:songTitle&&guestName?C.bg:C.muted,border:"none",borderRadius:10,padding:"12px",fontWeight:800,fontSize:14,cursor:songTitle&&guestName?"pointer":"not-allowed",fontFamily:"inherit"}}>
                         Send Free Request →
                       </button>
                     </div>
@@ -7580,11 +7598,11 @@ function DemoPage({onBook, onApply, vp}:{onBook:()=>void;onApply:()=>void;vp:any
                     <div style={{...S.card,textAlign:"center",padding:"32px 20px"}}>
                       <div style={{fontSize:48,marginBottom:12}}>🎶</div>
                       <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.4rem",fontWeight:700,marginBottom:6}}>{t('demoSentTitle')}</div>
-                      <div style={{color:S.muted,fontSize:13,lineHeight:1.7}}>
-                        <strong style={{color:S.gold}}>"{songTitle}"</strong> sent to {demoArtist.name}
+                      <div style={{color:C.muted,fontSize:13,lineHeight:1.7}}>
+                        <strong style={{color:C.gold}}>"{songTitle}"</strong> sent to {demoArtist.name}
                       </div>
                       <button onClick={()=>{setSongDone(false);setSongTitle("");setGuestName("");}}
-                        style={{marginTop:16,background:"rgba(255,255,255,0.05)",color:S.muted,border:"1px solid rgba(255,255,255,0.08)",borderRadius:10,padding:"9px 20px",fontSize:12,cursor:"pointer",fontFamily:"inherit"}}>
+                        style={{marginTop:16,background:C.surface,color:C.muted,border:`1px solid ${C.border}`,borderRadius:10,padding:"9px 20px",fontSize:12,cursor:"pointer",fontFamily:"inherit"}}>
                         Try Again
                       </button>
                     </div>
@@ -7592,35 +7610,35 @@ function DemoPage({onBook, onApply, vp}:{onBook:()=>void;onApply:()=>void;vp:any
                 </div>
                 {/* Artist side */}
                 <div>
-                  <div style={{color:S.gold,fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.8px",marginBottom:12}}>{t('demoArtistSide')}</div>
+                  <div style={{color:C.gold,fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.8px",marginBottom:12}}>{t('demoArtistSide')}</div>
                   <div style={{...S.card}}>
                     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:14}}>
-                      {[{label:"Pending",val:songDone?"2":"1",color:"#F59E0B"},{label:"Earned",val:"€30",color:S.gold}].map(({label,val,color})=>(
-                        <div key={label} style={{background:"rgba(255,255,255,0.02)",borderRadius:8,padding:"10px",textAlign:"center"}}>
+                      {[{label:"Pending",val:songDone?"2":"1",color:"#F59E0B"},{label:"Earned",val:"€30",color:C.gold}].map(({label,val,color})=>(
+                        <div key={label} style={{background:C.surface,borderRadius:8,padding:"10px",textAlign:"center"}}>
                           <div style={{fontWeight:800,color,fontSize:"1.3rem"}}>{val}</div>
-                          <div style={{color:S.muted,fontSize:10,textTransform:"uppercase",letterSpacing:"0.5px"}}>{label}</div>
+                          <div style={{color:C.muted,fontSize:10,textTransform:"uppercase",letterSpacing:"0.5px"}}>{label}</div>
                         </div>
                       ))}
                     </div>
                     {[
-                      {song:"Leili Jan",guest:"Ahmad",amount:0,priority:"FREE",color:S.green,status:"pending"},
+                      {song:"Leili Jan",guest:"Ahmad",amount:0,priority:"FREE",color:C.emerald,status:"pending"},
                       {song:"Bya Ke Bya",guest:"Noor",amount:50,priority:"⚡ HIGH",color:"#F59E0B",status:"pending"},
-                      ...(songDone?[{song:songTitle,guest:guestName,amount:0,priority:"FREE",color:S.green,status:"new"}]:[]),
+                      ...(songDone?[{song:songTitle,guest:guestName,amount:0,priority:"FREE",color:C.emerald,status:"new"}]:[]),
                     ].map((r,i)=>(
-                      <div key={i} style={{borderLeft:`3px solid ${r.color}`,borderRadius:8,padding:"10px 12px",background:"rgba(255,255,255,0.02)",marginBottom:8}}>
+                      <div key={i} style={{borderLeft:`3px solid ${r.color}`,borderRadius:8,padding:"10px 12px",background:C.surface,marginBottom:8}}>
                         <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:6}}>
                           <div>
-                            <div style={{fontWeight:700,color:S.text,fontSize:13}}>{r.song}</div>
-                            <div style={{color:S.muted,fontSize:11}}>👤 {r.guest}</div>
+                            <div style={{fontWeight:700,color:C.text,fontSize:13}}>{r.song}</div>
+                            <div style={{color:C.muted,fontSize:11}}>👤 {r.guest}</div>
                           </div>
                           <div style={{textAlign:"right"}}>
                             <div style={{fontWeight:700,color:r.color,fontSize:12}}>{r.priority}</div>
-                            {r.amount>0&&<div style={{color:S.muted,fontSize:10}}>€{r.amount}</div>}
+                            {r.amount>0&&<div style={{color:C.muted,fontSize:10}}>€{r.amount}</div>}
                           </div>
                         </div>
                         <div style={{display:"flex",gap:6}}>
-                          <button style={{flex:1,background:"rgba(34,197,94,0.1)",color:S.green,border:"1px solid rgba(34,197,94,0.2)",borderRadius:6,padding:"5px",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>✓ Accept</button>
-                          <button style={{flex:1,background:"rgba(168,44,56,0.08)",color:S.ruby,border:"1px solid rgba(168,44,56,0.15)",borderRadius:6,padding:"5px",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>✗ Skip</button>
+                          <button style={{flex:1,background:"rgba(34,197,94,0.1)",color:C.emerald,border:"1px solid rgba(34,197,94,0.2)",borderRadius:6,padding:"5px",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>✓ Accept</button>
+                          <button style={{flex:1,background:"rgba(168,44,56,0.08)",color:C.ruby,border:"1px solid rgba(168,44,56,0.15)",borderRadius:6,padding:"5px",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>✗ Skip</button>
                         </div>
                       </div>
                     ))}
@@ -7630,9 +7648,9 @@ function DemoPage({onBook, onApply, vp}:{onBook:()=>void;onApply:()=>void;vp:any
               {/* CTA */}
               <div style={{marginTop:24,background:"linear-gradient(135deg,rgba(168,44,56,0.1),rgba(200,168,74,0.05))",border:"1px solid rgba(200,168,74,0.15)",borderRadius:16,padding:"24px",textAlign:"center"}}>
                 <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.5rem",fontWeight:700,marginBottom:8}}>{t('demoJoinTitle')}</div>
-                <div style={{color:S.muted,fontSize:14,marginBottom:20,lineHeight:1.7}}>Start receiving bookings from the Afghan diaspora across Europe.<br/>{t('demoJoinSub')}</div>
+                <div style={{color:C.muted,fontSize:14,marginBottom:20,lineHeight:1.7}}>Start receiving bookings from the Afghan diaspora across Europe.<br/>{t('demoJoinSub')}</div>
                 <button onClick={onApply}
-                  style={{background:`linear-gradient(135deg,${S.ruby},${S.ruby}cc)`,color:"#fff",border:"none",borderRadius:12,padding:"14px 36px",fontWeight:800,fontSize:15,cursor:"pointer",fontFamily:"inherit"}}>
+                  style={{background:`linear-gradient(135deg,${C.ruby},${C.ruby}cc)`,color:"#fff",border:"none",borderRadius:12,padding:"14px 36px",fontWeight:800,fontSize:15,cursor:"pointer",fontFamily:"inherit"}}>
                   Apply as Artist — It's Free →
                 </button>
               </div>
