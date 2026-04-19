@@ -4107,7 +4107,7 @@ function PrivacyPage({onClose}:{onClose:()=>void}){
         <div style={{display:"flex",gap:8,marginBottom:32}}>
           {(["privacy","terms"] as const).map(t=>(
             <button key={t} onClick={()=>setTab(t)}
-              style={{background:tab===t?"rgba(200,168,74,0.1)":"transparent",color:tab===t?"#C8A84A":"#8A7D68",border:`1px solid ${tab===t?${C.gold}+"44":${C.border}}`,borderRadius:8,padding:"7px 16px",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit",textTransform:"capitalize"}}>
+              style={{background:tab===t?C.goldS:"transparent",color:tab===t?C.gold:C.muted,border:`1px solid ${tab===t?C.gold+"44":C.border}`,borderRadius:8,padding:"7px 16px",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit",textTransform:"capitalize"}}>
               {t==="privacy"?"Privacy Policy":"Terms of Service"}
             </button>
           ))}
@@ -5406,7 +5406,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
     setSocialErr("");
     if(socialF.spotifyUrl){
       const testId=parseSpotifyArtistId(socialF.spotifyUrl);
-      if(!testId){setSocialErr("Spotify link not recognized. Please use the format: open.spotify.com/artist/... or copy from Spotify app → Share → Copy link to Artist.");return;}
+      if(!testId){setSocialErr("Spotify link not recognized. Use: open.spotify.com/artist/... or copy from Spotify app → Share → Copy link to Artist.");return;}
     }
     if(socialF.youtubeUrl&&!socialF.youtubeUrl.includes("youtube")&&!socialF.youtubeUrl.includes("youtu.be")){setSocialErr("YouTube link looks invalid.");return;}
 
@@ -5431,24 +5431,45 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
     const ttHandle=parseTikTokHandle(socialF.tiktokHandle||"");
     const newTiktok=ttHandle?{handle:ttHandle,followers:socialF.tiktokFollowers||""}:null;
 
+    // Update local state immediately
     onUpdateArtist(artist.id,{spotify:newSpotify,instagram:newInstagram,youtube:newYoutube,tiktok:newTiktok});
-    setSocialSaved(true);
-    setTimeout(()=>setSocialSaved(false),3500);
+
     if(HAS_SUPA){
       try{
         const sb=await getSupabase();
         if(sb){
-          const{error}=await sb.from("artists").update({
-            spotify_data:newSpotify,
-            instagram_data:newInstagram,
-            youtube_data:newYoutube,
-            tiktok_data:newTiktok,
-          }).eq("id",artist.id);
-          if(error) console.warn("Social save error:",error.message);
-          else console.log("✅ Social saved to Supabase");
+          // Try both column naming conventions
+          const payload: Record<string,any> = {
+            spotify_data:   newSpotify,
+            instagram_data: newInstagram,
+            youtube_data:   newYoutube,
+            tiktok_data:    newTiktok,
+            // Also try without _data suffix in case columns differ
+            spotify:        newSpotify,
+            instagram:      newInstagram,
+            youtube:        newYoutube,
+            tiktok:         newTiktok,
+            updated_at:     new Date().toISOString(),
+          };
+          const{error}=await sb.from("artists").update(payload).eq("id",artist.id);
+          if(error){
+            console.warn("Social save error:",error.message);
+            // Try minimal payload if full fails
+            const{error:e2}=await sb.from("artists").update({
+              spotify_data:newSpotify,
+              instagram_data:newInstagram,
+              youtube_data:newYoutube,
+              tiktok_data:newTiktok,
+            }).eq("id",artist.id);
+            if(e2) { setSocialErr("Save failed: "+e2.message); return; }
+          }
+          console.log("✅ Social links saved to Supabase");
         }
-      }catch(e){ console.warn("Social save failed:",e); }
+      }catch(e:any){ setSocialErr("Save error: "+e.message); return; }
     }
+    setSocialSaved(true);
+    notify("✅ Social links saved!","success");
+    setTimeout(()=>setSocialSaved(false),3500);
   };
 
   const content=(
@@ -5873,52 +5894,92 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
             </div>
           ):(
             <div style={{display:"flex",flexDirection:"column",gap:10}}>
-              {/* Pending first, then by priority */}
+              {/* Queue header */}
+              {songRequests.filter(r=>r.status==="accepted").length>0&&(
+                <div style={{background:`linear-gradient(135deg,${C.emerald}18,${C.emerald}08)`,border:`1px solid ${C.emerald}44`,borderRadius:12,padding:"12px 16px",display:"flex",alignItems:"center",gap:10}}>
+                  <span style={{fontSize:20}}>🎤</span>
+                  <div>
+                    <div style={{fontSize:T.xs,fontWeight:700,color:C.emerald,letterSpacing:"0.6px",textTransform:"uppercase"}}>Now Playing Queue</div>
+                    <div style={{fontSize:T.sm,color:C.text,marginTop:2}}>
+                      {songRequests.filter(r=>r.status==="accepted").length} song(s) accepted — sing them in order, then mark as played
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Sort: pending by tip amount, then accepted (queue), then rest */}
               {[...songRequests].sort((a,b)=>{
-                const order={pending:0,accepted:1,completed:2,rejected:3,refunded:4};
-                if(a.status!==b.status) return (order[a.status]||0)-(order[b.status]||0);
-                return (b.priority_amount||0)-(a.priority_amount||0);
-              }).map(req=>{
-                const isPending=req.status==="pending";
-                const priorityColor=req.priority_amount>=100?C.ruby:req.priority_amount>=50?C.saffron:C.emerald;
-                const priorityLabel=req.priority_amount>=100?"🔥 MUST PLAY":req.priority_amount>=50?"⚡ HIGH PRIORITY":"✓ Normal";
+                const order={accepted:0,pending:1,completed:2,rejected:3,refunded:4};
+                if(a.status!==b.status) return (order[a.status as keyof typeof order]||0)-(order[b.status as keyof typeof order]||0);
+                return (b.amount||0)-(a.amount||0); // highest tip first
+              }).map((req,idx)=>{
+                const isPending   = req.status==="pending";
+                const isAccepted  = req.status==="accepted";
+                const isCompleted = req.status==="completed";
+                const isRejected  = req.status==="rejected";
+                const isRefunded  = req.status==="refunded";
+                const isDone      = isCompleted||isRefunded;
+
+                const priorityColor = (req.amount||0)>=100?C.ruby:(req.amount||0)>=50?C.saffron:C.emerald;
+                const priorityLabel = (req.amount||0)>=100?"🔥 MUST PLAY":(req.amount||0)>=50?"⚡ HIGH PRIORITY":"✓ Normal";
+
+                // Queue position (only for accepted)
+                const queuePos = isAccepted
+                  ? [...songRequests].filter(r=>r.status==="accepted")
+                      .sort((a,b)=>(b.amount||0)-(a.amount||0))
+                      .findIndex(r=>r.id===req.id)+1
+                  : null;
+
                 return(
                   <div key={req.id} style={{
                     background:C.card,
-                    border:`1px solid ${isPending?priorityColor+"44":C.border}`,
-                    borderLeft:`4px solid ${isPending?priorityColor:C.border}`,
+                    border:`1px solid ${isAccepted?C.emerald+"55":isPending?priorityColor+"44":C.border}`,
+                    borderLeft:`4px solid ${isAccepted?C.emerald:isPending?priorityColor:isDone?C.faint:C.border}`,
                     borderRadius:12,padding:"16px",
-                    animation:isPending?"fade 0.3s ease":"none",
+                    opacity:isDone?0.6:1,
+                    transition:"opacity 0.3s",
                   }}>
                     <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:12,flexWrap:"wrap"}}>
                       <div style={{flex:1,minWidth:0}}>
-                        {/* Song + artist */}
+                        {/* Queue position badge */}
+                        {queuePos&&(
+                          <div style={{display:"inline-flex",alignItems:"center",gap:5,background:C.emeraldS,border:`1px solid ${C.emerald}44`,borderRadius:6,padding:"2px 8px",marginBottom:6,fontSize:10,fontWeight:800,color:C.emerald,textTransform:"uppercase"}}>
+                            #{queuePos} IN QUEUE {queuePos===1?"— SING NOW 🎤":""}
+                          </div>
+                        )}
                         <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text,marginBottom:2}}>
                           {req.song_title}
                         </div>
                         {req.song_artist&&(
                           <div style={{color:C.muted,fontSize:T.sm,marginBottom:6}}>by {req.song_artist}</div>
                         )}
-                        {/* Requester info */}
                         <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
                           <span style={{color:C.textD,fontSize:T.xs}}>👤 {req.guest_name||"Anonymous"}</span>
                           {req.message&&<span style={{color:C.muted,fontSize:T.xs}}>· "{req.message}"</span>}
                         </div>
                       </div>
-                      {/* Right: amount + priority */}
-                      <div style={{textAlign:"right",flexShrink:0}}>
+                      {/* Right: amount + priority + delete */}
+                      <div style={{textAlign:"right",flexShrink:0,display:"flex",flexDirection:"column",alignItems:"flex-end",gap:4}}>
                         <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:800,color:C.gold}}>€{req.amount||0}</div>
-                        <div style={{fontSize:10,fontWeight:700,color:priorityColor,marginTop:2}}>{priorityLabel}</div>
-                        <div style={{fontSize:10,color:C.muted,marginTop:1}}>You get: €{Math.round((req.amount||0)*0.88)}{(req.amount||0)>(req.priority_amount||req.amount)&&` (incl. tip)`}</div>
+                        <div style={{fontSize:10,fontWeight:700,color:priorityColor}}>{priorityLabel}</div>
+                        <div style={{fontSize:10,color:C.muted}}>You get: €{Math.round((req.amount||0)*0.88)}</div>
+                        {/* Delete button — always visible */}
+                        <button onClick={async()=>{
+                          if(!confirm(`Delete "${req.song_title}" permanently?`)) return;
+                          setSongRequests(p=>p.filter(r=>r.id!==req.id));
+                          if(HAS_SUPA){const sb=await getSupabase();if(sb)await sb.from("song_requests").delete().eq("id",req.id);}
+                        }} style={{background:"none",border:"none",color:C.faint,cursor:"pointer",fontSize:16,padding:"2px 4px",lineHeight:1}} title="Delete">
+                          🗑
+                        </button>
                       </div>
                     </div>
 
                     {/* Status badge + time */}
-                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:12}}>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:10}}>
                       <span style={{
-                        background:req.status==="pending"?C.saffronS:req.status==="accepted"||req.status==="completed"?C.emeraldS:C.rubyS,
-                        color:req.status==="pending"?C.saffron:req.status==="accepted"||req.status==="completed"?C.emerald:C.ruby,
-                        border:`1px solid ${req.status==="pending"?C.saffron+"44":req.status==="accepted"||req.status==="completed"?C.emerald+"44":C.ruby+"44"}`,
+                        background:isPending?C.saffronS:isAccepted?C.emeraldS:isCompleted?C.lapisS:C.rubyS,
+                        color:isPending?C.saffron:isAccepted?C.emerald:isCompleted?C.lapis:C.ruby,
+                        border:`1px solid ${isPending?C.saffron+"44":isAccepted?C.emerald+"44":isCompleted?C.lapis+"44":C.ruby+"44"}`,
                         borderRadius:20,fontSize:10,fontWeight:700,padding:"3px 10px",textTransform:"uppercase",letterSpacing:"0.5px",
                       }}>{req.status}</span>
                       <span style={{color:C.faint,fontSize:11}}>
@@ -5926,48 +5987,88 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
                       </span>
                     </div>
 
-                    {/* Action buttons for pending */}
+                    {/* PENDING: Accept / Decline */}
                     {isPending&&(
                       <div style={{display:"flex",gap:8,marginTop:12}}>
                         <button onClick={async()=>{
                           setSongRequests(p=>p.map(r=>r.id===req.id?{...r,status:"accepted"}:r));
-                          notify(`Accepted: "${req.song_title}"`,"success");
-                          if(HAS_SUPA){const sb=await getSupabase();if(sb)await sb.from("song_requests").update({status:"accepted"}).eq("id",req.id);}
-                        }} style={{flex:1,background:C.emerald,color:"#fff",border:"none",borderRadius:8,padding:"9px",fontWeight:700,fontSize:T.xs,cursor:"pointer",fontFamily:"inherit"}}>
-                          ✓ Accept
+                          notify(`✅ Added to queue: "${req.song_title}"`,"success");
+                          if(HAS_SUPA){const sb=await getSupabase();if(sb)await sb.from("song_requests").update({status:"accepted",accepted_at:new Date().toISOString()}).eq("id",req.id);}
+                        }} style={{flex:1,background:C.emerald,color:"#fff",border:"none",borderRadius:8,padding:"11px",fontWeight:700,fontSize:T.sm,cursor:"pointer",fontFamily:"inherit"}}>
+                          ✓ Accept & Queue
                         </button>
                         <button onClick={async()=>{
                           setSongRequests(p=>p.map(r=>r.id===req.id?{...r,status:"rejected"}:r));
+                          notify(`Declined: "${req.song_title}"`,"info");
                           if(HAS_SUPA){const sb=await getSupabase();if(sb)await sb.from("song_requests").update({status:"rejected"}).eq("id",req.id);}
-                        }} style={{flex:1,background:C.rubyS,color:C.ruby,border:`1px solid ${C.ruby}44`,borderRadius:8,padding:"9px",fontWeight:700,fontSize:T.xs,cursor:"pointer",fontFamily:"inherit"}}>
+                        }} style={{flex:1,background:C.rubyS,color:C.ruby,border:`1px solid ${C.ruby}44`,borderRadius:8,padding:"11px",fontWeight:700,fontSize:T.sm,cursor:"pointer",fontFamily:"inherit"}}>
                           ✗ Decline
                         </button>
                       </div>
                     )}
-                    {/* Mark as played */}
-                    {req.status==="accepted"&&(
+
+                    {/* ACCEPTED (in queue): Mark as Played → auto-removes */}
+                    {isAccepted&&(
                       <button onClick={async()=>{
-                        setSongRequests(p=>p.map(r=>r.id===req.id?{...r,status:"completed"}:r));
-                        notify(`"${req.song_title}" marked as played! 🎵`,"success");
-                        if(HAS_SUPA){const sb=await getSupabase();if(sb)await sb.from("song_requests").update({status:"completed"}).eq("id",req.id);}
-                      }} style={{width:"100%",marginTop:10,background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:8,padding:"9px",fontWeight:700,fontSize:T.xs,cursor:"pointer",fontFamily:"inherit"}}>
-                        🎵 Mark as Played
+                        notify(`🎵 "${req.song_title}" played! Removed from queue.`,"success");
+                        // Remove immediately from UI (auto-clean)
+                        setSongRequests(p=>p.filter(r=>r.id!==req.id));
+                        if(HAS_SUPA){
+                          const sb=await getSupabase();
+                          if(sb) await sb.from("song_requests").delete().eq("id",req.id);
+                        }
+                      }} style={{width:"100%",marginTop:10,background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:8,padding:"11px",fontWeight:800,fontSize:T.sm,cursor:"pointer",fontFamily:"inherit"}}>
+                        🎵 Played — Remove from Queue
                       </button>
                     )}
-                    {/* Refund button */}
-                    {(req.status==="rejected"||req.status==="accepted")&&(
+
+                    {/* REJECTED: Refund or Delete */}
+                    {isRejected&&(
+                      <div style={{display:"flex",gap:8,marginTop:10}}>
+                        <button onClick={async()=>{
+                          if(!confirm("Refund this payment to the guest?")) return;
+                          setSongRequests(p=>p.map(r=>r.id===req.id?{...r,status:"refunded"}:r));
+                          notify("Refund initiated — guest will receive payment back","info");
+                          if(HAS_SUPA){const sb=await getSupabase();if(sb)await sb.from("song_requests").update({status:"refunded"}).eq("id",req.id);}
+                        }} style={{flex:1,background:"transparent",color:C.muted,border:`1px solid ${C.border}`,borderRadius:8,padding:"9px",fontWeight:600,fontSize:T.xs,cursor:"pointer",fontFamily:"inherit"}}>
+                          ↩ Refund Guest
+                        </button>
+                        <button onClick={async()=>{
+                          setSongRequests(p=>p.filter(r=>r.id!==req.id));
+                          if(HAS_SUPA){const sb=await getSupabase();if(sb)await sb.from("song_requests").delete().eq("id",req.id);}
+                        }} style={{background:C.rubyS,color:C.ruby,border:`1px solid ${C.ruby}44`,borderRadius:8,padding:"9px 14px",fontWeight:600,fontSize:T.xs,cursor:"pointer",fontFamily:"inherit"}}>
+                          🗑 Delete
+                        </button>
+                      </div>
+                    )}
+
+                    {/* COMPLETED/REFUNDED: just show delete */}
+                    {isDone&&(
                       <button onClick={async()=>{
-                        if(!confirm("Refund this payment to the guest?")) return;
-                        setSongRequests(p=>p.map(r=>r.id===req.id?{...r,status:"refunded"}:r));
-                        notify("Refund initiated — guest will receive payment back","info");
-                        if(HAS_SUPA){const sb=await getSupabase();if(sb)await sb.from("song_requests").update({status:"refunded"}).eq("id",req.id);}
-                      }} style={{width:"100%",marginTop:6,background:"transparent",color:C.muted,border:`1px solid ${C.border}`,borderRadius:8,padding:"7px",fontWeight:600,fontSize:T.xs,cursor:"pointer",fontFamily:"inherit"}}>
-                        ↩ Refund Guest
+                        setSongRequests(p=>p.filter(r=>r.id!==req.id));
+                        if(HAS_SUPA){const sb=await getSupabase();if(sb)await sb.from("song_requests").delete().eq("id",req.id);}
+                      }} style={{width:"100%",marginTop:10,background:"transparent",color:C.faint,border:`1px solid ${C.border}`,borderRadius:8,padding:"7px",fontWeight:600,fontSize:T.xs,cursor:"pointer",fontFamily:"inherit"}}>
+                        🗑 Remove
                       </button>
                     )}
                   </div>
                 );
               })}
+
+              {/* Clear completed button at bottom */}
+              {songRequests.some(r=>["completed","rejected","refunded"].includes(r.status))&&(
+                <button onClick={async()=>{
+                  const toDelete = songRequests.filter(r=>["completed","rejected","refunded"].includes(r.status));
+                  setSongRequests(p=>p.filter(r=>!["completed","rejected","refunded"].includes(r.status)));
+                  if(HAS_SUPA){
+                    const sb=await getSupabase();
+                    if(sb) for(const r of toDelete) await sb.from("song_requests").delete().eq("id",r.id);
+                  }
+                  notify("Cleared completed requests ✅","success");
+                }} style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:10,padding:"10px",color:C.muted,fontWeight:600,fontSize:T.xs,cursor:"pointer",fontFamily:"inherit",width:"100%"}}>
+                  🧹 Clear All Completed / Rejected / Refunded
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -6476,25 +6577,33 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
     });
     return ()=>{ if(channel) channel.unsubscribe(); };
   },[artist.id]);
-  // Poll for new song requests every 30s
+  // ── Poll every 3s as backup to realtime subscription ────────────────
   React.useEffect(()=>{
     if(!HAS_SUPA) return;
     const poll=setInterval(async()=>{
       const sb=await getSupabase();
       if(!sb) return;
       const {data}=await sb.from("song_requests")
-        .select("*").eq("artist_id",artist.id).eq("status","pending");
+        .select("*").eq("artist_id",artist.id)
+        .in("status",["pending","accepted"])
+        .order("created_at",{ascending:false});
       if(data){
         const cur=songRequests.filter(r=>r.status==="pending").length;
-        if(data.length > cur){
-          notify(`${data.length-cur} new song request(s)!`,"message");
+        const incoming=data.filter(r=>r.status==="pending").length;
+        if(incoming > cur){
+          notify(`🎵 ${incoming-cur} new song request(s)!`,"message");
           sendBrowserNotif("New Song Request — Awaz","Check your Requests tab!");
-          setSongRequests(p=>[...p.filter(r=>r.status!=="pending"),...data]);
         }
+        // Merge: keep local state for statuses not in poll (completed/etc)
+        setSongRequests(prev=>{
+          const polledIds=new Set(data.map((r:any)=>r.id));
+          const kept=prev.filter(r=>!polledIds.has(r.id));
+          return [...data,...kept];
+        });
       }
-    },30000);
+    },3000);
     return ()=>clearInterval(poll);
-  },[artist.id, songRequests.length]);
+  },[artist.id]);
   // Load messages from chat_messages table when Messages tab opens
   React.useEffect(()=>{
     if(tab !== "messages" || !HAS_SUPA) return;
