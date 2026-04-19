@@ -4087,7 +4087,7 @@ function CookieBanner({onAccept,onDecline}:{onAccept:()=>void;onDecline:()=>void
           <button onClick={onDecline} style={{background:"transparent",color:"#8A7D68",border:`1px solid ${C.border}`,borderRadius:8,padding:"8px 16px",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>
             Essential only
           </button>
-          <button onClick={onAccept} style={{background:"linear-gradient(135deg,#C8A84A,${C.saffron})",color:C.bg,border:"none",borderRadius:8,padding:"8px 20px",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>
+          <button onClick={onAccept} style={{background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:8,padding:"8px 20px",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>
             Accept
           </button>
         </div>
@@ -5292,7 +5292,7 @@ function SupportWidget({artistId}:{artistId:string}){
           setSent(true); // Still show success to user
         }
       }} disabled={!msg.trim()}
-        style={{width:"100%",background:msg.trim()?"linear-gradient(135deg,#C8A84A,${C.saffron})":"#141220",color:msg.trim()?C.bg:"#8A7D68",border:`1px solid ${msg.trim()?"#C8A84A":"#201D2E"}`,borderRadius:10,padding:"11px",fontWeight:700,fontSize:14,cursor:msg.trim()?"pointer":"not-allowed",fontFamily:"inherit"}}>
+        style={{width:"100%",background:msg.trim()?`linear-gradient(135deg,${C.gold},${C.saffron})`:"#141220",color:msg.trim()?C.bg:"#8A7D68",border:`1px solid ${msg.trim()?"#C8A84A":"#201D2E"}`,borderRadius:10,padding:"11px",fontWeight:700,fontSize:14,cursor:msg.trim()?"pointer":"not-allowed",fontFamily:"inherit"}}>
         Send to Awaz Support →
       </button>
     </div>
@@ -6899,7 +6899,7 @@ function SongRequestModal({artist, bookingId, onClose}:{artist:any;bookingId?:st
             </div>
             {err&&<div style={{color:"#EF4444",fontSize:13,marginBottom:12,padding:"10px 14px",background:"rgba(239,68,68,0.08)",borderRadius:8}}>{err}</div>}
             <button onClick={submit} disabled={loading}
-              style={{width:"100%",background:loading?"#201D2E":"linear-gradient(135deg,#C8A84A,${C.saffron})",color:C.bg,border:"none",borderRadius:14,padding:"16px",fontWeight:800,fontSize:16,cursor:loading?"not-allowed":"pointer",fontFamily:"inherit"}}>
+              style={{width:"100%",background:loading?"#201D2E":`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:14,padding:"16px",fontWeight:800,fontSize:16,cursor:loading?"not-allowed":"pointer",fontFamily:"inherit"}}>
               {loading?"Sending…":tier.amount===0?"Send Request (Free) →":`Send Request · €${tier.amount}`}
             </button>
             <div style={{color:"#8A7D68",fontSize:11,textAlign:"center",marginTop:8}}>88% goes to {artist.name}</div>
@@ -6936,7 +6936,7 @@ function SongRequestModal({artist, bookingId, onClose}:{artist:any;bookingId?:st
               if(!f.song_title.trim()){setErr("Song title is required");return;}
               if(!f.guest_name.trim()){setErr("Your name is required");return;}
               setErr("");setStep("priority");
-            }} style={{width:"100%",background:"linear-gradient(135deg,#C8A84A,${C.saffron})",color:C.bg,border:"none",borderRadius:14,padding:"16px",fontWeight:800,fontSize:16,cursor:"pointer",fontFamily:"inherit"}}>
+            }} style={{width:"100%",background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:14,padding:"16px",fontWeight:800,fontSize:16,cursor:"pointer",fontFamily:"inherit"}}>
               Choose Priority → 
             </button>
             <div style={{color:"#8A7D68",fontSize:11,textAlign:"center",marginTop:8}}>From €30 · 88% goes to artist</div>
@@ -7131,7 +7131,7 @@ function SongRequestPage({artistId, artists, onBack}:{artistId:string;artists:an
               if(customTip) setTip(parseInt(customTip)||0);
               submit();
             }} disabled={loading}
-              style={{width:"100%",background:loading?"#1A1728":"linear-gradient(135deg,#C8A84A,${C.saffron})",color:C.bg,border:"none",borderRadius:14,padding:"18px",fontWeight:800,fontSize:16,cursor:loading?"not-allowed":"pointer",fontFamily:"inherit"}}>
+              style={{width:"100%",background:loading?"#1A1728":`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:14,padding:"18px",fontWeight:800,fontSize:16,cursor:loading?"not-allowed":"pointer",fontFamily:"inherit"}}>
               {loading?"Sending…":currentBase===0&&!tip&&!customTip?"Send Free Request →":`Send · €${currentBase+(parseInt(customTip||"0")||tip)}`}
             </button>
             <div style={{color:"#4A4054",fontSize:11,textAlign:"center",marginTop:10}}>
@@ -7172,7 +7172,7 @@ function SongRequestPage({artistId, artists, onBack}:{artistId:string;artists:an
               if(!f.song_title.trim()){setErr("Song title is required");return;}
               if(!f.guest_name.trim()){setErr("Your name is required");return;}
               setErr("");setStep("tip");
-            }} style={{width:"100%",background:"linear-gradient(135deg,#C8A84A,${C.saffron})",color:C.bg,border:"none",borderRadius:14,padding:"18px",fontWeight:800,fontSize:16,cursor:"pointer",fontFamily:"inherit"}}>
+            }} style={{width:"100%",background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:14,padding:"18px",fontWeight:800,fontSize:16,cursor:"pointer",fontFamily:"inherit"}}>
               {currentBase===0?"Continue — Free ✓ →":"Continue →"}
             </button>
             <div style={{color:"#4A4054",fontSize:12,textAlign:"center",marginTop:12}}>
@@ -8819,25 +8819,36 @@ function AppInner() {
   const handleUpdateArtist=async(id,updates)=>{
     setArtists(p=>p.map(a=>a.id===id?{...a,...updates}:a));
     if(selArtist?.id===id) setSelArtist(p=>p?{...p,...updates}:p);
-    // Persist specific fields to Supabase immediately (photo, boost, stripe, etc.)
-    const persistKeys=['photo','emoji','color','is_boosted','boosted_until','stripe_connected','stripe_account',
-      'verified','superhost','available','blocked','status','name','name_dari'];
+    if(!HAS_SUPA) return;
     const dbUpdates:any={};
-    if(updates.photo!==undefined)       dbUpdates.photo           = updates.photo;
-    if(updates.emoji!==undefined)       dbUpdates.emoji           = updates.emoji;
-    if(updates.isBoosted!==undefined)   dbUpdates.is_boosted      = updates.isBoosted;
-    if(updates.boostedUntil!==undefined)dbUpdates.boosted_until   = updates.boostedUntil;
-    if(updates.isHidden!==undefined)       dbUpdates.is_hidden        =updates.isHidden;
-    if(updates.stripeConnected!==undefined)dbUpdates.stripe_connected=updates.stripeConnected;
-    if(updates.stripeAccount!==undefined)  dbUpdates.stripe_account  =updates.stripeAccount;
-    if(updates.available!==undefined)   dbUpdates.available       = updates.available;
-    if(updates.blocked!==undefined)     dbUpdates.blocked         = updates.blocked;
-    if(updates.countryPricing!==undefined)dbUpdates.country_pricing=updates.countryPricing;
-    if(Object.keys(dbUpdates).length>0 && HAS_SUPA){
+    if(updates.photo!==undefined)          dbUpdates.photo            = updates.photo;
+    if(updates.emoji!==undefined)          dbUpdates.emoji            = updates.emoji;
+    if(updates.color!==undefined)          dbUpdates.color            = updates.color;
+    if(updates.isBoosted!==undefined)      dbUpdates.is_boosted       = updates.isBoosted;
+    if(updates.boostedUntil!==undefined)   dbUpdates.boosted_until    = updates.boostedUntil;
+    if(updates.isHidden!==undefined)       dbUpdates.is_hidden        = updates.isHidden;
+    if(updates.stripeConnected!==undefined)dbUpdates.stripe_connected = updates.stripeConnected;
+    if(updates.stripeAccount!==undefined)  dbUpdates.stripe_account   = updates.stripeAccount;
+    if(updates.available!==undefined)      dbUpdates.available        = updates.available;
+    if(updates.blocked!==undefined)        dbUpdates.blocked          = updates.blocked;
+    if(updates.countryPricing!==undefined) dbUpdates.country_pricing  = updates.countryPricing;
+    if(updates.bio!==undefined)            dbUpdates.bio              = updates.bio;
+    if(updates.priceInfo!==undefined)      dbUpdates.price_info       = updates.priceInfo;
+    if(updates.deposit!==undefined)        dbUpdates.deposit          = updates.deposit;
+    if(updates.currency!==undefined)       dbUpdates.currency         = updates.currency;
+    if(updates.cancellationPolicy!==undefined) dbUpdates.cancellation_policy = updates.cancellationPolicy;
+    // ── Social media — critical: must persist after logout ──
+    if(updates.spotify!==undefined)        dbUpdates.spotify_data     = updates.spotify;
+    if(updates.instagram!==undefined)      dbUpdates.instagram_data   = updates.instagram;
+    if(updates.youtube!==undefined)        dbUpdates.youtube_data     = updates.youtube;
+    if(updates.tiktok!==undefined)         dbUpdates.tiktok_data      = updates.tiktok;
+    if(Object.keys(dbUpdates).length>0){
       const sb=await getSupabase();
-      if(sb) sb.from("artists").update(dbUpdates).eq("id",id).then(({error})=>{
+      if(sb){
+        const{error}=await sb.from("artists").update({...dbUpdates,updated_at:new Date().toISOString()}).eq("id",id);
         if(error) console.warn("Artist update failed:",error.message);
-      });
+        else console.log("✅ Artist updated in DB:",Object.keys(dbUpdates).join(", "));
+      }
     }
   };
   const handleNewBooking=async b=>{
@@ -9667,7 +9678,11 @@ function AppInner() {
               ))}
             </div>
             <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:vp.isMobile?16:22}}>
-              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.gold,marginBottom:14,textAlign:"center"}}>{t('depositSplit')}</div>
+              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.gold,marginBottom:6,textAlign:"center"}}>{t('depositSplit')}</div>
+              {/* Tagline */}
+              <div style={{textAlign:"center",color:C.muted,fontSize:T.sm,marginBottom:16,lineHeight:1.6}}>
+                You keep the majority of your earnings. We only take a small platform fee from the deposit.
+              </div>
               <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10}}>
                 {[["Artist deposit","Set by artist\nmin €500",C.gold],["You receive","88% direct\nto Stripe",C.emerald],["Awaz fee","12% platform\noperations",C.lapis]].map(([l,v,c])=>(
                   <div key={l} style={{background:C.surface,borderRadius:8,padding:"12px",border:`1px solid ${C.border}`,borderTop:`3px solid ${c}38`,textAlign:"center"}}>
@@ -9676,9 +9691,85 @@ function AppInner() {
                   </div>
                 ))}
               </div>
+              {/* Example calculation */}
+              <div style={{marginTop:14,background:C.surface,borderRadius:8,padding:"12px 14px",border:`1px solid ${C.emerald}22`,display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
+                <span style={{fontSize:16}}>💡</span>
+                <span style={{color:C.muted,fontSize:T.xs,lineHeight:1.6}}>
+                  Example: For a <strong style={{color:C.text}}>€1,000</strong> deposit, you receive <strong style={{color:C.emerald}}>€880</strong> automatically to your Stripe account. Awaz keeps <strong style={{color:C.lapis}}>€120</strong>.
+                </span>
+              </div>
             </div>
           </div>
         </div>
+      )}
+
+      {/* ── FOOTER (desktop + tablet, public pages only) ── */}
+      {!vp.isMobile&&["home","browse","how","pricing"].includes(view)&&(
+        <footer style={{borderTop:`1px solid ${C.border}`,background:C.surface,marginTop:60,paddingBottom:40}}>
+          <div style={{maxWidth:1200,margin:"0 auto",padding:"40px 48px 0"}}>
+            <div style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr",gap:40,marginBottom:32}}>
+              {/* Brand */}
+              <div>
+                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:22,fontWeight:700,color:C.text,marginBottom:4,display:"flex",alignItems:"center",gap:8}}>
+                  <span style={{fontFamily:"'Noto Naskh Arabic',serif",color:C.gold}}>آواز</span> Awaz
+                </div>
+                <div style={{color:C.muted,fontSize:T.sm,lineHeight:1.8,maxWidth:280,marginBottom:16}}>
+                  The premier booking platform for Afghan artists performing across Europe. Transparent pricing, instant payments, real culture.
+                </div>
+                <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
+                  {[["🔒","Stripe Secure"],["✓","Verified Artists"],["🇪🇺","Europe-wide"]].map(([i,l])=>(
+                    <span key={l} style={{fontSize:T.xs,color:C.muted,display:"flex",alignItems:"center",gap:4}}>
+                      <span style={{color:C.gold}}>{i}</span>{l}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              {/* Platform */}
+              <div>
+                <div style={{fontSize:T.xs,fontWeight:700,color:C.text,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:14}}>Platform</div>
+                {[["Browse Artists",()=>nav("browse")],["How It Works",()=>nav("how")],["Pricing",()=>nav("pricing")],["Artist Demo",()=>nav("demo")],["Apply as Artist",()=>setShowApply(true)]].map(([l,fn])=>(
+                  <button key={l as string} onClick={fn as ()=>void} style={{display:"block",background:"none",border:"none",color:C.muted,fontSize:T.sm,cursor:"pointer",fontFamily:"inherit",padding:"4px 0",textAlign:"left",lineHeight:1.7}}>
+                    {l}
+                  </button>
+                ))}
+              </div>
+              {/* For Artists */}
+              <div>
+                <div style={{fontSize:T.xs,fontWeight:700,color:C.text,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:14}}>For Artists</div>
+                {[["Sign In",()=>setShowLogin(true)],["Apply Now",()=>setShowApply(true)],["Pricing & Fees",()=>nav("pricing")],["How Payments Work",()=>nav("how")]].map(([l,fn])=>(
+                  <button key={l as string} onClick={fn as ()=>void} style={{display:"block",background:"none",border:"none",color:C.muted,fontSize:T.sm,cursor:"pointer",fontFamily:"inherit",padding:"4px 0",textAlign:"left",lineHeight:1.7}}>
+                    {l}
+                  </button>
+                ))}
+              </div>
+              {/* Legal & Contact */}
+              <div>
+                <div style={{fontSize:T.xs,fontWeight:700,color:C.text,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:14}}>Legal</div>
+                {[["Privacy Policy",()=>setShowPrivacy(true)],["Terms of Service",()=>setShowPrivacy(true)],["Cookie Policy",()=>setShowPrivacy(true)]].map(([l,fn])=>(
+                  <button key={l as string} onClick={fn as ()=>void} style={{display:"block",background:"none",border:"none",color:C.muted,fontSize:T.sm,cursor:"pointer",fontFamily:"inherit",padding:"4px 0",textAlign:"left",lineHeight:1.7}}>
+                    {l}
+                  </button>
+                ))}
+                <div style={{marginTop:16}}>
+                  <div style={{fontSize:T.xs,fontWeight:700,color:C.text,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:10}}>Contact</div>
+                  <a href="mailto:hei@awaz.no" style={{color:C.muted,fontSize:T.sm,textDecoration:"none",display:"block",lineHeight:1.7}}>hei@awaz.no</a>
+                  <div style={{color:C.muted,fontSize:T.xs,marginTop:4}}>Norway · Europe</div>
+                </div>
+              </div>
+            </div>
+            <div style={{borderTop:`1px solid ${C.border}`,paddingTop:20,display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:12}}>
+              <div style={{color:C.faint,fontSize:T.xs}}>© {new Date().getFullYear()} Awaz AS · All rights reserved · Norway</div>
+              <div style={{display:"flex",gap:6,alignItems:"center"}}>
+                <span style={{color:C.faint,fontSize:T.xs}}>Powered by</span>
+                <span style={{fontSize:T.xs,fontWeight:700,color:C.muted}}>Stripe</span>
+                <span style={{color:C.border,fontSize:T.xs}}>·</span>
+                <span style={{fontSize:T.xs,fontWeight:700,color:C.muted}}>Supabase</span>
+                <span style={{color:C.border,fontSize:T.xs}}>·</span>
+                <span style={{fontSize:T.xs,fontWeight:700,color:C.muted}}>Vercel</span>
+              </div>
+            </div>
+          </div>
+        </footer>
       )}
 
       {/* ── Mobile Bottom Nav (public pages) ── */}
