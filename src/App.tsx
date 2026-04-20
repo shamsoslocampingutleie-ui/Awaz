@@ -9307,19 +9307,19 @@ function AppInner() {
             {vp.isDesktop?(
               <div style={{display:"grid",gridTemplateColumns:"1fr 320px",gap:28,alignItems:"start",marginTop:8}}>
                 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
-                  {approved.slice(0,4).map(a=><ArtistCard key={a.id} artist={a} onClick={art=>{setSelArtist(art);setView("profile");}}/>)}
+                  {displaySource.slice(0,4).map(a=><ArtistCard key={a.id} artist={a} onClick={art=>{setSelArtist(art);setView("profile");}}/>)}
                 </div>
                 <div style={{position:"sticky",top:80}}>
-                  <AIWidget artists={artists} onPick={art=>{setSelArtist(art);nav("profile");}}/>
+                  <AIWidget artists={displaySource} onPick={art=>{setSelArtist(art);nav("profile");}}/>
                 </div>
               </div>
             ):vp.isTablet?(
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginTop:8}}>
-                {approved.slice(0,4).map(a=><ArtistCard key={a.id} artist={a} onClick={art=>{setSelArtist(art);nav("profile");}}/>)}
+                {displaySource.slice(0,4).map(a=><ArtistCard key={a.id} artist={a} onClick={art=>{setSelArtist(art);nav("profile");}}/>)}
               </div>
             ):(
               <div style={{display:"flex",flexDirection:"column",gap:10,marginTop:8}}>
-                {approved.slice(0,4).map(a=><ArtistCard key={a.id} artist={a} onClick={art=>{setSelArtist(art);nav("profile");}} compact/>)}
+                {displaySource.slice(0,4).map(a=><ArtistCard key={a.id} artist={a} onClick={art=>{setSelArtist(art);nav("profile");}} compact/>)}
               </div>
             )}
           </section>
@@ -9413,7 +9413,7 @@ function AppInner() {
             ):vp.isMobile?(
               <div style={{display:"flex",flexDirection:"column",gap:10}}>
                 {/* Featured on mobile */}
-                {approved.filter(a=>a.isBoosted).map(a=>(
+                {displaySource.filter(a=>a.isBoosted).map(a=>(
                   <div key={a.id+"boost"} onClick={()=>{setSelArtist(a);nav("profile");}} style={{position:"relative",cursor:"pointer",borderRadius:12,overflow:"hidden",border:`2px solid ${C.gold}55`}}>
                     <div style={{position:"absolute",top:8,right:8,zIndex:2,background:`linear-gradient(135deg,${C.gold},${C.saffron})`,borderRadius:12,padding:"2px 8px",fontSize:9,fontWeight:800,color:C.bg}}>⭐ FEATURED</div>
                     <ArtistCard artist={a} onClick={art=>{setSelArtist(art);nav("profile");}} compact/>
@@ -9424,7 +9424,7 @@ function AppInner() {
             ):(
               <div>
                 {/* Featured row on desktop */}
-                {approved.filter(a=>a.isBoosted).length>0&&(
+                {displaySource.filter(a=>a.isBoosted).length>0&&(
                   <div style={{marginBottom:24}}>
                     <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}>
                       <div style={{height:1,flex:1,background:`linear-gradient(90deg,${C.gold}33,transparent)`}}/>
@@ -9432,7 +9432,7 @@ function AppInner() {
                       <div style={{height:1,flex:1,background:`linear-gradient(270deg,${C.gold}33,transparent)`}}/>
                     </div>
                     <div style={{display:"grid",gridTemplateColumns:`repeat(${vp.isTablet?2:3},1fr)`,gap:16}}>
-                      {approved.filter(a=>a.isBoosted).map(a=>(
+                      {displaySource.filter(a=>a.isBoosted).map(a=>(
                         <div key={a.id+"feat"} onClick={()=>{setSelArtist(a);nav("profile");}} style={{position:"relative",cursor:"pointer",borderRadius:14,overflow:"hidden",border:`2px solid ${C.gold}55`,boxShadow:`0 0 20px ${C.gold}18`}}>
                           <div style={{position:"absolute",top:10,right:10,zIndex:2,background:`linear-gradient(135deg,${C.gold},${C.saffron})`,borderRadius:20,padding:"3px 10px",fontSize:10,fontWeight:800,color:C.bg,letterSpacing:"0.5px"}}>⭐ FEATURED</div>
                           <ArtistCard artist={a} onClick={art=>{setSelArtist(art);nav("profile");}}/>
