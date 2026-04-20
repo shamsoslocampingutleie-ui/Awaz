@@ -5485,6 +5485,37 @@ function SupportWidget({artistId}:{artistId:string}){
 }
 
 // ── Artist Portal ──────────────────────────────────────────────────────
+// ── BoostButton — extracted from IIFE to fix React Hook rules violation (Error #311) ──
+function BoostButton({ artist, onUpdateArtist, notify }) {
+  const [showBoostPay, setShowBoostPay] = React.useState(false);
+  return (
+    <>
+      <button onClick={()=>setShowBoostPay(true)}
+        style={{background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:10,padding:"12px 24px",fontWeight:800,fontSize:T.sm,cursor:"pointer",fontFamily:"inherit",width:"100%"}}>
+        ⭐ Boost My Profile — €50
+      </button>
+      <div style={{color:C.faint,fontSize:11,marginTop:5,textAlign:"center"}}>One-time payment · 6 months featured at top of browse</div>
+      {showBoostPay&&(
+        <StripePaywall
+          amount={50}
+          emoji="⭐"
+          label="Boost Your Profile"
+          description="Featured at top of browse page for 6 months. Highlighted with gold border."
+          metadata={{artistName:artist.name,bookingId:`boost_${artist.id}_${Date.now()}`}}
+          onSuccess={async(piId)=>{
+            const boostUntil=new Date(Date.now()+180*24*60*60*1000).toISOString();
+            onUpdateArtist(artist.id,{isBoosted:true,boostedUntil:boostUntil});
+            if(HAS_SUPA){const sb=await getSupabase();if(sb)await sb.from("artists").update({is_boosted:true,boosted_until:boostUntil,boost_payment_id:piId}).eq("id",artist.id);}
+            notify("⭐ Profile boosted for 6 months! You're now featured.","success");
+            setShowBoostPay(false);
+          }}
+          onClose={()=>setShowBoostPay(false)}
+        />
+      )}
+    </>
+  );
+}
+
 function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, onMsg, onUpdateArtist }) {
   const vp=useViewport();
   const {show:notify}=useNotif();
@@ -6086,33 +6117,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
                     <div style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
                       <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.8rem",fontWeight:800,color:C.gold}}>€50</div>
                       <div style={{flex:1}}>
-                        {(()=>{
-                          const [showBoostPay,setShowBoostPay]=React.useState(false);
-                          return(<>
-                            <button onClick={()=>setShowBoostPay(true)}
-                              style={{background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:10,padding:"12px 24px",fontWeight:800,fontSize:T.sm,cursor:"pointer",fontFamily:"inherit",width:"100%"}}>
-                              ⭐ Boost My Profile — €50
-                            </button>
-                            <div style={{color:C.faint,fontSize:11,marginTop:5,textAlign:"center"}}>One-time payment · 6 months featured at top of browse</div>
-                            {showBoostPay&&(
-                              <StripePaywall
-                                amount={50}
-                                emoji="⭐"
-                                label="Boost Your Profile"
-                                description="Featured at top of browse page for 6 months. Highlighted with gold border."
-                                metadata={{artistName:artist.name,bookingId:`boost_${artist.id}_${Date.now()}`}}
-                                onSuccess={async(piId)=>{
-                                  const boostUntil=new Date(Date.now()+180*24*60*60*1000).toISOString();
-                                  onUpdateArtist(artist.id,{isBoosted:true,boostedUntil:boostUntil});
-                                  if(HAS_SUPA){const sb=await getSupabase();if(sb)await sb.from("artists").update({is_boosted:true,boosted_until:boostUntil,boost_payment_id:piId}).eq("id",artist.id);}
-                                  notify("⭐ Profile boosted for 6 months! You're now featured.","success");
-                                  setShowBoostPay(false);
-                                }}
-                                onClose={()=>setShowBoostPay(false)}
-                              />
-                            )}
-                          </>);
-                        })()}
+                        <BoostButton artist={artist} onUpdateArtist={onUpdateArtist} notify={notify}/>
                       </div>
                     </div>
                   </div>
@@ -8963,6 +8968,23 @@ function AppInner() {
                       return prev.map(x=>x.id===aRow.id?{...x,...mapped}:x);
                     return[...prev,mapped];
                   });
+                  // Also load from artist_social table — this is the source of truth for social after logout/login
+                  try{
+                    const{data:social}=await sb.from("artist_social").select("*").eq("artist_id",artistId).single();
+                    if(social){
+                      const sp=social.spotify_data?(typeof social.spotify_data==="string"?JSON.parse(social.spotify_data):social.spotify_data):null;
+                      const ig=social.instagram_data?(typeof social.instagram_data==="string"?JSON.parse(social.instagram_data):social.instagram_data):null;
+                      const yt=social.youtube_data?(typeof social.youtube_data==="string"?JSON.parse(social.youtube_data):social.youtube_data):null;
+                      const tt=social.tiktok_data?(typeof social.tiktok_data==="string"?JSON.parse(social.tiktok_data):social.tiktok_data):null;
+                      setArtists(prev=>prev.map(x=>x.id===artistId?{
+                        ...x,
+                        spotify:   sp||x.spotify,
+                        instagram: ig||x.instagram,
+                        youtube:   yt||x.youtube,
+                        tiktok:    tt||x.tiktok,
+                      }:x));
+                    }
+                  }catch{/* artist_social table may not exist yet */}
                 }
               }catch(e2){console.warn("Artist profile fetch:",e2);}
             }
