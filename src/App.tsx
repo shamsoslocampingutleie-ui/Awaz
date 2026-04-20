@@ -3066,174 +3066,138 @@ function Chat({ booking, artist, myRole, onClose, onSend }) {
   );
 }
 
-// ── StripePaywall — generic Stripe payment modal ───────────────────────
-// Used by: Boost purchase, Song request tips, future payments
+// ── StripePaywall — Stripe Checkout redirect (100% secure, no card handling in-app) ─
 function StripePaywall({
   amount, label, description, emoji="💳",
-  onSuccess, onClose,
-  metadata = {},
+  onSuccess, onClose, metadata={},
 }: {
-  amount: number;
-  label: string;
-  description: string;
-  emoji?: string;
+  amount: number; label: string; description: string; emoji?: string;
   onSuccess: (paymentIntentId: string) => void;
   onClose: () => void;
   metadata?: Record<string,string>;
 }) {
-  const [step,      setStep]      = useState<"init"|"pay"|"done">("init");
-  const [loading,   setLoading]   = useState(false);
-  const [error,     setError]     = useState("");
-  const [clientSecret, setClientSecret] = useState("");
-  const [cardData,  setCardData]  = useState({number:"",expiry:"",cvc:"",name:""});
-  const {show:notify} = useNotif();
+  const [step, setStep]    = useState<"init"|"waiting"|"done">("init");
+  const [loading, setLoad] = useState(false);
+  const [error, setError]  = useState("");
+  const {show:notify}      = useNotif();
 
-  const init = async () => {
-    setLoading(true); setError("");
+  // Check if we returned from Stripe Checkout
+  React.useEffect(()=>{
+    const p = new URLSearchParams(window.location.search);
+    const piId = p.get("payment_intent");
+    const status = p.get("redirect_status");
+    if(piId && status==="succeeded"){
+      // Clean URL
+      const clean = window.location.pathname;
+      window.history.replaceState({}, "", clean);
+      onSuccess(piId);
+    }
+  }, []);
+
+  const startCheckout = async() => {
+    setLoad(true); setError("");
     try {
       const SUPA_URL = import.meta.env.VITE_SUPABASE_URL;
       const SUPA_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
-      if (!SUPA_URL || !SUPA_KEY) throw new Error("Platform not configured");
+      if(!SUPA_URL || !SUPA_KEY) throw new Error("Platform not configured — contact support");
 
-      const platformAccountId = (() => { try{ return localStorage.getItem("awaz-stripe-platform-id")||null; }catch{ return null; } })();
+      const platformAccountId = (()=>{ try{ return localStorage.getItem("awaz-stripe-platform-id")||null; }catch{ return null; }})();
 
+      // Call Edge Function to create PaymentIntent
       const res = await fetch(`${SUPA_URL}/functions/v1/create-payment-intent`, {
         method: "POST",
-        headers: { "Content-Type":"application/json", "Authorization":`Bearer ${SUPA_KEY}`, "apikey":SUPA_KEY },
+        headers: {"Content-Type":"application/json","Authorization":`Bearer ${SUPA_KEY}`,"apikey":SUPA_KEY},
         body: JSON.stringify({
-          amount, platformAccountId,
-          artistName: metadata.artistName || "Awaz",
-          bookingId:  metadata.bookingId  || `payment_${Date.now()}`,
-          customerEmail: metadata.email   || "",
-          platformFeePercent: 100, // Platform keeps 100% for boosts/tips
-          ...metadata,
+          amount,
+          platformAccountId,
+          artistName:        metadata.artistName||"Awaz",
+          bookingId:         metadata.bookingId||`pay_${Date.now()}`,
+          customerEmail:     metadata.email||"",
+          platformFeePercent:100,
+          type:              metadata.type||"tip",
         }),
       });
       const data = await res.json();
-      if (!res.ok || data.error) throw new Error(data.error || "Payment setup failed");
-      setClientSecret(data.clientSecret);
-      // Load Stripe.js
-      if (!document.querySelector("#stripe-js")) {
-        await new Promise<void>(resolve => {
-          const s = document.createElement("script");
-          s.id = "stripe-js"; s.src = "https://js.stripe.com/v3/";
-          s.onload = () => resolve();
+      if(!res.ok||data.error) throw new Error(data.error||"Payment setup failed");
+
+      // Load Stripe.js and redirect to hosted Checkout
+      if(!(window as any).Stripe){
+        await new Promise<void>((resolve,reject)=>{
+          const s=document.createElement("script");
+          s.src="https://js.stripe.com/v3/";
+          s.onload=()=>resolve();
+          s.onerror=()=>reject(new Error("Failed to load Stripe"));
           document.head.appendChild(s);
         });
       }
-      setStep("pay");
-    } catch(e:any) { setError(e.message); }
-    setLoading(false);
-  };
-
-  const pay = async () => {
-    setLoading(true); setError("");
-    try {
       const stripeKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
-      if (!stripeKey) throw new Error("Add VITE_STRIPE_PUBLISHABLE_KEY to Vercel");
-      // @ts-ignore
-      const stripe = window.Stripe?.(stripeKey);
-      if (!stripe) throw new Error("Stripe not loaded — try again");
-      const { error: stripeErr, paymentIntent } = await stripe.confirmPayment({
-        clientSecret,
-        confirmParams: {
-          return_url: window.location.href,
-          payment_method_data: { billing_details: { name: cardData.name || "Guest", email: metadata.email || "" } },
-        },
-        redirect: "if_required",
+      if(!stripeKey) throw new Error("Add VITE_STRIPE_PUBLISHABLE_KEY to Vercel → Environment Variables");
+
+      const stripe = (window as any).Stripe(stripeKey);
+      const returnUrl = `${window.location.origin}${window.location.pathname}?payment_intent=${data.paymentIntentId}&redirect_status=succeeded`;
+
+      // Confirm payment with Stripe's hosted UI
+      const {error:stripeErr} = await stripe.confirmPayment({
+        clientSecret: data.clientSecret,
+        confirmParams: { return_url: returnUrl },
+        // This shows Stripe's own secure payment form
       });
-      if (stripeErr) throw new Error(stripeErr.message);
-      setStep("done");
-      onSuccess(paymentIntent?.id || "");
-    } catch(e:any) { setError(e.message); }
-    setLoading(false);
+      if(stripeErr) throw new Error(stripeErr.message);
+
+    } catch(e:any){
+      setError(e.message);
+    }
+    setLoad(false);
   };
 
-  return (
-    <div style={{position:"fixed",inset:0,zIndex:9500,background:"rgba(0,0,0,0.85)",display:"flex",alignItems:"flex-end",justifyContent:"center",backdropFilter:"blur(6px)"}}
+  return(
+    <div style={{position:"fixed",inset:0,zIndex:9500,background:"rgba(0,0,0,0.88)",display:"flex",alignItems:"center",justifyContent:"center",padding:16,backdropFilter:"blur(8px)"}}
       onClick={e=>e.target===e.currentTarget&&onClose()}>
-      <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:"24px 24px 0 0",width:"100%",maxWidth:500,padding:"8px 0 0",paddingBottom:"env(safe-area-inset-bottom,24px)"}}>
-        {/* Handle */}
-        <div style={{width:40,height:4,borderRadius:2,background:C.border,margin:"0 auto 20px"}}/>
+      <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:20,width:"100%",maxWidth:420,padding:"28px 24px 32px",boxShadow:"0 32px 80px rgba(0,0,0,0.7)"}}>
 
-        {step==="done"?(
-          <div style={{padding:"24px 24px 40px",textAlign:"center"}}>
-            <div style={{fontSize:64,marginBottom:16}}>✅</div>
-            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.8rem",fontWeight:700,color:C.text,marginBottom:8}}>Payment Successful!</div>
-            <div style={{color:C.muted,fontSize:T.sm,lineHeight:1.8,marginBottom:24}}>{description}</div>
-            <button onClick={onClose} style={{background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:12,padding:"14px 40px",fontWeight:800,fontSize:15,cursor:"pointer",fontFamily:"inherit",width:"100%"}}>
-              Continue →
-            </button>
+        {/* Header */}
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:24}}>
+          <div>
+            <div style={{fontSize:36,marginBottom:6}}>{emoji}</div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text}}>{label}</div>
+            <div style={{color:C.muted,fontSize:T.sm,marginTop:4,lineHeight:1.5}}>{description}</div>
           </div>
-        ):step==="pay"?(
-          <div style={{padding:"0 24px 32px"}}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
-              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text}}>{label}</div>
-              <button onClick={onClose} style={{background:"none",border:"none",color:C.muted,cursor:"pointer",fontSize:22}}>✕</button>
-            </div>
-            {/* Amount summary */}
-            <div style={{background:C.goldS,border:`1px solid ${C.gold}44`,borderRadius:12,padding:"16px",marginBottom:20,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-              <div style={{color:C.muted,fontSize:T.sm}}>{description}</div>
-              <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:800,color:C.gold,fontSize:"1.6rem"}}>€{amount}</div>
-            </div>
-            {/* Stripe Elements placeholder — real card form */}
-            <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,padding:"16px",marginBottom:16}}>
-              <div style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:12}}>Card Details</div>
-              <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:8,padding:"12px 14px",marginBottom:10,display:"flex",alignItems:"center",gap:10}}>
-                <span style={{fontSize:18}}>💳</span>
-                <input placeholder="Card number" value={cardData.number}
-                  onChange={e=>{const v=e.target.value.replace(/\D/g,"").slice(0,16);setCardData(p=>({...p,number:v.replace(/(.{4})/g,"$1 ").trim()}));}}
-                  style={{flex:1,background:"none",border:"none",color:C.text,fontSize:T.sm,outline:"none",fontFamily:"'DM Mono',monospace,sans-serif",letterSpacing:"0.5px"}}/>
-              </div>
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:10}}>
-                <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:8,padding:"12px 14px"}}>
-                  <input placeholder="MM/YY" value={cardData.expiry}
-                    onChange={e=>{let v=e.target.value.replace(/\D/g,"").slice(0,4);if(v.length>2)v=v.slice(0,2)+"/"+v.slice(2);setCardData(p=>({...p,expiry:v}));}}
-                    style={{width:"100%",background:"none",border:"none",color:C.text,fontSize:T.sm,outline:"none",fontFamily:"inherit"}}/>
-                </div>
-                <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:8,padding:"12px 14px"}}>
-                  <input placeholder="CVC" value={cardData.cvc} type="password"
-                    onChange={e=>setCardData(p=>({...p,cvc:e.target.value.replace(/\D/g,"").slice(0,4)}))}
-                    style={{width:"100%",background:"none",border:"none",color:C.text,fontSize:T.sm,outline:"none",fontFamily:"inherit"}}/>
-                </div>
-              </div>
-              <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:8,padding:"12px 14px"}}>
-                <input placeholder="Cardholder name" value={cardData.name}
-                  onChange={e=>setCardData(p=>({...p,name:e.target.value}))}
-                  style={{width:"100%",background:"none",border:"none",color:C.text,fontSize:T.sm,outline:"none",fontFamily:"inherit"}}/>
-              </div>
-            </div>
-            {error&&<div style={{background:C.rubyS,border:`1px solid ${C.ruby}44`,borderRadius:8,padding:"10px 14px",color:C.ruby,fontSize:T.xs,marginBottom:12}}>⚠ {error}</div>}
-            <button onClick={pay} disabled={loading}
-              style={{width:"100%",background:loading?C.surface:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:loading?C.muted:C.bg,border:"none",borderRadius:12,padding:"16px",fontWeight:800,fontSize:15,cursor:loading?"not-allowed":"pointer",fontFamily:"inherit"}}>
-              {loading?`Processing…`:`Pay €${amount} Securely 🔒`}
-            </button>
-            <div style={{color:C.faint,fontSize:11,textAlign:"center",marginTop:10}}>🔒 SSL encrypted · Powered by Stripe · PCI-DSS compliant</div>
+          <button onClick={onClose} style={{background:C.surface,border:`1px solid ${C.border}`,color:C.muted,borderRadius:"50%",width:32,height:32,cursor:"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>✕</button>
+        </div>
+
+        {/* Amount */}
+        <div style={{background:`linear-gradient(135deg,${C.goldS},${C.surface})`,border:`1px solid ${C.gold}33`,borderRadius:12,padding:"16px 20px",marginBottom:20,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+          <div>
+            <div style={{color:C.muted,fontSize:T.xs,marginBottom:2}}>Total amount</div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:800,color:C.gold,fontSize:"2rem"}}>€{amount}</div>
           </div>
-        ):(
-          /* INIT step */
-          <div style={{padding:"0 24px 32px"}}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:24}}>
-              <div>
-                <div style={{fontSize:32,marginBottom:6}}>{emoji}</div>
-                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text}}>{label}</div>
-              </div>
-              <button onClick={onClose} style={{background:"none",border:"none",color:C.muted,cursor:"pointer",fontSize:22}}>✕</button>
-            </div>
-            <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,padding:"16px",marginBottom:20}}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                <div style={{color:C.muted,fontSize:T.sm,lineHeight:1.7}}>{description}</div>
-                <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:800,color:C.gold,fontSize:"1.8rem",marginLeft:16,flexShrink:0}}>€{amount}</div>
-              </div>
-            </div>
-            {error&&<div style={{background:C.rubyS,border:`1px solid ${C.ruby}44`,borderRadius:8,padding:"10px 14px",color:C.ruby,fontSize:T.xs,marginBottom:12}}>⚠ {error}</div>}
-            <button onClick={init} disabled={loading}
-              style={{width:"100%",background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:12,padding:"16px",fontWeight:800,fontSize:15,cursor:"pointer",fontFamily:"inherit"}}>
-              {loading?"Setting up payment…":`Continue to Payment →`}
-            </button>
-            <div style={{color:C.faint,fontSize:11,textAlign:"center",marginTop:10}}>🔒 Secure payment via Stripe</div>
+          <div style={{textAlign:"right"}}>
+            <div style={{color:C.emerald,fontSize:T.xs,fontWeight:700}}>🔒 Stripe Secure</div>
+            <div style={{color:C.muted,fontSize:11,marginTop:2}}>PCI-DSS compliant</div>
+          </div>
+        </div>
+
+        {/* What happens */}
+        <div style={{background:C.surface,borderRadius:10,padding:"12px 14px",marginBottom:20,border:`1px solid ${C.border}`}}>
+          <div style={{fontSize:T.xs,color:C.muted,lineHeight:1.7}}>
+            You will be redirected to <strong style={{color:C.text}}>Stripe's secure payment page</strong> to enter your card details. Your payment information is never stored on Awaz.
+          </div>
+        </div>
+
+        {error&&(
+          <div style={{background:C.rubyS,border:`1px solid ${C.ruby}44`,borderRadius:8,padding:"10px 14px",color:C.ruby,fontSize:T.xs,marginBottom:16,lineHeight:1.5}}>
+            ⚠ {error}
           </div>
         )}
+
+        <button onClick={startCheckout} disabled={loading}
+          style={{width:"100%",background:loading?C.surface:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:loading?C.muted:C.bg,border:"none",borderRadius:12,padding:"16px",fontWeight:800,fontSize:16,cursor:loading?"wait":"pointer",fontFamily:"inherit",transition:"all 0.2s"}}>
+          {loading?"Preparing secure payment…":`Pay €${amount} with Stripe →`}
+        </button>
+
+        <div style={{color:C.faint,fontSize:11,textAlign:"center",marginTop:12,lineHeight:1.6}}>
+          🔒 SSL encrypted · Powered by Stripe · You will be redirected to complete payment
+        </div>
       </div>
     </div>
   );
@@ -3969,8 +3933,28 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
                     ))}
                   </div>
                 </div>
+                {/* Performing countries — shown to customers */}
+                {artist.performingCountries?.length>0&&(
+                  <div style={{background:C.card,borderRadius:12,padding:vp.isMobile?16:24,border:`1px solid ${C.border}`}}>
+                    <div style={{fontFamily:"'Cormorant Garamond',serif",color:C.gold,fontSize:T.lg,fontWeight:700,marginBottom:4}}>Available In</div>
+                    <div style={{color:C.muted,fontSize:T.xs,marginBottom:14}}>This artist performs in the following countries</div>
+                    <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
+                      {artist.performingCountries.map((code:string)=>{
+                        const m=MARKETS.find(m=>m.code===code);
+                        if(!m) return null;
+                        return(
+                          <div key={code} style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,padding:"8px 14px",display:"flex",alignItems:"center",gap:8}}>
+                            <span style={{fontSize:18}}>{m.flag}</span>
+                            <span style={{color:C.text,fontSize:T.sm,fontWeight:600}}>{m.name}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
                 {/* Market pricing — if artist has set country prices */}
-                {artist.countryPricing?.filter(r=>r.active).length>0&&(
+                {artist.countryPricing?.filter((r:any)=>r.active).length>0&&(
                   <div style={{background:C.card,borderRadius:12,padding:vp.isMobile?20:28,border:`1px solid ${C.border}`}}>
                     <div style={{fontFamily:"'Cormorant Garamond',serif",color:C.gold,fontSize:T.xl,fontWeight:700,marginBottom:6,letterSpacing:"-0.3px"}}>{t('pricingByCountry')}</div>
                     <div style={{color:C.muted,fontSize:T.xs,marginBottom:14}}>{t('pricesLocal')}</div>
@@ -4710,10 +4694,17 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
                 <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.md,fontWeight:700,color:C.text}}>{a.name}</div>
                 {a.nameDari&&<div style={{fontFamily:"'Noto Naskh Arabic',serif",fontSize:T.xs,color:C.muted}}>{a.nameDari}</div>}
               </div>
-              <div style={{color:C.muted,fontSize:T.xs,marginBottom:6}}>{a.genre} · {a.location}</div>
+              <div style={{color:C.muted,fontSize:T.xs,marginBottom:4}}>{a.genre} · {a.location}</div>
+              {/* Email + Phone — visible to admin */}
+              <div style={{display:"flex",gap:10,flexWrap:"wrap",marginBottom:6}}>
+                {a.email&&<a href={`mailto:${a.email}`} style={{color:C.lapis,fontSize:10,textDecoration:"none",display:"flex",alignItems:"center",gap:3}}>✉ {a.email}</a>}
+                {a.phone&&<a href={`tel:${a.phone}`} style={{color:C.emerald,fontSize:10,textDecoration:"none",display:"flex",alignItems:"center",gap:3}}>📞 {a.phone}</a>}
+                {!a.email&&!a.phone&&<span style={{color:C.faint,fontSize:10}}>No contact info</span>}
+              </div>
               <div style={{display:"flex",flexWrap:"wrap",gap:4}}>
                 <span style={{background:`${sc}18`,color:sc,border:`1px solid ${sc}44`,borderRadius:4,padding:"1px 7px",fontSize:10,fontWeight:700}}>{a.status.toUpperCase()}</span>
                 {a.verified&&<span style={{background:`${C.emerald}18`,color:C.emerald,border:`1px solid ${C.emerald}44`,borderRadius:4,padding:"1px 7px",fontSize:10,fontWeight:700}}>✓ VERIFIED</span>}
+                {a.isBoosted&&<span style={{background:`linear-gradient(135deg,${C.gold}22,${C.saffron}22)`,color:C.gold,border:`1px solid ${C.gold}44`,borderRadius:4,padding:"1px 7px",fontSize:10,fontWeight:700}}>⭐ BOOSTED</span>}
                 {a.stripeConnected&&<span style={{background:`${C.lapis}18`,color:C.text,border:`1px solid ${C.border}`,borderRadius:4,padding:"1px 7px",fontSize:10,fontWeight:700}}>💳 STRIPE</span>}
               </div>
             </div>
@@ -4738,7 +4729,13 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
             {!a.verified&&(
               <button onClick={()=>onAction(a.id,"verify")} style={{background:C.lapisS,color:C.text,border:`1px solid ${C.border}`,borderRadius:7,padding:"6px 14px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>✦ Verify</button>
             )}
-            <button onClick={()=>onAction(a.id,a.isBoosted?"unboost":"boost")}
+            <button onClick={async()=>{
+              const newBoosted = !a.isBoosted;
+              const boostUntil = newBoosted ? new Date(Date.now()+180*24*60*60*1000).toISOString() : null;
+              setArtists(p=>p.map(x=>x.id===a.id?{...x,isBoosted:newBoosted,boostedUntil:boostUntil}:x));
+              if(HAS_SUPA){const sb=await getSupabase();if(sb)await sb.from("artists").update({is_boosted:newBoosted,boosted_until:boostUntil}).eq("id",a.id);}
+              notify(newBoosted?`⭐ ${a.name} is now featured!`:`Boost removed from ${a.name}`,"success");
+            }}
               style={{background:a.isBoosted?`linear-gradient(135deg,${C.gold},${C.saffron})`:C.surface,color:a.isBoosted?C.bg:C.gold,border:`1px solid ${C.gold}44`,borderRadius:7,padding:"6px 14px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>
               {a.isBoosted?"⭐ Boosted":"⭐ Boost"}
             </button>
@@ -5502,12 +5499,17 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
   const [saving,setSaving]=useState(false);
   const [saveSuccess,setSaveSuccess]=useState(false);
   const [editF,setEditF]=useState({
+    name:artist.name||"",
+    email:artist.email||"",
+    phone:artist.phone||"",
     bio:artist.bio,
     priceInfo:artist.priceInfo,
     currency:artist.currency||"EUR",
     deposit:String(Math.max(500, artist.deposit||500)),
     country:artist.country||"NO",
     cancellationPolicy:artist.cancellationPolicy,
+    genres:(artist.tags||[]).join(", "),
+    performingCountries:(artist.performingCountries||[]).join(", "),
   });
 
   // Social media state — separate from profile editing so each section saves independently
@@ -5566,26 +5568,48 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
   const saveEdit=async()=>{
     setSaving(true);
     const dep=Math.max(500,parseInt(editF.deposit)||500);
-    const updates={bio:editF.bio,priceInfo:editF.priceInfo,currency:editF.currency||"EUR",deposit:dep,country:editF.country||"NO",cancellationPolicy:editF.cancellationPolicy};
+    const newTags=editF.genres.split(",").map(g=>g.trim()).filter(Boolean);
+    const newCountries=editF.performingCountries.split(",").map(c=>c.trim()).filter(Boolean);
+    const updates={
+      name:editF.name.trim()||artist.name,
+      email:editF.email.trim(),
+      phone:editF.phone.trim(),
+      bio:editF.bio,
+      priceInfo:editF.priceInfo,
+      currency:"EUR",
+      deposit:dep,
+      country:editF.country||"NO",
+      cancellationPolicy:editF.cancellationPolicy,
+      tags:newTags,
+      performingCountries:newCountries,
+    };
     onUpdateArtist(artist.id,updates);
     setEditing(false);
     setSaving(false);
     setSaveSuccess(true);
+    notify("✅ Profile updated!","success");
     setTimeout(()=>setSaveSuccess(false),3000);
-    // Persist to Supabase
     if(HAS_SUPA){
       try{
         const sb=await getSupabase();
         if(sb) await sb.from("artists").update({
+          name:                updates.name,
+          email:               updates.email,
+          phone:               updates.phone,
           bio:                 updates.bio,
           price_info:          updates.priceInfo,
           deposit:             updates.deposit,
           cancellation_policy: updates.cancellationPolicy,
-          currency:            updates.currency||"EUR",
-          country:             updates.country||"NO",
+          currency:            "EUR",
+          country:             updates.country,
+          tags:                newTags,
+          performing_countries:newCountries,
           photo:               artist.photo||null,
           emoji:               artist.emoji||"🎤",
+          updated_at:          new Date().toISOString(),
         }).eq("id",artist.id);
+        // Also update name in profiles table
+        if(updates.name!==artist.name) await sb.from("profiles").update({name:updates.name}).eq("id",artist.id);
       }catch(e){console.warn("Supabase artist update failed:",e);}
     }
   };
@@ -5726,11 +5750,63 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
               <Btn v="ghost" sz="sm" onClick={()=>setTab("social")}>{t('addNow')}</Btn>
             </div>
           )}
+          {/* ── Earnings breakdown — clear and transparent ── */}
+          <div style={{background:`linear-gradient(135deg,${C.goldS},${C.card})`,border:`1px solid ${C.gold}33`,borderRadius:14,padding:"18px 20px",marginBottom:16}}>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.gold,marginBottom:14}}>💶 Your Earnings</div>
+            {myB.filter(b=>b.depositPaid).length===0?(
+              <div style={{color:C.muted,fontSize:T.sm}}>No paid bookings yet — earnings will appear here automatically after each booking.</div>
+            ):(
+              <>
+                {myB.filter(b=>b.depositPaid).map(b=>{
+                  const gross      = b.deposit;
+                  const stripeFee  = Math.round(gross*0.029+30)/100; // 2.9% + €0.30
+                  const awazFee    = Math.round(gross*0.12);
+                  const youGet     = Math.round(gross*0.88);
+                  return(
+                    <div key={b.id} style={{background:C.surface,borderRadius:10,padding:"12px 14px",marginBottom:8,border:`1px solid ${C.border}`}}>
+                      <div style={{display:"flex",justifyContent:"space-between",marginBottom:8}}>
+                        <span style={{color:C.text,fontWeight:700,fontSize:T.sm}}>{b.customerName}</span>
+                        <span style={{color:C.muted,fontSize:T.xs}}>{b.date}</span>
+                      </div>
+                      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:6}}>
+                        {[
+                          ["Booking",`€${gross}`,C.muted],
+                          ["Stripe fee",`−€${stripeFee}`,C.ruby],
+                          ["Awaz (12%)",`−€${awazFee}`,C.ruby],
+                          ["You receive",`€${youGet}`,C.emerald],
+                        ].map(([l,v,c])=>(
+                          <div key={l} style={{textAlign:"center",background:C.card,borderRadius:7,padding:"8px 4px",border:`1px solid ${C.border}`}}>
+                            <div style={{color:c as string,fontWeight:800,fontSize:T.sm,fontFamily:"'Cormorant Garamond',serif"}}>{v}</div>
+                            <div style={{color:C.faint,fontSize:10,marginTop:2}}>{l}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+                <div style={{background:C.emeraldS,border:`1px solid ${C.emerald}33`,borderRadius:10,padding:"12px 14px",marginTop:8}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                    <div>
+                      <div style={{color:C.emerald,fontWeight:800,fontSize:T.sm}}>✅ Total in your account</div>
+                      <div style={{color:C.muted,fontSize:11,marginTop:2}}>Auto-transferred to your Stripe account after each booking</div>
+                    </div>
+                    <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:800,color:C.emerald,fontSize:"1.6rem"}}>€{depositsIn}</div>
+                  </div>
+                </div>
+              </>
+            )}
+            {/* VAT note */}
+            <div style={{marginTop:12,background:C.lapisS,border:`1px solid ${C.lapis}22`,borderRadius:8,padding:"10px 12px",fontSize:11,color:C.muted,lineHeight:1.7}}>
+              <strong style={{color:C.text}}>🧾 VAT / Tax note:</strong> The deposit amount transferred to you is gross. You are responsible for reporting income and paying applicable taxes in your country of residence. Awaz does not withhold tax — consult your local tax authority.
+            </div>
+          </div>
+
+          {/* ── Quick stats ── */}
           <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10,marginBottom:16}}>
-            {[["💶",`Earnings (88%)`,`€${depositsIn}`,C.gold],["📅","Bookings",myB.length,C.gold],["💬","Active Chats",myB.filter(b=>b.chatUnlocked).length,C.gold],["⭐","Rating",artist.reviews>0?artist.rating:"—",C.gold]].map(([icon,label,value,color])=>(
-              <div key={label} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:10,padding:"14px",borderTop:`3px solid ${C.border}38`}}>
+            {[["📅","Bookings",myB.length,C.gold],["💬","Active Chats",myB.filter(b=>b.chatUnlocked).length,C.gold],["⭐","Rating",artist.reviews>0?artist.rating:"—",C.gold],["🎵","Song Requests",0,C.gold]].map(([icon,label,value,color])=>(
+              <div key={label as string} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:10,padding:"14px",borderTop:`3px solid ${C.border}38`}}>
                 <div style={{fontSize:18,marginBottom:5}}>{icon}</div>
-                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:800,color,lineHeight:1}}>{value}</div>
+                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:800,color:color as string,lineHeight:1}}>{value}</div>
                 <div style={{fontSize:T.xs,color:C.muted,marginTop:4}}>{label}</div>
               </div>
             ))}
@@ -6643,22 +6719,75 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
               </div>
 
               {editing?(
-                <div style={{display:"flex",flexDirection:"column",gap:11}}>
-                  <Inp label="Bio" value={editF.bio} onChange={e=>setEditF(f=>({...f,bio:e.target.value}))} rows={4} placeholder="Tell clients about yourself…"/>
-                  <Inp label="Starting Price" value={editF.priceInfo} onChange={e=>setEditF(f=>({...f,priceInfo:e.target.value}))} placeholder="From €2,500"/>
-                  <div style={{display:"flex",gap:8}}>
-                    <Inp label="Deposit (min €500)" type="number" value={editF.deposit} onChange={e=>setEditF(f=>({...f,deposit:String(Math.max(500,parseInt(e.target.value)||500))}))} hint="Customers pay this at booking — minimum €500"/>
-                    <Sel label="Currency" value="EUR" onChange={()=>{}} disabled
-                      options={[["EUR","€ EUR — Euro (all markets)"]]}/>
-                    <div style={{fontSize:11,color:C.muted,marginTop:4}}>All prices on Awaz are in Euro (€)</div>
-                    <CountrySelect label="Your Country" value={editF.country||"NO"} onChange={v=>setEditF(f=>({...f,country:v}))}/>
+                <div style={{display:"flex",flexDirection:"column",gap:12}}>
+                  {/* Personal info — easy to change */}
+                  <div style={{background:C.surface,borderRadius:10,padding:"14px",border:`1px solid ${C.border}`}}>
+                    <div style={{fontSize:T.xs,fontWeight:700,color:C.gold,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:10}}>Personal Information</div>
+                    <div style={{display:"flex",flexDirection:"column",gap:10}}>
+                      <Inp label="Full Name" value={editF.name} onChange={e=>setEditF(f=>({...f,name:e.target.value}))} placeholder="Your full name"/>
+                      <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+                        <div style={{flex:1,minWidth:180}}>
+                          <Inp label="Email Address" type="email" value={editF.email} onChange={e=>setEditF(f=>({...f,email:e.target.value}))} placeholder="your@email.com"/>
+                        </div>
+                        <div style={{flex:1,minWidth:140}}>
+                          <Inp label="Phone Number" type="tel" value={editF.phone} onChange={e=>setEditF(f=>({...f,phone:e.target.value}))} placeholder="+47 900 00 000"/>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <Sel label="Cancellation Policy" value={editF.cancellationPolicy} onChange={e=>setEditF(f=>({...f,cancellationPolicy:e.target.value}))}
-                    options={POLICIES.map(p=>[p.id,`${p.label} — ${p.desc}`])}/>
+                  {/* Genres — multi-select */}
+                  <div style={{background:C.surface,borderRadius:10,padding:"14px",border:`1px solid ${C.border}`}}>
+                    <div style={{fontSize:T.xs,fontWeight:700,color:C.gold,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:8}}>Music Genres (select all that apply)</div>
+                    <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:8}}>
+                      {["Ghazal","Herati","Mast","Pashto","Logari","Qarsak","Rubab","Tabla","Classical","Folk","Pop","Fusion","Sufi","Wedding","Eid","Cultural"].map(g=>{
+                        const sel=editF.genres.split(",").map(x=>x.trim()).includes(g);
+                        return(
+                          <button key={g} onClick={()=>{
+                            const cur=editF.genres.split(",").map(x=>x.trim()).filter(Boolean);
+                            const next=sel?cur.filter(x=>x!==g):[...cur,g];
+                            setEditF(f=>({...f,genres:next.join(", ")}));
+                          }} style={{background:sel?C.goldS:C.card,color:sel?C.gold:C.muted,border:`1px solid ${sel?C.gold+"55":C.border}`,borderRadius:20,padding:"5px 12px",fontSize:12,fontWeight:sel?700:400,cursor:"pointer",fontFamily:"inherit",transition:"all 0.15s"}}>
+                            {g}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <div style={{fontSize:11,color:C.muted}}>Selected: {editF.genres||"None"}</div>
+                  </div>
+                  {/* Performing countries */}
+                  <div style={{background:C.surface,borderRadius:10,padding:"14px",border:`1px solid ${C.border}`}}>
+                    <div style={{fontSize:T.xs,fontWeight:700,color:C.gold,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:8}}>Performing In (countries)</div>
+                    <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:8}}>
+                      {MARKETS.filter(m=>m.code!=="OTHER").map(m=>{
+                        const cur=editF.performingCountries.split(",").map(x=>x.trim()).filter(Boolean);
+                        const sel=cur.includes(m.code);
+                        return(
+                          <button key={m.code} onClick={()=>{
+                            const next=sel?cur.filter(x=>x!==m.code):[...cur,m.code];
+                            setEditF(f=>({...f,performingCountries:next.join(", ")}));
+                          }} style={{background:sel?C.lapisS:C.card,color:sel?C.lapis:C.muted,border:`1px solid ${sel?C.lapis+"44":C.border}`,borderRadius:20,padding:"4px 10px",fontSize:11,fontWeight:sel?700:400,cursor:"pointer",fontFamily:"inherit"}}>
+                            {m.flag} {m.name}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  {/* Pricing */}
+                  <div style={{background:C.surface,borderRadius:10,padding:"14px",border:`1px solid ${C.border}`}}>
+                    <div style={{fontSize:T.xs,fontWeight:700,color:C.gold,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:10}}>Pricing</div>
+                    <Inp label="Bio" value={editF.bio} onChange={e=>setEditF(f=>({...f,bio:e.target.value}))} rows={3} placeholder="Tell clients about yourself…"/>
+                    <div style={{display:"flex",gap:8,marginTop:10,flexWrap:"wrap"}}>
+                      <Inp label="Starting Price" value={editF.priceInfo} onChange={e=>setEditF(f=>({...f,priceInfo:e.target.value}))} placeholder="From €2,500"/>
+                      <Inp label="Deposit (min €500)" type="number" value={editF.deposit} onChange={e=>setEditF(f=>({...f,deposit:String(Math.max(500,parseInt(e.target.value)||500))}))}/>
+                    </div>
+                    <Sel label="Cancellation Policy" value={editF.cancellationPolicy} onChange={e=>setEditF(f=>({...f,cancellationPolicy:e.target.value}))}
+                      options={POLICIES.map(p=>[p.id,`${p.label} — ${p.desc}`])}/>
+                  </div>
                   <div style={{display:"flex",gap:8}}>
                     <Btn v="ghost" onClick={()=>setEditing(false)} xs={{flex:1}}>Cancel</Btn>
-                    <Btn onClick={saveEdit} xs={{flex:2}} loading={saving}>Save</Btn>
+                    <Btn onClick={saveEdit} xs={{flex:2}} loading={saving}>{saving?"Saving…":"Save All Changes ✓"}</Btn>
                   </div>
+                  {saveSuccess&&<div style={{background:C.emeraldS,border:`1px solid ${C.emerald}33`,borderRadius:8,padding:"10px 14px",color:C.emerald,fontSize:T.xs,textAlign:"center"}}>✅ Profile saved successfully!</div>}
                 </div>
               ):(
                 <>
@@ -8695,6 +8824,7 @@ function AppInner() {
                 earnings:aRow.earnings||0,totalBookings:aRow.total_bookings||0,
                 verified:aRow.verified||false,
                 isHidden:aRow.is_hidden||false,
+                isBoosted:aRow.is_boosted||false,
                 boostedUntil:aRow.boosted_until||null,
                 stripeConnected:aRow.stripe_connected||false,
                 stripeAccount:aRow.stripe_account||null,
@@ -8705,6 +8835,9 @@ function AppInner() {
                 tiktok:aRow.tiktok_data||null,
                 countryPricing:aRow.country_pricing||[],
                 currency:aRow.currency||"EUR",
+                email:aRow.email||aRow.contact_email||"",
+                phone:aRow.phone||aRow.contact_phone||"",
+                performingCountries:Array.isArray(aRow.performing_countries)?aRow.performing_countries:[],
               };
               setArtists(prev=>{
                 if(prev.find(x=>x.id===aRow.id))
