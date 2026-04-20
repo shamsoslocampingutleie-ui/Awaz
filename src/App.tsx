@@ -8397,6 +8397,7 @@ function CountryPricingTab({ artist, onUpdateArtist, vp }) {
         })}
       </div>
     </div>
+  );
 }
 
 // ── Admin Inquiry Panel ────────────────────────────────────────────────
