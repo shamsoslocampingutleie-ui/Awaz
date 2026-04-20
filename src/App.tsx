@@ -8388,6 +8388,7 @@ function AppInner() {
   const [selArtist,setSelArtist]=useState(null);
   const [showLogin,setShowLogin]=useState(false);
   const [showApply,setShowApply]=useState(false);
+  const [showContact,setShowContact]=useState(false);
   const [showSongReq,setShowSongReq]=useState(false);
   const [search,setSearch]=useState("");
   const [genreF,setGenreF]=useState("All");
@@ -9819,7 +9820,7 @@ function AppInner() {
                   <div style={{color:C.muted,fontSize:T.xs,lineHeight:1.7,marginBottom:8}}>
                     Have a question? Send us a message directly through the platform.
                   </div>
-                  <button onClick={()=>setShowInquiry&&setShowInquiry(true)} style={{background:C.goldS,border:`1px solid ${C.gold}44`,borderRadius:8,padding:"8px 14px",color:C.gold,fontWeight:700,fontSize:T.xs,cursor:"pointer",fontFamily:"inherit"}}>
+                  <button onClick={()=>setShowContact(true)} style={{background:C.goldS,border:`1px solid ${C.gold}44`,borderRadius:8,padding:"8px 14px",color:C.gold,fontWeight:700,fontSize:T.xs,cursor:"pointer",fontFamily:"inherit"}}>
                     Send us a message →
                   </button>
                   <div style={{color:C.faint,fontSize:T.xs,marginTop:6}}>Norway · Europe</div>
@@ -9865,7 +9866,24 @@ function AppInner() {
       {showPrivacy&&<PrivacyPage onClose={()=>setShowPrivacy(false)}/>}
       {showSongReq&&selArtist&&<SongRequestModal artist={selArtist} onClose={()=>setShowSongReq(false)}/>}
       {showApply&&<ApplySheet onSubmit={handleNewArtist} onClose={()=>setShowApply(false)}/>}
-      {/* Floating concierge inquiry button — always visible to visitors */}
+      {/* Contact / Inquiry modal */}
+      {showContact&&(
+        <div style={{position:"fixed",inset:0,zIndex:9000,display:"flex",alignItems:"flex-end",justifyContent:"center",background:"rgba(0,0,0,0.7)",backdropFilter:"blur(4px)"}} onClick={()=>setShowContact(false)}>
+          <div style={{background:C.card,borderRadius:"20px 20px 0 0",width:"100%",maxWidth:560,maxHeight:"90vh",overflowY:"auto",padding:"24px 20px 40px"}} onClick={e=>e.stopPropagation()}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
+              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text}}>Send us a message</div>
+              <button onClick={()=>setShowContact(false)} style={{background:"none",border:"none",color:C.muted,cursor:"pointer",fontSize:24,lineHeight:1,padding:4}}>×</button>
+            </div>
+            <div style={{color:C.muted,fontSize:T.sm,marginBottom:20,lineHeight:1.6}}>
+              Have a question about booking, an artist, or the platform? We'll get back to you as soon as possible — all messages go directly to our team.
+            </div>
+            <InquiryWidget artists={displaySource} onSubmit={(data)=>{
+              handleNewInquiry(data);
+              setShowContact(false);
+            }}/>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
