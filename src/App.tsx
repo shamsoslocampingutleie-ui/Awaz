@@ -9357,7 +9357,7 @@ function AppInner() {
 
           {/* Footer */}
           <footer style={{background:C.bg,borderTop:`1px solid ${C.border}`,padding:vp.isMobile?"24px 16px 100px":"44px 48px 32px"}}>
-            {vp.isMobile?(
+            {vp.isMobile&&(
               <div>
                 <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}>
                   <div style={{fontFamily:"'Noto Naskh Arabic',serif",fontSize:16,color:C.gold}}>آواز</div>
@@ -9366,10 +9366,10 @@ function AppInner() {
                 <p style={{color:C.muted,fontSize:T.xs,lineHeight:1.7,marginBottom:16}}>{t('footerDesc')}</p>
                 <div style={{display:"flex",flexWrap:"wrap",gap:14,marginBottom:16}}>
                   {[[t('footerBrowse'),()=>nav("browse")],[t('footerApply'),()=>setShowApply(true)],[t('howItWorks'),()=>nav("how")]].map(([l,fn])=>(
-                    <button key={l} onClick={fn} style={{color:C.muted,fontSize:T.xs,cursor:"pointer",background:"none",border:"none",fontFamily:"inherit",padding:0,minHeight:36}}>{l}</button>
+                    <button key={l as string} onClick={fn as ()=>void} style={{color:C.muted,fontSize:T.xs,cursor:"pointer",background:"none",border:"none",fontFamily:"inherit",padding:0,minHeight:36}}>{l}</button>
                   ))}
                 </div>
-                <div style={{color:C.faint,fontSize:T.xs}}>{t('footerCopyright').replace('{year}', YEAR)}</div>
+                <div style={{color:C.faint,fontSize:T.xs}}>© {YEAR} Awaz AS · All rights reserved</div>
               </div>
             )}
           </footer>
