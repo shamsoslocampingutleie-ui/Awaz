@@ -7087,17 +7087,15 @@ function SongRequestModal({artist, bookingId, onClose}:{artist:any;bookingId?:st
             {err&&<div style={{color:"#EF4444",fontSize:13,marginBottom:12,padding:"10px 14px",background:"rgba(239,68,68,0.08)",borderRadius:8}}>{err}</div>}
             <button onClick={()=>{
               if(tier.amount>0){
-                setStep("pay"); // trigger StripePaywall
+                setStep("pay");
               } else {
-                submit(); // free — save directly
+                submit();
               }
             }} disabled={loading}
               style={{width:"100%",background:loading?"#201D2E":`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:14,padding:"16px",fontWeight:800,fontSize:16,cursor:loading?"not-allowed":"pointer",fontFamily:"inherit"}}>
               {loading?"Sending…":tier.amount===0?"Send Request (Free) →":`Pay €${tier.amount} & Request →`}
             </button>
             <div style={{color:"#8A7D68",fontSize:11,textAlign:"center",marginTop:8}}>88% of tip goes to {artist.name}</div>
-            </button>
-            <div style={{color:"#8A7D68",fontSize:11,textAlign:"center",marginTop:8}}>88% goes to {artist.name}</div>
           </div>
         ):(
           /* FORM STEP */
