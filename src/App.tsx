@@ -5419,12 +5419,14 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
 
   const saveSocial=async()=>{
     setSocialErr("");
+    // Validate Spotify
     if(socialF.spotifyUrl){
       const testId=parseSpotifyArtistId(socialF.spotifyUrl);
-      if(!testId){setSocialErr("Spotify link not recognized. Use: open.spotify.com/artist/... or copy from Spotify app → Share → Copy link to Artist.");return;}
+      if(!testId){setSocialErr("Spotify link not recognized. Use: open.spotify.com/artist/... or copy from Spotify app → Share → Copy link to artist.");return;}
     }
-    if(socialF.youtubeUrl&&!socialF.youtubeUrl.includes("youtube")&&!socialF.youtubeUrl.includes("youtu.be")){setSocialErr("YouTube link looks invalid.");return;}
-
+    if(socialF.youtubeUrl&&!socialF.youtubeUrl.includes("youtube")&&!socialF.youtubeUrl.includes("youtu.be")){
+      setSocialErr("YouTube link looks invalid.");return;
+    }
     const newSpotify=socialF.spotifyUrl?{
       profileUrl:socialF.spotifyUrl.trim(),
       monthlyListeners:socialF.spotifyListeners||"",
@@ -5432,59 +5434,57 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
     }:null;
     const ig=parseInstagramHandle(socialF.instagramHandle);
     const newInstagram=ig?{
-      handle:ig,
-      followers:socialF.instagramFollowers||"",
-      profileUrl:socialF.instagramUrl||`https://instagram.com/${ig.replace("@","")}`,
-      posts:[],
+      handle:ig,followers:socialF.instagramFollowers||"",
+      profileUrl:socialF.instagramUrl||`https://instagram.com/${ig.replace("@","")}`,posts:[],
     }:null;
     const ytParsed=parseYouTubeId(socialF.youtubeUrl||"");
-    const newYoutube=socialF.youtubeUrl?{
-      url:socialF.youtubeUrl.trim(),
-      handle:ytParsed?.type==="handle"?ytParsed.id:"",
-      subscribers:socialF.youtubeSubscribers||"",
-    }:null;
+    const newYoutube=socialF.youtubeUrl?{url:socialF.youtubeUrl.trim(),handle:ytParsed?.type==="handle"?ytParsed.id:"",subscribers:socialF.youtubeSubscribers||""}:null;
     const ttHandle=parseTikTokHandle(socialF.tiktokHandle||"");
     const newTiktok=ttHandle?{handle:ttHandle,followers:socialF.tiktokFollowers||""}:null;
 
-    // Update local state immediately
+    // Update local React state immediately
     onUpdateArtist(artist.id,{spotify:newSpotify,instagram:newInstagram,youtube:newYoutube,tiktok:newTiktok});
 
     if(HAS_SUPA){
       try{
         const sb=await getSupabase();
         if(sb){
-          // Try both column naming conventions
-          const payload: Record<string,any> = {
+          // Strategy 1: upsert into artist_social table (most reliable)
+          const socialPayload={
+            artist_id: artist.id,
+            spotify_data:    newSpotify    ? JSON.stringify(newSpotify)    : null,
+            instagram_data:  newInstagram  ? JSON.stringify(newInstagram)  : null,
+            youtube_data:    newYoutube    ? JSON.stringify(newYoutube)    : null,
+            tiktok_data:     newTiktok     ? JSON.stringify(newTiktok)     : null,
+            updated_at:      new Date().toISOString(),
+          };
+          const{error:e1}=await sb.from("artist_social").upsert([socialPayload],{onConflict:"artist_id"});
+
+          // Strategy 2: also update artists table (belt + suspenders)
+          const{error:e2}=await sb.from("artists").update({
             spotify_data:   newSpotify,
             instagram_data: newInstagram,
             youtube_data:   newYoutube,
             tiktok_data:    newTiktok,
-            // Also try without _data suffix in case columns differ
-            spotify:        newSpotify,
-            instagram:      newInstagram,
-            youtube:        newYoutube,
-            tiktok:         newTiktok,
             updated_at:     new Date().toISOString(),
-          };
-          const{error}=await sb.from("artists").update(payload).eq("id",artist.id);
-          if(error){
-            console.warn("Social save error:",error.message);
-            // Try minimal payload if full fails
-            const{error:e2}=await sb.from("artists").update({
-              spotify_data:newSpotify,
-              instagram_data:newInstagram,
-              youtube_data:newYoutube,
-              tiktok_data:newTiktok,
-            }).eq("id",artist.id);
-            if(e2) { setSocialErr("Save failed: "+e2.message); return; }
+          }).eq("id",artist.id);
+
+          if(e1&&e2){
+            // Both failed — log with helpful info
+            console.warn("Social save errors — run SQL fix in Supabase:");
+            console.info(`%cRUN IN SUPABASE SQL EDITOR:\n\nALTER TABLE artists\n  ADD COLUMN IF NOT EXISTS spotify_data jsonb,\n  ADD COLUMN IF NOT EXISTS instagram_data jsonb,\n  ADD COLUMN IF NOT EXISTS youtube_data jsonb,\n  ADD COLUMN IF NOT EXISTS tiktok_data jsonb;\n\nCREATE TABLE IF NOT EXISTS artist_social (\n  artist_id uuid PRIMARY KEY REFERENCES artists(id) ON DELETE CASCADE,\n  spotify_data text, instagram_data text, youtube_data text, tiktok_data text,\n  updated_at timestamptz DEFAULT now()\n);\nALTER TABLE artist_social ENABLE ROW LEVEL SECURITY;\nCREATE POLICY "artist_manage_own_social" ON artist_social FOR ALL USING (artist_id = auth.uid());\nCREATE POLICY "public_read_social" ON artist_social FOR SELECT USING (true);`,'color:orange;font-weight:bold','');
+            setSocialErr("Save failed — contact support or run the SQL in browser console");
+            return;
           }
-          console.log("✅ Social links saved to Supabase");
+          console.log("✅ Social saved to DB");
         }
-      }catch(e:any){ setSocialErr("Save error: "+e.message); return; }
+      }catch(e:any){
+        setSocialErr("Save error: "+e.message); return;
+      }
     }
     setSocialSaved(true);
-    notify("✅ Social links saved!","success");
-    setTimeout(()=>setSocialSaved(false),3500);
+    notify("✅ Social profiles saved! They will appear on your public profile.","success");
+    setTimeout(()=>setSocialSaved(false),4000);
   };
 
   const content=(
@@ -8504,6 +8504,23 @@ function AppInner() {
                   return prev.map(x=>x.id===aRow.id?{...x,...mapped}:x);
                 return[...prev,mapped];
               });
+              // Also load from artist_social table (belt + suspenders)
+              try{
+                const{data:social}=await sb.from("artist_social").select("*").eq("artist_id",artistId).single();
+                if(social){
+                  const sp=social.spotify_data?JSON.parse(social.spotify_data):null;
+                  const ig=social.instagram_data?JSON.parse(social.instagram_data):null;
+                  const yt=social.youtube_data?JSON.parse(social.youtube_data):null;
+                  const tt=social.tiktok_data?JSON.parse(social.tiktok_data):null;
+                  setArtists(prev=>prev.map(x=>x.id===artistId?{
+                    ...x,
+                    spotify:   sp||x.spotify,
+                    instagram: ig||x.instagram,
+                    youtube:   yt||x.youtube,
+                    tiktok:    tt||x.tiktok,
+                  }:x));
+                }
+              }catch{/* artist_social table may not exist yet */}
             }
           }catch(e2){console.warn("Artist profile restore failed:",e2);}
         }
@@ -8760,11 +8777,55 @@ function AppInner() {
     return()=>{ try{unsub?.unsubscribe();}catch{} };
   },[]);
   const approved=useMemo(()=>artists.filter(a=>a.status==="approved"&&!a.isHidden),[artists]);
-  const filtered=useMemo(()=>approved.filter(a=>{
+
+  // ── Demo profiles — shown when no real artists approved yet ──────────
+  const DEMO_ARTISTS = useMemo(()=>[
+    {id:"demo-1",name:"Ahmad Shah",nameDari:"احمد شاه",genre:"Ghazal",location:"Oslo, Norway",
+     rating:4.9,reviews:47,priceInfo:"From €2,500",deposit:800,emoji:"🎤",
+     color:"#8B1A2E",photo:null,bio:"Ahmad Shah is one of Norway's most celebrated Afghan vocalists, known for his soul-stirring Ghazal performances at weddings and cultural events. With over 15 years of experience, he brings authentic Kabul concert hall energy to every event.",
+     tags:["Ghazal","Wedding","Eid","Classical"],instruments:["Vocals","Harmonium"],
+     superhost:true,status:"approved",joined:"2024-01",isBoosted:true,
+     available:{},blocked:{},earnings:0,totalBookings:47,verified:true,
+     isHidden:false,boostedUntil:null,stripeConnected:false,stripeAccount:null,
+     cancellationPolicy:"moderate",spotify:null,instagram:{handle:"@ahmadshahmusic",followers:"12.4K",profileUrl:"https://instagram.com"},
+     youtube:null,tiktok:null,countryPricing:[],currency:"EUR",country:"NO"},
+    {id:"demo-2",name:"Laila Karimi",nameDari:"لیلا کریمی",genre:"Herati",location:"Stockholm, Sweden",
+     rating:4.8,reviews:31,priceInfo:"From €2,000",deposit:700,emoji:"🎵",
+     color:"#1A5C8B",photo:null,bio:"Laila Karimi is a versatile Herati folk singer based in Stockholm. Her enchanting voice and traditional Herati style make her the perfect choice for Afghan weddings, Nowruz celebrations and cultural festivals across Scandinavia.",
+     tags:["Herati","Folk","Nowruz","Cultural"],instruments:["Vocals","Dutar"],
+     superhost:false,status:"approved",joined:"2024-03",isBoosted:false,
+     available:{},blocked:{},earnings:0,totalBookings:31,verified:true,
+     isHidden:false,boostedUntil:null,stripeConnected:false,stripeAccount:null,
+     cancellationPolicy:"flexible",spotify:null,instagram:{handle:"@lailakarimisings",followers:"8.1K",profileUrl:"https://instagram.com"},
+     youtube:null,tiktok:null,countryPricing:[],currency:"EUR",country:"SE"},
+    {id:"demo-3",name:"Wahid Qasimi",nameDari:"واحد قاسمی",genre:"Mast",location:"Berlin, Germany",
+     rating:4.7,reviews:22,priceInfo:"From €1,800",deposit:600,emoji:"🥁",
+     color:"#2D6A4F",photo:null,bio:"Wahid Qasimi brings the high-energy Mast dance music of Afghanistan to stages across Europe. Based in Berlin, he has performed at Afghan community events in Germany, Austria and Switzerland, keeping Afghan wedding traditions alive for the diaspora.",
+     tags:["Mast","Wedding","Dance","Party"],instruments:["Tabla","Dhol","Vocals"],
+     superhost:false,status:"approved",joined:"2024-05",isBoosted:false,
+     available:{},blocked:{},earnings:0,totalBookings:22,verified:true,
+     isHidden:false,boostedUntil:null,stripeConnected:false,stripeAccount:null,
+     cancellationPolicy:"moderate",spotify:null,instagram:null,
+     youtube:null,tiktok:null,countryPricing:[],currency:"EUR",country:"DE"},
+    {id:"demo-4",name:"Farhad Sultani",nameDari:"فرهاد سلطانی",genre:"Classical",location:"London, UK",
+     rating:5.0,reviews:18,priceInfo:"From €3,500",deposit:1200,emoji:"🪕",
+     color:"#6B3A8B",photo:null,bio:"Farhad Sultani is a master Rubab player trained in the classical Afghan tradition. Based in London, his performances captivate audiences with the ancient sound of the national instrument of Afghanistan. Available for concerts, cultural events and intimate private gatherings.",
+     tags:["Classical","Rubab","Instrumental","Concert"],instruments:["Rubab","Harmonium"],
+     superhost:true,status:"approved",joined:"2023-11",isBoosted:true,
+     available:{},blocked:{},earnings:0,totalBookings:18,verified:true,
+     isHidden:false,boostedUntil:null,stripeConnected:false,stripeAccount:null,
+     cancellationPolicy:"strict",spotify:null,instagram:{handle:"@farhadrubab",followers:"5.6K",profileUrl:"https://instagram.com"},
+     youtube:null,tiktok:null,countryPricing:[],currency:"EUR",country:"GB"},
+  ], []);
+
+  // Show demo artists only when no real approved artists exist
+  const displaySource = approved.length > 0 ? approved : DEMO_ARTISTS;
+
+  const filtered=useMemo(()=>displaySource.filter(a=>{
     const ms=!search||a.name.toLowerCase().includes(search.toLowerCase())||a.genre.toLowerCase().includes(search.toLowerCase())||a.tags.some(t=>t.toLowerCase().includes(search.toLowerCase()));
     const mg=genreF==="All"||a.tags.includes(genreF)||a.genre.toLowerCase().includes(genreF.toLowerCase());
     return ms&&mg;
-  }),[approved,search,genreF]);
+  }),[displaySource,search,genreF]);
 
   const login=u=>{setSession(u);setShowLogin(false);requestPushPermission();};
   const logout=async()=>{
@@ -9310,19 +9371,6 @@ function AppInner() {
                 </div>
                 <div style={{color:C.faint,fontSize:T.xs}}>{t('footerCopyright').replace('{year}', YEAR)}</div>
               </div>
-            ):(
-              <div style={{maxWidth:1240,margin:"0 auto",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:16}}>
-                <div style={{display:"flex",alignItems:"center",gap:12}}>
-                  <div style={{fontFamily:"'Noto Naskh Arabic',serif",fontSize:16,color:C.gold}}>آواز</div>
-                  <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:14,fontWeight:700,color:C.text}}>Awaz — Afghan Artist Booking</div>
-                </div>
-                <div style={{display:"flex",gap:18}}>
-                  {[[t('footerBrowse'),()=>nav("browse")],[t('footerApply'),()=>setShowApply(true)],[t('howItWorks'),()=>nav("how")],["Pricing",()=>nav("pricing")],["Artist Demo",()=>nav("demo")]].map(([l,fn])=>(
-                    <button key={l} onClick={fn} style={{color:C.muted,fontSize:T.xs,cursor:"pointer",background:"none",border:"none",fontFamily:"inherit",padding:0,minHeight:36}}>{l}</button>
-                  ))}
-                </div>
-                <div style={{color:C.faint,fontSize:T.xs}}>{t('footerCopyright').replace('{year}', String(YEAR))}</div>
-              </div>
             )}
           </footer>
         </div>
@@ -9768,20 +9816,20 @@ function AppInner() {
                 ))}
                 <div style={{marginTop:16}}>
                   <div style={{fontSize:T.xs,fontWeight:700,color:C.text,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:10}}>Contact</div>
-                  <a href="mailto:hei@awaz.no" style={{color:C.muted,fontSize:T.sm,textDecoration:"none",display:"block",lineHeight:1.7}}>hei@awaz.no</a>
-                  <div style={{color:C.muted,fontSize:T.xs,marginTop:4}}>Norway · Europe</div>
+                  <div style={{color:C.muted,fontSize:T.xs,lineHeight:1.7,marginBottom:8}}>
+                    Have a question? Send us a message directly through the platform.
+                  </div>
+                  <button onClick={()=>setShowInquiry&&setShowInquiry(true)} style={{background:C.goldS,border:`1px solid ${C.gold}44`,borderRadius:8,padding:"8px 14px",color:C.gold,fontWeight:700,fontSize:T.xs,cursor:"pointer",fontFamily:"inherit"}}>
+                    Send us a message →
+                  </button>
+                  <div style={{color:C.faint,fontSize:T.xs,marginTop:6}}>Norway · Europe</div>
                 </div>
               </div>
             </div>
             <div style={{borderTop:`1px solid ${C.border}`,paddingTop:20,display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:12}}>
               <div style={{color:C.faint,fontSize:T.xs}}>© {new Date().getFullYear()} Awaz AS · All rights reserved · Norway</div>
               <div style={{display:"flex",gap:6,alignItems:"center"}}>
-                <span style={{color:C.faint,fontSize:T.xs}}>Powered by</span>
-                <span style={{fontSize:T.xs,fontWeight:700,color:C.muted}}>Stripe</span>
-                <span style={{color:C.border,fontSize:T.xs}}>·</span>
-                <span style={{fontSize:T.xs,fontWeight:700,color:C.muted}}>Supabase</span>
-                <span style={{color:C.border,fontSize:T.xs}}>·</span>
-                <span style={{fontSize:T.xs,fontWeight:700,color:C.muted}}>Vercel</span>
+                <span style={{fontSize:T.xs,color:C.faint}}>🔒 Payments secured by Stripe</span>
               </div>
             </div>
           </div>
