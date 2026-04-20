@@ -3103,13 +3103,14 @@ function StripePaywall({
 
       const platformAccountId = (()=>{ try{ return localStorage.getItem("awaz-stripe-platform-id")||null; }catch{ return null; }})();
 
-      // Call Edge Function to create PaymentIntent
-      const res = await fetch(`${SUPA_URL}/functions/v1/create-payment-intent`, {
+      // ✅ Correct function name: create-payment-intent-ts (not create-payment-intent)
+      // ✅ Send amount in EUR — function handles all minimums
+      const res = await fetch(`${SUPA_URL}/functions/v1/create-payment-intent-ts`, {
         method: "POST",
         headers: {"Content-Type":"application/json","Authorization":`Bearer ${SUPA_KEY}`,"apikey":SUPA_KEY},
         body: JSON.stringify({
-          amount,
-          type: metadata.type || "tip",
+          amount,                                    // actual EUR amount (e.g. 50 for boost)
+          type:              metadata.type || "tip", // "booking" | "boost" | "tip"
           platformAccountId,
           artistName:        metadata.artistName||"Awaz",
           bookingId:         metadata.bookingId||`pay_${Date.now()}`,
@@ -3225,7 +3226,7 @@ function StripeCheckout({ booking, artist, onSuccess, onClose }) {
         try{ return localStorage.getItem("awaz-stripe-platform-id")||null; }catch{ return null; }
       })();
 
-      const res = await fetch(`${SUPA_URL}/functions/v1/create-payment-intent`, {
+      const res = await fetch(`${SUPA_URL}/functions/v1/create-payment-intent-ts`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
