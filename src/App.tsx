@@ -5645,20 +5645,21 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
     if(HAS_SUPA){
       try{
         const sb=await getSupabase();
-        if(sb){
-          // Strategy 1: upsert into artist_social table (most reliable)
-          const socialPayload={
-            artist_id: artist.id,
+        // Try admin client first (bypasses RLS), fallback to anon
+        const sbAdmin = await getSupabaseAdmin() || sb;
+        if(sbAdmin){
+          // Primary: upsert into artist_social
+          const{error:e1}=await sbAdmin.from("artist_social").upsert([{
+            artist_id:       artist.id,
             spotify_data:    newSpotify    ? JSON.stringify(newSpotify)    : null,
             instagram_data:  newInstagram  ? JSON.stringify(newInstagram)  : null,
             youtube_data:    newYoutube    ? JSON.stringify(newYoutube)    : null,
             tiktok_data:     newTiktok     ? JSON.stringify(newTiktok)     : null,
             updated_at:      new Date().toISOString(),
-          };
-          const{error:e1}=await sb.from("artist_social").upsert([socialPayload],{onConflict:"artist_id"});
+          }],{onConflict:"artist_id"});
 
-          // Strategy 2: also update artists table (belt + suspenders)
-          const{error:e2}=await sb.from("artists").update({
+          // Secondary: update artists table
+          const{error:e2}=await sbAdmin.from("artists").update({
             spotify_data:   newSpotify,
             instagram_data: newInstagram,
             youtube_data:   newYoutube,
@@ -5667,13 +5668,11 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
           }).eq("id",artist.id);
 
           if(e1&&e2){
-            // Both failed — log with helpful info
-            console.warn("Social save errors — run SQL fix in Supabase:");
-            console.info(`%cRUN IN SUPABASE SQL EDITOR:\n\nALTER TABLE artists\n  ADD COLUMN IF NOT EXISTS spotify_data jsonb,\n  ADD COLUMN IF NOT EXISTS instagram_data jsonb,\n  ADD COLUMN IF NOT EXISTS youtube_data jsonb,\n  ADD COLUMN IF NOT EXISTS tiktok_data jsonb;\n\nCREATE TABLE IF NOT EXISTS artist_social (\n  artist_id uuid PRIMARY KEY REFERENCES artists(id) ON DELETE CASCADE,\n  spotify_data text, instagram_data text, youtube_data text, tiktok_data text,\n  updated_at timestamptz DEFAULT now()\n);\nALTER TABLE artist_social ENABLE ROW LEVEL SECURITY;\nCREATE POLICY "artist_manage_own_social" ON artist_social FOR ALL USING (artist_id = auth.uid());\nCREATE POLICY "public_read_social" ON artist_social FOR SELECT USING (true);`,'color:orange;font-weight:bold','');
-            setSocialErr("Save failed — contact support or run the SQL in browser console");
+            console.warn("Social save failed both strategies:",e1.message,e2.message);
+            setSocialErr("Save failed — check browser console for SQL fix");
             return;
           }
-          console.log("✅ Social saved to DB");
+          console.log("✅ Social saved to DB", e1?"(artists only)":"(artist_social + artists)");
         }
       }catch(e:any){
         setSocialErr("Save error: "+e.message); return;
@@ -7065,13 +7064,14 @@ function StripeConnectSheet({ artist, onConnected, onClose }) {
   };
 
   // Handle return from Stripe onboarding
-  useState(()=>{
+  React.useEffect(()=>{
     const params = new URLSearchParams(window.location.search);
     if(params.get("stripe") === "success"){
       onConnected({ stripeConnected: true, stripeAccount: artist.stripeAccount });
       setDone(true);
     }
-  });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[]);
 
   return(
     <Sheet open title="Connect Stripe Account" onClose={onClose}>
@@ -8291,21 +8291,18 @@ function InquiryWidget({ artists, onSubmit }) {
 function CountryPricingTab({ artist, onUpdateArtist, vp }) {
   const existing = artist.countryPricing||[];
   const initPricing = () => MARKETS.map(m=>{
-    const ex = existing.find(e=>e.code===m.code);
-    const baseEur = artist.deposit/0.1; // estimate full price from deposit
-    return ex||{code:m.code,active:false,price:Math.round(baseEur/m.toEur),deposit:Math.round(artist.deposit/m.toEur)};
+    const ex = existing.find((e:any)=>e.code===m.code);
+    return ex||{code:m.code, active:false, price:artist.deposit*10, deposit:artist.deposit};
   });
   const [pricing,setPricing]=useState(initPricing);
   const [saved,setSaved]=useState(false);
-  const [expanded,setExpanded]=useState(null); // which market card is expanded
+  const [expanded,setExpanded]=useState<string|null>(null);
 
-  const update=(code,field,val)=>setPricing(p=>p.map(row=>row.code===code?{...row,[field]:val}:row));
-// toggle is now handled by toggleAndSave below
+  const update=(code:string,field:string,val:any)=>setPricing((p:any[])=>p.map(row=>row.code===code?{...row,[field]:val}:row));
 
   const save=async(pricingData=pricing)=>{
     onUpdateArtist(artist.id,{countryPricing:pricingData});
-    setSaved(true);setTimeout(()=>setSaved(false),3000);
-    // Persist to Supabase
+    setSaved(true); setTimeout(()=>setSaved(false),3000);
     if(typeof getSupabase==="function"){
       try{
         const sb=await getSupabase();
@@ -8314,128 +8311,92 @@ function CountryPricingTab({ artist, onUpdateArtist, vp }) {
     }
   };
 
-  const toggleAndSave=(code)=>{
-    const newPricing=pricing.map(row=>row.code===code?{...row,active:!row.active}:row);
+  const toggleAndSave=(code:string)=>{
+    const newPricing=pricing.map((row:any)=>row.code===code?{...row,active:!row.active}:row);
     setPricing(newPricing);
-    save(newPricing); // auto-save immediately on toggle
+    save(newPricing);
   };
 
-  const eurVal=(row)=>{
-    const m=MARKETS.find(m=>m.code===row.code);
-    if(!m||!row.price) return null;
-    return Math.round(row.price*m.toEur);
-  };
-
-  const active=pricing.filter(r=>r.active);
-  const inactive=pricing.filter(r=>!r.active);
+  const active=pricing.filter((r:any)=>r.active);
+  const inactive=pricing.filter((r:any)=>!r.active);
 
   return(
     <div style={{display:"flex",flexDirection:"column",gap:16}}>
-      {/* Header */}
       <div>
         <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:4}}>{t('marketPricing')}</div>
         <div style={{fontSize:T.sm,color:C.muted,lineHeight:1.7}}>
-          All prices are displayed in EUR (€) to customers. Toggle markets on/off to control where you appear. You keep 88% of every deposit.
+          All prices are in EUR (€). Toggle countries where you are available to perform. You keep 88% of every deposit.
         </div>
       </div>
 
-      {/* Active markets summary */}
+      {/* Active markets */}
       {active.length>0&&(
-        <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:16,display:"flex",flexWrap:"wrap",gap:8}}>
-          <div style={{width:"100%",fontSize:T.xs,color:C.muted,fontWeight:700,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:4}}>Active in {active.length} market{active.length!==1?"s":""}</div>
-          {active.map(row=>{
-            const m=MARKETS.find(m=>m.code===row.code);
-            const eur=eurVal(row);
-            return(
-              <div key={row.code} style={{background:C.emeraldS,border:`1px solid ${C.emerald}44`,borderRadius:8,padding:"6px 12px",display:"flex",alignItems:"center",gap:6}}>
-                <span style={{fontSize:14}}>{m?.flag}</span>
-                <span style={{fontSize:T.xs,fontWeight:700,color:C.emerald}}>{m?.name}</span>
-                <span style={{fontSize:T.xs,color:C.muted}}>·</span>
-                <span style={{fontSize:T.xs,color:C.text,fontWeight:600}}>{m?.sym}{row.price?.toLocaleString()}</span>
-                {eur&&m?.currency!=="EUR"&&<span style={{fontSize:10,color:C.muted}}>≈ €{eur.toLocaleString()}</span>}
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      {/* Market cards */}
-      {[{label:"Active Markets",rows:active,emptyMsg:"No active markets yet — toggle markets below to activate them."},{label:"Add Markets",rows:inactive,emptyMsg:"All available markets are active."}].map(({label,rows,emptyMsg})=>(
-        <div key={label}>
-          <div style={{fontSize:T.xs,color:C.muted,fontWeight:700,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:10}}>{label}</div>
-          {rows.length===0?(
-            <div style={{fontSize:T.sm,color:C.faint,fontStyle:"italic",padding:"8px 0"}}>{emptyMsg}</div>
-          ):(
-            <div style={{display:"flex",flexDirection:"column",gap:8}}>
-              {rows.map(row=>{
-                const m=MARKETS.find(m=>m.code===row.code);
-                const eur=eurVal(row);
-                const isOpen=expanded===row.code;
-                return(
-                  <div key={row.code} style={{background:C.card,border:`1px solid ${row.active?C.emerald+"44":C.border}`,borderRadius:12,overflow:"hidden",transition:"border-color 0.15s"}}>
-                    {/* Card header — always visible */}
-                    <div style={{display:"flex",alignItems:"center",gap:12,padding:"14px 16px",cursor:"pointer"}} onClick={()=>setExpanded(isOpen?null:row.code)}>
-                      <span style={{fontSize:22,flexShrink:0}}>{m?.flag}</span>
-                      <div style={{flex:1,minWidth:0}}>
-                        <div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:700,fontSize:T.sm,color:C.text}}>{m?.name}</div>
-                        <div style={{fontSize:T.xs,color:C.muted,marginTop:2}}>
-                          {row.price?`${m?.sym}${row.price?.toLocaleString()}${eur&&m?.currency!=="EUR"?` ≈ €${eur.toLocaleString()}`:""}`:"No price set"}
-                        </div>
-                      </div>
-                      {/* Active toggle */}
-                      <div onClick={e=>{e.stopPropagation();toggleAndSave(row.code);}}
-                        style={{width:44,height:24,borderRadius:12,background:row.active?C.emerald:C.border,position:"relative",cursor:"pointer",flexShrink:0,transition:"background 0.2s"}}>
-                        <div style={{position:"absolute",top:3,left:row.active?"23px":"3px",width:18,height:18,borderRadius:"50%",background:"#fff",transition:"left 0.2s",boxShadow:"0 1px 4px rgba(0,0,0,0.3)"}}/>
-                      </div>
-                      <div style={{fontSize:10,color:C.muted,transform:`rotate(${isOpen?180:0}deg)`,transition:"transform 0.2s",flexShrink:0}}>▾</div>
-                    </div>
-
-                    {/* Expanded: price inputs */}
-                    {isOpen&&(
-                      <div style={{padding:"0 16px 16px",paddingTop:12}}>
-                        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:10}}>
-                          <div style={{display:"flex",flexDirection:"column",gap:5}}>
-                            <label style={{fontSize:T.xs,color:C.muted,fontWeight:700,letterSpacing:"0.8px",textTransform:"uppercase"}}>Full Price ({m?.currency})</label>
-                            <div style={{display:"flex",alignItems:"center",background:C.surface,border:`1px solid ${C.border}`,borderRadius:10,overflow:"hidden"}}>
-                              <span style={{padding:"0 12px",fontSize:T.sm,color:C.muted,flexShrink:0,background:C.card,height:"100%",display:"flex",alignItems:"center",borderRight:`1px solid ${C.border}`,minHeight:44,fontWeight:700}}>{m?.sym}</span>
-                              <input type="number" value={row.price||""} onChange={e=>update(row.code,"price",parseInt(e.target.value)||0)}
-                                style={{flex:1,background:"transparent",border:"none",color:C.text,fontSize:T.base,padding:"13px 12px",outline:"none",fontFamily:"inherit",minHeight:44}}/>
-                            </div>
-                            {eur&&m?.currency!=="EUR"&&<div style={{fontSize:10,color:C.emerald}}>≈ €{eur.toLocaleString()} EUR</div>}
-                          </div>
-                          <div style={{display:"flex",flexDirection:"column",gap:5}}>
-                            <label style={{fontSize:T.xs,color:C.muted,fontWeight:700,letterSpacing:"0.8px",textTransform:"uppercase"}}>Deposit ({m?.currency})</label>
-                            <div style={{display:"flex",alignItems:"center",background:C.surface,border:`1px solid ${C.border}`,borderRadius:10,overflow:"hidden"}}>
-                              <span style={{padding:"0 12px",fontSize:T.sm,color:C.muted,flexShrink:0,background:C.card,height:"100%",display:"flex",alignItems:"center",borderRight:`1px solid ${C.border}`,minHeight:44,fontWeight:700}}>{m?.sym}</span>
-                              <input type="number" value={row.deposit||""} onChange={e=>update(row.code,"deposit",parseInt(e.target.value)||0)}
-                                style={{flex:1,background:"transparent",border:"none",color:C.text,fontSize:T.base,padding:"13px 12px",outline:"none",fontFamily:"inherit",minHeight:44}}/>
-                            </div>
-                            {row.deposit&&m?.currency!=="EUR"&&<div style={{fontSize:10,color:C.muted}}>≈ €{Math.round(row.deposit*m.toEur).toLocaleString()} deposit</div>}
-                          </div>
-                        </div>
-                        <div style={{fontSize:T.xs,color:C.muted,lineHeight:1.6,background:C.surface,borderRadius:6,padding:"8px 10px"}}>
-                          💡 Price shown to customers browsing from {m?.name}. Stripe deposit auto-converts to EUR for processing.
-                        </div>
-                      </div>
-                    )}
+        <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:16}}>
+          <div style={{fontSize:T.xs,color:C.muted,fontWeight:700,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:10}}>Active in {active.length} market{active.length!==1?"s":""}</div>
+          <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
+            {active.map((row:any)=>{
+              const m=MARKETS.find(m=>m.code===row.code);
+              return(
+                <div key={row.code} style={{background:C.emeraldS,border:`1px solid ${C.emerald}44`,borderRadius:8,padding:"8px 12px",display:"flex",alignItems:"center",gap:8}}>
+                  <span style={{fontSize:16}}>{m?.flag}</span>
+                  <div>
+                    <div style={{fontSize:T.xs,fontWeight:700,color:C.emerald}}>{m?.name}</div>
+                    <div style={{fontSize:10,color:C.muted}}>€{row.price?.toLocaleString()} · Deposit €{row.deposit?.toLocaleString()}</div>
                   </div>
-                );
-              })}
-            </div>
-          )}
+                  <button onClick={()=>toggleAndSave(row.code)} style={{background:"none",border:"none",color:C.ruby,cursor:"pointer",fontSize:14,padding:"0 2px",lineHeight:1}}>✕</button>
+                </div>
+              );
+            })}
+          </div>
         </div>
-      ))}
-
-      {/* Save */}
-      {saved?(
-        <div style={{background:C.emeraldS,border:`1px solid ${C.emerald}44`,borderRadius:10,padding:"12px 16px",color:C.emerald,fontSize:T.sm,fontWeight:700,display:"flex",gap:8,alignItems:"center"}}>
-          ✓ Market pricing saved and live on your profile.
-        </div>
-      ):(
-        <Btn v="gold" sz="lg" onClick={save} xs={{width:"100%"}}>{t('saveMarketPricing')}</Btn>
       )}
+
+      {saved&&<div style={{background:C.emeraldS,border:`1px solid ${C.emerald}33`,borderRadius:8,padding:"10px 14px",color:C.emerald,fontSize:T.xs,fontWeight:700}}>✅ Saved!</div>}
+
+      {/* All markets */}
+      <div style={{display:"flex",flexDirection:"column",gap:8}}>
+        <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:4}}>Select your markets</div>
+        {MARKETS.filter(m=>m.code!=="OTHER").map(m=>{
+          const row:any = pricing.find((r:any)=>r.code===m.code)||{code:m.code,active:false,price:artist.deposit*10,deposit:artist.deposit};
+          const isActive = row.active;
+          return(
+            <div key={m.code} style={{background:C.card,border:`1px solid ${isActive?C.emerald+"55":C.border}`,borderRadius:10,overflow:"hidden",transition:"border-color 0.2s"}}>
+              <div style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",cursor:"pointer"}} onClick={()=>setExpanded(expanded===m.code?null:m.code)}>
+                <span style={{fontSize:22,flexShrink:0}}>{m.flag}</span>
+                <div style={{flex:1}}>
+                  <div style={{fontWeight:700,color:C.text,fontSize:T.sm}}>{m.name}</div>
+                  {isActive&&<div style={{fontSize:11,color:C.emerald,marginTop:2}}>€{row.price?.toLocaleString()} · Deposit €{row.deposit?.toLocaleString()}</div>}
+                </div>
+                <button onClick={e=>{e.stopPropagation();toggleAndSave(m.code);}}
+                  style={{background:isActive?C.emerald:C.surface,border:`1px solid ${isActive?C.emerald:C.border}`,borderRadius:20,padding:"5px 14px",color:isActive?"#fff":C.muted,fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit",transition:"all 0.2s"}}>
+                  {isActive?"On":"Off"}
+                </button>
+              </div>
+              {/* Expanded price editor */}
+              {expanded===m.code&&isActive&&(
+                <div style={{padding:"0 14px 14px",borderTop:`1px solid ${C.border}`,paddingTop:12}}>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+                    <div>
+                      <div style={{fontSize:11,color:C.muted,fontWeight:700,marginBottom:6}}>FULL PRICE (€)</div>
+                      <input type="number" value={row.price||""} onChange={e=>update(m.code,"price",parseInt(e.target.value)||0)}
+                        style={{width:"100%",background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,padding:"9px 12px",color:C.text,fontSize:T.sm,outline:"none",fontFamily:"inherit"}}/>
+                    </div>
+                    <div>
+                      <div style={{fontSize:11,color:C.muted,fontWeight:700,marginBottom:6}}>DEPOSIT (€, min 500)</div>
+                      <input type="number" value={row.deposit||""} onChange={e=>update(m.code,"deposit",Math.max(500,parseInt(e.target.value)||500))}
+                        style={{width:"100%",background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,padding:"9px 12px",color:C.text,fontSize:T.sm,outline:"none",fontFamily:"inherit"}}/>
+                    </div>
+                  </div>
+                  <button onClick={()=>save()} style={{marginTop:10,background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:8,padding:"9px 20px",fontWeight:700,fontSize:T.xs,cursor:"pointer",fontFamily:"inherit"}}>
+                    Save Prices ✓
+                  </button>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
     </div>
-  );
 }
 
 // ── Admin Inquiry Panel ────────────────────────────────────────────────
