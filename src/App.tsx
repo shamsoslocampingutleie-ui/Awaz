@@ -10074,11 +10074,11 @@ function AppInner() {
       {showApply&&<ApplySheet onSubmit={handleNewArtist} onClose={()=>setShowApply(false)}/>}
       {/* Contact / Inquiry modal */}
       {showContact&&(
-        <div style={{position:"fixed",inset:0,zIndex:9000,display:"flex",alignItems:"flex-end",justifyContent:"center",background:"rgba(0,0,0,0.7)",backdropFilter:"blur(4px)"}} onClick={()=>setShowContact(false)}>
-          <div style={{background:C.card,borderRadius:"20px 20px 0 0",width:"100%",maxWidth:560,maxHeight:"90vh",overflowY:"auto",padding:"24px 20px 40px"}} onClick={e=>e.stopPropagation()}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
+        <div style={{position:"fixed",inset:0,zIndex:9000,display:"flex",alignItems:"center",justifyContent:"center",padding:"20px",background:"rgba(0,0,0,0.7)",backdropFilter:"blur(4px)"}} onClick={()=>setShowContact(false)}>
+          <div style={{background:C.card,borderRadius:20,width:"100%",maxWidth:520,maxHeight:"85vh",overflowY:"auto",padding:"28px 24px 32px",boxShadow:"0 24px 80px rgba(0,0,0,0.6)"}} onClick={e=>e.stopPropagation()}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
               <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text}}>Send us a message</div>
-              <button onClick={()=>setShowContact(false)} style={{background:"none",border:"none",color:C.muted,cursor:"pointer",fontSize:24,lineHeight:1,padding:4}}>×</button>
+              <button onClick={()=>setShowContact(false)} style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:"50%",color:C.muted,cursor:"pointer",fontSize:18,width:32,height:32,display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
             </div>
             <div style={{color:C.muted,fontSize:T.sm,marginBottom:20,lineHeight:1.6}}>
               Have a question about booking, an artist, or the platform? We'll get back to you as soon as possible — all messages go directly to our team.
