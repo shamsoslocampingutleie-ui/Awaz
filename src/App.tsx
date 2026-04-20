@@ -3638,8 +3638,12 @@ function LoginSheet({ users, open, onLogin, onClose }) {
           onLogin({id:data.user.id,email:data.user.email,name:"Admin",role:"admin",artistId:null});
         } else {
           // Check users table first (new schema), then profiles (old schema)
-          const {data:dbUser}=await sb.from("users").select("*").eq("id",data.user.id).single();
-          const {data:profile}=await sb.from("profiles").select("*").eq("id",data.user.id).single();
+          const [userRes2, profileRes2] = await Promise.all([
+            sb.from("users").select("*").eq("id",data.user.id).single(),
+            sb.from("profiles").select("*").eq("id",data.user.id).single(),
+          ]);
+          const dbUser = userRes2.data;
+          const profile = profileRes2.data;
 
           // profiles.role takes priority for artist (registration sets this directly)
           // users.role is set by trigger and may be 'user' if metadata was missing
@@ -5646,36 +5650,41 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
 
     if(HAS_SUPA){
       try{
-        const sb=await getSupabase();
-        // Try admin client first (bypasses RLS), fallback to anon
-        const sbAdmin = await getSupabaseAdmin() || sb;
-        if(sbAdmin){
-          // Primary: upsert into artist_social
-          const{error:e1}=await sbAdmin.from("artist_social").upsert([{
-            artist_id:       artist.id,
-            spotify_data:    newSpotify    ? JSON.stringify(newSpotify)    : null,
-            instagram_data:  newInstagram  ? JSON.stringify(newInstagram)  : null,
-            youtube_data:    newYoutube    ? JSON.stringify(newYoutube)    : null,
-            tiktok_data:     newTiktok     ? JSON.stringify(newTiktok)     : null,
-            updated_at:      new Date().toISOString(),
-          }],{onConflict:"artist_id"});
+        const sbAdmin = await getSupabaseAdmin();
+        const sbAnon  = await getSupabase();
+        const sb = sbAdmin || sbAnon;
+        if(!sb){ setSocialErr("No database connection"); return; }
 
-          // Secondary: update artists table
-          const{error:e2}=await sbAdmin.from("artists").update({
+        // Run both saves in parallel for speed
+        const [res1, res2] = await Promise.all([
+          // Save to artist_social (dedicated table)
+          sb.from("artist_social").upsert([{
+            artist_id:      artist.id,
+            spotify_data:   newSpotify    ? JSON.stringify(newSpotify)    : null,
+            instagram_data: newInstagram  ? JSON.stringify(newInstagram)  : null,
+            youtube_data:   newYoutube    ? JSON.stringify(newYoutube)    : null,
+            tiktok_data:    newTiktok     ? JSON.stringify(newTiktok)     : null,
+            updated_at:     new Date().toISOString(),
+          }],{onConflict:"artist_id"}),
+          // Also save directly to artists table
+          sb.from("artists").update({
             spotify_data:   newSpotify,
             instagram_data: newInstagram,
             youtube_data:   newYoutube,
             tiktok_data:    newTiktok,
             updated_at:     new Date().toISOString(),
-          }).eq("id",artist.id);
+          }).eq("id", artist.id),
+        ]);
 
-          if(e1&&e2){
-            console.warn("Social save failed both strategies:",e1.message,e2.message);
-            setSocialErr("Save failed — check browser console for SQL fix");
-            return;
-          }
-          console.log("✅ Social saved to DB", e1?"(artists only)":"(artist_social + artists)");
+        const bothFailed = res1.error && res2.error;
+        if(bothFailed){
+          console.error("Social save failed:", res1.error?.message, res2.error?.message);
+          setSocialErr(`Save failed: ${res2.error?.message || res1.error?.message}`);
+          return;
         }
+        if(res1.error) console.warn("artist_social upsert failed (artists table OK):", res1.error.message);
+        if(res2.error) console.warn("artists update failed (artist_social OK):", res2.error.message);
+        console.log("✅ Social data saved");
       }catch(e:any){
         setSocialErr("Save error: "+e.message); return;
       }
@@ -8914,27 +8923,41 @@ function AppInner() {
               return;
             }
 
-            // ── STEP 2: Non-admin — check users table first, then profiles
-            const{data:dbUser}=await sb.from("users").select("*").eq("id",supaSession.user.id).single();
-            const{data:profile}=await sb.from("profiles").select("*").eq("id",supaSession.user.id).single();
+            // ── STEP 2: Non-admin — parallel fetch for speed ──────────────
+            const [userRes, profileRes] = await Promise.all([
+              sb.from("users").select("*").eq("id",supaSession.user.id).single(),
+              sb.from("profiles").select("*").eq("id",supaSession.user.id).single(),
+            ]);
+            const dbUser = userRes.data;
+            const profile = profileRes.data;
             const role=
               (profile?.role==="artist" ? "artist" : null) ||
               dbUser?.role ||
               profile?.role ||
               "customer";
 
-            // Always fetch artistId directly from artist_profiles by user_id
-            // This is more reliable than reading artist_id from profiles table
-            // artistId must match artists.id — trigger sets both to user's UUID
             let artistId=profile?.artist_id||null;
             if(!artistId && role==="artist") artistId=supaSession.user.id;
 
-            // ── STEP 3: If artist, load their profile into artists array ──
-            // Without this, ArtistPortal can't find the artist after login.
+            // ── STEP 3: If artist, load profile + social data in parallel ──
             if(role==="artist"&&artistId){
               try{
-                const{data:aRow}=await sb.from("artists").select("*").eq("id",artistId).single();
+                // Parallel: fetch artist row AND artist_social in one go
+                const [artistRes, socialRes] = await Promise.all([
+                  sb.from("artists").select("*").eq("id",artistId).single(),
+                  sb.from("artist_social").select("*").eq("artist_id",artistId).single(),
+                ]);
+                const aRow = artistRes.data;
+                const socialRow = socialRes.data;
+
                 if(aRow){
+                  // Merge: prefer artist_social if it exists (most recent save)
+                  const parseJ=(v:any)=>{ if(!v) return null; if(typeof v==="string"){try{return JSON.parse(v);}catch{return null;}} return v; };
+                  const sp = parseJ(socialRow?.spotify_data)   || aRow.spotify_data   || null;
+                  const ig = parseJ(socialRow?.instagram_data) || aRow.instagram_data || null;
+                  const yt = parseJ(socialRow?.youtube_data)   || aRow.youtube_data   || null;
+                  const tt = parseJ(socialRow?.tiktok_data)    || aRow.tiktok_data    || null;
+
                   const mapped={
                     id:aRow.id,name:aRow.name,nameDari:aRow.name_dari||"",
                     genre:aRow.genre||"",location:aRow.location||"",
@@ -8950,15 +8973,20 @@ function AppInner() {
                     available:aRow.available||{},blocked:aRow.blocked||{},
                     earnings:aRow.earnings||0,totalBookings:aRow.total_bookings||0,
                     verified:aRow.verified||false,
+                    isBoosted:aRow.is_boosted||false,
+                    boostedUntil:aRow.boosted_until||null,
                     stripeConnected:aRow.stripe_connected||false,
                     stripeAccount:aRow.stripe_account||null,
                     cancellationPolicy:aRow.cancellation_policy||"moderate",
-                    spotify:aRow.spotify_data||null,
-                    instagram:aRow.instagram_data||null,
-                    youtube:aRow.youtube_data||null,
-                    tiktok:aRow.tiktok_data||null,
+                    spotify:   sp,
+                    instagram: ig,
+                    youtube:   yt,
+                    tiktok:    tt,
                     countryPricing:aRow.country_pricing||[],
                     currency:aRow.currency||"EUR",
+                    email:aRow.email||aRow.contact_email||"",
+                    phone:aRow.phone||aRow.contact_phone||"",
+                    performingCountries:Array.isArray(aRow.performing_countries)?aRow.performing_countries:[],
                   };
                   setArtists(prev=>{
                     if(prev.find(x=>x.id===aRow.id))
