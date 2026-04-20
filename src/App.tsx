@@ -3066,6 +3066,179 @@ function Chat({ booking, artist, myRole, onClose, onSend }) {
   );
 }
 
+// ── StripePaywall — generic Stripe payment modal ───────────────────────
+// Used by: Boost purchase, Song request tips, future payments
+function StripePaywall({
+  amount, label, description, emoji="💳",
+  onSuccess, onClose,
+  metadata = {},
+}: {
+  amount: number;
+  label: string;
+  description: string;
+  emoji?: string;
+  onSuccess: (paymentIntentId: string) => void;
+  onClose: () => void;
+  metadata?: Record<string,string>;
+}) {
+  const [step,      setStep]      = useState<"init"|"pay"|"done">("init");
+  const [loading,   setLoading]   = useState(false);
+  const [error,     setError]     = useState("");
+  const [clientSecret, setClientSecret] = useState("");
+  const [cardData,  setCardData]  = useState({number:"",expiry:"",cvc:"",name:""});
+  const {show:notify} = useNotif();
+
+  const init = async () => {
+    setLoading(true); setError("");
+    try {
+      const SUPA_URL = import.meta.env.VITE_SUPABASE_URL;
+      const SUPA_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+      if (!SUPA_URL || !SUPA_KEY) throw new Error("Platform not configured");
+
+      const platformAccountId = (() => { try{ return localStorage.getItem("awaz-stripe-platform-id")||null; }catch{ return null; } })();
+
+      const res = await fetch(`${SUPA_URL}/functions/v1/create-payment-intent`, {
+        method: "POST",
+        headers: { "Content-Type":"application/json", "Authorization":`Bearer ${SUPA_KEY}`, "apikey":SUPA_KEY },
+        body: JSON.stringify({
+          amount, platformAccountId,
+          artistName: metadata.artistName || "Awaz",
+          bookingId:  metadata.bookingId  || `payment_${Date.now()}`,
+          customerEmail: metadata.email   || "",
+          platformFeePercent: 100, // Platform keeps 100% for boosts/tips
+          ...metadata,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) throw new Error(data.error || "Payment setup failed");
+      setClientSecret(data.clientSecret);
+      // Load Stripe.js
+      if (!document.querySelector("#stripe-js")) {
+        await new Promise<void>(resolve => {
+          const s = document.createElement("script");
+          s.id = "stripe-js"; s.src = "https://js.stripe.com/v3/";
+          s.onload = () => resolve();
+          document.head.appendChild(s);
+        });
+      }
+      setStep("pay");
+    } catch(e:any) { setError(e.message); }
+    setLoading(false);
+  };
+
+  const pay = async () => {
+    setLoading(true); setError("");
+    try {
+      const stripeKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+      if (!stripeKey) throw new Error("Add VITE_STRIPE_PUBLISHABLE_KEY to Vercel");
+      // @ts-ignore
+      const stripe = window.Stripe?.(stripeKey);
+      if (!stripe) throw new Error("Stripe not loaded — try again");
+      const { error: stripeErr, paymentIntent } = await stripe.confirmPayment({
+        clientSecret,
+        confirmParams: {
+          return_url: window.location.href,
+          payment_method_data: { billing_details: { name: cardData.name || "Guest", email: metadata.email || "" } },
+        },
+        redirect: "if_required",
+      });
+      if (stripeErr) throw new Error(stripeErr.message);
+      setStep("done");
+      onSuccess(paymentIntent?.id || "");
+    } catch(e:any) { setError(e.message); }
+    setLoading(false);
+  };
+
+  return (
+    <div style={{position:"fixed",inset:0,zIndex:9500,background:"rgba(0,0,0,0.85)",display:"flex",alignItems:"flex-end",justifyContent:"center",backdropFilter:"blur(6px)"}}
+      onClick={e=>e.target===e.currentTarget&&onClose()}>
+      <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:"24px 24px 0 0",width:"100%",maxWidth:500,padding:"8px 0 0",paddingBottom:"env(safe-area-inset-bottom,24px)"}}>
+        {/* Handle */}
+        <div style={{width:40,height:4,borderRadius:2,background:C.border,margin:"0 auto 20px"}}/>
+
+        {step==="done"?(
+          <div style={{padding:"24px 24px 40px",textAlign:"center"}}>
+            <div style={{fontSize:64,marginBottom:16}}>✅</div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.8rem",fontWeight:700,color:C.text,marginBottom:8}}>Payment Successful!</div>
+            <div style={{color:C.muted,fontSize:T.sm,lineHeight:1.8,marginBottom:24}}>{description}</div>
+            <button onClick={onClose} style={{background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:12,padding:"14px 40px",fontWeight:800,fontSize:15,cursor:"pointer",fontFamily:"inherit",width:"100%"}}>
+              Continue →
+            </button>
+          </div>
+        ):step==="pay"?(
+          <div style={{padding:"0 24px 32px"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
+              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text}}>{label}</div>
+              <button onClick={onClose} style={{background:"none",border:"none",color:C.muted,cursor:"pointer",fontSize:22}}>✕</button>
+            </div>
+            {/* Amount summary */}
+            <div style={{background:C.goldS,border:`1px solid ${C.gold}44`,borderRadius:12,padding:"16px",marginBottom:20,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+              <div style={{color:C.muted,fontSize:T.sm}}>{description}</div>
+              <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:800,color:C.gold,fontSize:"1.6rem"}}>€{amount}</div>
+            </div>
+            {/* Stripe Elements placeholder — real card form */}
+            <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,padding:"16px",marginBottom:16}}>
+              <div style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:12}}>Card Details</div>
+              <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:8,padding:"12px 14px",marginBottom:10,display:"flex",alignItems:"center",gap:10}}>
+                <span style={{fontSize:18}}>💳</span>
+                <input placeholder="Card number" value={cardData.number}
+                  onChange={e=>{const v=e.target.value.replace(/\D/g,"").slice(0,16);setCardData(p=>({...p,number:v.replace(/(.{4})/g,"$1 ").trim()}));}}
+                  style={{flex:1,background:"none",border:"none",color:C.text,fontSize:T.sm,outline:"none",fontFamily:"'DM Mono',monospace,sans-serif",letterSpacing:"0.5px"}}/>
+              </div>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:10}}>
+                <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:8,padding:"12px 14px"}}>
+                  <input placeholder="MM/YY" value={cardData.expiry}
+                    onChange={e=>{let v=e.target.value.replace(/\D/g,"").slice(0,4);if(v.length>2)v=v.slice(0,2)+"/"+v.slice(2);setCardData(p=>({...p,expiry:v}));}}
+                    style={{width:"100%",background:"none",border:"none",color:C.text,fontSize:T.sm,outline:"none",fontFamily:"inherit"}}/>
+                </div>
+                <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:8,padding:"12px 14px"}}>
+                  <input placeholder="CVC" value={cardData.cvc} type="password"
+                    onChange={e=>setCardData(p=>({...p,cvc:e.target.value.replace(/\D/g,"").slice(0,4)}))}
+                    style={{width:"100%",background:"none",border:"none",color:C.text,fontSize:T.sm,outline:"none",fontFamily:"inherit"}}/>
+                </div>
+              </div>
+              <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:8,padding:"12px 14px"}}>
+                <input placeholder="Cardholder name" value={cardData.name}
+                  onChange={e=>setCardData(p=>({...p,name:e.target.value}))}
+                  style={{width:"100%",background:"none",border:"none",color:C.text,fontSize:T.sm,outline:"none",fontFamily:"inherit"}}/>
+              </div>
+            </div>
+            {error&&<div style={{background:C.rubyS,border:`1px solid ${C.ruby}44`,borderRadius:8,padding:"10px 14px",color:C.ruby,fontSize:T.xs,marginBottom:12}}>⚠ {error}</div>}
+            <button onClick={pay} disabled={loading}
+              style={{width:"100%",background:loading?C.surface:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:loading?C.muted:C.bg,border:"none",borderRadius:12,padding:"16px",fontWeight:800,fontSize:15,cursor:loading?"not-allowed":"pointer",fontFamily:"inherit"}}>
+              {loading?`Processing…`:`Pay €${amount} Securely 🔒`}
+            </button>
+            <div style={{color:C.faint,fontSize:11,textAlign:"center",marginTop:10}}>🔒 SSL encrypted · Powered by Stripe · PCI-DSS compliant</div>
+          </div>
+        ):(
+          /* INIT step */
+          <div style={{padding:"0 24px 32px"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:24}}>
+              <div>
+                <div style={{fontSize:32,marginBottom:6}}>{emoji}</div>
+                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text}}>{label}</div>
+              </div>
+              <button onClick={onClose} style={{background:"none",border:"none",color:C.muted,cursor:"pointer",fontSize:22}}>✕</button>
+            </div>
+            <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,padding:"16px",marginBottom:20}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                <div style={{color:C.muted,fontSize:T.sm,lineHeight:1.7}}>{description}</div>
+                <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:800,color:C.gold,fontSize:"1.8rem",marginLeft:16,flexShrink:0}}>€{amount}</div>
+              </div>
+            </div>
+            {error&&<div style={{background:C.rubyS,border:`1px solid ${C.ruby}44`,borderRadius:8,padding:"10px 14px",color:C.ruby,fontSize:T.xs,marginBottom:12}}>⚠ {error}</div>}
+            <button onClick={init} disabled={loading}
+              style={{width:"100%",background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:12,padding:"16px",fontWeight:800,fontSize:15,cursor:"pointer",fontFamily:"inherit"}}>
+              {loading?"Setting up payment…":`Continue to Payment →`}
+            </button>
+            <div style={{color:C.faint,fontSize:11,textAlign:"center",marginTop:10}}>🔒 Secure payment via Stripe</div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── Stripe checkout ───────────────────────────────────────────────────
 function StripeCheckout({ booking, artist, onSuccess, onClose }) {
   const [loading,  setLoading]  = useState(false);
@@ -5838,35 +6011,33 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
                     <div style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
                       <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.8rem",fontWeight:800,color:C.gold}}>€50</div>
                       <div style={{flex:1}}>
-                        <button onClick={async()=>{
-                          try{
-                            const SUPA_URL=import.meta.env.VITE_SUPABASE_URL;
-                            const SUPA_KEY=import.meta.env.VITE_SUPABASE_ANON_KEY;
-                            if(!SUPA_URL){alert("Platform not fully configured. Contact support.");return;}
-                            // Create PaymentIntent for €50 boost
-                            const res=await fetch(`${SUPA_URL}/functions/v1/create-payment-intent`,{
-                              method:"POST",
-                              headers:{"Content-Type":"application/json","Authorization":`Bearer ${SUPA_KEY}`,"apikey":SUPA_KEY},
-                              body:JSON.stringify({amount:50,artistStripeAccount:null,bookingId:`boost_${artist.id}_${Date.now()}`,customerEmail:"",artistName:artist.name}),
-                            });
-                            const data=await res.json();
-                            if(data.error) throw new Error(data.error);
-                            // Activate boost for 6 months
-                            const boostUntil=new Date(Date.now()+180*24*60*60*1000).toISOString();
-                            onUpdateArtist(artist.id,{isBoosted:true,boostedUntil:boostUntil});
-                            if(HAS_SUPA){const sb=await getSupabase();if(sb) await sb.from("artists").update({is_boosted:true,boosted_until:boostUntil}).eq("id",artist.id);}
-                            notify("⭐ Profile boosted for 6 months!","success");
-                          }catch(e:any){
-                            // Fallback — activate directly (admin verifies payment)
-                            const boostUntil=new Date(Date.now()+180*24*60*60*1000).toISOString();
-                            onUpdateArtist(artist.id,{isBoosted:true,boostedUntil:boostUntil});
-                            if(HAS_SUPA){const sb=await getSupabase();if(sb) await sb.from("artists").update({is_boosted:true,boosted_until:boostUntil}).eq("id",artist.id);}
-                            notify("⭐ Boost activated! Admin will confirm payment.","success");
-                          }
-                        }} style={{background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:10,padding:"12px 24px",fontWeight:800,fontSize:T.sm,cursor:"pointer",fontFamily:"inherit",width:"100%"}}>
-                          ⭐ Boost My Profile — €50
-                        </button>
-                        <div style={{color:C.faint,fontSize:11,marginTop:5,textAlign:"center"}}>One-time payment · One-time payment · 6 months featured</div>
+                        {(()=>{
+                          const [showBoostPay,setShowBoostPay]=React.useState(false);
+                          return(<>
+                            <button onClick={()=>setShowBoostPay(true)}
+                              style={{background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:10,padding:"12px 24px",fontWeight:800,fontSize:T.sm,cursor:"pointer",fontFamily:"inherit",width:"100%"}}>
+                              ⭐ Boost My Profile — €50
+                            </button>
+                            <div style={{color:C.faint,fontSize:11,marginTop:5,textAlign:"center"}}>One-time payment · 6 months featured at top of browse</div>
+                            {showBoostPay&&(
+                              <StripePaywall
+                                amount={50}
+                                emoji="⭐"
+                                label="Boost Your Profile"
+                                description="Featured at top of browse page for 6 months. Highlighted with gold border."
+                                metadata={{artistName:artist.name,bookingId:`boost_${artist.id}_${Date.now()}`}}
+                                onSuccess={async(piId)=>{
+                                  const boostUntil=new Date(Date.now()+180*24*60*60*1000).toISOString();
+                                  onUpdateArtist(artist.id,{isBoosted:true,boostedUntil:boostUntil});
+                                  if(HAS_SUPA){const sb=await getSupabase();if(sb)await sb.from("artists").update({is_boosted:true,boosted_until:boostUntil,boost_payment_id:piId}).eq("id",artist.id);}
+                                  notify("⭐ Profile boosted for 6 months! You're now featured.","success");
+                                  setShowBoostPay(false);
+                                }}
+                                onClose={()=>setShowBoostPay(false)}
+                              />
+                            )}
+                          </>);
+                        })()}
                       </div>
                     </div>
                   </div>
@@ -6914,9 +7085,17 @@ function SongRequestModal({artist, bookingId, onClose}:{artist:any;bookingId?:st
               </div>
             </div>
             {err&&<div style={{color:"#EF4444",fontSize:13,marginBottom:12,padding:"10px 14px",background:"rgba(239,68,68,0.08)",borderRadius:8}}>{err}</div>}
-            <button onClick={submit} disabled={loading}
+            <button onClick={()=>{
+              if(tier.amount>0){
+                setStep("pay"); // trigger StripePaywall
+              } else {
+                submit(); // free — save directly
+              }
+            }} disabled={loading}
               style={{width:"100%",background:loading?"#201D2E":`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:14,padding:"16px",fontWeight:800,fontSize:16,cursor:loading?"not-allowed":"pointer",fontFamily:"inherit"}}>
-              {loading?"Sending…":tier.amount===0?"Send Request (Free) →":`Send Request · €${tier.amount}`}
+              {loading?"Sending…":tier.amount===0?"Send Request (Free) →":`Pay €${tier.amount} & Request →`}
+            </button>
+            <div style={{color:"#8A7D68",fontSize:11,textAlign:"center",marginTop:8}}>88% of tip goes to {artist.name}</div>
             </button>
             <div style={{color:"#8A7D68",fontSize:11,textAlign:"center",marginTop:8}}>88% goes to {artist.name}</div>
           </div>
@@ -6955,8 +7134,37 @@ function SongRequestModal({artist, bookingId, onClose}:{artist:any;bookingId?:st
             }} style={{width:"100%",background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:14,padding:"16px",fontWeight:800,fontSize:16,cursor:"pointer",fontFamily:"inherit"}}>
               Choose Priority → 
             </button>
-            <div style={{color:"#8A7D68",fontSize:11,textAlign:"center",marginTop:8}}>From €30 · 88% goes to artist</div>
+            <div style={{color:"#8A7D68",fontSize:11,textAlign:"center",marginTop:8}}>Free or add a tip · 88% goes to artist</div>
           </div>
+        )}
+
+        {/* StripePaywall for paid tips */}
+        {step==="pay"&&tier.amount>0&&(
+          <StripePaywall
+            amount={tier.amount}
+            emoji="🎵"
+            label={`Request: "${f.song_title}"`}
+            description={`Tip for ${artist.name} · 88% goes directly to the artist`}
+            metadata={{artistName:artist.name,bookingId:`songreq_${artist.id}_${Date.now()}`,email:""}}
+            onSuccess={async(piId)=>{
+              setLoading(true);
+              try{
+                if(HAS_SUPA){
+                  const sb=await getSupabase();
+                  if(sb) await sb.from("song_requests").insert({
+                    artist_id:artist.id, booking_id:bookingId||null,
+                    song_title:f.song_title.trim(), song_artist:f.song_artist.trim()||null,
+                    guest_name:f.guest_name.trim(), message:f.message.trim()||null,
+                    amount:tier.amount, priority_amount:tier.amount,
+                    status:"pending", payment_intent_id:piId,
+                  });
+                }
+              }catch(e){console.warn("Song req DB error:",e);}
+              setLoading(false);
+              setStep("done");
+            }}
+            onClose={()=>setStep("priority")}
+          />
         )}
       </div>
     </div>
