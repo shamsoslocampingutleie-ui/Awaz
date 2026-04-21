@@ -3095,73 +3095,77 @@ function StripePaywall({
   }, []);
 
   const startCheckout = async() => {
+    if(loading) return;
     setLoad(true); setError("");
     try {
       const SUPA_URL = import.meta.env.VITE_SUPABASE_URL;
       const SUPA_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
       if(!SUPA_URL || !SUPA_KEY) throw new Error("Platform not configured — contact support");
 
-      const platformAccountId = (()=>{ try{ return localStorage.getItem("awaz-stripe-platform-id")||null; }catch{ return null; }})();
+      const successUrl = `${window.location.origin}${window.location.pathname}?boost_success=1&bookingId=${metadata.bookingId||Date.now()}`;
+      const cancelUrl  = `${window.location.origin}${window.location.pathname}`;
 
-      // ✅ Correct function name: create-payment-intent-ts (not create-payment-intent)
-      // ✅ Send amount in EUR — function handles all minimums
       const res = await fetch(`${SUPA_URL}/functions/v1/create-payment-intent-ts`, {
         method: "POST",
         headers: {"Content-Type":"application/json","Authorization":`Bearer ${SUPA_KEY}`,"apikey":SUPA_KEY},
         body: JSON.stringify({
           amount,
-          type:              metadata.type || "tip",
-          platformAccountId,
-          artistName:        metadata.artistName||"Awaz",
-          bookingId:         metadata.bookingId||`pay_${Date.now()}`,
-          customerEmail:     metadata.email||"",
-          platformFeePercent:100,
+          type:        metadata.type || "boost",
+          artistName:  metadata.artistName||"Awaz",
+          bookingId:   metadata.bookingId||`pay_${Date.now()}`,
+          customerEmail: metadata.email||"",
+          successUrl,
+          cancelUrl,
+          mode: "checkout",  // tells edge function to create Checkout Session
         }),
       });
 
       let data: any = {};
-      try { data = await res.json(); } catch { data = { error: `HTTP ${res.status} — Edge Function unreachable` }; }
+      try { data = await res.json(); } catch { data = { error: `HTTP ${res.status}` }; }
 
       if(!res.ok || data.error) {
-        // Show specific error to help debug
         const msg = data.error || `HTTP ${res.status}`;
-        if(msg.includes("STRIPE_SECRET_KEY")) throw new Error("STRIPE_SECRET_KEY mangler i Supabase Secrets → Edge Functions → Secrets");
-        if(msg.includes("Invalid API Key") || msg.includes("No such")) throw new Error("Stripe API-nøkkel er feil — oppdater STRIPE_SECRET_KEY i Supabase Secrets");
-        if(res.status === 404) throw new Error("Edge Function ikke funnet — sjekk at create-payment-intent-ts er deployet i Supabase");
-        if(res.status === 401) throw new Error("Supabase anon key er feil — sjekk VITE_SUPABASE_ANON_KEY i Vercel");
         throw new Error(msg);
       }
 
-      // Load Stripe.js and redirect to hosted Checkout
+      // If edge function returns a checkout URL, redirect directly — no Stripe.js needed
+      if(data.checkoutUrl) {
+        window.location.href = data.checkoutUrl;
+        return;
+      }
+
+      // Fallback: use clientSecret with Stripe.js
+      if(!data.clientSecret) throw new Error("Ingen betalingsdata mottatt fra server");
+
       if(!(window as any).Stripe){
         await new Promise<void>((resolve,reject)=>{
           const s=document.createElement("script");
           s.src="https://js.stripe.com/v3/";
           s.onload=()=>resolve();
-          s.onerror=()=>reject(new Error("Failed to load Stripe"));
+          s.onerror=()=>reject(new Error("Kunne ikke laste Stripe"));
           document.head.appendChild(s);
         });
       }
       const stripeKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
-      if(!stripeKey) throw new Error("Add VITE_STRIPE_PUBLISHABLE_KEY to Vercel → Environment Variables");
+      if(!stripeKey) throw new Error("VITE_STRIPE_PUBLISHABLE_KEY mangler i Vercel");
 
       const stripe = (window as any).Stripe(stripeKey);
       const returnUrl = `${window.location.origin}${window.location.pathname}?payment_intent=${data.paymentIntentId}&redirect_status=succeeded`;
 
-      // Use redirect:'always' — sends user directly to Stripe's hosted payment page
-      // This works without Stripe Elements and handles all payment methods
       const {error:stripeErr} = await stripe.confirmPayment({
         clientSecret: data.clientSecret,
-        confirmParams: {
-          return_url: returnUrl,
-        },
+        confirmParams: { return_url: returnUrl },
         redirect: "always",
       });
-      // If we get here, redirect didn't happen — show error
       if(stripeErr) throw new Error(stripeErr.message);
 
     } catch(e:any){
-      setError(e.message);
+      const msg = e.message||"";
+      if(msg.includes("Failed to fetch") || e.name==="AbortError") {
+        setError("Nettverksfeil — sjekk internettforbindelsen og prøv igjen");
+      } else {
+        setError(msg || "Noe gikk galt");
+      }
     }
     setLoad(false);
   };
