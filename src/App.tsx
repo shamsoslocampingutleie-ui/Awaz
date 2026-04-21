@@ -5513,6 +5513,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
   const [calSaved,setCalSaved]=useState(false);
   const [showStripeConnect,setShowStripeConnect]=useState(false);
   const [editing,setEditing]=useState(false);
+  const [showBoostPay,setShowBoostPay]=useState(false);
   const [saving,setSaving]=useState(false);
   const [saveSuccess,setSaveSuccess]=useState(false);
   const [editF,setEditF]=useState({
@@ -6108,33 +6109,28 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
                     <div style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
                       <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.8rem",fontWeight:800,color:C.gold}}>€50</div>
                       <div style={{flex:1}}>
-                        {(()=>{
-                          const [showBoostPay,setShowBoostPay]=React.useState(false);
-                          return(<>
-                            <button onClick={()=>setShowBoostPay(true)}
-                              style={{background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:10,padding:"12px 24px",fontWeight:800,fontSize:T.sm,cursor:"pointer",fontFamily:"inherit",width:"100%"}}>
-                              ⭐ Boost My Profile — €50
-                            </button>
-                            <div style={{color:C.faint,fontSize:11,marginTop:5,textAlign:"center"}}>One-time payment · 6 months featured at top of browse</div>
-                            {showBoostPay&&(
-                              <StripePaywall
-                                amount={50}
-                                emoji="⭐"
-                                label="Boost Your Profile"
-                                description="Featured at top of browse page for 6 months. Highlighted with gold border."
-                                metadata={{artistName:artist.name,bookingId:`boost_${artist.id}_${Date.now()}`,type:"boost"}}
-                                onSuccess={async(piId)=>{
-                                  const boostUntil=new Date(Date.now()+180*24*60*60*1000).toISOString();
-                                  onUpdateArtist(artist.id,{isBoosted:true,boostedUntil:boostUntil});
-                                  if(HAS_SUPA){const sb=await getSupabase();if(sb)await sb.from("artists").update({is_boosted:true,boosted_until:boostUntil,boost_payment_id:piId}).eq("id",artist.id);}
-                                  notify("⭐ Profile boosted for 6 months! You're now featured.","success");
-                                  setShowBoostPay(false);
-                                }}
-                                onClose={()=>setShowBoostPay(false)}
-                              />
-                            )}
-                          </>);
-                        })()}
+                        <button onClick={()=>setShowBoostPay(true)}
+                          style={{background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:10,padding:"12px 24px",fontWeight:800,fontSize:T.sm,cursor:"pointer",fontFamily:"inherit",width:"100%"}}>
+                          ⭐ Boost My Profile — €50
+                        </button>
+                        <div style={{color:C.faint,fontSize:11,marginTop:5,textAlign:"center"}}>One-time payment · 6 months featured at top of browse</div>
+                        {showBoostPay&&(
+                          <StripePaywall
+                            amount={50}
+                            emoji="⭐"
+                            label="Boost Your Profile"
+                            description="Featured at top of browse page for 6 months. Highlighted with gold border."
+                            metadata={{artistName:artist.name,bookingId:`boost_${artist.id}_${Date.now()}`,type:"boost"}}
+                            onSuccess={async(piId)=>{
+                              const boostUntil=new Date(Date.now()+180*24*60*60*1000).toISOString();
+                              onUpdateArtist(artist.id,{isBoosted:true,boostedUntil:boostUntil});
+                              if(HAS_SUPA){const sb=await getSupabase();if(sb)await sb.from("artists").update({is_boosted:true,boosted_until:boostUntil,boost_payment_id:piId}).eq("id",artist.id);}
+                              notify("⭐ Profile boosted for 6 months! You're now featured.","success");
+                              setShowBoostPay(false);
+                            }}
+                            onClose={()=>setShowBoostPay(false)}
+                          />
+                        )}
                       </div>
                     </div>
                   </div>
@@ -10467,40 +10463,139 @@ function ApplySheet({ onSubmit, onClose }) {
                 </div>
               </div>
             )}
-            <div style={{display:"flex",gap:4,marginBottom:18}}>{[1,2].map(i=><div key={i} style={{flex:1,height:3,borderRadius:2,background:i<=step?C.gold:C.border,transition:"background 0.3s"}}/>)}</div>
-            {err&&<div style={{background:C.rubyS,border:`1px solid ${C.ruby}28`,borderRadius:8,padding:"10px 13px",color:C.ruby,fontSize:T.xs,marginBottom:12}}>⚠ {err}</div>}
+            {/* Progress dots — visual, not text */}
+            <div style={{display:"flex",justifyContent:"center",gap:8,marginBottom:20}}>
+              {[1,2].map(i=>(
+                <div key={i} style={{width:i===step?24:8,height:8,borderRadius:4,background:i<=step?C.gold:C.border,transition:"all 0.3s"}}/>
+              ))}
+            </div>
+            {err&&<div style={{background:C.rubyS,border:`1px solid ${C.ruby}28`,borderRadius:10,padding:"12px 14px",color:C.ruby,fontSize:T.sm,marginBottom:14,display:"flex",gap:8,alignItems:"center"}}>⚠️ {err}</div>}
 
             {step===1&&(
-              <div style={{display:"flex",flexDirection:"column",gap:12}}>
-                <Inp label="Artist / Band Name *" placeholder="Soraya Rahimi" value={f.name} onChange={e=>setF(p=>({...p,name:e.target.value}))} required/>
-                <Inp label="Name in Dari (optional)" placeholder="ثریا رحیمی" value={f.nameDari} onChange={e=>setF(p=>({...p,nameDari:e.target.value}))}/>
-                <Inp label="Email *" type="email" placeholder="you@email.com" value={f.email} onChange={e=>setF(p=>({...p,email:e.target.value}))} required/>
-                <Inp label="Password *" type="password" placeholder="8+ chars, uppercase, number" value={f.pass} onChange={e=>setF(p=>({...p,pass:e.target.value}))} required hint="Min 8 chars, 1 uppercase, 1 number"/>
-                <Inp label="Confirm Password *" type="password" placeholder="Repeat password" value={f.pass2} onChange={e=>setF(p=>({...p,pass2:e.target.value}))} required/>
-              </div>
-            )}
-            {step===2&&(
-              <div style={{display:"flex",flexDirection:"column",gap:12}}>
-                <Sel label="Genre / Style *" value={f.genre} onChange={e=>setF(p=>({...p,genre:e.target.value}))}
-                options={[["","Select genre…"],["Ghazal","Ghazal — Classical vocal"],["Herati","Herati — Western Afghan folk"],["Mast","Mast — Dance & celebratory"],["Pashto","Pashto — Pashtun traditional"],["Logari","Logari — Southern Afghan"],["Qarsak","Qarsak — Party & wedding"],["Rubab","Rubab — Instrumental"],["Tabla","Tabla — Percussion"],["Sufi","Sufi — Devotional"],["Classical","Classical Afghan"],["Folk","Afghan Folk"],["Pop","Afghan Pop"],["Fusion","Afghan Fusion"],["Other","Other / Mixed"]]}/>
-                <Inp label="Location / City" placeholder="Oslo, Norway" value={f.location} onChange={e=>setF(p=>({...p,location:e.target.value}))}/>
-                <CountrySelect label="Country" value={f.country||"NO"} onChange={v=>setF(p=>({...p,country:v}))}/>
-                <Sel label="Currency (all Awaz payments are in €)" value="EUR" onChange={()=>{}}
-                  options={[["EUR","€ Euro — all markets"]]}/>
-                <div style={{fontSize:11,color:"#8A7D68",marginTop:-8,paddingLeft:2}}>Awaz uses Euro for all transactions across Europe</div>
-                <Inp label="Starting Price" placeholder="From €2,500" value={f.priceInfo} onChange={e=>setF(p=>({...p,priceInfo:e.target.value}))}/>
-                <Inp label="Minimum Deposit (€ equivalent)" type="number" value={f.deposit} onChange={e=>setF(p=>({...p,deposit:e.target.value}))} hint="Minimum €500 — customers pay this when booking"/>
-                <Inp label="Instruments (comma-separated)" placeholder="Vocals, Harmonium" value={f.instruments} onChange={e=>setF(p=>({...p,instruments:e.target.value}))}/>
-                <Inp label="Tags (comma-separated)" placeholder="Ghazal, Wedding, Eid" value={f.tags} onChange={e=>setF(p=>({...p,tags:e.target.value}))}/>
-                <Sel label="Cancellation Policy" value={f.cancellationPolicy} onChange={e=>setF(p=>({...p,cancellationPolicy:e.target.value}))}
-                  options={[["flexible","Flexible — Full refund 7+ days"],["moderate","Moderate — Full refund 72h+"],["strict","Strict — 50% refund 72h+"],["no_refund","No Refund"]]}/>
-                <Inp label="Bio" placeholder="Tell clients about yourself…" value={f.bio} onChange={e=>setF(p=>({...p,bio:e.target.value}))} rows={3}/>
+              <div style={{display:"flex",flexDirection:"column",gap:14}}>
+                {/* Step title */}
+                <div style={{textAlign:"center",marginBottom:4}}>
+                  <div style={{fontSize:32,marginBottom:6}}>👤</div>
+                  <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text}}>Who are you?</div>
+                  <div style={{color:C.muted,fontSize:T.sm,marginTop:4}}>اسم و ایمیل خود را بنویسید</div>
+                </div>
+
+                {/* Name — large, clear */}
+                <div>
+                  <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:6,display:"flex",gap:6,alignItems:"center"}}>
+                    🎤 Your artist name <span style={{color:C.ruby}}>*</span>
+                  </div>
+                  <input value={f.name} onChange={e=>setF(p=>({...p,name:e.target.value}))}
+                    placeholder="e.g. Ahmad Shah"
+                    style={{width:"100%",background:C.surface,border:`2px solid ${f.name?C.emerald:C.border}`,borderRadius:12,padding:"14px 16px",color:C.text,fontSize:16,outline:"none",fontFamily:"inherit",boxSizing:"border-box",transition:"border-color 0.2s"}}/>
+                </div>
+
+                {/* Dari name */}
+                <div>
+                  <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:6}}>🔤 Name in Dari / Pashto (optional — اختیاری)</div>
+                  <input value={f.nameDari} onChange={e=>setF(p=>({...p,nameDari:e.target.value}))}
+                    placeholder="احمد شاه"
+                    dir="rtl"
+                    style={{width:"100%",background:C.surface,border:`2px solid ${f.nameDari?C.emerald:C.border}`,borderRadius:12,padding:"14px 16px",color:C.text,fontSize:16,outline:"none",fontFamily:"'Noto Naskh Arabic',serif",boxSizing:"border-box",transition:"border-color 0.2s",textAlign:"right"}}/>
+                </div>
+
+                {/* Email */}
+                <div>
+                  <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:6,display:"flex",gap:6,alignItems:"center"}}>
+                    📧 Email address <span style={{color:C.ruby}}>*</span>
+                  </div>
+                  <input value={f.email} onChange={e=>setF(p=>({...p,email:e.target.value}))}
+                    type="email" placeholder="you@gmail.com"
+                    style={{width:"100%",background:C.surface,border:`2px solid ${f.email&&f.email.includes("@")?C.emerald:C.border}`,borderRadius:12,padding:"14px 16px",color:C.text,fontSize:16,outline:"none",fontFamily:"inherit",boxSizing:"border-box",transition:"border-color 0.2s"}}/>
+                </div>
+
+                {/* Password */}
+                <div>
+                  <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:6,display:"flex",gap:6,alignItems:"center"}}>
+                    🔒 Password <span style={{color:C.ruby}}>*</span>
+                  </div>
+                  <input value={f.pass} onChange={e=>setF(p=>({...p,pass:e.target.value}))}
+                    type="password" placeholder="At least 8 characters"
+                    style={{width:"100%",background:C.surface,border:`2px solid ${f.pass.length>=8?C.emerald:C.border}`,borderRadius:12,padding:"14px 16px",color:C.text,fontSize:16,outline:"none",fontFamily:"inherit",boxSizing:"border-box",transition:"border-color 0.2s"}}/>
+                  {f.pass.length>0&&f.pass.length<8&&<div style={{color:C.ruby,fontSize:11,marginTop:4}}>⚠ Too short — need {8-f.pass.length} more characters</div>}
+                </div>
+
+                <div>
+                  <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:6}}>🔒 Repeat password <span style={{color:C.ruby}}>*</span></div>
+                  <input value={f.pass2} onChange={e=>setF(p=>({...p,pass2:e.target.value}))}
+                    type="password" placeholder="Same password again"
+                    style={{width:"100%",background:C.surface,border:`2px solid ${f.pass2&&f.pass2===f.pass?C.emerald:f.pass2?C.ruby:C.border}`,borderRadius:12,padding:"14px 16px",color:C.text,fontSize:16,outline:"none",fontFamily:"inherit",boxSizing:"border-box",transition:"border-color 0.2s"}}/>
+                  {f.pass2&&f.pass2!==f.pass&&<div style={{color:C.ruby,fontSize:11,marginTop:4}}>⚠ Passwords don't match</div>}
+                  {f.pass2&&f.pass2===f.pass&&<div style={{color:C.emerald,fontSize:11,marginTop:4}}>✓ Passwords match!</div>}
+                </div>
               </div>
             )}
 
-            <div style={{display:"flex",gap:8,marginTop:18}}>
-              {step>1&&<Btn v="ghost" onClick={()=>{setStep(s=>s-1);setErr("");}} xs={{flex:1}}>{t('back')}</Btn>}
-              {step<2?<Btn onClick={next} xs={{flex:step>1?2:1}}>Next →</Btn>:<Btn onClick={submit} loading={loading} xs={{flex:2}}>{t('submitApplication')}</Btn>}
+            {step===2&&(
+              <div style={{display:"flex",flexDirection:"column",gap:14}}>
+                {/* Step title */}
+                <div style={{textAlign:"center",marginBottom:4}}>
+                  <div style={{fontSize:32,marginBottom:6}}>🎵</div>
+                  <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text}}>Your music</div>
+                  <div style={{color:C.muted,fontSize:T.sm,marginTop:4}}>چه نوع موسیقی می‌نوازید؟</div>
+                </div>
+
+                {/* Genre — big visual buttons */}
+                <div>
+                  <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:8}}>🎼 What type of music? <span style={{color:C.ruby}}>*</span></div>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+                    {[["Ghazal","غزل"],["Herati","هراتی"],["Mast","مست"],["Pashto","پشتو"],["Logari","لوگری"],["Classical","کلاسیک"],["Folk","فولک"],["Fusion","فیوژن"]].map(([g,dari])=>(
+                      <button key={g} onClick={()=>setF(p=>({...p,genre:g}))}
+                        style={{background:f.genre===g?C.goldS:C.surface,border:`2px solid ${f.genre===g?C.gold:C.border}`,borderRadius:10,padding:"12px 8px",cursor:"pointer",fontFamily:"inherit",textAlign:"center",transition:"all 0.15s"}}>
+                        <div style={{fontWeight:700,color:f.genre===g?C.gold:C.text,fontSize:T.sm}}>{g}</div>
+                        <div style={{fontSize:11,color:C.muted,fontFamily:"'Noto Naskh Arabic',serif"}}>{dari}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Location */}
+                <div>
+                  <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:6}}>📍 Your city</div>
+                  <input value={f.location} onChange={e=>setF(p=>({...p,location:e.target.value}))}
+                    placeholder="e.g. Oslo, Norway"
+                    style={{width:"100%",background:C.surface,border:`2px solid ${f.location?C.emerald:C.border}`,borderRadius:12,padding:"14px 16px",color:C.text,fontSize:16,outline:"none",fontFamily:"inherit",boxSizing:"border-box"}}/>
+                </div>
+
+                {/* Price — simple slider */}
+                <div>
+                  <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:8}}>💶 Minimum deposit customers pay</div>
+                  <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:6}}>
+                    {[500,800,1000,1500].map(d=>(
+                      <button key={d} onClick={()=>setF(p=>({...p,deposit:String(d)}))}
+                        style={{background:f.deposit===String(d)?C.goldS:C.surface,border:`2px solid ${f.deposit===String(d)?C.gold:C.border}`,borderRadius:10,padding:"10px 4px",cursor:"pointer",fontFamily:"inherit",textAlign:"center",transition:"all 0.15s"}}>
+                        <div style={{fontWeight:700,color:f.deposit===String(d)?C.gold:C.text,fontSize:T.sm}}>€{d}</div>
+                      </button>
+                    ))}
+                  </div>
+                  <div style={{fontSize:11,color:C.muted,marginTop:6,textAlign:"center"}}>You receive 88% = €{Math.round(parseInt(f.deposit||"500")*0.88)}</div>
+                </div>
+              </div>
+            )}
+
+            <div style={{display:"flex",gap:8,marginTop:20}}>
+              {step>1&&(
+                <button onClick={()=>{setStep(s=>s-1);setErr("");}}
+                  style={{flex:1,background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,padding:"14px",fontWeight:700,fontSize:15,cursor:"pointer",fontFamily:"inherit",color:C.muted}}>
+                  ← Back
+                </button>
+              )}
+              {step<2?(
+                <button onClick={next}
+                  style={{flex:2,background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:12,padding:"16px",fontWeight:800,fontSize:16,cursor:"pointer",fontFamily:"inherit"}}>
+                  Continue → ادامه
+                </button>
+              ):(
+                <button onClick={submit} disabled={loading}
+                  style={{flex:2,background:loading?C.surface:`linear-gradient(135deg,${C.ruby},${C.rubyD||C.ruby})`,color:loading?C.muted:"#fff",border:"none",borderRadius:12,padding:"16px",fontWeight:800,fontSize:16,cursor:loading?"wait":"pointer",fontFamily:"inherit"}}>
+                  {loading?"Creating account…":"🎤 Create My Artist Profile"}
+                </button>
+              )}
             </div>
           </>
         )}
