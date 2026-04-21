@@ -3849,10 +3849,12 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
       deposit:artist.deposit,depositPaid:false,status:"pending_payment",chatUnlocked:false,messages:[]};
     setPending(nb);setShowBook(false);setShowStripe(true);
   };
+  const [showEventPlan,setShowEventPlan]=useState(false);
   const onPaid=()=>{
     if(!pending)return;
     const paid={...pending,depositPaid:true,status:"confirmed",chatUnlocked:true};
-    onBookingCreated(paid);setChat(paid);
+    onBookingCreated(paid);
+    setShowEventPlan(true); // Show event plan form after payment
   };
 
   // Mobile: stack layout | Desktop: side-by-side
@@ -4118,6 +4120,29 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
       </Sheet>
 
       {showStripe&&pending&&<StripeCheckout booking={pending} artist={artist} onSuccess={onPaid} onClose={()=>setShowStripe(false)}/>}
+      {/* Event Plan Form — shown after payment */}
+      {showEventPlan&&pending&&(
+        <div style={{position:"fixed",inset:0,zIndex:9200,background:"rgba(0,0,0,0.85)",overflowY:"auto",backdropFilter:"blur(6px)"}}>
+          <div style={{maxWidth:560,margin:"40px auto",padding:"0 16px 60px"}}>
+            <div style={{display:"flex",justifyContent:"flex-end",marginBottom:12}}>
+              <button onClick={()=>{setShowEventPlan(false);setChat({...pending,depositPaid:true,status:"confirmed",chatUnlocked:true});}}
+                style={{background:"rgba(255,255,255,0.1)",border:"none",color:"#EDE4CE",borderRadius:8,padding:"8px 16px",cursor:"pointer",fontFamily:"inherit",fontSize:13}}>
+                Skip for now →
+              </button>
+            </div>
+            <EventPlanForm
+              bookingId={pending.id}
+              customerName={pending.customerName||pending.name||""}
+              eventType={pending.event||pending.eventType||""}
+              eventDate={pending.date||""}
+              onSubmitted={()=>{
+                setShowEventPlan(false);
+                setChat({...pending,depositPaid:true,status:"confirmed",chatUnlocked:true});
+              }}
+            />
+          </div>
+        </div>
+      )}
       {chat&&<Chat booking={chat} artist={artist} myRole="customer" onClose={()=>setChat(null)} onSend={()=>{}}/>}
     </div>
   );
@@ -5946,6 +5971,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
                         ))}
                       </div>
                       {b.notes&&<div style={{fontSize:T.xs,color:C.muted,background:C.surface,borderRadius:8,padding:"8px 10px",marginBottom:12}}>📝 {b.notes}</div>}
+                      <EventPlanView bookingId={b.id} C={C} T={T}/>
                       {/* Action buttons */}
                       <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
                         {isPending&&(
@@ -10633,6 +10659,118 @@ function ApplySheet({ onSubmit, onClose }) {
         )}
       </div>
     </Sheet>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// AWAZ AI MODULE — EventPlanForm + EventPlanView
+// Plugs in as overlay — zero changes to existing UI/UX
+// ═══════════════════════════════════════════════════════════════
+
+interface ProgramItem { time:string;title:string;note:string;type:"ceremony"|"dinner"|"dance"|"attan"|"speech"|"other"; }
+interface EventPlan { booking_id:string;customer_name:string;event_type:string;event_date:string;venue:string;venue_city:string;guest_count:number|"";start_time:string;end_time:string;program:ProgramItem[];special_songs:string;special_requests:string;dress_code:string;food_served:boolean;languages:string[]; }
+
+async function getEPSupabase(){
+  const {createClient}=await import("@supabase/supabase-js") as any;
+  return createClient(import.meta.env.VITE_SUPABASE_URL,import.meta.env.VITE_SUPABASE_ANON_KEY);
+}
+
+export function EventPlanForm({bookingId,customerName,eventType,eventDate,onSubmitted}:{bookingId:string;customerName:string;eventType?:string;eventDate?:string;onSubmitted?:()=>void;}){
+  const [step,setStep]=useState<"form"|"program"|"songs"|"done">("form");
+  const [loading,setLoading]=useState(false);
+  const [error,setError]=useState("");
+  const [form,setForm]=useState<EventPlan>({booking_id:bookingId,customer_name:customerName,event_type:eventType||"",event_date:eventDate||"",venue:"",venue_city:"",guest_count:"",start_time:"",end_time:"",program:[],special_songs:"",special_requests:"",dress_code:"",food_served:false,languages:[]});
+  const [newItem,setNewItem]=useState<ProgramItem>({time:"",title:"",note:"",type:"ceremony"});
+  const setF=(k:keyof EventPlan,v:any)=>setForm(p=>({...p,[k]:v}));
+  const toggleLang=(l:string)=>setF("languages",form.languages.includes(l)?form.languages.filter(x=>x!==l):[...form.languages,l]);
+  const addItem=()=>{if(!newItem.time||!newItem.title)return;setF("program",[...form.program,newItem]);setNewItem({time:"",title:"",note:"",type:"ceremony"});};
+  const EP={card:{background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:14,padding:"18px 20px",marginBottom:16},lbl:{fontSize:11,fontWeight:700,color:"rgba(255,255,255,0.45)",letterSpacing:"0.7px",textTransform:"uppercase" as const,marginBottom:6,display:"block"},inp:{width:"100%",background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:10,padding:"10px 14px",color:"#EDE4CE",fontSize:14,fontFamily:"inherit",marginBottom:12,boxSizing:"border-box" as const,outline:"none"},btn:(col="#C8A84A")=>({background:col,color:col==="#C8A84A"?"#07060B":"#fff",border:"none",borderRadius:10,padding:"11px 20px",fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}),chip:(s:boolean)=>({display:"inline-block",padding:"5px 12px",borderRadius:20,fontSize:12,fontWeight:600,cursor:"pointer",border:s?"1px solid #C8A84A":"1px solid rgba(255,255,255,0.15)",background:s?"rgba(200,168,74,0.18)":"transparent",color:s?"#C8A84A":"rgba(255,255,255,0.55)",marginRight:6,marginBottom:6})};
+  const submit=async()=>{setLoading(true);setError("");try{const sb=await getEPSupabase();const{error:e}=await sb.from("event_plans").upsert({...form,updated_at:new Date().toISOString()},{onConflict:"booking_id"});if(e)throw new Error(e.message);setStep("done");onSubmitted?.();}catch(e:any){setError(e.message);}setLoading(false);};
+  const tIcon:{[k:string]:string}={ceremony:"💍 Seremoni",dinner:"🍽️ Middag",dance:"💃 Dans",attan:"🥁 Attan",speech:"🎤 Tale",other:"⭐ Annet"};
+
+  if(step==="done")return(<div style={{textAlign:"center",padding:"40px 20px",color:"#EDE4CE"}}><div style={{fontSize:56,marginBottom:12}}>🎉</div><div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:26,fontWeight:700,marginBottom:8}}>Planen er sendt!</div><div style={{color:"rgba(255,255,255,0.5)",fontSize:14,lineHeight:1.7}}>Artisten forbereder seg nå til arrangementet ditt.</div></div>);
+
+  return(
+    <div style={{background:"#0F0D16",borderRadius:20,padding:"24px 20px 32px",color:"#EDE4CE",fontFamily:"'DM Sans',sans-serif"}}>
+      <div style={{marginBottom:20}}>
+        <div style={{fontSize:11,fontWeight:700,color:"#C8A84A",letterSpacing:"1px",textTransform:"uppercase",marginBottom:6}}>Etter booking</div>
+        <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:26,fontWeight:700,marginBottom:4}}>Fortell artisten om arrangementet</div>
+        <div style={{fontSize:13,color:"rgba(255,255,255,0.45)",lineHeight:1.6}}>Hjelp artisten å forberede den perfekte opplevelsen</div>
+      </div>
+      <div style={{display:"flex",gap:6,marginBottom:20}}>{["Detaljer","Program","Sanger"].map((l,i)=><div key={l} style={{flex:1,height:3,borderRadius:2,background:i<(step==="form"?1:step==="program"?2:3)?"#C8A84A":"rgba(255,255,255,0.1)",transition:"background 0.3s"}}/>)}</div>
+      {error&&<div style={{background:"rgba(168,44,56,0.15)",border:"1px solid rgba(168,44,56,0.3)",borderRadius:8,padding:"10px 14px",color:"#F87171",fontSize:13,marginBottom:12}}>⚠ {error}</div>}
+
+      {step==="form"&&(<div>
+        <div style={EP.card}>
+          <label style={EP.lbl}>Type arrangement</label>
+          <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:12}}>{["Bryllup 💍","Forlovelse 💐","Eid 🌙","Bursdag 🎂","Konsert 🎤","Annet ⭐"].map(t=><span key={t} onClick={()=>setF("event_type",t)} style={EP.chip(form.event_type===t)}>{t}</span>)}</div>
+          <label style={EP.lbl}>Dato</label>
+          <input type="date" value={form.event_date} onChange={e=>setF("event_date",e.target.value)} style={EP.inp}/>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}><div><label style={EP.lbl}>Start</label><input type="time" value={form.start_time} onChange={e=>setF("start_time",e.target.value)} style={EP.inp}/></div><div><label style={EP.lbl}>Slutt</label><input type="time" value={form.end_time} onChange={e=>setF("end_time",e.target.value)} style={EP.inp}/></div></div>
+        </div>
+        <div style={EP.card}>
+          <label style={EP.lbl}>Sted / Venue</label><input value={form.venue} onChange={e=>setF("venue",e.target.value)} placeholder="Navn på lokalet" style={EP.inp}/>
+          <label style={EP.lbl}>By</label><input value={form.venue_city} onChange={e=>setF("venue_city",e.target.value)} placeholder="Oslo, Bergen..." style={EP.inp}/>
+          <label style={EP.lbl}>Antall gjester</label><input type="number" value={form.guest_count} onChange={e=>setF("guest_count",parseInt(e.target.value)||"")} placeholder="100" style={EP.inp}/>
+        </div>
+        <div style={EP.card}>
+          <label style={EP.lbl}>Gjestenes språk</label>
+          <div style={{display:"flex",flexWrap:"wrap",gap:6}}>{["Dari","Pashto","Norsk","Deutsch","English","Français","Arabisk"].map(l=><span key={l} onClick={()=>toggleLang(l)} style={EP.chip(form.languages.includes(l))}>{l}</span>)}</div>
+        </div>
+        <button style={{...EP.btn(),width:"100%"}} onClick={()=>setStep("program")}>Neste: Program →</button>
+      </div>)}
+
+      {step==="program"&&(<div>
+        <div style={EP.card}>
+          <label style={EP.lbl}>Legg til programpunkter</label>
+          <div style={{display:"grid",gridTemplateColumns:"80px 1fr",gap:8,marginBottom:8}}><input value={newItem.time} onChange={e=>setNewItem(p=>({...p,time:e.target.value}))} type="time" style={{...EP.inp,marginBottom:0}}/><input value={newItem.title} onChange={e=>setNewItem(p=>({...p,title:e.target.value}))} placeholder="Navn på punkt" style={{...EP.inp,marginBottom:0}}/></div>
+          <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:8}}>{(Object.keys(tIcon) as any[]).map((t:any)=><span key={t} onClick={()=>setNewItem(p=>({...p,type:t}))} style={EP.chip(newItem.type===t)}>{tIcon[t]}</span>)}</div>
+          <input value={newItem.note} onChange={e=>setNewItem(p=>({...p,note:e.target.value}))} placeholder="Notat (valgfritt)" style={EP.inp}/>
+          <button style={EP.btn()} onClick={addItem}>+ Legg til</button>
+        </div>
+        {form.program.length>0&&<div style={EP.card}>{form.program.map((item,i)=><div key={i} style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:"1px solid rgba(255,255,255,0.07)"}}><div><span style={{marginRight:8}}>{{"ceremony":"💍","dinner":"🍽️","dance":"💃","attan":"🥁","speech":"🎤","other":"⭐"}[item.type]}</span><strong style={{color:"#EDE4CE",fontSize:13}}>{item.time} — {item.title}</strong>{item.note&&<div style={{fontSize:11,color:"rgba(255,255,255,0.4)",marginTop:2}}>{item.note}</div>}</div><button onClick={()=>setF("program",form.program.filter((_,j)=>j!==i))} style={{background:"none",border:"none",color:"rgba(255,100,100,0.7)",cursor:"pointer",fontSize:16}}>✕</button></div>)}</div>}
+        <div style={{display:"flex",gap:8}}><button style={{...EP.btn("rgba(255,255,255,0.1)"),flex:1,color:"#EDE4CE"}} onClick={()=>setStep("form")}>← Tilbake</button><button style={{...EP.btn(),flex:2}} onClick={()=>setStep("songs")}>Neste: Sanger →</button></div>
+      </div>)}
+
+      {step==="songs"&&(<div>
+        <div style={EP.card}>
+          <label style={EP.lbl}>🎵 Ønskede sanger (én per linje)</label>
+          <textarea value={form.special_songs} onChange={e=>setF("special_songs",e.target.value)} placeholder={"Laila — Ahmad Zahir\nDa Meena Shor — Nashenas"} rows={5} style={{...EP.inp,resize:"vertical"}}/>
+          <label style={EP.lbl}>Dresscode</label>
+          <input value={form.dress_code} onChange={e=>setF("dress_code",e.target.value)} placeholder="Tradisjonelt, formelt..." style={EP.inp}/>
+          <label style={EP.lbl}>Andre ønsker til artisten</label>
+          <textarea value={form.special_requests} onChange={e=>setF("special_requests",e.target.value)} placeholder="F.eks: Spill attan etter kl 21..." rows={3} style={{...EP.inp,resize:"vertical"}}/>
+          <div style={{display:"flex",alignItems:"center",gap:10,marginTop:4}}><input type="checkbox" id="food" checked={form.food_served} onChange={e=>setF("food_served",e.target.checked)} style={{width:18,height:18}}/><label htmlFor="food" style={{fontSize:13,color:"rgba(255,255,255,0.6)",cursor:"pointer"}}>Mat / middag serveres</label></div>
+        </div>
+        <div style={{display:"flex",gap:8}}><button style={{...EP.btn("rgba(255,255,255,0.1)"),flex:1,color:"#EDE4CE"}} onClick={()=>setStep("program")}>← Tilbake</button><button style={{...EP.btn(),flex:2}} onClick={submit} disabled={loading}>{loading?"Sender…":"Send plan til artisten ✓"}</button></div>
+      </div>)}
+    </div>
+  );
+}
+
+export function EventPlanView({bookingId,C,T}:{bookingId:string;C:any;T:any}){
+  const [plan,setPlan]=useState<EventPlan|null>(null);
+  const [open,setOpen]=useState(false);
+  useEffect(()=>{(async()=>{try{const sb=await getEPSupabase();const{data}=await sb.from("event_plans").select("*").eq("booking_id",bookingId).single();setPlan(data||null);}catch{setPlan(null);}})();},[bookingId]);
+  if(!plan)return null;
+  const tI:{[k:string]:string}={ceremony:"💍",dinner:"🍽️",dance:"💃",attan:"🥁",speech:"🎤",other:"⭐"};
+  return(
+    <div style={{marginBottom:12}}>
+      <button onClick={()=>setOpen(o=>!o)} style={{width:"100%",background:`linear-gradient(135deg,rgba(200,168,74,0.08),${C.card})`,border:`1px solid ${C.gold}44`,borderRadius:10,padding:"10px 14px",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"space-between",fontFamily:"inherit"}}>
+        <div style={{display:"flex",alignItems:"center",gap:8}}><span style={{fontSize:16}}>📋</span><span style={{fontSize:T.xs,fontWeight:700,color:C.gold}}>Arrangementplan mottatt</span>{plan.program?.length>0&&<span style={{background:C.goldS,color:C.gold,fontSize:10,fontWeight:700,padding:"1px 7px",borderRadius:10}}>{plan.program.length} punkter</span>}</div>
+        <span style={{color:C.muted,fontSize:12}}>{open?"▲ Lukk":"▼ Vis"}</span>
+      </button>
+      {open&&<div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:"0 0 10px 10px",padding:"14px 16px",borderTop:"none"}}>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:8,marginBottom:14}}>
+          {[["🎉 Type",plan.event_type],["📅 Dato",plan.event_date],["🕐 Tid",plan.start_time?`${plan.start_time}–${plan.end_time}`:null],["📍 Sted",plan.venue||plan.venue_city||null],["👥 Gjester",plan.guest_count?`ca. ${plan.guest_count}`:null],["👗 Dresscode",plan.dress_code||null]].map(([l,v])=>v?<div key={l as string} style={{background:C.surface,borderRadius:8,padding:"8px 10px"}}><div style={{fontSize:10,color:C.muted,fontWeight:700,textTransform:"uppercase" as const,letterSpacing:"0.5px",marginBottom:2}}>{l}</div><div style={{fontSize:T.xs,color:C.text}}>{v}</div></div>:null)}
+        </div>
+        {plan.languages?.length>0&&<div style={{marginBottom:12}}><div style={{fontSize:10,color:C.muted,fontWeight:700,textTransform:"uppercase" as const,marginBottom:6}}>Gjestespråk</div><div style={{display:"flex",gap:6,flexWrap:"wrap"}}>{plan.languages.map(l=><span key={l} style={{background:C.lapisS,color:C.lapis,fontSize:11,fontWeight:700,padding:"2px 8px",borderRadius:10,border:`1px solid ${C.lapis}33`}}>{l}</span>)}</div></div>}
+        {plan.program?.length>0&&<div style={{marginBottom:12}}><div style={{fontSize:10,color:C.muted,fontWeight:700,textTransform:"uppercase" as const,marginBottom:8}}>Program</div>{plan.program.map((item,i)=><div key={i} style={{display:"flex",gap:10,padding:"8px 10px",background:C.surface,borderRadius:8,marginBottom:6,borderLeft:item.type==="attan"?`3px solid ${C.gold}`:`3px solid ${C.border}`}}><span style={{fontSize:15,flexShrink:0}}>{tI[item.type]||"⭐"}</span><div><div style={{fontSize:T.xs,fontWeight:700,color:C.text}}>{item.time} — {item.title}</div>{item.note&&<div style={{fontSize:11,color:C.muted,marginTop:2}}>{item.note}</div>}</div></div>)}</div>}
+        {plan.special_songs&&<div style={{marginBottom:12}}><div style={{fontSize:10,color:C.muted,fontWeight:700,textTransform:"uppercase" as const,marginBottom:6}}>Ønskede sanger</div><div style={{background:C.goldS,border:`1px solid ${C.gold}33`,borderRadius:8,padding:"10px 12px",fontSize:T.xs,color:C.textD,lineHeight:1.7,whiteSpace:"pre-wrap"}}>🎵 {plan.special_songs}</div></div>}
+        {plan.special_requests&&<div><div style={{fontSize:10,color:C.muted,fontWeight:700,textTransform:"uppercase" as const,marginBottom:6}}>Andre ønsker</div><div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,padding:"10px 12px",fontSize:T.xs,color:C.muted,lineHeight:1.7,whiteSpace:"pre-wrap"}}>📝 {plan.special_requests}</div></div>}
+        {plan.food_served&&<div style={{marginTop:10,fontSize:T.xs,color:C.muted,display:"flex",gap:6}}><span>🍽️</span>Mat serveres</div>}
+      </div>}
+    </div>
   );
 }
 
