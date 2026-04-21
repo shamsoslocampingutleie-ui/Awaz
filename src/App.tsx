@@ -3148,12 +3148,16 @@ function StripePaywall({
       const stripe = (window as any).Stripe(stripeKey);
       const returnUrl = `${window.location.origin}${window.location.pathname}?payment_intent=${data.paymentIntentId}&redirect_status=succeeded`;
 
-      // Confirm payment with Stripe's hosted UI
+      // Use redirect:'always' — sends user directly to Stripe's hosted payment page
+      // This works without Stripe Elements and handles all payment methods
       const {error:stripeErr} = await stripe.confirmPayment({
         clientSecret: data.clientSecret,
-        confirmParams: { return_url: returnUrl },
-        // This shows Stripe's own secure payment form
+        confirmParams: {
+          return_url: returnUrl,
+        },
+        redirect: "always",
       });
+      // If we get here, redirect didn't happen — show error
       if(stripeErr) throw new Error(stripeErr.message);
 
     } catch(e:any){
@@ -5502,6 +5506,36 @@ function SupportWidget({artistId}:{artistId:string}){
 }
 
 // ── Artist Portal ──────────────────────────────────────────────────────
+function BoostButton({ artist, onUpdateArtist, notify }) {
+  const [showBoostPay, setShowBoostPay] = React.useState(false);
+  return (
+    <>
+      <button onClick={()=>setShowBoostPay(true)}
+        style={{background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:10,padding:"12px 24px",fontWeight:800,fontSize:T.sm,cursor:"pointer",fontFamily:"inherit",width:"100%"}}>
+        ⭐ Boost My Profile — €50
+      </button>
+      <div style={{color:C.faint,fontSize:11,marginTop:5,textAlign:"center"}}>One-time payment · 6 months featured at top of browse</div>
+      {showBoostPay&&(
+        <StripePaywall
+          amount={50}
+          emoji="⭐"
+          label="Boost Your Profile"
+          description="Featured at top of browse page for 6 months. Highlighted with gold border."
+          metadata={{artistName:artist.name,bookingId:`boost_${artist.id}_${Date.now()}`,type:"boost"}}
+          onSuccess={async(piId)=>{
+            const boostUntil=new Date(Date.now()+180*24*60*60*1000).toISOString();
+            onUpdateArtist(artist.id,{isBoosted:true,boostedUntil:boostUntil});
+            if(HAS_SUPA){const sb=await getSupabase();if(sb)await sb.from("artists").update({is_boosted:true,boosted_until:boostUntil,boost_payment_id:piId}).eq("id",artist.id);}
+            notify("⭐ Profile boosted for 6 months! You're now featured.","success");
+            setShowBoostPay(false);
+          }}
+          onClose={()=>setShowBoostPay(false)}
+        />
+      )}
+    </>
+  );
+}
+
 function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, onMsg, onUpdateArtist }) {
   const vp=useViewport();
   const {show:notify}=useNotif();
