@@ -29,6 +29,22 @@ if (typeof window !== "undefined") {
   }, true);
 }
 
+// ── Structured logger — structured, filterable, easy to disable in prod ──
+const LOG_LEVEL = import.meta.env.PROD ? "warn" : "debug";
+const log = {
+  debug: (...a: unknown[]) => LOG_LEVEL==="debug" && console.log("[awaz:debug]",...a),
+  info:  (...a: unknown[]) => console.log("[awaz:info]", ...a),
+  warn:  (...a: unknown[]) => console.warn("[awaz:warn]", ...a),
+  error: (...a: unknown[]) => console.error("[awaz:error]",...a),
+  // Critical path logging — always fires regardless of env
+  payment: (event:string, data:Record<string,unknown>) =>
+    console.log(`[awaz:payment] ${event}`, {...data, ts: new Date().toISOString()}),
+  social:  (event:string, data:Record<string,unknown>) =>
+    LOG_LEVEL==="debug" && console.log(`[awaz:social] ${event}`, {...data, ts: new Date().toISOString()}),
+  auth:    (event:string, data:Record<string,unknown>) =>
+    LOG_LEVEL==="debug" && console.log(`[awaz:auth] ${event}`, {...data, ts: new Date().toISOString()}),
+};
+
 // ── Supabase clients ─────────────────────────────────────────────────
 const SUPA_URL = import.meta.env.VITE_SUPABASE_URL  || "";
 const SUPA_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
@@ -88,22 +104,16 @@ async function getSupabaseReg() {
 // ── Service-role admin client — bypasses ALL RLS for admin delete ops ─
 // Requires VITE_SUPABASE_SERVICE_KEY in Vercel env vars.
 // SECURITY: This key is frontend-visible — only use for admin-gated ops.
-const SUPA_SERVICE_KEY = import.meta.env.VITE_SUPABASE_SERVICE_KEY || "";
+// ⚠️ SECURITY: VITE_SUPABASE_SERVICE_KEY bypasses all RLS and is visible to
+// anyone who views page source. It has been removed from client-side use.
+// Admin delete ops use the anon client — configure RLS policies in Supabase
+// to allow authenticated users to delete their own artist row.
+// Service-role operations belong ONLY in Edge Functions.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let _supabaseAdmin: any = null;
 async function getSupabaseAdmin() {
-  if (_supabaseAdmin) return _supabaseAdmin;
-  if (!SUPA_URL || !SUPA_SERVICE_KEY) return null; // falls back to normal client
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { createClient } = await import("@supabase/supabase-js") as any;
-    _supabaseAdmin = createClient(SUPA_URL, SUPA_SERVICE_KEY, {
-      auth: { persistSession:false, autoRefreshToken:false, detectSessionInUrl:false,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        lock:(_n:any,_t:any,fn:any)=>fn() },
-    });
-    return _supabaseAdmin;
-  } catch { return null; }
+  // Returns null — callers fall back to getSupabase() (anon client + RLS)
+  return null;
 }
 
 // ── Robust artist delete — tries admin client first, falls back to anon ─
@@ -3095,31 +3105,40 @@ function StripePaywall({
   }, []);
 
   const startCheckout = async() => {
+    if(loading) return; // prevent double-click
     setLoad(true); setError("");
+    log.payment("checkout_started", {amount, type: metadata.type, bookingId: metadata.bookingId});
     try {
       const SUPA_URL = import.meta.env.VITE_SUPABASE_URL;
       const SUPA_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
       if(!SUPA_URL || !SUPA_KEY) throw new Error("Platform not configured — contact support");
 
-      const platformAccountId = (()=>{ try{ return localStorage.getItem("awaz-stripe-platform-id")||null; }catch{ return null; }})();
+      // Boost/tip payments never use platformAccountId (go direct to Awaz)
+      const isBoost = (metadata.type === "boost" || metadata.type === "tip");
+      const platformAccountId = isBoost ? null : (()=>{ try{ return localStorage.getItem("awaz-stripe-platform-id")||null; }catch{ return null; }})();
 
-      // ✅ Correct function name: create-payment-intent-ts (not create-payment-intent)
-      // ✅ Send amount in EUR — function handles all minimums
+      // AbortController for 15s timeout
+      const controller = new AbortController();
+      const timer = setTimeout(()=>controller.abort(), 15000);
+
       const res = await fetch(`${SUPA_URL}/functions/v1/create-payment-intent-ts`, {
         method: "POST",
+        signal: controller.signal,
         headers: {"Content-Type":"application/json","Authorization":`Bearer ${SUPA_KEY}`,"apikey":SUPA_KEY},
         body: JSON.stringify({
-          amount,                                    // actual EUR amount (e.g. 50 for boost)
-          type:              metadata.type || "tip", // "booking" | "boost" | "tip"
-          platformAccountId,
+          amount,
+          type:              metadata.type || "boost",
+          ...(platformAccountId ? {platformAccountId} : {}),
           artistName:        metadata.artistName||"Awaz",
           bookingId:         metadata.bookingId||`pay_${Date.now()}`,
           customerEmail:     metadata.email||"",
-          platformFeePercent:100,
+          platformFeePercent:isBoost ? 100 : 12,
         }),
       });
+      clearTimeout(timer);
       const data = await res.json();
       if(!res.ok||data.error) throw new Error(data.error||"Payment setup failed");
+      log.payment("intent_created", {intentId: data.paymentIntentId, amount});
 
       // Load Stripe.js and redirect to hosted Checkout
       if(!(window as any).Stripe){
@@ -3146,7 +3165,13 @@ function StripePaywall({
       if(stripeErr) throw new Error(stripeErr.message);
 
     } catch(e:any){
-      setError(e.message);
+      // Translate cryptic network errors into actionable messages
+      const msg = e.message||"";
+      if(msg.includes("Failed to fetch")||msg.includes("NetworkError")||msg.includes("AbortError")||e.name==="AbortError"){
+        setError("Network error — check your connection and try again. If the problem persists, contact support.");
+      } else {
+        setError(msg||"Payment setup failed");
+      }
     }
     setLoad(false);
   };
@@ -3216,18 +3241,28 @@ function StripeCheckout({ booking, artist, onSuccess, onClose }) {
 
   // Step 1: Create PaymentIntent via Supabase Edge Function
   const initPayment = async () => {
+    if(loading) return; // prevent double-click / duplicate PaymentIntents
+    if(!checkRateLimit("payment_"+booking.id, 3, 30000)){
+      setError("Too many payment attempts. Please wait 30 seconds.");
+      return;
+    }
     setLoading(true); setError("");
+    log.payment("booking_payment_started", {bookingId: booking.id, deposit, artistId: artist.id});
     try {
       const SUPA_URL = import.meta.env.VITE_SUPABASE_URL;
       const SUPA_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+      if(!SUPA_URL||!SUPA_KEY) throw new Error("Payment system not configured — contact support");
 
-      // Read platform ID from localStorage (set in Finance tab)
       const platformAccountId = (() => {
         try{ return localStorage.getItem("awaz-stripe-platform-id")||null; }catch{ return null; }
       })();
 
+      const controller = new AbortController();
+      const timer = setTimeout(()=>controller.abort(), 15000);
+
       const res = await fetch(`${SUPA_URL}/functions/v1/create-payment-intent-ts`, {
         method: "POST",
+        signal: controller.signal,
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${SUPA_KEY}`,
@@ -3237,13 +3272,14 @@ function StripeCheckout({ booking, artist, onSuccess, onClose }) {
           amount:              deposit,
           type:                "booking",
           artistStripeAccount: artist.stripeAccount || null,
-          platformAccountId:   platformAccountId,
+          ...(platformAccountId ? {platformAccountId} : {}),
           bookingId:           booking.id,
           customerEmail:       booking.customerEmail || "",
           artistName:          artist.name,
           platformFeePercent:  12,
         }),
       });
+      clearTimeout(timer);
 
       const data = await res.json();
       if (!res.ok || data.error) throw new Error(data.error || "Payment failed");
@@ -3259,7 +3295,12 @@ function StripeCheckout({ booking, artist, onSuccess, onClose }) {
         document.head.appendChild(script);
       }
     } catch (e:any) {
-      setError(e.message);
+      const msg = e.message||"";
+      if(msg.includes("Failed to fetch")||msg.includes("NetworkError")||e.name==="AbortError"){
+        setError("Network error — check your connection and try again.");
+      } else {
+        setError(msg||"Payment setup failed");
+      }
     }
     setLoading(false);
   };
@@ -5491,6 +5532,37 @@ function SupportWidget({artistId}:{artistId:string}){
 }
 
 // ── Artist Portal ──────────────────────────────────────────────────────
+// ── BoostButton — proper component to avoid React Hook rules violation (Error #311) ──
+function BoostButton({ artist, onUpdateArtist, notify }) {
+  const [showBoostPay, setShowBoostPay] = React.useState(false);
+  return (
+    <>
+      <button onClick={()=>setShowBoostPay(true)}
+        style={{background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:10,padding:"12px 24px",fontWeight:800,fontSize:T.sm,cursor:"pointer",fontFamily:"inherit",width:"100%"}}>
+        ⭐ Boost My Profile — €50
+      </button>
+      <div style={{color:C.faint,fontSize:11,marginTop:5,textAlign:"center"}}>One-time payment · 6 months featured at top of browse</div>
+      {showBoostPay&&(
+        <StripePaywall
+          amount={50}
+          emoji="⭐"
+          label="Boost Your Profile"
+          description="Featured at top of browse page for 6 months. Highlighted with gold border."
+          metadata={{artistName:artist.name,bookingId:`boost_${artist.id}_${Date.now()}`,type:"boost"}}
+          onSuccess={async(piId)=>{
+            const boostUntil=new Date(Date.now()+180*24*60*60*1000).toISOString();
+            onUpdateArtist(artist.id,{isBoosted:true,boostedUntil:boostUntil});
+            if(HAS_SUPA){const sb=await getSupabase();if(sb)await sb.from("artists").update({is_boosted:true,boosted_until:boostUntil,boost_payment_id:piId}).eq("id",artist.id);}
+            notify("⭐ Profile boosted for 6 months! You're now featured.","success");
+            setShowBoostPay(false);
+          }}
+          onClose={()=>setShowBoostPay(false)}
+        />
+      )}
+    </>
+  );
+}
+
 function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, onMsg, onUpdateArtist }) {
   const vp=useViewport();
   const {show:notify}=useNotif();
@@ -5534,6 +5606,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
     tiktokFollowers:  artist.tiktok?.followers||"",
   });
   const [socialSaved,setSocialSaved]=useState(false);
+  const [socialSaving,setSocialSaving]=useState(false);
   // Sync socialF when artist.spotify/instagram data changes (e.g. after DB load)
   React.useEffect(()=>{
     setSocialF({
@@ -5621,14 +5694,16 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
   };
 
   const saveSocial=async()=>{
+    if(socialSaving) return; // prevent double-click
+    setSocialSaving(true);
     setSocialErr("");
     // Validate Spotify
     if(socialF.spotifyUrl){
       const testId=parseSpotifyArtistId(socialF.spotifyUrl);
-      if(!testId){setSocialErr("Spotify link not recognized. Use: open.spotify.com/artist/... or copy from Spotify app → Share → Copy link to artist.");return;}
+      if(!testId){setSocialErr("Spotify link not recognized. Use: open.spotify.com/artist/... or copy from Spotify app → Share → Copy link to artist.");setSocialSaving(false);return;}
     }
     if(socialF.youtubeUrl&&!socialF.youtubeUrl.includes("youtube")&&!socialF.youtubeUrl.includes("youtu.be")){
-      setSocialErr("YouTube link looks invalid.");return;
+      setSocialErr("YouTube link looks invalid.");setSocialSaving(false);return;
     }
     const newSpotify=socialF.spotifyUrl?{
       profileUrl:socialF.spotifyUrl.trim(),
@@ -5680,18 +5755,19 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
         if(bothFailed){
           console.error("Social save failed:", res1.error?.message, res2.error?.message);
           setSocialErr(`Save failed: ${res2.error?.message || res1.error?.message}`);
-          return;
+          setSocialSaving(false); return;
         }
         if(res1.error) console.warn("artist_social upsert failed (artists table OK):", res1.error.message);
         if(res2.error) console.warn("artists update failed (artist_social OK):", res2.error.message);
-        console.log("✅ Social data saved");
+        log.social("saved", {artistId: artist.id});
       }catch(e:any){
-        setSocialErr("Save error: "+e.message); return;
+        setSocialErr("Save error: "+e.message); setSocialSaving(false); return;
       }
     }
     setSocialSaved(true);
     notify("✅ Social profiles saved! They will appear on your public profile.","success");
     setTimeout(()=>setSocialSaved(false),4000);
+    setSocialSaving(false);
   };
 
   const content=(
@@ -6097,33 +6173,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
                     <div style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
                       <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.8rem",fontWeight:800,color:C.gold}}>€50</div>
                       <div style={{flex:1}}>
-                        {(()=>{
-                          const [showBoostPay,setShowBoostPay]=React.useState(false);
-                          return(<>
-                            <button onClick={()=>setShowBoostPay(true)}
-                              style={{background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:10,padding:"12px 24px",fontWeight:800,fontSize:T.sm,cursor:"pointer",fontFamily:"inherit",width:"100%"}}>
-                              ⭐ Boost My Profile — €50
-                            </button>
-                            <div style={{color:C.faint,fontSize:11,marginTop:5,textAlign:"center"}}>One-time payment · 6 months featured at top of browse</div>
-                            {showBoostPay&&(
-                              <StripePaywall
-                                amount={50}
-                                emoji="⭐"
-                                label="Boost Your Profile"
-                                description="Featured at top of browse page for 6 months. Highlighted with gold border."
-                                metadata={{artistName:artist.name,bookingId:`boost_${artist.id}_${Date.now()}`,type:"boost"}}
-                                onSuccess={async(piId)=>{
-                                  const boostUntil=new Date(Date.now()+180*24*60*60*1000).toISOString();
-                                  onUpdateArtist(artist.id,{isBoosted:true,boostedUntil:boostUntil});
-                                  if(HAS_SUPA){const sb=await getSupabase();if(sb)await sb.from("artists").update({is_boosted:true,boosted_until:boostUntil,boost_payment_id:piId}).eq("id",artist.id);}
-                                  notify("⭐ Profile boosted for 6 months! You're now featured.","success");
-                                  setShowBoostPay(false);
-                                }}
-                                onClose={()=>setShowBoostPay(false)}
-                              />
-                            )}
-                          </>);
-                        })()}
+                        <BoostButton artist={artist} onUpdateArtist={onUpdateArtist} notify={notify}/>
                       </div>
                     </div>
                   </div>
@@ -6528,7 +6578,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
                   setSocialF(f=>({...f,spotifyUrl:val}));
                   setSocialErr("");
                 }}
-                onBlur={()=>{ if(socialF.spotifyUrl) saveSocial(); }}
+                
                 hint={parseSpotifyArtistId(socialF.spotifyUrl)
                   ? `✓ Connected — ${parseSpotifyArtistId(socialF.spotifyUrl)}`
                   : "Paste your Spotify artist link here — preview appears automatically"}
@@ -6626,7 +6676,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
 
           {/* Save */}
           <Btn v="gold" sz="lg" onClick={saveSocial} xs={{width:"100%"}}>
-            {socialSaved?"✓ Saved!":"Save social profiles"}
+            {socialSaving?"Saving…":socialSaved?"✓ Saved!":"Save social profiles"}
           </Btn>
 
           {/* ── YOUTUBE ── */}
@@ -6689,7 +6739,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
           </div>
 
           <Btn v="gold" sz="lg" onClick={saveSocial} xs={{width:"100%"}}>
-            {socialSaved?"✓ Saved!":"Save all social profiles"}
+            {socialSaving?"Saving…":socialSaved?"✓ Saved!":"Save all social profiles"}
           </Btn>
 
           {(artist.spotify||artist.instagram||artist.youtube||artist.tiktok)&&(
@@ -8941,6 +8991,7 @@ function AppInner() {
 
             // ── STEP 3: If artist, load profile + social data in parallel ──
             if(role==="artist"&&artistId){
+              log.auth("artist_login_fetch", {artistId, role});
               try{
                 // Parallel: fetch artist row AND artist_social in one go
                 const [artistRes, socialRes] = await Promise.all([
@@ -8994,7 +9045,7 @@ function AppInner() {
                     return[...prev,mapped];
                   });
                 }
-              }catch(e2){console.warn("Artist profile fetch:",e2);}
+              }catch(e2){log.error("Artist profile fetch failed:",e2);}
             }
 
             setSession({
@@ -9255,8 +9306,11 @@ function AppInner() {
       const sb=await getSupabase();
       if(sb){
         const{error}=await sb.from("artists").update({...dbUpdates,updated_at:new Date().toISOString()}).eq("id",id);
-        if(error) console.warn("Artist update failed:",error.message);
-        else console.log("✅ Artist updated in DB:",Object.keys(dbUpdates).join(", "));
+        if(error){
+          log.error("Artist update failed:", error.message, {id, fields: Object.keys(dbUpdates)});
+        } else {
+          log.info("Artist updated in DB:", Object.keys(dbUpdates).join(", "));
+        }
       }
     }
   };
@@ -9267,7 +9321,7 @@ function AppInner() {
     if(HAS_SUPA){
       try{
         const sb=await getSupabase();
-        if(sb) await sb.from("bookings").insert([{
+        if(sb) await sb.from("bookings").upsert([{
           id:b.id,
           artist_id:b.artistId,
           customer_name:b.customerName,
@@ -9280,7 +9334,7 @@ function AppInner() {
           paid:b.paid||false,
           country:b.country||"NO",
           messages:b.messages||[],
-        }]);
+        }],{onConflict:"id",ignoreDuplicates:true});
       }catch(e){console.warn("Supabase booking insert failed:",e);}
     }
   };
