@@ -3650,45 +3650,32 @@ function LoginSheet({ users, open, onLogin, onClose }) {
           });
           return;
         }
-        // ── Admin check first — email-based, same as session restore ────────
+        // ── Login succeeded — let onAuthStateChange handle session setup ──
+        // This avoids the race condition of calling onLogin here AND in onAuthStateChange.
+        // We just close the modal and clear loading. The auth listener does the rest.
         const loginEmail=data.user.email?.toLowerCase()||"";
         if(ADMIN_EMAILS.includes(loginEmail)){
+          // Admin: set immediately, no DB fetch needed
           setLoading(false);
           onLogin({id:data.user.id,email:data.user.email,name:"Admin",role:"admin",artistId:null});
         } else {
-          // Check users table first (new schema), then profiles (old schema)
+          // Non-admin: fetch role/profile data, then call onLogin
           const [userRes2, profileRes2] = await Promise.all([
             sb.from("users").select("*").eq("id",data.user.id).single(),
             sb.from("profiles").select("*").eq("id",data.user.id).single(),
           ]);
           const dbUser = userRes2.data;
           const profile = profileRes2.data;
-
-          // profiles.role takes priority for artist (registration sets this directly)
-          // users.role is set by trigger and may be 'user' if metadata was missing
           const role=
             (profile?.role==="artist" ? "artist" : null) ||
             dbUser?.role ||
             profile?.role ||
             "customer";
           const name=dbUser?.name||profile?.name||data.user.email;
-
-          // artistId must match artists.id (the table ArtistPortal reads from)
-          // profiles.artist_id is set by the trigger to equal artists.id
           let artistId=profile?.artist_id||null;
-          if(!artistId && role==="artist"){
-            // Fallback: use the user's own ID (trigger sets artists.id = user.id)
-            artistId=data.user.id;
-          }
-
+          if(!artistId && role==="artist") artistId=data.user.id;
           setLoading(false);
-          onLogin({
-            id:data.user.id,
-            email:data.user.email,
-            name,
-            role,
-            artistId,
-          });
+          onLogin({id:data.user.id,email:data.user.email,name,role,artistId});
         }
       } catch(e){
         setLoading(false);
@@ -8899,6 +8886,10 @@ function AppInner() {
       // Supabase client so it never touches this client's session).
       const{data:{subscription}}=sb.auth.onAuthStateChange(async(_event,supaSession)=>{
         try{
+          // Skip TOKEN_REFRESHED — no need to re-fetch profile on every token refresh
+          // This was causing the "stuck" state after logout/login
+          if(_event==="TOKEN_REFRESHED") return;
+
           if(supaSession?.user){
             const email=supaSession.user.email?.toLowerCase()||"";
 
@@ -9206,16 +9197,19 @@ function AppInner() {
 
   const login=u=>{setSession(u);setShowLogin(false);requestPushPermission();};
   const logout=async()=>{
-    // Always clear local session first — prevents blank screen if signOut throws
+    // 1. Clear React state immediately
     setSession(null);
     if(HAS_SUPA){
       try{
         const sb=await getSupabase();
         if(sb) await sb.auth.signOut();
       }catch(e){
-        console.warn("Supabase signOut error (session already cleared locally):",e);
+        console.warn("Supabase signOut error:",e);
       }
     }
+    // 2. Reset Supabase singleton so next login gets a fresh client
+    // This prevents stale internal auth state from blocking re-login
+    _supabase = null;
   };
   const handleArtistAction=async(id,action)=>{
     if(action==="verify"){
