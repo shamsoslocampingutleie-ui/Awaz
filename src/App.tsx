@@ -4758,13 +4758,14 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
   };
 
   const navItems=[
-    {id:"overview",  label:"Overview"},
-    {id:"artists",   label:"Artists",  badge:pendingArtists},
-    {id:"bookings",  label:"Bookings"},
-    {id:"inquiries", label:"Inquiries", badge:newInquiries},
-    {id:"messages",  label:"Messages"},
-    {id:"chat",      label:"Chat"},
-    {id:"finance",   label:"Finance"},
+    {id:"overview",    label:"Overview"},
+    {id:"artists",     label:"Artists",  badge:pendingArtists},
+    {id:"bookings",    label:"Bookings"},
+    {id:"eventplans",  label:"Event Plans"},
+    {id:"inquiries",   label:"Inquiries", badge:newInquiries},
+    {id:"messages",    label:"Messages"},
+    {id:"chat",        label:"Chat"},
+    {id:"finance",     label:"Finance"},
   ];
 
   // Filtered artists — uses refreshed list if available
@@ -4895,6 +4896,28 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
             <StatCard icon="" label="Pending Bookings"   value={pendingBooks}                         sub="Awaiting action"    color={C.saffron} onClick={()=>setTab("bookings")}/>
             <StatCard icon="" label="Active Artists"     value={approvedArtists}                      sub={`${pendingArtists} pending review`} color={C.ruby} onClick={()=>setTab("artists")}/>
             <StatCard icon="" label="New Inquiries"      value={newInquiries}                         sub="Unread"             color={C.lavender} onClick={()=>setTab("inquiries")}/>
+          </div>
+
+          {/* Quick Links */}
+          <div style={{marginBottom:20}}>
+            <SectionHeader title="Quick Links"/>
+            <div style={{display:"grid",gridTemplateColumns:vp.isMobile?"1fr 1fr":"repeat(3,1fr)",gap:10}}>
+              {[
+                {icon:"📋",label:"Event Plans",desc:"View all submitted event plans",color:C.lapis,onClick:()=>setTab("eventplans")},
+                {icon:"💬",label:"Artist Chat",desc:"Message artists directly",color:C.emerald,onClick:()=>setTab("chat")},
+                {icon:"📊",label:"Finance",desc:"Revenue & payouts",color:C.gold,onClick:()=>setTab("finance")},
+              ].map(({icon,label,desc,color,onClick})=>(
+                <div key={label} onClick={onClick} style={{background:C.card,border:`1px solid ${color}33`,borderRadius:12,padding:"14px 16px",cursor:"pointer",transition:"border-color 0.15s",display:"flex",gap:12,alignItems:"center"}}
+                  onMouseEnter={e=>(e.currentTarget.style.borderColor=color+"88")}
+                  onMouseLeave={e=>(e.currentTarget.style.borderColor=color+"33")}>
+                  <span style={{fontSize:22,flexShrink:0}}>{icon}</span>
+                  <div>
+                    <div style={{fontWeight:700,color:C.text,fontSize:T.sm}}>{label}</div>
+                    <div style={{color:C.muted,fontSize:11,marginTop:1}}>{desc}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Action alerts */}
@@ -5075,6 +5098,36 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
         </div>
       )}
 
+
+      {/* ── EVENT PLANS ── */}
+      {tab==="eventplans"&&(
+        <div>
+          <SectionHeader title="Event Plans"/>
+          <div style={{background:`${C.lapis}10`,border:`1px solid ${C.lapis}33`,borderRadius:10,padding:"12px 16px",marginBottom:16,fontSize:T.xs,color:C.muted,lineHeight:1.6}}>
+            📋 These are event plans submitted by customers after paying their deposit. Each plan is linked to a booking and visible to the artist in their dashboard.
+          </div>
+          {bookings.filter(b=>b.status==="confirmed"||b.depositPaid).length===0?(
+            <div style={{textAlign:"center",padding:"40px",background:C.card,borderRadius:12,border:`1px solid ${C.border}`,color:C.muted,fontSize:T.sm}}>
+              No confirmed bookings yet — event plans appear here once customers submit them.
+            </div>
+          ):bookings.filter(b=>b.status==="confirmed"||b.depositPaid).map(b=>{
+            const art=artists.find(a=>a.id===b.artistId);
+            return(
+              <div key={b.id} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:"14px 16px",marginBottom:10}}>
+                <div style={{display:"flex",gap:12,alignItems:"center",marginBottom:10}}>
+                  <div style={{width:38,height:38,borderRadius:8,background:`${art?.color||C.gold}15`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>{art?.emoji||"🎤"}</div>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontWeight:700,color:C.text,fontSize:T.sm}}>{b.customerName}</div>
+                    <div style={{color:C.muted,fontSize:T.xs,marginTop:1}}>→ {art?.name} · {b.date}</div>
+                  </div>
+                  <span style={{background:`${C.emerald}18`,color:C.emerald,border:`1px solid ${C.emerald}33`,borderRadius:6,padding:"2px 10px",fontSize:10,fontWeight:700}}>CONFIRMED</span>
+                </div>
+                <EventPlanView bookingId={b.id} C={C} T={T}/>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* ── MESSAGES ── */}
       {tab==="messages"&&(
