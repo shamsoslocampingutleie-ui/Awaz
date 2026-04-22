@@ -223,7 +223,7 @@ const LIGHT = {
 };
 
 // Module-level theme ref — updated on toggle, re-read on each render
-let _theme = (() => { try { return localStorage.getItem('awaz-theme')||'dark'; } catch { return 'dark'; } })();
+let _theme = (() => { try { return localStorage.getItem('awaz-theme')||'light'; } catch { return 'light'; } })();
 // Proxy: returns live value from whichever theme is active
 const C = new Proxy({}, { get:(_,k) => (_theme==='dark'?DARK:LIGHT)[k] });
 
@@ -7405,34 +7405,6 @@ function SongRequestPage({artistId, artists, onBack}:{artistId:string;artists:an
 
   const totalAmount = currentBase + tip;
 
-  const submit=async()=>{
-    if(!f.song_title.trim()||!f.guest_name.trim()){setErr("Please fill in all required fields");return;}
-    setLoading(true);setErr("");
-    try{
-      if(HAS_SUPA){
-        const sb=await getSupabase();
-        if(sb){
-          const{error}=await sb.from("song_requests").insert({
-            artist_id:       artist.id,
-            song_title:      sanitize(f.song_title.trim()),
-            song_artist:     sanitize(f.song_artist.trim())||null,
-            guest_name:      sanitize(f.guest_name.trim()),
-            message:         sanitize(f.message.trim())||null,
-            amount:          totalAmount,
-            priority_amount: totalAmount,
-            status:          "pending",
-          });
-          if(error){setErr("Failed to send. Please try again.");setLoading(false);return;}
-        }
-      }
-      // Update guest's request count
-      const newCount = guestReqCount + 1;
-      setGuestReqCount(newCount);
-      try{ localStorage.setItem(storageKey, String(newCount)); }catch{}
-      setLoading(false);setStep("done");
-    }catch(e){setLoading(false);setErr("Connection error. Please try again.");}
-  };
-
   if(!artist) return(
     <div style={{minHeight:"100vh",background:"#070608",display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
       <div style={{textAlign:"center",color:"#8A7D68"}}>
@@ -7468,12 +7440,6 @@ function SongRequestPage({artistId, artists, onBack}:{artistId:string;artists:an
       try{localStorage.setItem(storageKey,String(newCount));}catch{}
       setLoading(false);setStep("done");
     }catch(e){setLoading(false);setErr("Connection error. Please try again.");}
-  };
-
-  // ── OLD submit (free only) ──
-  const submit=async()=>{
-    if(!f.song_title.trim()||!f.guest_name.trim()){setErr("Please fill in all required fields");return;}
-    await saveRequest(null);
   };
 
   // ── showStripePaywall state — mobile-safe ──
@@ -7853,17 +7819,17 @@ function DemoPage({onBook, onApply, vp}:{onBook:()=>void;onApply:()=>void;vp:any
               <div style={{color:C.muted,fontSize:14,marginBottom:24}}>{t('demoPlatformSub')}</div>
               <div style={{display:"grid",gridTemplateColumns:vp.isMobile?"1fr":"1fr 1fr",gap:12}}>
                 {[
-                  {icon:"🎤",title:t('demoFeat1Title'),desc:t('demoFeat1Desc')},
-                  {icon:"💳",title:t('demoFeat2Title'),desc:t('demoFeat2Desc')},
-                  {icon:"💬",title:t('demoFeat3Title'),desc:t('demoFeat3Desc')},
-                  {icon:"🎵",title:t('demoFeat4Title'),desc:t('demoFeat4Desc')},
-                  {icon:"📊",title:t('demoFeat5Title'),desc:t('demoFeat5Desc')},
-                  {icon:"⭐",title:t('demoFeat6Title'),desc:t('demoFeat6Desc')},
-                  {icon:"🌍",title:t('demoFeat7Title'),desc:t('demoFeat7Desc')},
-                  {icon:"🔔",title:t('demoFeat8Title'),desc:t('demoFeat8Desc')},
-                ].map(({icon,title,desc})=>(
+                  {color:C.ruby,    title:t('demoFeat1Title'),desc:t('demoFeat1Desc')},
+                  {color:C.lapis,   title:t('demoFeat2Title'),desc:t('demoFeat2Desc')},
+                  {color:C.emerald, title:t('demoFeat3Title'),desc:t('demoFeat3Desc')},
+                  {color:C.gold,    title:t('demoFeat4Title'),desc:t('demoFeat4Desc')},
+                  {color:C.saffron, title:t('demoFeat5Title'),desc:t('demoFeat5Desc')},
+                  {color:C.gold,    title:t('demoFeat6Title'),desc:t('demoFeat6Desc')},
+                  {color:C.lapis,   title:t('demoFeat7Title'),desc:t('demoFeat7Desc')},
+                  {color:C.emerald, title:t('demoFeat8Title'),desc:t('demoFeat8Desc')},
+                ].map(({color,title,desc})=>(
                   <div key={title} style={{...S.card,display:"flex",gap:14,alignItems:"flex-start"}}>
-                    <div style={{fontSize:28,flexShrink:0,marginTop:2}}>{icon}</div>
+                    <div style={{width:6,height:6,borderRadius:"50%",background:color,flexShrink:0,marginTop:7}}/>
                     <div>
                       <div style={{fontWeight:700,color:C.text,fontSize:14,marginBottom:5}}>{title}</div>
                       <div style={{color:C.muted,fontSize:13,lineHeight:1.7}}>{desc}</div>
@@ -8786,7 +8752,7 @@ class ErrorBoundary extends React.Component<
 // ═══════════════════════════════════════════════════════════════════════
 function AppInner() {
   const vp=useViewport();
-  const [theme,setTheme]=useState(()=>{ try{return localStorage.getItem('awaz-theme')||'dark';}catch{return 'dark';} });
+  const [theme,setTheme]=useState(()=>{ try{return localStorage.getItem('awaz-theme')||'light';}catch{return 'light';} });
   const toggleTheme=()=>{
     const next=theme==='dark'?'light':'dark';
     _theme=next;
