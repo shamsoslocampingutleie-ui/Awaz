@@ -7442,8 +7442,66 @@ function SongRequestPage({artistId, artists, onBack}:{artistId:string;artists:an
     </div>
   );
 
+  // ── Final submit — only called AFTER payment confirmed (or free) ──
+  const saveRequest=async(piId:string|null)=>{
+    setLoading(true);setErr("");
+    try{
+      if(HAS_SUPA){
+        const sb=await getSupabase();
+        if(sb){
+          const{error}=await sb.from("song_requests").insert({
+            artist_id:       artist.id,
+            song_title:      sanitize(f.song_title.trim()),
+            song_artist:     sanitize(f.song_artist.trim())||null,
+            guest_name:      sanitize(f.guest_name.trim()),
+            message:         sanitize(f.message.trim())||null,
+            amount:          totalAmount,
+            priority_amount: totalAmount,
+            status:          "pending",
+            payment_intent_id: piId||null,
+          });
+          if(error){setErr("Failed to send. Please try again.");setLoading(false);return;}
+        }
+      }
+      const newCount=guestReqCount+1;
+      setGuestReqCount(newCount);
+      try{localStorage.setItem(storageKey,String(newCount));}catch{}
+      setLoading(false);setStep("done");
+    }catch(e){setLoading(false);setErr("Connection error. Please try again.");}
+  };
+
+  // ── OLD submit (free only) ──
+  const submit=async()=>{
+    if(!f.song_title.trim()||!f.guest_name.trim()){setErr("Please fill in all required fields");return;}
+    await saveRequest(null);
+  };
+
+  // ── showStripePaywall state — mobile-safe ──
+  const [showPaywall,setShowPaywall]=useState(false);
+  const effectiveTotal=currentBase+(parseInt(customTip||"0")||tip);
+
+  // ── Stripe Paywall wrapper (renders as portal to avoid z-index issues on mobile) ──
+  const PaywallPortal=showPaywall&&effectiveTotal>0?(
+    <div style={{position:"fixed",inset:0,zIndex:99999,touchAction:"none"}}>
+      <StripePaywall
+        amount={effectiveTotal}
+        emoji="🎵"
+        label={`"${f.song_title}"`}
+        description={`Song request for ${artist.name} · 88% goes to artist`}
+        metadata={{artistName:artist.name,bookingId:`qr_${artist.id}_${Date.now()}`,email:"",type:"tip"}}
+        onSuccess={async(piId)=>{
+          setShowPaywall(false);
+          await saveRequest(piId);
+        }}
+        onClose={()=>setShowPaywall(false)}
+      />
+    </div>
+  ):null;
+
   return(
-    <div style={{minHeight:"100vh",background:"#070608",fontFamily:"'DM Sans',sans-serif",color:"#EDE4CE"}}>
+    <>
+    {PaywallPortal}
+    <div style={{minHeight:"100vh",background:"#070608",fontFamily:"'DM Sans',sans-serif",color:"#EDE4CE",WebkitOverflowScrolling:"touch" as any}}>
       {/* Header */}
       <div style={{background:"linear-gradient(180deg,rgba(200,168,74,0.1),transparent)",borderBottom:"1px solid rgba(200,168,74,0.12)",padding:"20px 24px",display:"flex",alignItems:"center",gap:14}}>
         <div style={{width:52,height:52,borderRadius:12,background:`${artist.color}20`,border:`2px solid ${artist.color}40`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:26,flexShrink:0,overflow:"hidden"}}>
@@ -7547,15 +7605,21 @@ function SongRequestPage({artistId, artists, onBack}:{artistId:string;artists:an
             </div>
 
             {err&&<div style={{color:"#EF4444",fontSize:13,marginBottom:12,padding:"10px 14px",background:"rgba(239,68,68,0.08)",borderRadius:8}}>{err}</div>}
+            {/* KEY FIX: Open Stripe FIRST, save to DB only after successful payment */}
             <button onClick={()=>{
-              if(customTip) setTip(parseInt(customTip)||0);
-              submit();
+              const finalTip=parseInt(customTip||"0")||tip;
+              const total=currentBase+finalTip;
+              if(total>0){
+                setShowPaywall(true); // Stripe opens → onSuccess → saveRequest()
+              } else {
+                submit(); // Free → save directly
+              }
             }} disabled={loading}
-              style={{width:"100%",background:loading?"#1A1728":`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:14,padding:"18px",fontWeight:800,fontSize:16,cursor:loading?"not-allowed":"pointer",fontFamily:"inherit"}}>
-              {loading?"Sending…":currentBase===0&&!tip&&!customTip?"Send Free Request →":`Send · €${currentBase+(parseInt(customTip||"0")||tip)}`}
+              style={{width:"100%",background:loading?"#1A1728":`linear-gradient(135deg,#C8A84A,#E09F3E)`,color:"#07060B",border:"none",borderRadius:14,padding:"18px",fontWeight:800,fontSize:16,cursor:loading?"not-allowed":"pointer",fontFamily:"inherit",minHeight:56,WebkitTapHighlightColor:"transparent" as any}}>
+              {loading?"Sending…":(currentBase+(parseInt(customTip||"0")||tip))===0?"Send Free Request →":`Pay €${currentBase+(parseInt(customTip||"0")||tip)} & Request →`}
             </button>
             <div style={{color:"#4A4054",fontSize:11,textAlign:"center",marginTop:10}}>
-              88% goes directly to {artist.name} 💛
+              {(currentBase+(parseInt(customTip||"0")||tip))>0?"🔒 Stripe — paid before request is sent":"88% goes directly to "+artist.name+" 💛"}
             </div>
           </div>
 
@@ -7564,9 +7628,7 @@ function SongRequestPage({artistId, artists, onBack}:{artistId:string;artists:an
           <div>
             <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.8rem",fontWeight:700,marginBottom:4}}>Request a Song</div>
             <div style={{color:"#8A7D68",fontSize:14,marginBottom:24}}>
-              {currentBase===0
-                ?"Your first song tonight is <strong style={{color:'#22C55E'}}>free</strong>! 🎉".replace(/<[^>]+>/g,"")
-                :`Song #${guestReqCount+1} — €${currentBase}`}
+              {currentBase===0?"Your first song tonight is free! 🎉":`Song #${guestReqCount+1} — €${currentBase}`}
             </div>
             {[
               {field:"song_title",  label:"Song Title *",    placeholder:"e.g. Bya Ke Bya, Leili Jan…"},
@@ -7592,7 +7654,7 @@ function SongRequestPage({artistId, artists, onBack}:{artistId:string;artists:an
               if(!f.song_title.trim()){setErr("Song title is required");return;}
               if(!f.guest_name.trim()){setErr("Your name is required");return;}
               setErr("");setStep("tip");
-            }} style={{width:"100%",background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:14,padding:"18px",fontWeight:800,fontSize:16,cursor:"pointer",fontFamily:"inherit"}}>
+            }} style={{width:"100%",background:`linear-gradient(135deg,#C8A84A,#E09F3E)`,color:"#07060B",border:"none",borderRadius:14,padding:"18px",fontWeight:800,fontSize:16,cursor:"pointer",fontFamily:"inherit",minHeight:56,WebkitTapHighlightColor:"transparent" as any}}>
               {currentBase===0?"Continue — Free ✓ →":"Continue →"}
             </button>
             <div style={{color:"#4A4054",fontSize:12,textAlign:"center",marginTop:12}}>
@@ -7602,6 +7664,7 @@ function SongRequestPage({artistId, artists, onBack}:{artistId:string;artists:an
         )}
       </div>
     </div>
+    </>
   );
 }
 
