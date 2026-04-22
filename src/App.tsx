@@ -262,7 +262,7 @@ const TRANSLATIONS = {
     trustVerified:"Verified artists", trustStripe:"Stripe payments",
     trustChat:"Direct chat", trustDeposits:"Artist-set deposits", trustCulture:"Afghan culture",
     featuredTitle:"Featured Artists", featuredSub:"Verified · ready to book", seeAll:"See all →",
-    aiTitle:"AI Artist Matching", aiFindBtn:"Find My Artist ✦", aiEvent:"Event Type", aiStyle:"Music Style",
+    aiTitle:"AI Artist Matching", aiFindBtn:"Find My Artist", aiEvent:"Event Type", aiStyle:"Music Style",
     openDates:"open", topBadge:"★ Top", depositLabel:"deposit",
     available:"Available", booked:"Booked", blocked:"Blocked",
     selectDate:"Select a Date", continueWith:"Continue with", selectDateFirst:"Select a date first",
@@ -511,7 +511,7 @@ const TRANSLATIONS = {
       artistProfileNotFound:"Artist Profile Not Found",
     noStripe:"No Stripe",
     recentBookingsLabel:"Recent Bookings",
-    demoLiveDemo:"✦ Live Demo",
+    demoLiveDemo:"Live Demo",
     demoHeroTitle:"Experience Awaz as an Artist",
     demoHeroSub:"See exactly how artists use the platform — from profile to bookings, live song requests and earnings dashboard.",
     demoApplyBtn:"Apply as Artist →",
@@ -604,7 +604,7 @@ const TRANSLATIONS = {
     trustVerified:"Verifiserte artister", trustStripe:"Stripe-betaling",
     trustChat:"Direkte chat", trustDeposits:"Depositum satt av artist", trustCulture:"Afghansk kultur",
     featuredTitle:"Fremhevede artister", featuredSub:"Verifisert · klar til å booke", seeAll:"Se alle →",
-    aiTitle:"AI Artistmatch", aiFindBtn:"Finn min artist ✦", aiEvent:"Arrangementtype", aiStyle:"Musikstil",
+    aiTitle:"AI Artistmatch", aiFindBtn:"Finn min artist", aiEvent:"Arrangementtype", aiStyle:"Musikstil",
     openDates:"ledig", topBadge:"★ Topp", depositLabel:"depositum",
     available:"Ledig", booked:"Booket", blocked:"Blokkert",
     selectDate:"Velg en dato", continueWith:"Fortsett med", selectDateFirst:"Velg en dato først",
@@ -832,7 +832,7 @@ const TRANSLATIONS = {
     artistProfileNotFound:"Artistprofil ikke funnet",
     noStripe:"Ingen Stripe",
     recentBookingsLabel:"Siste bookinger",
-    demoLiveDemo:"✦ Live Demo",
+    demoLiveDemo:"Live Demo",
     demoHeroTitle:"Opplev Awaz som artist",
     demoHeroSub:"Se nøyaktig hvordan artister bruker plattformen — fra profil til bookinger, live sangønsker og inntektsdashboard.",
     demoApplyBtn:"Søk som artist →",
@@ -925,7 +925,7 @@ const TRANSLATIONS = {
     trustVerified:"Verifizierte Künstler", trustStripe:"Stripe-Zahlung",
     trustChat:"Direktchat", trustDeposits:"Anzahlung vom Künstler", trustCulture:"Afghanische Kultur",
     featuredTitle:"Empfohlene Künstler", featuredSub:"Verifiziert · buchungsbereit", seeAll:"Alle anzeigen →",
-    aiTitle:"KI-Künstler-Matching", aiFindBtn:"Meinen Künstler finden ✦", aiEvent:"Veranstaltungsart", aiStyle:"Musikstil",
+    aiTitle:"KI-Künstler-Matching", aiFindBtn:"Meinen Künstler finden", aiEvent:"Veranstaltungsart", aiStyle:"Musikstil",
     openDates:"frei", topBadge:"★ Top", depositLabel:"Anzahlung",
     available:"Verfügbar", booked:"Gebucht", blocked:"Gesperrt",
     selectDate:"Datum auswählen", continueWith:"Weiter mit", selectDateFirst:"Zuerst ein Datum wählen",
@@ -1153,7 +1153,7 @@ const TRANSLATIONS = {
     artistProfileNotFound:"Künstlerprofil nicht gefunden",
     noStripe:"Kein Stripe",
     recentBookingsLabel:"Aktuelle Buchungen",
-    demoLiveDemo:"✦ Live Demo",
+    demoLiveDemo:"Live Demo",
     demoHeroTitle:"Erleben Sie Awaz als Künstler",
     demoHeroSub:"Sehen Sie genau, wie Künstler die Plattform nutzen — von Profil bis Buchungen, Live-Musikwünsche und Einnahmen.",
     demoApplyBtn:"Als Künstler bewerben →",
@@ -1246,7 +1246,7 @@ const TRANSLATIONS = {
     trustVerified:"Artistes vérifiés", trustStripe:"Paiement Stripe",
     trustChat:"Chat direct", trustDeposits:"Acompte fixé par l'artiste", trustCulture:"Culture afghane",
     featuredTitle:"Artistes à la une", featuredSub:"Vérifiés · prêts à réserver", seeAll:"Voir tout →",
-    aiTitle:"Correspondance IA", aiFindBtn:"Trouver mon artiste ✦", aiEvent:"Type d'événement", aiStyle:"Style musical",
+    aiTitle:"Correspondance IA", aiFindBtn:"Trouver mon artiste", aiEvent:"Type d'événement", aiStyle:"Style musical",
     openDates:"libre", topBadge:"★ Top", depositLabel:"acompte",
     available:"Disponible", booked:"Réservé", blocked:"Bloqué",
     selectDate:"Choisir une date", continueWith:"Continuer avec", selectDateFirst:"Choisissez d'abord une date",
@@ -1568,7 +1568,7 @@ const TRANSLATIONS = {
     trustVerified:"هنرمندان تایید شده", trustStripe:"پرداخت امن",
     trustChat:"چت مستقیم", trustDeposits:"پیش‌پرداخت", trustCulture:"فرهنگ افغانی",
     featuredTitle:"هنرمندان برگزیده", featuredSub:"تایید شده · آماده رزرو", seeAll:"همه را ببینید ←",
-    aiTitle:"تطابق هوشمند هنرمند", aiFindBtn:"پیدا کردن هنرمند ✦", aiEvent:"نوع رویداد", aiStyle:"سبک موسیقی",
+    aiTitle:"تطابق هوشمند هنرمند", aiFindBtn:"پیدا کردن هنرمند", aiEvent:"نوع رویداد", aiStyle:"سبک موسیقی",
     openDates:"آزاد", topBadge:"★ برتر", depositLabel:"پیش‌پرداخت",
     available:"موجود", booked:"رزرو شده", blocked:"مسدود",
     selectDate:"تاریخ را انتخاب کنید", continueWith:"ادامه با", selectDateFirst:"ابتدا تاریخ را انتخاب کنید",
@@ -1890,7 +1890,7 @@ const TRANSLATIONS = {
     trustVerified:"تایید شوي هنرمندان", trustStripe:"خوندي تادیه",
     trustChat:"مستقیم چیټ", trustDeposits:"د هنرمند لخوا پیشکي", trustCulture:"افغاني کلتور",
     featuredTitle:"غوره هنرمندان", featuredSub:"تایید شوي · د بکولو لپاره چمتو", seeAll:"ټول وګورئ ←",
-    aiTitle:"د هنرمند هوښیار مطابقت", aiFindBtn:"زما هنرمند ومومئ ✦", aiEvent:"د پیښې ډول", aiStyle:"د موسیقۍ سټایل",
+    aiTitle:"د هنرمند هوښیار مطابقت", aiFindBtn:"زما هنرمند ومومئ", aiEvent:"د پیښې ډول", aiStyle:"د موسیقۍ سټایل",
     openDates:"موجود", topBadge:"★ غوره", depositLabel:"پیشکي",
     available:"موجود", booked:"بک شوی", blocked:"بند",
     selectDate:"نیټه وټاکئ", continueWith:"سره دوام", selectDateFirst:"لومړی نیټه وټاکئ",
@@ -2391,7 +2391,7 @@ function SocialBar({ artist }) {
                 {spotify.topTracks.map((t,i)=>(
                   <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 11px",background:"rgba(29,185,84,0.06)",borderRadius:8,border:"1px solid rgba(29,185,84,0.1)"}}>
                     <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,fontWeight:800,color:"#1DB954",width:14,textAlign:"center",flexShrink:0}}>{i+1}</span>
-                    <div style={{width:30,height:30,borderRadius:6,background:"rgba(29,185,84,0.12)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,flexShrink:0}}>🎵</div>
+                    <div style={{width:30,height:30,borderRadius:6,background:"rgba(29,185,84,0.12)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,flexShrink:0}}></div>
                     <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,color:C.textD,flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{t}</span>
                     {spotify.profileUrl && (
                       <a href={spotify.profileUrl} target="_blank" rel="noopener noreferrer"
@@ -3041,7 +3041,7 @@ function Chat({ booking, artist, myRole, onClose, onSend }) {
         <div style={{flex:1,overflow:"auto",padding:"14px 14px",display:"flex",flexDirection:"column",gap:10}}>
           {!booking.chatUnlocked&&(
             <div style={{background:C.rubyS,border:`1px solid ${C.ruby}28`,borderRadius:12,padding:20,textAlign:"center",margin:"auto 0"}}>
-              <div style={{fontSize:28,marginBottom:8}}>🔒</div>
+              
               <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text,marginBottom:6}}>{t('chatLockedTitle2')}</div>
               <div style={{color:C.muted,fontSize:T.sm,lineHeight:1.6}}>{t('chatLockedBody2')}</div>
             </div>
@@ -3068,7 +3068,7 @@ function Chat({ booking, artist, myRole, onClose, onSend }) {
 
 // ── StripePaywall — Stripe Checkout redirect (100% secure, no card handling in-app) ─
 function StripePaywall({
-  amount, label, description, emoji="💳",
+  amount, label, description, emoji="",
   onSuccess, onClose, metadata={},
 }: {
   amount: number; label: string; description: string; emoji?: string;
@@ -3192,7 +3192,7 @@ function StripePaywall({
             <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:800,color:C.gold,fontSize:"2rem"}}>€{amount}</div>
           </div>
           <div style={{textAlign:"right"}}>
-            <div style={{color:C.emerald,fontSize:T.xs,fontWeight:700}}>🔒 Stripe Secure</div>
+            <div style={{color:C.emerald,fontSize:T.xs,fontWeight:700}}>Stripe Secure</div>
             <div style={{color:C.muted,fontSize:11,marginTop:2}}>PCI-DSS compliant</div>
           </div>
         </div>
@@ -3216,7 +3216,7 @@ function StripePaywall({
         </button>
 
         <div style={{color:C.faint,fontSize:11,textAlign:"center",marginTop:12,lineHeight:1.6}}>
-          🔒 SSL encrypted · Powered by Stripe · You will be redirected to complete payment
+          SSL encrypted · Powered by Stripe · You will be redirected to complete payment
         </div>
       </div>
     </div>
@@ -3323,7 +3323,7 @@ function StripeCheckout({ booking, artist, onSuccess, onClose }) {
 
         {step==="done"?(
           <div style={{textAlign:"center",padding:"20px 0"}}>
-            <div style={{fontSize:52,marginBottom:12}}>🎉</div>
+            
             <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:700,color:C.text,marginBottom:8}}>Booking Confirmed!</div>
             <div style={{color:C.muted,fontSize:T.sm,lineHeight:1.7,marginBottom:20}}>
               Deposit of <strong style={{color:C.gold}}>€{deposit}</strong> secured.<br/>
@@ -3354,14 +3354,14 @@ function StripeCheckout({ booking, artist, onSuccess, onClose }) {
             </div>
             {/* Stripe Elements placeholder */}
             <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:10,padding:"16px",marginBottom:16,fontSize:T.sm,color:C.muted,textAlign:"center",lineHeight:1.7}}>
-              🔒 Stripe payment form loads here.<br/>
+              Stripe payment form loads here.<br/>
               Add <code style={{background:C.card,padding:"1px 6px",borderRadius:4,color:C.text}}>VITE_STRIPE_PUBLISHABLE_KEY</code> to Vercel to activate.
             </div>
             {error&&<div style={{background:C.rubyS,borderRadius:8,padding:"10px 12px",color:C.ruby,fontSize:T.xs,marginBottom:12}}>⚠ {error}</div>}
             <Btn full v="gold" sz="lg" loading={loading} onClick={confirmPayment}>
               Pay €{deposit} Securely
             </Btn>
-            <div style={{color:C.faint,fontSize:11,textAlign:"center",marginTop:8}}>🔒 SSL · Stripe PCI-L1 · 256-bit encryption</div>
+            <div style={{color:C.faint,fontSize:11,textAlign:"center",marginTop:8}}>SSL · Stripe PCI-L1 · 256-bit encryption</div>
           </div>
         ):(
           /* INIT — show booking summary and start */
@@ -3387,7 +3387,7 @@ function StripeCheckout({ booking, artist, onSuccess, onClose }) {
             <Btn full v="gold" sz="lg" loading={loading} onClick={initPayment}>
               Proceed to Payment →
             </Btn>
-            <div style={{color:C.faint,fontSize:11,textAlign:"center",marginTop:8}}>🔒 Powered by Stripe · No card details stored on Awaz</div>
+            <div style={{color:C.faint,fontSize:11,textAlign:"center",marginTop:8}}>Powered by Stripe · No card details stored on Awaz</div>
           </div>
         )}
       </div>
@@ -3507,7 +3507,7 @@ function ReviewsSection({artist, session, bookings, onNewBooking}:{artist:any;se
       {/* ── Review list ── */}
       {reviews.length===0?(
         <div style={{textAlign:"center",padding:"40px 24px",background:C.card,borderRadius:12,border:`1px solid ${C.border}`}}>
-          <div style={{fontSize:32,marginBottom:8}}>⭐</div>
+          
           <div style={{color:C.muted,fontSize:T.sm}}>No reviews yet</div>
           {session&&myCompletedBooking&&!alreadyReviewed&&!showForm&&(
             <div style={{color:C.muted,fontSize:T.xs,marginTop:6}}>Be the first to review this artist!</div>
@@ -3594,7 +3594,7 @@ function ArtistCard({ artist, onClick, compact=false }) {
           {artist.superhost&&<Badge color={C.gold}>★ Top</Badge>}
         </div>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
-          <span style={{color:C.muted,fontSize:T.sm}}>📍 {artist.location}</span>
+          <span style={{color:C.muted,fontSize:T.sm}}>{artist.location}</span>
           <Badge color={C.emerald}>{open} {t('openDates')}</Badge>
         </div>
         <div style={{display:"flex",flexWrap:"wrap",gap:5,marginBottom:14}}>
@@ -3775,7 +3775,7 @@ function LoginSheet({ users, open, onLogin, onClose }) {
         <div style={{textAlign:"center",marginBottom:20}}>
           <div style={{fontFamily:"'Noto Naskh Arabic',serif",fontSize:T.xl,color:C.gold,marginBottom:4}}>آواز</div>
           {mode==="forgot_sent"
-            ?<><div style={{fontSize:36,marginBottom:8}}>📧</div>
+            ?<>
                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text,marginBottom:6}}>{t('emailSent2')}</div>
                <div style={{color:C.muted,fontSize:T.sm,lineHeight:1.7,marginBottom:20}}>{t("checkInbox2")} <strong style={{color:C.gold}}>{email}</strong> {t("forResetLink")}</div>
                <Btn full sz="lg" onClick={()=>setMode("login")}>{t('backToSignIn2')}</Btn></>
@@ -3879,7 +3879,7 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
               <h1 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["3xl"],fontWeight:800,color:C.text,margin:"0 0 5px",lineHeight:1}}>{artist.name}</h1>
               <div style={{color:artist.color,fontWeight:600,fontSize:T.sm,marginBottom:8}}>{artist.genre}</div>
               <div style={{display:"flex",flexWrap:"wrap",gap:10,alignItems:"center"}}>
-                <span style={{color:C.muted,fontSize:T.xs}}>📍 {artist.location}</span>
+                <span style={{color:C.muted,fontSize:T.xs}}>{artist.location}</span>
                 {artist.reviews>0&&<Stars rating={artist.rating} count={artist.reviews}/>}
                 {artist.superhost&&<Badge color={C.gold}>★ Top</Badge>}
               </div>
@@ -3901,7 +3901,7 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
               </div>
               <div style={{display:"flex",flexDirection:"column",gap:10,width:"100%",maxWidth:280}}>
                 <Btn v="gold" sz="lg" onClick={()=>setShowCal(true)}>{t('bookNow')}</Btn>
-                <Btn v="ghost" sz="lg" onClick={()=>setShowSongReq(true)}>🎵 Request a Song</Btn>
+                <Btn v="ghost" sz="lg" onClick={()=>setShowSongReq(true)}>Request a Song</Btn>
               </div>
             </div>
           )}
@@ -3938,7 +3938,7 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
                 <div style={{background:C.card,borderRadius:12,padding:vp.isMobile?20:28,border:`1px solid ${C.border}`}}>
                   <div style={{fontFamily:"'Cormorant Garamond',serif",color:C.gold,fontSize:T.xl,fontWeight:700,marginBottom:14,letterSpacing:"-0.3px"}}>{t('bookingTerms')}</div>
                   <div style={{display:"grid",gridTemplateColumns:vp.isMobile?"1fr":"1fr 1fr",gap:12}}>
-                    {[["💳",`€${artist.deposit} deposit via Stripe`,"Secured payment · Paid at booking"],["💬","Chat unlocks immediately","Direct messaging after payment"],["💵","Balance in cash","To artist after the concert"],["📋",`${policy?.label} policy`,policy?.desc||""]].map(([icon,k,v])=>(
+                    {[["",`€${artist.deposit} deposit via Stripe`,"Secured payment · Paid at booking"],["","Chat unlocks immediately","Direct messaging after payment"],["💵","Balance in cash","To artist after the concert"],["📋",`${policy?.label} policy`,policy?.desc||""]].map(([icon,k,v])=>(
                       <div key={k} style={{background:C.surface,borderRadius:8,padding:"12px 14px",border:`1px solid ${C.border}`,borderLeft:`3px solid ${artist.color}35`}}>
                         <div style={{fontSize:18,marginBottom:6}}>{icon}</div>
                         <div style={{color:C.text,fontWeight:700,fontSize:T.xs,marginBottom:3}}>{k}</div>
@@ -4017,7 +4017,7 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
                 {(artist.spotify||artist.instagram)
                   ?<SocialBar artist={artist}/>
                   :<div style={{textAlign:"center",padding:"40px 24px",background:C.card,borderRadius:12,border:`1px solid ${C.border}`}}>
-                    <div style={{fontSize:36,marginBottom:12}}>🎵</div>
+                    
                     <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text,marginBottom:6}}>{t('noSocialConnected')}</div>
                     <div style={{color:C.muted,fontSize:T.sm}}>{t('noSocialDesc')}</div>
                   </div>
@@ -4071,7 +4071,7 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
                       style={{width:"100%",background:"linear-gradient(135deg,#635BFF,#7B72FF)",color:"#fff",border:"none",borderRadius:10,padding:14,fontSize:T.base,fontWeight:800,cursor:"pointer",opacity:!form.name||!form.email?0.5:1,fontFamily:"inherit",minHeight:50,letterSpacing:"0.2px"}}>
                       Pay €{artist.deposit} via Stripe →
                     </button>
-                    <div style={{textAlign:"center",color:C.muted,fontSize:T.sm}}>🔒 Stripe · SSL · PCI compliant</div>
+                    <div style={{textAlign:"center",color:C.muted,fontSize:T.sm}}>Stripe · SSL · PCI compliant</div>
                   </div>
                 )}
               </div>
@@ -4115,7 +4115,7 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
             style={{width:"100%",background:"linear-gradient(135deg,#635BFF,#7B72FF)",color:"#fff",border:"none",borderRadius:10,padding:16,fontSize:T.md,fontWeight:800,cursor:"pointer",opacity:!form.name||!form.email?0.5:1,fontFamily:"inherit",minHeight:52}}>
             Pay €{artist.deposit} via Stripe →
           </button>
-          <div style={{textAlign:"center",color:C.muted,fontSize:T.xs}}>🔒 Stripe · SSL · PCI compliant</div>
+          <div style={{textAlign:"center",color:C.muted,fontSize:T.xs}}>Stripe · SSL · PCI compliant</div>
         </div>
       </Sheet>
 
@@ -4190,7 +4190,7 @@ const MARKETS = [
   {code:"CA",name:"Canada",         flag:"🇨🇦",currency:"EUR",symbol:"€",depositMultiplier:1.0},
   {code:"AE",name:"UAE",            flag:"🇦🇪",currency:"EUR",symbol:"€",depositMultiplier:1.0},
   {code:"AU",name:"Australia",      flag:"🇦🇺",currency:"EUR",symbol:"€",depositMultiplier:1.0},
-  {code:"OTHER",name:"Other",       flag:"🌍", currency:"EUR",symbol:"€",depositMultiplier:1.0},
+  {code:"OTHER",name:"Other",       flag:"", currency:"EUR",symbol:"€",depositMultiplier:1.0},
 ];
 
 // ── Admin emails ──────────────────────────────────────────────────────────────
@@ -4198,57 +4198,138 @@ const ADMIN_EMAILS = ["admin@awaz.com"];
 
 // ── Song priority tiers ───────────────────────────────────────────────────────
 const PRIORITY_TIERS = [
-  {amount:0,  label:"Free",          desc:"1st song — free tonight!", color:"#22C55E", icon:"🎵"},
-  {amount:10, label:"€10",           desc:"2nd song",                 color:"#C8A84A", icon:"🎶"},
-  {amount:20, label:"€20",           desc:"3rd song+",                color:"#F59E0B", icon:"🎵"},
+  {amount:0,  label:"Free",          desc:"1st song — free tonight!", color:"#22C55E", icon:""},
+  {amount:10, label:"€10",           desc:"2nd song",                 color:"#C8A84A", icon:""},
+  {amount:20, label:"€20",           desc:"3rd song+",                color:"#F59E0B", icon:""},
 ];
 
 // ── Progressive song pricing ──────────────────────────────────────────────────
 const SONG_PRICING = [
-  {requestNum:1, base:0,  label:"1st Song",  desc:"Your first request tonight is on us!", color:"#22C55E", icon:"🎵"},
-  {requestNum:2, base:10, label:"2nd Song",  desc:"Second request — €10",                color:"#C8A84A", icon:"🎶"},
-  {requestNum:3, base:20, label:"3rd Song+", desc:"Third song and beyond — €20",         color:"#F59E0B", icon:"🎵"},
+  {requestNum:1, base:0,  label:"1st Song",  desc:"Your first request tonight is on us!", color:"#22C55E", icon:""},
+  {requestNum:2, base:10, label:"2nd Song",  desc:"Second request — €10",                color:"#C8A84A", icon:""},
+  {requestNum:3, base:20, label:"3rd Song+", desc:"Third song and beyond — €20",         color:"#F59E0B", icon:""},
 ];
 
 // ── Notification System ──────────────────────────────────────────────────────
-// Types: "booking" | "message" | "inquiry" | "approval" | "success" | "error"
+// Queue-based: shows one at a time, 2s display, slide in/out, plays sound
 const NotifContext = React.createContext({show:(_msg:string,_type?:string)=>{}});
 
+// ── Notification sound (Web Audio API — no external files needed) ─────────────
+function playNotifSound(type:string){
+  try{
+    const ctx=new (window.AudioContext||(window as any).webkitAudioContext)();
+    const osc=ctx.createOscillator();
+    const gain=ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    // Different tones per type
+    const freq=type==="error"?320:type==="success"||type==="booking"?880:type==="message"?660:740;
+    osc.frequency.setValueAtTime(freq,ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(freq*1.3,ctx.currentTime+0.08);
+    gain.gain.setValueAtTime(0.18,ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.35);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime+0.35);
+    // Second tone for booking/success — makes it feel rewarding
+    if(type==="booking"||type==="success"){
+      const osc2=ctx.createOscillator();
+      const gain2=ctx.createGain();
+      osc2.connect(gain2);
+      gain2.connect(ctx.destination);
+      osc2.frequency.setValueAtTime(freq*1.3,ctx.currentTime+0.1);
+      osc2.frequency.exponentialRampToValueAtTime(freq*1.6,ctx.currentTime+0.22);
+      gain2.gain.setValueAtTime(0.12,ctx.currentTime+0.1);
+      gain2.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.4);
+      osc2.start(ctx.currentTime+0.1);
+      osc2.stop(ctx.currentTime+0.4);
+    }
+  }catch{}
+}
+
 function NotificationProvider({children}:{children:any}){
-  const [notifs,setNotifs]=React.useState<{id:number;msg:string;type:string}[]>([]);
+  // queue = all pending notifications
+  const [queue,setQueue]=React.useState<{id:number;msg:string;type:string}[]>([]);
+  // current = the one being shown right now (null = nothing showing)
+  const [current,setCurrent]=React.useState<{id:number;msg:string;type:string}|null>(null);
+  // exiting = triggers slide-out animation before removal
+  const [exiting,setExiting]=React.useState(false);
+  const timerRef=React.useRef<any>(null);
+
+  // ── Show next from queue when current is cleared ──────────────────
+  React.useEffect(()=>{
+    if(current||queue.length===0) return;
+    const next=queue[0];
+    setCurrent(next);
+    setExiting(false);
+    setQueue(p=>p.slice(1));
+    playNotifSound(next.type);
+    // After 2s start exit animation (300ms), then clear
+    timerRef.current=setTimeout(()=>{
+      setExiting(true);
+      setTimeout(()=>{ setCurrent(null); setExiting(false); },300);
+    },2000);
+  },[current,queue]);
+
+  React.useEffect(()=>()=>{ if(timerRef.current) clearTimeout(timerRef.current); },[]);
+
   const show=(msg:string,type="info")=>{
-    const id=Date.now();
-    setNotifs(p=>[...p,{id,msg,type}]);
-    setTimeout(()=>setNotifs(p=>p.filter(n=>n.id!==id)),4500);
+    const id=Date.now()+Math.random();
+    setQueue(p=>[...p,{id,msg,type}]);
   };
+
+  const dismiss=()=>{
+    clearTimeout(timerRef.current);
+    setExiting(true);
+    setTimeout(()=>{ setCurrent(null); setExiting(false); },300);
+  };
+
   const colors:any={
     booking:"#22C55E",message:"#C8A84A",inquiry:"#818CF8",
     approval:"#22C55E",error:"#EF4444",info:"#C8A84A",success:"#22C55E",
   };
   const icons:any={
-    booking:"📅",message:"💬",inquiry:"📬",
-    approval:"✓",error:"⚠️",info:"🔔",success:"✓",
+    booking:"",message:"",inquiry:"",
+    approval:"✓",error:"⚠",info:"●",success:"✓",
   };
+
+  const queueCount=queue.length;
+
   return(
     <NotifContext.Provider value={{show}}>
       {children}
-      {/* Toast container — top-right, mobile-safe */}
-      <div style={{position:"fixed",top:16,right:16,zIndex:9999,display:"flex",flexDirection:"column",gap:8,pointerEvents:"none",maxWidth:"calc(100vw - 32px)"}}>
-        {notifs.map(n=>(
-          <div key={n.id} style={{
-            background:"#1A1728",border:`1px solid ${colors[n.type]||"#C8A84A"}66`,
-            borderLeft:`4px solid ${colors[n.type]||"#C8A84A"}`,
-            borderRadius:12,padding:"12px 18px",
-            display:"flex",alignItems:"center",gap:10,
-            boxShadow:"0 8px 32px rgba(0,0,0,0.5)",
-            animation:"notifSlide 0.35s ease",
-            minWidth:260,maxWidth:360,pointerEvents:"all",
-          }}>
-            <span style={{fontSize:20,flexShrink:0}}>{icons[n.type]||"🔔"}</span>
-            <span style={{color:"#EDE4CE",fontSize:13,fontWeight:600,lineHeight:1.4,flex:1}}>{n.msg}</span>
+      {current&&(
+        <div style={{
+          position:"fixed",top:16,right:16,zIndex:9999,pointerEvents:"none",
+          maxWidth:"calc(100vw - 32px)",
+        }}>
+          <div
+            onClick={dismiss}
+            style={{
+              background:"#1A1728",
+              border:`1px solid ${colors[current.type]||"#C8A84A"}66`,
+              borderLeft:`4px solid ${colors[current.type]||"#C8A84A"}`,
+              borderRadius:12,padding:"12px 18px",
+              display:"flex",alignItems:"center",gap:10,
+              boxShadow:"0 8px 32px rgba(0,0,0,0.5)",
+              animation:exiting?"notifExit 0.3s ease forwards":"notifSlide 0.35s ease",
+              minWidth:260,maxWidth:360,pointerEvents:"all",cursor:"pointer",
+              position:"relative",
+            }}>
+            <span style={{fontSize:16,flexShrink:0,color:colors[current.type]||"#C8A84A",fontWeight:800}}>
+              {icons[current.type]||"●"}
+            </span>
+            <span style={{color:"#EDE4CE",fontSize:13,fontWeight:600,lineHeight:1.4,flex:1}}>{current.msg}</span>
+            {queueCount>0&&(
+              <span style={{
+                background:colors[current.type]||"#C8A84A",color:"#07060B",
+                borderRadius:10,fontSize:10,fontWeight:800,padding:"1px 7px",flexShrink:0,
+              }}>
+                +{queueCount}
+              </span>
+            )}
           </div>
-        ))}
-      </div>
+        </div>
+      )}
     </NotifContext.Provider>
   );
 }
@@ -4286,7 +4367,7 @@ function CookieBanner({onAccept,onDecline}:{onAccept:()=>void;onDecline:()=>void
     }}>
       <div style={{maxWidth:900,margin:"0 auto",display:"flex",gap:16,alignItems:"flex-start",flexWrap:"wrap"}}>
         <div style={{flex:1,minWidth:200}}>
-          <div style={{fontWeight:700,color:"#EDE4CE",fontSize:13,marginBottom:4}}>🍪 We use cookies</div>
+          <div style={{fontWeight:700,color:"#EDE4CE",fontSize:13,marginBottom:4}}>Cookies</div>
           <div style={{color:"#8A7D68",fontSize:12,lineHeight:1.6}}>
             Awaz uses essential cookies for authentication and session management. We do not use advertising or tracking cookies.
             {" "}<button onClick={()=>{}} style={{color:"#C8A84A",background:"none",border:"none",cursor:"pointer",fontFamily:"inherit",fontSize:12,textDecoration:"underline",padding:0}}>Privacy Policy</button>
@@ -4399,7 +4480,7 @@ function GDPRTools({session, onDeleteAccount}:{session:any;onDeleteAccount:()=>v
           setDeleted(true);
           onDeleteAccount();
         }} style={{background:"rgba(168,44,56,0.06)",color:"#A82C38",border:"1px solid rgba(168,44,56,0.2)",borderRadius:9,padding:"10px 16px",fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",textAlign:"left"}}>
-          🗑 Delete My Account & Data
+          Delete My Account & Data
         </button>
       </div>
       <div style={{color:"#4A4054",fontSize:11,marginTop:10,lineHeight:1.6}}>
@@ -4451,7 +4532,7 @@ function StripePlatformBanner({ notify }: { notify: (msg:string, type?:string)=>
   const save = async () => {
     const val = input.trim();
     if(val && !val.startsWith("acct_")){
-      notify("⚠ Platform ID must start with acct_","error"); return;
+      notify("Platform ID must start with acct_","error"); return;
     }
     setSaving(true);
     try{
@@ -4472,7 +4553,7 @@ function StripePlatformBanner({ notify }: { notify: (msg:string, type?:string)=>
       }
 
       setSaved(true);
-      notify(val ? "✅ Stripe Platform ID saved! Payments will now use this account." : "Platform ID cleared","success");
+      notify(val ? "Stripe Platform ID saved! Payments will now use this account." : "Platform ID cleared","success");
       setTimeout(()=>setSaved(false), 4000);
     }catch(e:any){
       notify("Error saving: "+e.message,"error");
@@ -4484,7 +4565,7 @@ function StripePlatformBanner({ notify }: { notify: (msg:string, type?:string)=>
   return(
     <div style={{background:"linear-gradient(135deg,rgba(99,91,255,0.12),rgba(99,91,255,0.06))",border:"1px solid rgba(99,91,255,0.3)",borderRadius:14,padding:"20px 22px",marginBottom:20}}>
       <div style={{display:"flex",alignItems:"flex-start",gap:16,flexWrap:"wrap"}}>
-        <div style={{fontSize:36,flexShrink:0}}>💳</div>
+        
         <div style={{flex:1,minWidth:220}}>
           <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text,marginBottom:4,display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
             Connect Awaz to Stripe
@@ -4582,7 +4663,7 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
     const text=adminChatMsg.trim();
     const img=imageUrl||adminChatImage;
     if(!adminChatArtist||((!text)&&!img)) return;
-    const localMsg={from:"admin",text:text||(img?"📷 Image":""),image:img||null,
+    const localMsg={from:"admin",text:text||(img?"[Image]":""),image:img||null,
       time:new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})};
     setAdminChats(p=>({...p,[adminChatArtist.id]:[...(p[adminChatArtist.id]||[]),localMsg]}));
     setAdminChatMsg("");
@@ -4593,7 +4674,7 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
       if(!sb) return;
       const{error}=await sb.from("chat_messages").insert({
         artist_id:adminChatArtist.id,from_role:"admin",
-        text:text||(img?"📷 Image":""),image_url:img||null,
+        text:text||(img?"[Image]":""),image_url:img||null,
       });
       if(error) console.error("Chat save error:",error.message);
     }catch(e){console.error("Chat exception:",e);}
@@ -4653,7 +4734,7 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
           rating:a.rating||0,reviews:a.reviews||0,
           priceInfo:a.price_info||"On request",
           deposit:a.deposit||1000,
-          emoji:a.emoji||"🎤",color:a.color||"#A82C38",
+          emoji:a.emoji||"",color:a.color||"#A82C38",
           photo:a.photo||null,bio:a.bio||"",
           tags:Array.isArray(a.tags)?a.tags:[],
           instruments:Array.isArray(a.instruments)?a.instruments:[],
@@ -4771,10 +4852,10 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
               const boostUntil = newBoosted ? new Date(Date.now()+180*24*60*60*1000).toISOString() : null;
               setArtists(p=>p.map(x=>x.id===a.id?{...x,isBoosted:newBoosted,boostedUntil:boostUntil}:x));
               if(HAS_SUPA){const sb=await getSupabase();if(sb)await sb.from("artists").update({is_boosted:newBoosted,boosted_until:boostUntil}).eq("id",a.id);}
-              notify(newBoosted?`⭐ ${a.name} is now featured!`:`Boost removed from ${a.name}`,"success");
+              notify(newBoosted?`${a.name} is now featured!`:`Boost removed from ${a.name}`,"success");
             }}
               style={{background:a.isBoosted?`linear-gradient(135deg,${C.gold},${C.saffron})`:C.surface,color:a.isBoosted?C.bg:C.gold,border:`1px solid ${C.gold}44`,borderRadius:7,padding:"6px 14px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>
-              {a.isBoosted?"⭐ Boosted":"⭐ Boost"}
+              {a.isBoosted?"Boosted":"Boost"}
             </button>
             <button onClick={()=>{setAdminChatArtist(a);setTab("chat");}} style={{background:C.surface,color:C.muted,border:`1px solid ${C.border}`,borderRadius:7,padding:"6px 14px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit",marginLeft:"auto"}}>💬 Message</button>
             <button onClick={async()=>{
@@ -4793,7 +4874,7 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
                   notify("Artist deleted","success");
                 }
               }
-            }} style={{background:"rgba(168,44,56,0.08)",color:C.ruby,border:`1px solid ${C.ruby}33`,borderRadius:7,padding:"6px 10px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit",lineHeight:1}}>🗑</button>
+            }} style={{background:"rgba(168,44,56,0.08)",color:C.ruby,border:`1px solid ${C.ruby}33`,borderRadius:7,padding:"6px 10px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit",lineHeight:1}}>Del</button>
           </div>
         </div>
       </div>
@@ -4808,12 +4889,12 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
         <div>
           <SectionHeader title="Platform Overview"/>
           <div style={{display:"grid",gridTemplateColumns:`repeat(${vp.isMobile?2:3},1fr)`,gap:10,marginBottom:24}}>
-            <StatCard icon="💶" label="Total Deposits"     value={`€${totalRevenue.toLocaleString()}`} sub="Stripe collected"   color={C.gold}/>
-            <StatCard icon="🏦" label="Awaz Revenue (12%)" value={`€${awazRevenue.toLocaleString()}`}  sub="Platform cut"       color={C.emerald}/>
-            <StatCard icon="✅" label="Confirmed Bookings" value={confirmedBooks}                       sub="This month"         color={C.lapis}/>
-            <StatCard icon="⏳" label="Pending Bookings"   value={pendingBooks}                         sub="Awaiting action"    color={C.saffron} onClick={()=>setTab("bookings")}/>
-            <StatCard icon="🎤" label="Active Artists"     value={approvedArtists}                      sub={`${pendingArtists} pending review`} color={C.ruby} onClick={()=>setTab("artists")}/>
-            <StatCard icon="📬" label="New Inquiries"      value={newInquiries}                         sub="Unread"             color={C.lavender} onClick={()=>setTab("inquiries")}/>
+            <StatCard icon="" label="Total Deposits"     value={`€${totalRevenue.toLocaleString()}`} sub="Stripe collected"   color={C.gold}/>
+            <StatCard icon="" label="Awaz Revenue (12%)" value={`€${awazRevenue.toLocaleString()}`}  sub="Platform cut"       color={C.emerald}/>
+            <StatCard icon="" label="Confirmed Bookings" value={confirmedBooks}                       sub="This month"         color={C.lapis}/>
+            <StatCard icon="" label="Pending Bookings"   value={pendingBooks}                         sub="Awaiting action"    color={C.saffron} onClick={()=>setTab("bookings")}/>
+            <StatCard icon="" label="Active Artists"     value={approvedArtists}                      sub={`${pendingArtists} pending review`} color={C.ruby} onClick={()=>setTab("artists")}/>
+            <StatCard icon="" label="New Inquiries"      value={newInquiries}                         sub="Unread"             color={C.lavender} onClick={()=>setTab("inquiries")}/>
           </div>
 
           {/* Action alerts */}
@@ -4821,7 +4902,7 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
             <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:20}}>
               {pendingArtists>0&&(
                 <div onClick={()=>setTab("artists")} style={{background:`${C.saffron}10`,border:`1px solid ${C.saffron}44`,borderRadius:10,padding:"12px 16px",cursor:"pointer",display:"flex",alignItems:"center",gap:10}}>
-                  <span style={{fontSize:18}}>⚠️</span>
+                  
                   <div style={{flex:1}}>
                     <div style={{fontWeight:700,color:C.saffron,fontSize:T.sm}}>{pendingArtists} artist{pendingArtists>1?"s":""} awaiting review</div>
                     <div style={{color:C.muted,fontSize:T.xs}}>Approve or reject to activate their profile →</div>
@@ -4831,7 +4912,7 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
               )}
               {newInquiries>0&&(
                 <div onClick={()=>setTab("inquiries")} style={{background:`${C.lavender}10`,border:`1px solid ${C.lavender}44`,borderRadius:10,padding:"12px 16px",cursor:"pointer",display:"flex",alignItems:"center",gap:10}}>
-                  <span style={{fontSize:18}}>📬</span>
+                  
                   <div style={{flex:1}}>
                     <div style={{fontWeight:700,color:C.lavender,fontSize:T.sm}}>{newInquiries} new inquiry{newInquiries>1?"ies":""}</div>
                     <div style={{color:C.muted,fontSize:T.xs}}>Private booking inquiries waiting for your reply →</div>
@@ -4858,7 +4939,7 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
                 </div>
                 <span style={{background:`${sc}18`,color:sc,border:`1px solid ${sc}44`,borderRadius:4,padding:"2px 8px",fontSize:10,fontWeight:700,flexShrink:0}}>{(b.status||"pending").replace(/_/g," ").toUpperCase()}</span>
                 <span style={{color:C.text,fontWeight:700,fontSize:T.sm,fontFamily:"'Cormorant Garamond',serif",flexShrink:0}}>€{b.deposit}</span>
-                <button onClick={()=>setChat(b)} style={{width:32,height:32,borderRadius:7,background:C.surface,border:`1px solid ${C.border}`,fontSize:14,cursor:"pointer",flexShrink:0}}>💬</button>
+                <button onClick={()=>setChat(b)} style={{width:32,height:32,borderRadius:7,background:C.surface,border:`1px solid ${C.border}`,fontSize:14,cursor:"pointer",flexShrink:0}}></button>
               </div>
             );
           })}
@@ -4911,7 +4992,7 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
                 }
               }
             }} style={{background:"rgba(168,44,56,0.07)",color:C.ruby,border:`1px solid ${C.ruby}22`,borderRadius:8,padding:"6px 14px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>
-              🗑 Remove all rejected ({displayArtists.filter(a=>a.status==="rejected").length})
+              Remove all rejected ({displayArtists.filter(a=>a.status==="rejected").length})
             </button>
             <button onClick={async()=>{
               const pending=displayArtists.filter(a=>a.status==="pending");
@@ -4984,7 +5065,7 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
                     )}
                     {b.refunded&&<span style={{color:C.ruby,fontSize:T.xs,fontWeight:700,background:C.rubyS,border:`1px solid ${C.ruby}44`,borderRadius:4,padding:"2px 8px"}}>REFUNDED</span>}
                     <button onClick={()=>setChat(b)} style={{marginLeft:"auto",display:"flex",alignItems:"center",gap:5,background:C.surface,color:C.muted,border:`1px solid ${C.border}`,borderRadius:7,padding:"6px 12px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>
-                      💬 Chat
+                      Chat
                     </button>
                   </div>
                 </div>
@@ -5027,7 +5108,7 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
 
           {inquiries.length===0?(
             <div style={{textAlign:"center",padding:"60px 20px",background:C.card,borderRadius:12,border:`1px solid ${C.border}`}}>
-              <div style={{fontSize:40,marginBottom:12}}>📬</div>
+              
               <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,color:C.text,marginBottom:8}}>No inquiries yet</div>
               <div style={{color:C.muted,fontSize:T.sm}}>Customer inquiries will appear here once the contact widget is live on the site.</div>
             </div>
@@ -5051,7 +5132,7 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
                         try{const sb=await getSupabase();if(sb)await sb.from("inquiries").delete().eq("id",inq.id);}
                         catch(e){console.warn("Delete inquiry error:",e);}
                       }
-                    }} style={{position:"absolute",top:8,right:8,background:"rgba(168,44,56,0.15)",color:C.ruby,border:"none",borderRadius:6,padding:"3px 7px",fontSize:11,cursor:"pointer",fontFamily:"inherit",opacity:0,transition:"opacity 0.15s",zIndex:2}}>🗑</button>
+                    }} style={{position:"absolute",top:8,right:8,background:"rgba(168,44,56,0.15)",color:C.ruby,border:"none",borderRadius:6,padding:"3px 7px",fontSize:11,cursor:"pointer",fontFamily:"inherit",opacity:0,transition:"opacity 0.15s",zIndex:2}}>Del</button>
                     <div onClick={async()=>{
                       setSelInq(inq);setReplyText("");setReplySent(false);
                       if(inq.status==="new"){
@@ -5093,7 +5174,7 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
                     </div>
                     <div style={{padding:"16px 20px",flex:1,overflow:"auto"}}>
                       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:16}}>
-                        {[["📅 Date",selInq.date||"—"],["🎉 Event",selInq.eventType||"—"],["💶 Budget",selInq.budget||"—"],["📍 Country",selInq.country||"—"]].filter(([,v])=>v!=="—").map(([k,v])=>(
+                        {[["Date",selInq.date||"—"],["Event",selInq.eventType||"—"],["Budget",selInq.budget||"—"],["Country",selInq.country||"—"]].filter(([,v])=>v!=="—").map(([k,v])=>(
                           <div key={k} style={{background:C.surface,borderRadius:8,padding:"10px 12px",border:`1px solid ${C.border}`}}>
                             <div style={{color:C.muted,fontSize:10,fontWeight:700,letterSpacing:"0.6px",textTransform:"uppercase",marginBottom:3}}>{k}</div>
                             <div style={{color:C.text,fontSize:T.sm,fontWeight:600}}>{v}</div>
@@ -5136,7 +5217,7 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
                   </>
                 ):(
                   <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:10,color:C.muted}}>
-                    <div style={{fontSize:36}}>📬</div>
+                    
                     <div style={{fontSize:T.sm}}>Select an inquiry to view</div>
                   </div>
                 )}
@@ -5211,12 +5292,12 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
                             if(error){
                               notify("Could not delete from DB — check RLS policies","error");
                               console.error("Chat delete error:",error.message);
-                            } else { notify("Chat cleared ✅","success"); }
+                            } else { notify("Chat cleared","success"); }
                           }
                         }catch(e:any){notify("Error: "+e.message,"error");}
-                      } else { notify("Chat cleared ✅","success"); }
+                      } else { notify("Chat cleared","success"); }
                     }} style={{background:"rgba(168,44,56,0.08)",color:C.ruby,border:`1px solid ${C.ruby}33`,borderRadius:7,padding:"5px 10px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit",flexShrink:0}}>
-                      🗑 Clear
+                      Clear
                     </button>
                   </div>
                   <div style={{flex:1,overflow:"auto",padding:"14px 16px",display:"flex",flexDirection:"column",gap:8}}>
@@ -5227,11 +5308,11 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
                         {msg.from==="admin"&&(
                           <button className="msg-del" onClick={()=>{
                             setAdminChats(p=>({...p,[adminChatArtist.id]:(p[adminChatArtist.id]||[]).filter((_,j)=>j!==i)}));
-                          }} style={{background:"none",border:"none",color:C.ruby,cursor:"pointer",opacity:0,transition:"opacity 0.15s",fontSize:12,padding:"4px",flexShrink:0,marginTop:4}}>🗑</button>
+                          }} style={{background:"none",border:"none",color:C.ruby,cursor:"pointer",opacity:0,transition:"opacity 0.15s",fontSize:12,padding:"4px",flexShrink:0,marginTop:4}}>Del</button>
                         )}
                         <div style={{maxWidth:"75%",background:msg.from==="admin"?C.goldS:C.surface,borderRadius:10,padding:"8px 12px",border:`1px solid ${msg.from==="admin"?C.gold+"44":C.border}`}}>
                           {msg.image&&<img src={msg.image} style={{maxWidth:"100%",maxHeight:180,borderRadius:8,marginBottom:4,display:"block"}} alt="img"/>}
-                          {msg.text&&msg.text!=="📷 Image"&&<div style={{color:C.text,fontSize:T.sm,lineHeight:1.5}}>{msg.text}</div>}
+                          {msg.text&&msg.text!=="[Image]"&&<div style={{color:C.text,fontSize:T.sm,lineHeight:1.5}}>{msg.text}</div>}
                           <div style={{color:C.muted,fontSize:10,marginTop:3,textAlign:"right"}}>{msg.time}</div>
                         </div>
                       </div>
@@ -5242,7 +5323,7 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
                   </div>
                   <div style={{padding:"12px 16px",borderTop:`1px solid ${C.border}`,display:"flex",gap:8,alignItems:"center"}}>
                     <label style={{cursor:"pointer",padding:"8px 10px",borderRadius:8,background:C.surface,border:`1px solid ${C.border}`,color:C.muted,fontSize:16,display:"flex",alignItems:"center",flexShrink:0}} title="Attach image">
-                      📎<input type="file" accept="image/*" onChange={handleAdminChatImg} style={{display:"none"}}/>
+                      <input type="file" accept="image/*" onChange={handleAdminChatImg} style={{display:"none"}}/>
                     </label>
                     <input value={adminChatMsg} onChange={e=>setAdminChatMsg(e.target.value)}
                       onKeyDown={e=>{if(e.key==="Enter"&&(adminChatMsg.trim()||adminChatImage)) sendAdminChat();}}
@@ -5253,7 +5334,7 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
                 </>
               ):(
                 <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:10,color:C.muted}}>
-                  <div style={{fontSize:32}}>💬</div>
+                  
                   <div style={{fontSize:T.sm}}>Select an artist to message</div>
                 </div>
               )}
@@ -5272,7 +5353,7 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
 
           {/* ── Boost Revenue ── */}
           <div style={{background:`linear-gradient(135deg,${C.goldS},${C.card})`,border:`1px solid ${C.gold}44`,borderRadius:12,padding:"16px 20px",marginBottom:20,display:"flex",alignItems:"center",gap:12}}>
-            <div style={{fontSize:28}}>⭐</div>
+            
             <div style={{flex:1}}>
               <div style={{fontWeight:700,color:C.gold,fontSize:T.sm}}>Artist Boost Revenue</div>
               <div style={{color:C.muted,fontSize:T.xs,marginTop:2}}>€50 per artist boost · {artists.filter(a=>a.isBoosted).length} active boosts · <strong style={{color:C.gold}}>€{artists.filter(a=>a.isBoosted).length * 50} earned</strong></div>
@@ -5424,7 +5505,7 @@ const COUNTRY_LIST=[
   ["SE","Sweden 🇸🇪"],["CH","Switzerland 🇨🇭"],["TW","Taiwan 🇹🇼"],
   ["TJ","Tajikistan 🇹🇯"],["TR","Turkey 🇹🇷"],["TM","Turkmenistan 🇹🇲"],
   ["AE","UAE 🇦🇪"],["GB","United Kingdom 🇬🇧"],["US","United States 🇺🇸"],
-  ["UZ","Uzbekistan 🇺🇿"],["YE","Yemen 🇾🇪"],["OTHER","Other 🌍"],
+  ["UZ","Uzbekistan"],["YE","Yemen"],["OTHER","Other"],
 ];
 function CountrySelect({value,onChange,label="Country"}:{value:string;onChange:(v:string)=>void;label?:string}){
   const [q,setQ]=useState("");
@@ -5534,7 +5615,7 @@ function BoostButton({ artist, onUpdateArtist, notify }) {
       {showBoostPay&&(
         <StripePaywall
           amount={50}
-          emoji="⭐"
+          emoji=""
           label="Boost Your Profile"
           description="Featured at top of browse page for 6 months. Highlighted with gold border."
           metadata={{artistName:artist.name,bookingId:`boost_${artist.id}_${Date.now()}`,type:"boost"}}
@@ -5542,7 +5623,7 @@ function BoostButton({ artist, onUpdateArtist, notify }) {
             const boostUntil=new Date(Date.now()+180*24*60*60*1000).toISOString();
             onUpdateArtist(artist.id,{isBoosted:true,boostedUntil:boostUntil});
             if(HAS_SUPA){const sb=await getSupabase();if(sb)await sb.from("artists").update({is_boosted:true,boosted_until:boostUntil,boost_payment_id:piId}).eq("id",artist.id);}
-            notify("⭐ Profile boosted for 6 months! You're now featured.","success");
+            notify("Profile boosted for 6 months! You're now featured.","success");
             setShowBoostPay(false);
           }}
           onClose={()=>setShowBoostPay(false)}
@@ -5655,7 +5736,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
     setEditing(false);
     setSaving(false);
     setSaveSuccess(true);
-    notify("✅ Profile updated!","success");
+    notify("Profile updated!","success");
     setTimeout(()=>setSaveSuccess(false),3000);
     if(HAS_SUPA){
       try{
@@ -5673,7 +5754,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
           tags:                newTags,
           performing_countries:newCountries,
           photo:               artist.photo||null,
-          emoji:               artist.emoji||"🎤",
+          emoji:               artist.emoji||"",
           updated_at:          new Date().toISOString(),
         }).eq("id",artist.id);
         // Also update name in profiles table
@@ -5752,7 +5833,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
       }
     }
     setSocialSaved(true);
-    notify("✅ Social profiles saved! They will appear on your public profile.","success");
+    notify("Social profiles saved! They will appear on your public profile.","success");
     setTimeout(()=>setSocialSaved(false),4000);
   };
 
@@ -5762,12 +5843,12 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
       {tab==="overview"&&(
         <div>
           <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:4}}>
-            Hey, {artist.name.split(" ")[0]} 👋
+            Hey, {artist.name.split(" ")[0]}
           </div>
           {/* Notification banner for pending bookings */}
           {pendingCount>0&&(
             <div onClick={()=>setTab("bookings")} style={{display:"flex",alignItems:"center",gap:12,background:"rgba(168,44,56,0.08)",border:"1px solid rgba(168,44,56,0.3)",borderRadius:12,padding:"14px 16px",marginBottom:16,cursor:"pointer"}}>
-              <span style={{fontSize:22}}>🔔</span>
+              
               <div style={{flex:1}}>
                 <div style={{fontWeight:700,color:C.ruby,fontSize:T.sm}}>{pendingCount} new booking{pendingCount>1?"s":""} awaiting your response</div>
                 <div style={{color:C.muted,fontSize:T.xs,marginTop:2}}>Tap to review →</div>
@@ -5802,7 +5883,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
           )}
           {artist.status==="approved"&&artist.stripeConnected&&(
             <div style={{background:C.emeraldS,border:`1px solid ${C.emerald}44`,borderRadius:10,padding:"10px 14px",marginBottom:12,display:"flex",alignItems:"center",gap:8,fontSize:T.sm,fontFamily:"'DM Sans',sans-serif"}}>
-              <span style={{fontSize:16}}>🎉</span>
+              
               <span style={{color:C.emerald,fontWeight:700}}>Profile approved and Stripe connected</span>
               <span style={{color:C.muted,fontSize:T.xs}}>— you're ready to receive bookings</span>
             </div>
@@ -5810,7 +5891,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
           {!artist.stripeConnected&&artist.status==="approved"&&(
             <div style={{background:"rgba(99,91,255,0.10)",border:"2px solid rgba(99,91,255,0.35)",borderRadius:12,padding:"14px 16px",marginBottom:12,fontSize:T.sm,color:C.textD,fontFamily:"'DM Sans',sans-serif",display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,flexWrap:"wrap"}}>
               <div>
-                <div style={{fontWeight:700,color:"#8B83FF",marginBottom:3}}>💳 Connect Stripe to get paid</div>
+                <div style={{fontWeight:700,color:"#8B83FF",marginBottom:3}}>Connect Stripe to get paid</div>
                 <div style={{fontSize:T.xs,color:C.muted}}>Required to receive deposits from bookings</div>
               </div>
               <Btn v="stripe" sz="sm" onClick={()=>setShowStripeConnect(true)}>Connect now →</Btn>
@@ -5818,13 +5899,13 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
           )}
           {!artist.spotify&&!artist.instagram&&artist.status==="approved"&&(
             <div style={{background:"rgba(200,168,74,0.06)",border:`1px solid ${C.gold}28`,borderRadius:10,padding:"12px 14px",marginBottom:12,fontSize:T.sm,color:C.textD,fontFamily:"'DM Sans',sans-serif",display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,flexWrap:"wrap"}}>
-              <span>🎵 <strong style={{color:C.gold}}>{t('addSocial')}</strong> — artists with social proof get 3× more views</span>
+              <span><strong style={{color:C.gold}}>{t('addSocial')}</strong> — artists with social proof get 3× more views</span>
               <Btn v="ghost" sz="sm" onClick={()=>setTab("social")}>{t('addNow')}</Btn>
             </div>
           )}
           {/* ── Earnings breakdown — clear and transparent ── */}
           <div style={{background:`linear-gradient(135deg,${C.goldS},${C.card})`,border:`1px solid ${C.gold}33`,borderRadius:14,padding:"18px 20px",marginBottom:16}}>
-            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.gold,marginBottom:14}}>💶 Your Earnings</div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.gold,marginBottom:14}}>Your Earnings</div>
             {myB.filter(b=>b.depositPaid).length===0?(
               <div style={{color:C.muted,fontSize:T.sm}}>No paid bookings yet — earnings will appear here automatically after each booking.</div>
             ):(
@@ -5859,7 +5940,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
                 <div style={{background:C.emeraldS,border:`1px solid ${C.emerald}33`,borderRadius:10,padding:"12px 14px",marginTop:8}}>
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                     <div>
-                      <div style={{color:C.emerald,fontWeight:800,fontSize:T.sm}}>✅ Total in your account</div>
+                      <div style={{color:C.emerald,fontWeight:800,fontSize:T.sm}}>Total in your account</div>
                       <div style={{color:C.muted,fontSize:11,marginTop:2}}>Auto-transferred to your Stripe account after each booking</div>
                     </div>
                     <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:800,color:C.emerald,fontSize:"1.6rem"}}>€{depositsIn}</div>
@@ -5869,13 +5950,13 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
             )}
             {/* VAT note */}
             <div style={{marginTop:12,background:C.lapisS,border:`1px solid ${C.lapis}22`,borderRadius:8,padding:"10px 12px",fontSize:11,color:C.muted,lineHeight:1.7}}>
-              <strong style={{color:C.text}}>🧾 VAT / Tax note:</strong> The deposit amount transferred to you is gross. You are responsible for reporting income and paying applicable taxes in your country of residence. Awaz does not withhold tax — consult your local tax authority.
+              <strong style={{color:C.text}}>VAT / Tax note:</strong> The deposit amount transferred to you is gross. You are responsible for reporting income and paying applicable taxes in your country of residence. Awaz does not withhold tax — consult your local tax authority.
             </div>
           </div>
 
           {/* ── Quick stats ── */}
           <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10,marginBottom:16}}>
-            {[["📅","Bookings",myB.length,C.gold],["💬","Active Chats",myB.filter(b=>b.chatUnlocked).length,C.gold],["⭐","Rating",artist.reviews>0?artist.rating:"—",C.gold],["🎵","Song Requests",0,C.gold]].map(([icon,label,value,color])=>(
+            {[["","Bookings",myB.length,C.gold],["","Active Chats",myB.filter(b=>b.chatUnlocked).length,C.gold],["","Rating",artist.reviews>0?artist.rating:"—",C.gold],["🎵","Song Requests",0,C.gold]].map(([icon,label,value,color])=>(
               <div key={label as string} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:10,padding:"14px",borderTop:`3px solid ${C.border}38`}}>
                 <div style={{fontSize:18,marginBottom:5}}>{icon}</div>
                 <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:800,color:color as string,lineHeight:1}}>{value}</div>
@@ -5893,7 +5974,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
                 </div>
                 <div style={{display:"flex",gap:8,alignItems:"center",flexShrink:0}}>
                   <span style={{color:C.gold,fontWeight:700,fontFamily:"'Cormorant Garamond',serif",fontSize:T.md}}>€{b.deposit}</span>
-                  {b.chatUnlocked&&<button onClick={()=>setChat(b)} style={{width:36,height:36,borderRadius:8,background:C.surface,border:`1px solid ${C.border}`,fontSize:16,cursor:"pointer",WebkitTapHighlightColor:"transparent"}}>💬</button>}
+                  {b.chatUnlocked&&<button onClick={()=>setChat(b)} style={{width:36,height:36,borderRadius:8,background:C.surface,border:`1px solid ${C.border}`,fontSize:16,cursor:"pointer",WebkitTapHighlightColor:"transparent"}}></button>}
                 </div>
               </div>
             ))}
@@ -5927,7 +6008,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
             ?<div>
               {(!artist.genre||!artist.bio||!artist.spotify)&&(
                 <div style={{background:`linear-gradient(135deg,rgba(200,168,74,0.06),${C.card})`,border:`1px solid ${C.gold}33`,borderRadius:12,padding:"18px 20px",marginBottom:12}}>
-                  <div style={{fontWeight:700,color:C.gold,fontSize:T.sm,marginBottom:4}}>⭐ Complete your profile to get bookings</div>
+                  <div style={{fontWeight:700,color:C.gold,fontSize:T.sm,marginBottom:4}}>Complete your profile to get bookings</div>
                   <div style={{color:C.muted,fontSize:T.xs,marginBottom:12}}>Artists with complete profiles get 3× more views</div>
                   <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
                     {!artist.genre&&<button onClick={()=>setTab("profile")} style={{background:C.card,border:`1px solid ${C.gold}44`,borderRadius:8,padding:"7px 14px",color:C.gold,fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit",minHeight:34}}>+ Add Genre</button>}
@@ -5963,14 +6044,14 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
                       </div>
                       {/* Details */}
                       <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:8,marginBottom:12}}>
-                        {[["📅 Date",b.date],["🎉 Event",b.event||b.eventType||"—"],["📍 Country",b.country||"—"],["💳 Deposit",b.depositPaid?"✓ Paid":"✗ Pending"]].map(([l,v])=>(
+                        {[["Date",b.date],["Event",b.event||b.eventType||"—"],["Country",b.country||"—"],["Deposit",b.depositPaid?"✓ Paid":"✗ Pending"]].map(([l,v])=>(
                           <div key={l} style={{background:C.surface,borderRadius:8,padding:"8px 10px"}}>
                             <div style={{fontSize:10,color:C.muted,fontWeight:700,letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:2}}>{l}</div>
                             <div style={{fontSize:T.xs,color:C.text}}>{v}</div>
                           </div>
                         ))}
                       </div>
-                      {b.notes&&<div style={{fontSize:T.xs,color:C.muted,background:C.surface,borderRadius:8,padding:"8px 10px",marginBottom:12}}>📝 {b.notes}</div>}
+                      {b.notes&&<div style={{fontSize:T.xs,color:C.muted,background:C.surface,borderRadius:8,padding:"8px 10px",marginBottom:12}}>{b.notes}</div>}
                       <EventPlanView bookingId={b.id} C={C} T={T}/>
                       {/* Action buttons */}
                       <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
@@ -6014,7 +6095,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
                           </button>
                         )}
                         <button onClick={()=>setChat(b)} style={{width:42,height:42,borderRadius:10,background:C.surface,border:`1px solid ${C.border}`,fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                          {b.chatUnlocked?"💬":"🔒"}
+                          {b.chatUnlocked?"Chat":"Lock"}
                         </button>
                       </div>
                     </div>
@@ -6112,7 +6193,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
               {myB.filter(b=>b.chatUnlocked&&b.messages?.length>0).map(b=>(
                 <div key={b.id} onClick={()=>setChat(b)}
                   style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:"14px 16px",cursor:"pointer",display:"flex",gap:12,alignItems:"center"}}>
-                  <div style={{fontSize:24,flexShrink:0}}>💬</div>
+                  
                   <div style={{flex:1,minWidth:0}}>
                     <div style={{fontWeight:700,color:C.text,fontSize:T.sm}}>{b.customerName}</div>
                     <div style={{color:C.muted,fontSize:T.xs,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{b.messages[b.messages.length-1]?.text}</div>
@@ -6132,14 +6213,14 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
           {/* ── Artist Boost ── */}
           <div style={{marginTop:24,background:artist.isBoosted?`linear-gradient(135deg,rgba(200,168,74,0.1),${C.card})`:`linear-gradient(135deg,rgba(200,168,74,0.04),${C.card})`,border:`2px solid ${artist.isBoosted?C.gold:C.gold+"33"}`,borderRadius:16,padding:"22px 24px"}}>
             <div style={{display:"flex",alignItems:"flex-start",gap:14,flexWrap:"wrap"}}>
-              <div style={{fontSize:36}}>⭐</div>
+              
               <div style={{flex:1,minWidth:200}}>
                 <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:700,color:C.gold,marginBottom:6}}>
                   {artist.isBoosted?"You're Featured!":"Artist Boost"}
                 </div>
                 {artist.isBoosted?(
                   <div>
-                    <div style={{color:C.emerald,fontWeight:700,fontSize:T.sm,marginBottom:6}}>⭐ Your profile is featured — {artist.boostedUntil?`active until ${new Date(artist.boostedUntil).toLocaleDateString()}`:'active'}d at the top of the browse page</div>
+                    <div style={{color:C.emerald,fontWeight:700,fontSize:T.sm,marginBottom:6}}>Your profile is featured — {artist.boostedUntil?`active until ${new Date(artist.boostedUntil).toLocaleDateString()}`:'active'}d at the top of the browse page</div>
                     <div style={{color:C.muted,fontSize:T.xs,lineHeight:1.7}}>
                       Your profile appears in the Featured Artists section — visible to all visitors before the regular listing. Boosted by Awaz admin.
                     </div>
@@ -6150,7 +6231,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
                       Get featured at the top of the browse page for <strong style={{color:C.gold}}>6 months</strong>. Your profile appears before all regular listings with a ⭐ Featured badge.
                     </div>
                     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:16}}>
-                      {[["3× more profile views","📈"],["Top of browse page","🔝"],["⭐ Featured badge","✨"],["30 days duration","📅"]].map(([text,icon])=>(
+                      {[["3× more profile views",""],["Top of browse page",""],["Featured badge",""],["30 days duration",""]].map(([text,icon])=>(
                         <div key={text} style={{display:"flex",alignItems:"center",gap:8,background:C.surface,borderRadius:8,padding:"8px 12px",border:`1px solid ${C.border}`}}>
                           <span style={{fontSize:16}}>{icon}</span>
                           <span style={{color:C.textD,fontSize:T.xs,fontWeight:600}}>{text}</span>
@@ -6168,7 +6249,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
                         {showBoostPay&&(
                           <StripePaywall
                             amount={50}
-                            emoji="⭐"
+                            emoji=""
                             label="Boost Your Profile"
                             description="Featured at top of browse page for 6 months. Highlighted with gold border."
                             metadata={{artistName:artist.name,bookingId:`boost_${artist.id}_${Date.now()}`,type:"boost"}}
@@ -6176,7 +6257,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
                               const boostUntil=new Date(Date.now()+180*24*60*60*1000).toISOString();
                               onUpdateArtist(artist.id,{isBoosted:true,boostedUntil:boostUntil});
                               if(HAS_SUPA){const sb=await getSupabase();if(sb)await sb.from("artists").update({is_boosted:true,boosted_until:boostUntil,boost_payment_id:piId}).eq("id",artist.id);}
-                              notify("⭐ Profile boosted for 6 months! You're now featured.","success");
+                              notify("Profile boosted for 6 months! You're now featured.","success");
                               setShowBoostPay(false);
                             }}
                             onClose={()=>setShowBoostPay(false)}
@@ -6196,7 +6277,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
         <div>
           {/* ── Header with live stats ── */}
           <div style={{marginBottom:20}}>
-            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:4}}>🎵 Song Requests</div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:4}}>Song Requests</div>
             <div style={{color:C.muted,fontSize:T.sm}}>Manage live requests from your audience</div>
           </div>
 
@@ -6218,7 +6299,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
           {/* ── Request list ── */}
           {songRequests.length===0?(
             <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,padding:"48px 24px",textAlign:"center"}}>
-              <div style={{fontSize:48,marginBottom:12}}>🎶</div>
+              <div style={{fontSize:48,marginBottom:12}}></div>
               <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,color:C.text,marginBottom:8}}>No requests yet</div>
               <div style={{color:C.muted,fontSize:T.sm,lineHeight:1.7}}>Share your Song Request link with your audience. Requests will appear here in real-time.</div>
             </div>
@@ -6227,7 +6308,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
               {/* Queue header */}
               {songRequests.filter(r=>r.status==="accepted").length>0&&(
                 <div style={{background:`linear-gradient(135deg,${C.emerald}18,${C.emerald}08)`,border:`1px solid ${C.emerald}44`,borderRadius:12,padding:"12px 16px",display:"flex",alignItems:"center",gap:10}}>
-                  <span style={{fontSize:20}}>🎤</span>
+                  
                   <div>
                     <div style={{fontSize:T.xs,fontWeight:700,color:C.emerald,letterSpacing:"0.6px",textTransform:"uppercase"}}>Now Playing Queue</div>
                     <div style={{fontSize:T.sm,color:C.text,marginTop:2}}>
@@ -6251,7 +6332,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
                 const isDone      = isCompleted||isRefunded;
 
                 const priorityColor = (req.amount||0)>=100?C.ruby:(req.amount||0)>=50?C.saffron:C.emerald;
-                const priorityLabel = (req.amount||0)>=100?"🔥 MUST PLAY":(req.amount||0)>=50?"⚡ HIGH PRIORITY":"✓ Normal";
+                const priorityLabel = (req.amount||0)>=100?"MUST PLAY":(req.amount||0)>=50?"HIGH PRIORITY":"✓ Normal";
 
                 // Queue position (only for accepted)
                 const queuePos = isAccepted
@@ -6274,7 +6355,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
                         {/* Queue position badge */}
                         {queuePos&&(
                           <div style={{display:"inline-flex",alignItems:"center",gap:5,background:C.emeraldS,border:`1px solid ${C.emerald}44`,borderRadius:6,padding:"2px 8px",marginBottom:6,fontSize:10,fontWeight:800,color:C.emerald,textTransform:"uppercase"}}>
-                            #{queuePos} IN QUEUE {queuePos===1?"— SING NOW 🎤":""}
+                            #{queuePos} IN QUEUE {queuePos===1?"— SING NOW":""}
                           </div>
                         )}
                         <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text,marginBottom:2}}>
@@ -6284,7 +6365,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
                           <div style={{color:C.muted,fontSize:T.sm,marginBottom:6}}>by {req.song_artist}</div>
                         )}
                         <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
-                          <span style={{color:C.textD,fontSize:T.xs}}>👤 {req.guest_name||"Anonymous"}</span>
+                          <span style={{color:C.textD,fontSize:T.xs}}>{req.guest_name||"Anonymous"}</span>
                           {req.message&&<span style={{color:C.muted,fontSize:T.xs}}>· "{req.message}"</span>}
                         </div>
                       </div>
@@ -6299,7 +6380,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
                           setSongRequests(p=>p.filter(r=>r.id!==req.id));
                           if(HAS_SUPA){const sb=await getSupabase();if(sb)await sb.from("song_requests").delete().eq("id",req.id);}
                         }} style={{background:"none",border:"none",color:C.faint,cursor:"pointer",fontSize:16,padding:"2px 4px",lineHeight:1}} title="Delete">
-                          🗑
+                          Del
                         </button>
                       </div>
                     </div>
@@ -6322,7 +6403,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
                       <div style={{display:"flex",gap:8,marginTop:12}}>
                         <button onClick={async()=>{
                           setSongRequests(p=>p.map(r=>r.id===req.id?{...r,status:"accepted"}:r));
-                          notify(`✅ Added to queue: "${req.song_title}"`,"success");
+                          notify(`Added to queue: "${req.song_title}"`,"success");
                           if(HAS_SUPA){const sb=await getSupabase();if(sb)await sb.from("song_requests").update({status:"accepted",accepted_at:new Date().toISOString()}).eq("id",req.id);}
                         }} style={{flex:1,background:C.emerald,color:"#fff",border:"none",borderRadius:8,padding:"11px",fontWeight:700,fontSize:T.sm,cursor:"pointer",fontFamily:"inherit"}}>
                           ✓ Accept & Queue
@@ -6340,7 +6421,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
                     {/* ACCEPTED (in queue): Mark as Played → auto-removes */}
                     {isAccepted&&(
                       <button onClick={async()=>{
-                        notify(`🎵 "${req.song_title}" played! Removed from queue.`,"success");
+                        notify(`"${req.song_title}" played! Removed from queue.`,"success");
                         // Remove immediately from UI (auto-clean)
                         setSongRequests(p=>p.filter(r=>r.id!==req.id));
                         if(HAS_SUPA){
@@ -6348,7 +6429,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
                           if(sb) await sb.from("song_requests").delete().eq("id",req.id);
                         }
                       }} style={{width:"100%",marginTop:10,background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:8,padding:"11px",fontWeight:800,fontSize:T.sm,cursor:"pointer",fontFamily:"inherit"}}>
-                        🎵 Played — Remove from Queue
+                        Played — Remove from Queue
                       </button>
                     )}
 
@@ -6367,7 +6448,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
                           setSongRequests(p=>p.filter(r=>r.id!==req.id));
                           if(HAS_SUPA){const sb=await getSupabase();if(sb)await sb.from("song_requests").delete().eq("id",req.id);}
                         }} style={{background:C.rubyS,color:C.ruby,border:`1px solid ${C.ruby}44`,borderRadius:8,padding:"9px 14px",fontWeight:600,fontSize:T.xs,cursor:"pointer",fontFamily:"inherit"}}>
-                          🗑 Delete
+                          Delete
                         </button>
                       </div>
                     )}
@@ -6378,7 +6459,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
                         setSongRequests(p=>p.filter(r=>r.id!==req.id));
                         if(HAS_SUPA){const sb=await getSupabase();if(sb)await sb.from("song_requests").delete().eq("id",req.id);}
                       }} style={{width:"100%",marginTop:10,background:"transparent",color:C.faint,border:`1px solid ${C.border}`,borderRadius:8,padding:"7px",fontWeight:600,fontSize:T.xs,cursor:"pointer",fontFamily:"inherit"}}>
-                        🗑 Remove
+                        Remove
                       </button>
                     )}
                   </div>
@@ -6394,9 +6475,9 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
                     const sb=await getSupabase();
                     if(sb) for(const r of toDelete) await sb.from("song_requests").delete().eq("id",r.id);
                   }
-                  notify("Cleared completed requests ✅","success");
+                  notify("Cleared completed requests","success");
                 }} style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:10,padding:"10px",color:C.muted,fontWeight:600,fontSize:T.xs,cursor:"pointer",fontFamily:"inherit",width:"100%"}}>
-                  🧹 Clear All Completed / Rejected / Refunded
+                  Clear All Completed / Rejected / Refunded
                 </button>
               )}
             </div>
@@ -6414,10 +6495,10 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
           {/* ── Quick links to edit profile ── */}
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:20}}>
             {[
-              {icon:"👤",label:t('editProfile')||"Edit Profile",go:"profile"},
-              {icon:"💰",label:t('editPricing')||"Pricing",go:"pricing"},
-              {icon:"🎵",label:t('editSocial')||"Social Media",go:"social"},
-              {icon:"📅",label:t('editCalendar')||"Calendar",go:"calendar"},
+              {icon:"",label:t('editProfile')||"Edit Profile",go:"profile"},
+              {icon:"",label:t('editPricing')||"Pricing",go:"pricing"},
+              {icon:"",label:t('editSocial')||"Social Media",go:"social"},
+              {icon:"",label:t('editCalendar')||"Calendar",go:"calendar"},
             ].map(({icon,label,go})=>(
               <button key={go} onClick={()=>setTab(go)} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:10,padding:"14px 16px",display:"flex",alignItems:"center",gap:10,cursor:"pointer",textAlign:"left",transition:"border-color 0.15s",fontFamily:"inherit"}}
                 onMouseEnter={e=>(e.currentTarget.style.borderColor=C.gold)}
@@ -6431,7 +6512,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
           {/* ── Notification toggle ── */}
           <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:"16px 20px",marginBottom:16,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
             <div>
-              <div style={{fontWeight:600,color:C.text,fontSize:T.sm,marginBottom:2}}>🔔 Browser Notifications</div>
+              <div style={{fontWeight:600,color:C.text,fontSize:T.sm,marginBottom:2}}>Browser Notifications</div>
               <div style={{color:C.muted,fontSize:T.xs}}>Get notified of new bookings and messages</div>
             </div>
             <button onClick={()=>requestPushPermission().then(ok=>notify(ok?"Notifications enabled!":" Please allow notifications in your browser","success"))}
@@ -6448,7 +6529,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
               [t('genre')||"Genre",              artist.genre||"—"],
               [t('location')||"Location",        artist.location||"—"],
               [t('currency')||"Currency",        artist.currency||"EUR"],
-              [t('status')||"Status",            artist.status==="approved"?`✓ ${t('approved')||"Approved"}`:`⏳ ${t('pendingApproval')||"Pending Approval"}`],
+              [t('status')||"Status",            artist.status==="approved"?`✓ ${t('approved')||"Approved"}`:`${t('pendingApproval')||"Pending Approval"}`],
               ["Stripe",                         artist.stripeConnected?`✓ ${t('connected')||"Connected"}`:t('notConnected')||"Not connected"],
             ].map(([k,v])=>(
               <div key={k} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 0",borderBottom:`1px solid ${C.border}`,fontSize:T.sm}}>
@@ -6467,7 +6548,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
                 <div style={{color:C.muted,fontSize:T.xs}}>
                   {artist.status==="approved"
                     ? (artist.isHidden
-                        ? <span style={{color:C.ruby,fontWeight:700}}>🙈 Hidden — not visible to clients</span>
+                        ? <span style={{color:C.ruby,fontWeight:700}}>Hidden — not visible to clients</span>
                         : t('profileVisibleToClients')||"Your profile is visible to clients")
                     : t('pendingAdminApproval')||"Waiting for admin approval"}
                 </div>
@@ -6503,8 +6584,8 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
                   // 3. Success feedback
                   notify(
                     newHidden
-                      ? "🙈 Profile hidden — not visible to clients"
-                      : "✅ Profile is now live and visible to clients",
+                      ? "Profile hidden — not visible to clients"
+                      : "Profile is now live and visible to clients",
                     newHidden ? "error" : "success"
                   );
                 }}
@@ -6551,7 +6632,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
 
           {socialErr&&(
             <div style={{background:C.rubyS,border:`1px solid ${C.ruby}28`,borderRadius:10,padding:"12px 14px",color:C.ruby,fontSize:T.sm,fontFamily:"'DM Sans',sans-serif",display:"flex",gap:8,alignItems:"center"}}>
-              ⚠ {socialErr}
+              {socialErr}
             </div>
           )}
           {socialSaved&&(
@@ -6948,7 +7029,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
           if(payload.eventType === "INSERT"){
             const newReq = payload.new;
             setSongRequests(p => [newReq, ...p]);
-            notify(`🎵 New song request: "${newReq.song_title}"`, "message");
+            notify(`New song request: "${newReq.song_title}"`, "message");
             sendBrowserNotif("New Song Request — Awaz",
               `"${newReq.song_title}" from ${newReq.guest_name}`);
           } else if(payload.eventType === "UPDATE"){
@@ -6975,7 +7056,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
         const cur=songRequests.filter(r=>r.status==="pending").length;
         const incoming=data.filter(r=>r.status==="pending").length;
         if(incoming > cur){
-          notify(`🎵 ${incoming-cur} new song request(s)!`,"message");
+          notify(`${incoming-cur} new song request(s)!`,"message");
           sendBrowserNotif("New Song Request — Awaz","Check your Requests tab!");
         }
         // Merge: keep local state for statuses not in poll (completed/etc)
@@ -7058,7 +7139,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
               if(!p.length) return [{id:"admin-chat-"+artist.id,artistId:artist.id,customerName:"Awaz Admin",customerEmail:"admin@awaz.no",date:"",event:"Messages from Awaz",deposit:0,status:"admin_chat",depositPaid:false,chatUnlocked:true,messages:[newMsg],country:""}];
               return p.map((b,i)=>i===0?{...b,messages:[...b.messages,newMsg]}:b);
             });
-            notify("💬 New message from Awaz team","message");
+            notify("New message from Awaz team","message");
             sendBrowserNotif("New message from Awaz","Check your Messages tab!");
           }
         })
@@ -7147,7 +7228,7 @@ function StripeConnectSheet({ artist, onConnected, onClose }) {
       <div style={{padding:"16px 20px 32px"}}>
         {done?(
           <div style={{textAlign:"center",padding:"20px 0"}}>
-            <div style={{fontSize:48,marginBottom:12}}>✅</div>
+            
             <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:700,color:C.text,marginBottom:8}}>Stripe Connected!</div>
             <div style={{color:C.muted,fontSize:T.sm,lineHeight:1.7,marginBottom:20}}>
               You will receive <strong style={{color:C.gold}}>88%</strong> of every deposit automatically. Payments arrive weekly every Monday.
@@ -7158,7 +7239,7 @@ function StripeConnectSheet({ artist, onConnected, onClose }) {
           <>
             {/* What you get */}
             <div style={{background:C.goldS,border:`1px solid ${C.gold}33`,borderRadius:12,padding:"16px",marginBottom:20}}>
-              <div style={{fontWeight:700,color:C.gold,fontSize:T.sm,marginBottom:10}}>💳 Stripe Express Account</div>
+              <div style={{fontWeight:700,color:C.gold,fontSize:T.sm,marginBottom:10}}>Stripe Express Account</div>
               {[
                 "88% of every booking deposit paid directly to your bank",
                 "Weekly payouts every Monday",
@@ -7187,7 +7268,7 @@ function StripeConnectSheet({ artist, onConnected, onClose }) {
               {loading ? "Connecting…" : "Connect Stripe Account →"}
             </Btn>
             <div style={{color:C.faint,fontSize:11,textAlign:"center",marginTop:8}}>
-              🔒 Secure · Powered by Stripe · PCI-DSS compliant
+              Secure · Powered by Stripe · PCI-DSS compliant
             </div>
           </>
         )}
@@ -7228,7 +7309,7 @@ function SongRequestModal({artist, bookingId, onClose}:{artist:any;bookingId?:st
         }
       }
       setLoading(false);setStep("done");
-      notify(`Request sent: "${f.song_title}"! 🎵`,"success");
+      notify(`Request sent: "${f.song_title}"!`,"success");
     }catch(e){setLoading(false);setErr("Connection error. Please try again.");}
   };
 
@@ -7249,7 +7330,7 @@ function SongRequestModal({artist, bookingId, onClose}:{artist:any;bookingId?:st
 
         {step==="done"?(
           <div style={{padding:"32px 24px 40px",textAlign:"center"}}>
-            <div style={{fontSize:64,marginBottom:16}}>🎵</div>
+            
             <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.8rem",fontWeight:700,color:"#EDE4CE",marginBottom:8}}>Request Sent!</div>
             <div style={{color:"#8A7D68",fontSize:14,lineHeight:1.8,marginBottom:6}}>
               <strong style={{color:"#C8A84A"}}>"{f.song_title}"</strong> has been sent to <strong style={{color:"#EDE4CE"}}>{artist.name}</strong>
@@ -7338,7 +7419,7 @@ function SongRequestModal({artist, bookingId, onClose}:{artist:any;bookingId?:st
         {step==="pay"&&tier.amount>0&&(
           <StripePaywall
             amount={tier.amount}
-            emoji="🎵"
+            emoji=""
             label={`Request: "${f.song_title}"`}
             description={`Tip for ${artist.name} · 88% goes directly to the artist`}
             metadata={{artistName:artist.name,bookingId:`songreq_${artist.id}_${Date.now()}`,email:"",type:"tip"}}
@@ -7408,7 +7489,7 @@ function SongRequestPage({artistId, artists, onBack}:{artistId:string;artists:an
   if(!artist) return(
     <div style={{minHeight:"100vh",background:"#070608",display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
       <div style={{textAlign:"center",color:"#8A7D68"}}>
-        <div style={{fontSize:48,marginBottom:12}}>🎵</div>
+        
         <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.4rem",color:"#EDE4CE"}}>Artist not found</div>
       </div>
     </div>
@@ -7451,7 +7532,7 @@ function SongRequestPage({artistId, artists, onBack}:{artistId:string;artists:an
     <div style={{position:"fixed",inset:0,zIndex:99999,touchAction:"none"}}>
       <StripePaywall
         amount={effectiveTotal}
-        emoji="🎵"
+        emoji=""
         label={`"${f.song_title}"`}
         description={`Song request for ${artist.name} · 88% goes to artist`}
         metadata={{artistName:artist.name,bookingId:`qr_${artist.id}_${Date.now()}`,email:"",type:"tip"}}
@@ -7475,7 +7556,7 @@ function SongRequestPage({artistId, artists, onBack}:{artistId:string;artists:an
         </div>
         <div>
           <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.4rem",fontWeight:700}}>{artist.name}</div>
-          <div style={{color:"#8A7D68",fontSize:13,marginTop:2}}>🎵 Song Request</div>
+          <div style={{color:"#8A7D68",fontSize:13,marginTop:2}}>Song Request</div>
         </div>
         {/* Pricing info pill */}
         <div style={{marginLeft:"auto",background:"rgba(200,168,74,0.08)",border:"1px solid rgba(200,168,74,0.2)",borderRadius:20,padding:"6px 14px",fontSize:12,color:"#C8A84A",fontWeight:600,whiteSpace:"nowrap"}}>
@@ -7503,7 +7584,7 @@ function SongRequestPage({artistId, artists, onBack}:{artistId:string;artists:an
 
         {step==="done"?(
           <div style={{textAlign:"center",paddingTop:20}}>
-            <div style={{fontSize:72,marginBottom:12}}>🎶</div>
+            <div style={{fontSize:72,marginBottom:12}}></div>
             <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"2rem",fontWeight:700,marginBottom:8}}>Sent!</div>
             <div style={{color:"#8A7D68",fontSize:14,lineHeight:1.8,marginBottom:4}}>
               <strong style={{color:"#C8A84A"}}>"{f.song_title}"</strong> sent to <strong style={{color:"#EDE4CE"}}>{artist.name}</strong>
@@ -7511,7 +7592,7 @@ function SongRequestPage({artistId, artists, onBack}:{artistId:string;artists:an
             {totalAmount>0&&(
               <div style={{background:"rgba(200,168,74,0.06)",border:"1px solid rgba(200,168,74,0.15)",borderRadius:12,padding:"14px",marginTop:16,marginBottom:20}}>
                 <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.8rem",color:"#C8A84A",fontWeight:800}}>€{totalAmount}</div>
-                {tip>0&&<div style={{color:"#22C55E",fontSize:12,marginTop:2}}>incl. €{tip} tip — thank you! 💛</div>}
+                {tip>0&&<div style={{color:"#22C55E",fontSize:12,marginTop:2}}>incl. €{tip} tip — thank you!</div>}
               </div>
             )}
             {totalAmount===0&&(
@@ -7528,7 +7609,7 @@ function SongRequestPage({artistId, artists, onBack}:{artistId:string;artists:an
           <div>
             <button onClick={()=>setStep("form")} style={{background:"none",border:"none",color:"#8A7D68",cursor:"pointer",fontSize:13,fontFamily:"inherit",marginBottom:20,display:"flex",alignItems:"center",gap:6}}>← Back</button>
             <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.6rem",fontWeight:700,marginBottom:6}}>
-              {currentBase===0?"Send Free Request 🎵":`Pay €${currentBase} + Tip`}
+              {currentBase===0?"Send Free Request":`Pay €${currentBase} + Tip`}
             </div>
             <div style={{background:"rgba(200,168,74,0.05)",border:"1px solid rgba(200,168,74,0.15)",borderRadius:10,padding:"12px 14px",marginBottom:20,fontSize:13,color:"#8A7D68"}}>
               Song: <strong style={{color:"#C8A84A"}}>"{f.song_title}"</strong>{f.song_artist&&` by ${f.song_artist}`}
@@ -7585,7 +7666,7 @@ function SongRequestPage({artistId, artists, onBack}:{artistId:string;artists:an
               {loading?"Sending…":(currentBase+(parseInt(customTip||"0")||tip))===0?"Send Free Request →":`Pay €${currentBase+(parseInt(customTip||"0")||tip)} & Request →`}
             </button>
             <div style={{color:"#4A4054",fontSize:11,textAlign:"center",marginTop:10}}>
-              {(currentBase+(parseInt(customTip||"0")||tip))>0?"🔒 Stripe — paid before request is sent":"88% goes directly to "+artist.name+" 💛"}
+              {(currentBase+(parseInt(customTip||"0")||tip))>0?"Stripe — paid before request is sent":"88% goes directly to "+artist.name}
             </div>
           </div>
 
@@ -7594,13 +7675,13 @@ function SongRequestPage({artistId, artists, onBack}:{artistId:string;artists:an
           <div>
             <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.8rem",fontWeight:700,marginBottom:4}}>Request a Song</div>
             <div style={{color:"#8A7D68",fontSize:14,marginBottom:24}}>
-              {currentBase===0?"Your first song tonight is free! 🎉":`Song #${guestReqCount+1} — €${currentBase}`}
+              {currentBase===0?"Your first song tonight is free!":`Song #${guestReqCount+1} — €${currentBase}`}
             </div>
             {[
               {field:"song_title",  label:"Song Title *",    placeholder:"e.g. Bya Ke Bya, Leili Jan…"},
               {field:"song_artist", label:"Original Artist", placeholder:"e.g. Ahmad Zahir, Farhad Darya…"},
               {field:"guest_name",  label:"Your Name *",     placeholder:"e.g. Layla, Ahmad…"},
-              {field:"message",     label:"Dedication",      placeholder:"Happy birthday Noor! 💛"},
+              {field:"message",     label:"Dedication",      placeholder:"Happy birthday Noor!"},
             ].map(({field,label,placeholder})=>(
               <div key={field} style={{marginBottom:16}}>
                 <div style={{fontSize:11,fontWeight:700,color:"#8A7D68",letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:7}}>{label}</div>
@@ -7666,7 +7747,7 @@ function ArtistQRPanel({artist}:{artist:any}){
       <div class="card">
         <img src="https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(requestUrl)}&bgcolor=ffffff&color=111111&margin=2&format=png" alt="QR"/>
         <h1>${artist.name}</h1>
-        <p>🎵 Request a song</p>
+        <p>Request a song</p>
         <ol class="steps">
           <li>Scan the QR code with your phone</li>
           <li>Choose your song and dedication</li>
@@ -7683,7 +7764,7 @@ function ArtistQRPanel({artist}:{artist:any}){
   return(
     <div style={{background:"rgba(200,168,74,0.04)",border:"1px solid rgba(200,168,74,0.2)",borderRadius:16,padding:"24px",marginTop:24}}>
       <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16}}>
-        <div style={{fontSize:28}}>📱</div>
+        
         <div>
           <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.3rem",fontWeight:700,color:"#EDE4CE"}}>Your Song Request QR</div>
           <div style={{color:"#8A7D68",fontSize:13,marginTop:2}}>Show this at events — guests scan to request and pay</div>
@@ -7705,15 +7786,15 @@ function ArtistQRPanel({artist}:{artist:any}){
             </div>
             <button onClick={copyUrl}
               style={{background:copied?"rgba(34,197,94,0.1)":"rgba(200,168,74,0.08)",color:copied?"#22C55E":"#C8A84A",border:`1px solid ${copied?"rgba(34,197,94,0.3)":"rgba(200,168,74,0.2)"}`,borderRadius:8,padding:"8px 16px",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit",width:"100%",marginBottom:8}}>
-              {copied?"✓ Copied!":"📋 Copy Link"}
+              {copied?"✓ Copied!":"Copy Link"}
             </button>
             <button onClick={printQR}
               style={{background:C.surface,color:"#EDE4CE",border:`1px solid ${C.border}`,borderRadius:8,padding:"8px 16px",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit",width:"100%"}}>
-              🖨 Print / Save QR Card
+              Print / Save QR Card
             </button>
           </div>
           <div style={{color:"#4A4054",fontSize:11,lineHeight:1.7}}>
-            💡 <strong style={{color:"#8A7D68"}}>How to use:</strong> Print the QR card and place it on tables at your event. Guests scan, choose a song, pick priority (€30–€100) and pay. You see requests live in your Requests tab.
+            How to use: Print the QR card and place it on tables at your event. Guests scan, choose a song, pick priority (€30–€100) and pay. You see requests live in your Requests tab.
           </div>
         </div>
       </div>
@@ -7738,7 +7819,7 @@ function DemoPage({onBook, onApply, vp}:{onBook:()=>void;onApply:()=>void;vp:any
     nameDari:"ثریا رحیمی",
     genre:"Traditional · Ghazal · Fusion",
     location:"Oslo, Norway",
-    emoji:"🎤",
+    emoji:"",
     color:"#A82C38",
     photo:null,
     bio:"Award-winning Afghan vocalist based in Oslo. Specialising in traditional Ghazal, folk songs and contemporary fusion. Performed across Europe at weddings, Eid celebrations and cultural galas. Trained under Ustad Mohammad Omar's tradition.",
@@ -7778,7 +7859,7 @@ function DemoPage({onBook, onApply, vp}:{onBook:()=>void;onApply:()=>void;vp:any
       <div style={{background:`linear-gradient(135deg,${C.rubyS},${C.goldS})`,borderBottom:`1px solid ${C.gold}18`,padding:vp.isMobile?"32px 20px":"48px 0",textAlign:"center"}}>
         <div style={{maxWidth:700,margin:"0 auto",padding:"0 24px"}}>
           <div style={{display:"inline-flex",alignItems:"center",gap:8,background:C.goldS,border:`1px solid ${C.gold}44`,borderRadius:20,padding:"5px 14px",marginBottom:18}}>
-            <span style={{fontSize:12,fontWeight:700,color:C.gold,letterSpacing:"1px",textTransform:"uppercase"}}>✦ Live Demo</span>
+            <span style={{fontSize:12,fontWeight:700,color:C.gold,letterSpacing:"1px",textTransform:"uppercase"}}>Live Demo</span>
           </div>
           <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:vp.isMobile?"2.2rem":"3rem",fontWeight:700,lineHeight:1.2,marginBottom:14,color:C.text}}>
             Experience Awaz as an Artist
@@ -7860,9 +7941,7 @@ function DemoPage({onBook, onApply, vp}:{onBook:()=>void;onApply:()=>void;vp:any
               <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:16,overflow:"hidden"}}>
                 {/* Profile header */}
                 <div style={{background:`linear-gradient(135deg,${C.rubyS},${C.goldS})`,padding:vp.isMobile?"20px":"28px 32px",display:"flex",gap:20,alignItems:"flex-start",flexWrap:"wrap"}}>
-                  <div style={{width:80,height:80,borderRadius:14,background:`${C.ruby}20`,border:`2px solid ${C.ruby}44`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:36,flexShrink:0}}>
-                    🎤
-                  </div>
+                  <div style={{width:80,height:80,borderRadius:14,background:`${C.ruby}20`,border:`2px solid ${C.ruby}44`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:36,flexShrink:0}}></div>
                   <div style={{flex:1,minWidth:200}}>
                     <div style={{display:"flex",alignItems:"center",gap:10,flexWrap:"wrap",marginBottom:4}}>
                       <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.8rem",fontWeight:700}}>{demoArtist.name}</div>
@@ -7895,7 +7974,7 @@ function DemoPage({onBook, onApply, vp}:{onBook:()=>void;onApply:()=>void;vp:any
                     </button>
                     <button onClick={()=>setDemoStep("songreq")}
                       style={{background:C.surface,color:C.text,border:`1px solid ${C.border}`,borderRadius:10,padding:"9px 22px",fontWeight:600,fontSize:13,cursor:"pointer",fontFamily:"inherit",display:"block",width:"100%"}}>
-                      🎵 Request a Song
+                      Request a Song
                     </button>
                   </div>
                 </div>
@@ -7906,7 +7985,7 @@ function DemoPage({onBook, onApply, vp}:{onBook:()=>void;onApply:()=>void;vp:any
                     <div style={{color:"rgba(237,228,206,0.75)",fontSize:14,lineHeight:1.85}}>{demoArtist.bio}</div>
                   </div>
                   <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-                    {[["🎵 Spotify","12,400 monthly listeners"],["📸 Instagram","8,200 followers"]].map(([label,sub])=>(
+                    {[["Spotify","12,400 monthly listeners"],["Instagram","8,200 followers"]].map(([label,sub])=>(
                       <div key={label} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:10,padding:"10px 14px",display:"flex",gap:8,alignItems:"center"}}>
                         <div>
                           <div style={{fontWeight:700,color:C.text,fontSize:13}}>{label}</div>
@@ -7935,7 +8014,7 @@ function DemoPage({onBook, onApply, vp}:{onBook:()=>void;onApply:()=>void;vp:any
               </div>
               {bookingDone?(
                 <div style={{textAlign:"center",padding:"48px 24px",...S.card}}>
-                  <div style={{fontSize:64,marginBottom:16}}>🎉</div>
+                  
                   <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.8rem",fontWeight:700,marginBottom:8}}>{t('demoConfirmed')}</div>
                   <div style={{color:C.muted,fontSize:14,lineHeight:1.8,marginBottom:24}}>
                     The artist receives a notification instantly.<br/>
@@ -7956,7 +8035,7 @@ function DemoPage({onBook, onApply, vp}:{onBook:()=>void;onApply:()=>void;vp:any
               ):(
                 <div style={{...S.card,maxWidth:440}}>
                   <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:20,paddingBottom:16,borderBottom:`1px solid ${C.border}`}}>
-                    <div style={{width:44,height:44,borderRadius:10,background:"rgba(168,44,56,0.2)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22}}>🎤</div>
+                    <div style={{width:44,height:44,borderRadius:10,background:"rgba(168,44,56,0.2)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22}}></div>
                     <div>
                       <div style={{fontWeight:700,color:C.text,fontSize:14}}>{demoArtist.name}</div>
                       <div style={{color:C.muted,fontSize:12}}>Deposit: €{demoArtist.deposit}</div>
@@ -7982,7 +8061,7 @@ function DemoPage({onBook, onApply, vp}:{onBook:()=>void;onApply:()=>void;vp:any
                     style={{width:"100%",background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:12,padding:"14px",fontWeight:800,fontSize:15,cursor:"pointer",fontFamily:"inherit"}}>
                     Pay Deposit · €{demoArtist.deposit} →
                   </button>
-                  <div style={{color:"rgba(138,125,104,0.7)",fontSize:11,textAlign:"center",marginTop:8}}>🔒 Secured by Stripe · PCI compliant</div>
+                  <div style={{color:"rgba(138,125,104,0.7)",fontSize:11,textAlign:"center",marginTop:8}}>Secured by Stripe · PCI compliant</div>
                 </div>
               )}
             </div>
@@ -8030,7 +8109,7 @@ function DemoPage({onBook, onApply, vp}:{onBook:()=>void;onApply:()=>void;vp:any
                       <div key={b.name} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 0",borderBottom:`1px solid ${C.border}`}}>
                         <div>
                           <div style={{fontWeight:600,color:C.text,fontSize:13}}>{b.name}</div>
-                          <div style={{color:C.muted,fontSize:11,marginTop:1}}>📅 {b.date}</div>
+                          <div style={{color:C.muted,fontSize:11,marginTop:1}}>{b.date}</div>
                         </div>
                         <div style={{textAlign:"right"}}>
                           <div style={{fontWeight:700,color:C.gold,fontSize:13}}>€{Math.round(b.deposit*0.88)}</div>
@@ -8058,7 +8137,7 @@ function DemoPage({onBook, onApply, vp}:{onBook:()=>void;onApply:()=>void;vp:any
                     <div key={b.name} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 0",borderBottom:`1px solid ${C.border}`}}>
                       <div>
                         <div style={{fontWeight:600,color:C.text,fontSize:13}}>{b.name}</div>
-                        <div style={{color:C.muted,fontSize:11,marginTop:2}}>📅 {b.date} 2025</div>
+                        <div style={{color:C.muted,fontSize:11,marginTop:2}}>{b.date} 2025</div>
                       </div>
                       <div style={{textAlign:"right"}}>
                         <div style={{fontWeight:700,color:C.gold,fontSize:13}}>€{b.price}</div>
@@ -8109,7 +8188,7 @@ function DemoPage({onBook, onApply, vp}:{onBook:()=>void;onApply:()=>void;vp:any
                     </div>
                   </div>
                   <div style={{background:"rgba(34,197,94,0.05)",border:"1px solid rgba(34,197,94,0.15)",borderRadius:12,padding:"14px 16px",fontSize:13,color:C.muted,lineHeight:1.7}}>
-                    💡 <strong style={{color:C.text}}>88% split:</strong> For every €1,000 deposit, you receive <strong style={{color:C.emerald}}>€880</strong> directly to your Stripe account. Awaz keeps €120 (12%) as platform fee.
+                    88% split: For every €1,000 deposit, you receive <strong style={{color:C.emerald}}>€880</strong> directly to your Stripe account. Awaz keeps €120 (12%) as platform fee.
                   </div>
                 </div>
               )}
@@ -8144,7 +8223,7 @@ function DemoPage({onBook, onApply, vp}:{onBook:()=>void;onApply:()=>void;vp:any
                           style={{width:"100%",background:C.card,border:`1px solid ${C.border}`,borderRadius:10,padding:"11px 14px",color:C.text,fontSize:14,fontFamily:"inherit",outline:"none",boxSizing:"border-box"}}/>
                       </div>
                       <div style={{background:"rgba(34,197,94,0.06)",border:"1px solid rgba(34,197,94,0.15)",borderRadius:10,padding:"10px 12px",marginBottom:14,fontSize:12,color:C.emerald,fontWeight:700}}>
-                        🎵 1st song tonight is FREE!
+                        1st song tonight is FREE!
                       </div>
                       <button onClick={()=>{ if(songTitle&&guestName) setSongDone(true); }}
                         disabled={!songTitle||!guestName}
@@ -8154,7 +8233,7 @@ function DemoPage({onBook, onApply, vp}:{onBook:()=>void;onApply:()=>void;vp:any
                     </div>
                   ):(
                     <div style={{...S.card,textAlign:"center",padding:"32px 20px"}}>
-                      <div style={{fontSize:48,marginBottom:12}}>🎶</div>
+                      <div style={{fontSize:48,marginBottom:12}}></div>
                       <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.4rem",fontWeight:700,marginBottom:6}}>{t('demoSentTitle')}</div>
                       <div style={{color:C.muted,fontSize:13,lineHeight:1.7}}>
                         <strong style={{color:C.gold}}>"{songTitle}"</strong> sent to {demoArtist.name}
@@ -8180,14 +8259,14 @@ function DemoPage({onBook, onApply, vp}:{onBook:()=>void;onApply:()=>void;vp:any
                     </div>
                     {[
                       {song:"Leili Jan",guest:"Ahmad",amount:0,priority:"FREE",color:C.emerald,status:"pending"},
-                      {song:"Bya Ke Bya",guest:"Noor",amount:50,priority:"⚡ HIGH",color:"#F59E0B",status:"pending"},
+                      {song:"Bya Ke Bya",guest:"Noor",amount:50,priority:"HIGH",color:"#F59E0B",status:"pending"},
                       ...(songDone?[{song:songTitle,guest:guestName,amount:0,priority:"FREE",color:C.emerald,status:"new"}]:[]),
                     ].map((r,i)=>(
                       <div key={i} style={{borderLeft:`3px solid ${r.color}`,borderRadius:8,padding:"10px 12px",background:C.surface,marginBottom:8}}>
                         <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:6}}>
                           <div>
                             <div style={{fontWeight:700,color:C.text,fontSize:13}}>{r.song}</div>
-                            <div style={{color:C.muted,fontSize:11}}>👤 {r.guest}</div>
+                            <div style={{color:C.muted,fontSize:11}}>{r.guest}</div>
                           </div>
                           <div style={{textAlign:"right"}}>
                             <div style={{fontWeight:700,color:r.color,fontSize:12}}>{r.priority}</div>
@@ -8565,7 +8644,7 @@ function InquiryPanel({ inquiries, artists, onUpdateInquiry, vp }) {
           <Inp label="Private Note (internal only)" placeholder="e.g. Spoke to Soraya — she can do 20% discount for June" value={noteText} onChange={e=>setNoteText(e.target.value)} rows={2}/>
           <Inp label="Reply to Customer *" placeholder="Dear [Name], thank you for your inquiry…" value={replyText} onChange={e=>setReplyText(e.target.value)} rows={5}/>
           <Btn v="gold" sz="lg" onClick={sendReply} disabled={!replyText.trim()} xs={{width:"100%"}}>
-            {sel.status==="replied"?"Update Reply ✦":"Send Reply to Customer ✦"}
+            {sel.status==="replied"?"Update Reply":"Send Reply to Customer"}
           </Btn>
           <div style={{fontSize:T.xs,color:C.muted,textAlign:"center"}}>In production this sends an email to {sel.email}</div>
         </div>
@@ -8582,7 +8661,7 @@ function InquiryPanel({ inquiries, artists, onUpdateInquiry, vp }) {
       </div>
       {inquiries.length===0?(
         <div style={{textAlign:"center",padding:"48px 24px",background:C.card,borderRadius:12,border:`1px solid ${C.border}`}}>
-          <div style={{fontSize:36,marginBottom:12}}>📬</div>
+          
           <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,color:C.text,marginBottom:6}}>{t('noInquiriesYet')}</div>
           <div style={{color:C.muted,fontSize:T.sm}}>{t('noInquiriesDesc')}</div>
         </div>
@@ -8729,7 +8808,7 @@ class ErrorBoundary extends React.Component<
       return (
         <div style={{minHeight:"100vh",background:"#07060B",display:"flex",alignItems:"center",justifyContent:"center",padding:24,fontFamily:"'DM Sans',sans-serif"}}>
           <div style={{background:"#141220",border:"1px solid #201D2E",borderRadius:16,padding:32,maxWidth:420,width:"100%",textAlign:"center"}}>
-            <div style={{fontSize:40,marginBottom:16}}>⚠️</div>
+            
             <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:22,fontWeight:700,color:"#EDE4CE",marginBottom:8}}>Something went wrong</div>
             <div style={{color:"#8A7D68",fontSize:14,lineHeight:1.7,marginBottom:24,wordBreak:"break-word"}}>
               {this.state.error?.message || "An unexpected error occurred."}
@@ -8823,7 +8902,7 @@ function AppInner() {
             if(artistRes.data?.length>0) setArtists(artistRes.data.map((a:any)=>({
               id:a.id,name:a.name,nameDari:a.name_dari||"",genre:a.genre||"",location:a.location||"",
               rating:a.rating||0,reviews:a.reviews||0,priceInfo:a.price_info||"On request",
-              deposit:a.deposit||1000,emoji:a.emoji||"🎤",color:a.color||"#A82C38",
+              deposit:a.deposit||1000,emoji:a.emoji||"",color:a.color||"#A82C38",
               photo:a.photo||null,bio:a.bio||"",tags:Array.isArray(a.tags)?a.tags:[],
               instruments:Array.isArray(a.instruments)?a.instruments:[],
               superhost:a.superhost||false,status:a.status||"pending",joined:a.joined_date||"",
@@ -8874,7 +8953,7 @@ function AppInner() {
                 rating:aRow.rating||0,reviews:aRow.reviews||0,
                 priceInfo:aRow.price_info||"On request",
                 deposit:aRow.deposit||1000,
-                emoji:aRow.emoji||"🎤",color:aRow.color||"#A82C38",
+                emoji:aRow.emoji||"",color:aRow.color||"#A82C38",
                 photo:aRow.photo||null,bio:aRow.bio||"",
                 tags:Array.isArray(aRow.tags)?aRow.tags:[],
                 instruments:Array.isArray(aRow.instruments)?aRow.instruments:[],
@@ -8970,7 +9049,7 @@ function AppInner() {
                     genre:a.genre||"",location:a.location||"",
                     rating:a.rating||0,reviews:a.reviews||0,
                     priceInfo:a.price_info||"On request",deposit:a.deposit||1000,
-                    emoji:a.emoji||"🎤",color:a.color||"#A82C38",
+                    emoji:a.emoji||"",color:a.color||"#A82C38",
                     photo:a.photo||null,bio:a.bio||"",
                     tags:Array.isArray(a.tags)?a.tags:[],
                     instruments:Array.isArray(a.instruments)?a.instruments:[],
@@ -9055,7 +9134,7 @@ function AppInner() {
                     rating:aRow.rating||0,reviews:aRow.reviews||0,
                     priceInfo:aRow.price_info||"On request",
                     deposit:aRow.deposit||1000,
-                    emoji:aRow.emoji||"🎤",color:aRow.color||"#A82C38",
+                    emoji:aRow.emoji||"",color:aRow.color||"#A82C38",
                     photo:aRow.photo||null,bio:aRow.bio||"",
                     tags:Array.isArray(aRow.tags)?aRow.tags:[],
                     instruments:Array.isArray(aRow.instruments)?aRow.instruments:[],
@@ -9115,7 +9194,7 @@ function AppInner() {
             rating:a.rating||0,reviews:a.reviews||0,
             priceInfo:a.price_info||"On request",
             deposit:a.deposit||1000,
-            emoji:a.emoji||"🎤",color:a.color||C.ruby,
+            emoji:a.emoji||"",color:a.color||C.ruby,
             photo:a.photo||null,bio:a.bio||"",
             tags:Array.isArray(a.tags)?a.tags:[],
             instruments:Array.isArray(a.instruments)?a.instruments:[],
@@ -9204,7 +9283,7 @@ function AppInner() {
   // ── Demo profiles — shown when no real artists approved yet ──────────
   const DEMO_ARTISTS = useMemo(()=>[
     {id:"demo-1",name:"Ahmad Shah",nameDari:"احمد شاه",genre:"Ghazal",location:"Oslo, Norway",
-     rating:4.9,reviews:47,priceInfo:"From €2,500",deposit:800,emoji:"🎤",
+     rating:4.9,reviews:47,priceInfo:"From €2,500",deposit:800,emoji:"",
      color:"#8B1A2E",photo:null,bio:"Ahmad Shah is one of Norway's most celebrated Afghan vocalists, known for his soul-stirring Ghazal performances at weddings and cultural events. With over 15 years of experience, he brings authentic Kabul concert hall energy to every event.",
      tags:["Ghazal","Wedding","Eid","Classical"],instruments:["Vocals","Harmonium"],
      superhost:true,status:"approved",joined:"2024-01",isBoosted:true,
@@ -9213,7 +9292,7 @@ function AppInner() {
      cancellationPolicy:"moderate",spotify:null,instagram:{handle:"@ahmadshahmusic",followers:"12.4K",profileUrl:"https://instagram.com"},
      youtube:null,tiktok:null,countryPricing:[],currency:"EUR",country:"NO"},
     {id:"demo-2",name:"Laila Karimi",nameDari:"لیلا کریمی",genre:"Herati",location:"Stockholm, Sweden",
-     rating:4.8,reviews:31,priceInfo:"From €2,000",deposit:700,emoji:"🎵",
+     rating:4.8,reviews:31,priceInfo:"From €2,000",deposit:700,emoji:"",
      color:"#1A5C8B",photo:null,bio:"Laila Karimi is a versatile Herati folk singer based in Stockholm. Her enchanting voice and traditional Herati style make her the perfect choice for Afghan weddings, Nowruz celebrations and cultural festivals across Scandinavia.",
      tags:["Herati","Folk","Nowruz","Cultural"],instruments:["Vocals","Dutar"],
      superhost:false,status:"approved",joined:"2024-03",isBoosted:false,
@@ -9222,7 +9301,7 @@ function AppInner() {
      cancellationPolicy:"flexible",spotify:null,instagram:{handle:"@lailakarimisings",followers:"8.1K",profileUrl:"https://instagram.com"},
      youtube:null,tiktok:null,countryPricing:[],currency:"EUR",country:"SE"},
     {id:"demo-3",name:"Wahid Qasimi",nameDari:"واحد قاسمی",genre:"Mast",location:"Berlin, Germany",
-     rating:4.7,reviews:22,priceInfo:"From €1,800",deposit:600,emoji:"🥁",
+     rating:4.7,reviews:22,priceInfo:"From €1,800",deposit:600,emoji:"",
      color:"#2D6A4F",photo:null,bio:"Wahid Qasimi brings the high-energy Mast dance music of Afghanistan to stages across Europe. Based in Berlin, he has performed at Afghan community events in Germany, Austria and Switzerland, keeping Afghan wedding traditions alive for the diaspora.",
      tags:["Mast","Wedding","Dance","Party"],instruments:["Tabla","Dhol","Vocals"],
      superhost:false,status:"approved",joined:"2024-05",isBoosted:false,
@@ -9231,7 +9310,7 @@ function AppInner() {
      cancellationPolicy:"moderate",spotify:null,instagram:null,
      youtube:null,tiktok:null,countryPricing:[],currency:"EUR",country:"DE"},
     {id:"demo-4",name:"Farhad Sultani",nameDari:"فرهاد سلطانی",genre:"Classical",location:"London, UK",
-     rating:5.0,reviews:18,priceInfo:"From €3,500",deposit:1200,emoji:"🪕",
+     rating:5.0,reviews:18,priceInfo:"From €3,500",deposit:1200,emoji:"",
      color:"#6B3A8B",photo:null,bio:"Farhad Sultani is a master Rubab player trained in the classical Afghan tradition. Based in London, his performances captivate audiences with the ancient sound of the national instrument of Afghanistan. Available for concerts, cultural events and intimate private gatherings.",
      tags:["Classical","Rubab","Instrumental","Concert"],instruments:["Rubab","Harmonium"],
      superhost:true,status:"approved",joined:"2023-11",isBoosted:true,
@@ -9485,7 +9564,7 @@ function AppInner() {
                   genre:a.genre||"", location:a.location||"",
                   rating:a.rating||0, reviews:a.reviews||0,
                   priceInfo:a.price_info||"On request",
-                  deposit:a.deposit||1000, emoji:a.emoji||"🎤",
+                  deposit:a.deposit||1000, emoji:a.emoji||"",
                   color:a.color||"#A82C38", photo:a.photo||null,
                   bio:a.bio||"", tags:Array.isArray(a.tags)?a.tags:[],
                   instruments:Array.isArray(a.instruments)?a.instruments:[],
@@ -9517,7 +9596,7 @@ function AppInner() {
           <div style={{fontFamily:"'Noto Naskh Arabic',serif",fontSize:28,color:C.gold,marginBottom:16}}>آواز</div>
           {isPending ? (
             <>
-              <div style={{fontSize:44,marginBottom:16}}>⏳</div>
+              
               <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:22,fontWeight:700,color:C.text,marginBottom:12}}>
                 Profile Under Review
               </div>
@@ -9528,12 +9607,12 @@ function AppInner() {
                 Your artist profile has been submitted and is being reviewed by the Awaz team. You'll get full access to your dashboard once approved — typically within 24–48 hours.
               </div>
               <div style={{background:"rgba(196,120,32,0.08)",border:`1px solid ${C.saffron}33`,borderRadius:10,padding:"12px 16px",marginBottom:24,fontSize:12,color:C.textD,lineHeight:1.7}}>
-                💡 Make sure you've confirmed your email address if required.
+                Make sure you've confirmed your email address if required.
               </div>
             </>
           ) : (
             <>
-              <div style={{fontSize:40,marginBottom:16}}>⚠️</div>
+              
               <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:22,fontWeight:700,color:C.text,marginBottom:8}}>
                 Profile Not Found
               </div>
@@ -9572,6 +9651,7 @@ function AppInner() {
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
         @keyframes inquiryPulse{0%,100%{box-shadow:0 0 0 0 rgba(200,168,74,0.4)}70%{box-shadow:0 0 0 10px rgba(200,168,74,0)}}
         @keyframes notifSlide{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
+        @keyframes notifExit{from{transform:translateX(0);opacity:1}to{transform:translateX(110%);opacity:0}}
         ::-webkit-scrollbar{width:4px;height:4px}
         ::-webkit-scrollbar-track{background:transparent}
         ::-webkit-scrollbar-thumb{background:${C.border};border-radius:4px}
@@ -9598,7 +9678,7 @@ function AppInner() {
 
         {vp.isDesktop&&(
           <nav style={{display:"flex",gap:2,alignItems:"center"}}>
-            {[[t('browseArtists'),"browse"],[t('howItWorks'),"how"],[t('pricing'),"pricing"],["✦ Artist Demo","demo"]].map(([l,v])=>(
+            {[[t('browseArtists'),"browse"],[t('howItWorks'),"how"],[t('pricing'),"pricing"],["Artist Demo","demo"]].map(([l,v])=>(
               <button key={v} onClick={()=>nav(v)} style={{background:"transparent",border:"none",color:view===v?C.gold:C.muted,cursor:"pointer",fontFamily:"inherit",fontSize:T.sm,fontWeight:500,padding:"6px 13px",borderRadius:6,minHeight:44,WebkitTapHighlightColor:"transparent"}}>
                 {l}
               </button>
@@ -9614,17 +9694,17 @@ function AppInner() {
               <Btn onClick={()=>setShowLogin(true)} v="ghost" sz="sm">{t('signIn')}</Btn>
               <button onClick={toggleTheme} aria-label={theme==='dark'?'Switch to light mode':'Switch to dark mode'}
                 style={{width:36,height:36,borderRadius:8,background:C.surface,border:`1px solid ${C.border}`,color:C.muted,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',fontSize:16,flexShrink:0,WebkitTapHighlightColor:'transparent'}}>
-                {theme==='dark'?'☀':'🌙'}
+                {theme==='dark'?'Light':'Dark'}
               </button>
             </>
           )}
           {vp.isDesktop&&session&&(
             <div style={{display:"flex",gap:8,alignItems:"center"}}>
-              <span style={{color:C.muted,fontSize:T.xs}}>👤 {session.name.split(" ")[0]}</span>
+              <span style={{color:C.muted,fontSize:T.xs}}>{session.name.split(" ")[0]}</span>
               <Btn onClick={logout} v="ghost" sz="sm">{t('signOut')}</Btn>
               <button onClick={toggleTheme} aria-label={theme==='dark'?'Switch to light mode':'Switch to dark mode'}
                 style={{width:36,height:36,borderRadius:8,background:C.surface,border:`1px solid ${C.border}`,color:C.muted,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',fontSize:16,flexShrink:0}}>
-                {theme==='dark'?'☀':'🌙'}
+                {theme==='dark'?'Light':'Dark'}
               </button>
             </div>
           )}
@@ -9633,13 +9713,11 @@ function AppInner() {
               <LangSwitcher lang={lang} onSwitch={switchLang}/>
               <button onClick={toggleTheme} aria-label="Toggle theme"
                 style={{width:34,height:34,borderRadius:8,background:C.surface,border:`1px solid ${C.border}`,color:C.muted,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',fontSize:14,WebkitTapHighlightColor:'transparent'}}>
-                {theme==='dark'?'☀':'🌙'}
+                {theme==='dark'?'Light':'Dark'}
               </button>
               {!session&&(
                 <button onClick={()=>setShowLogin(true)} aria-label={t('signIn')}
-                  style={{width:38,height:38,borderRadius:10,background:C.surface,border:`1px solid ${C.border}`,color:C.muted,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,WebkitTapHighlightColor:"transparent"}}>
-                  👤
-                </button>
+                  style={{width:38,height:38,borderRadius:10,background:C.surface,border:`1px solid ${C.border}`,color:C.muted,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,WebkitTapHighlightColor:"transparent"}}></button>
               )}
               {session&&(
                 <button onClick={logout} aria-label={t('signOut')}
@@ -9700,15 +9778,15 @@ function AppInner() {
                   style={{flex:1,background:"transparent",border:"none",color:C.text,fontSize:T.base,padding:vp.isMobile?"15px 16px":"16px 22px",outline:"none",minWidth:0,minHeight:52}}/>
                 <button onClick={()=>nav("browse")}
                   style={{background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",padding:vp.isMobile?"15px 20px":"16px 28px",fontSize:T.base,fontWeight:800,cursor:"pointer",fontFamily:"inherit",flexShrink:0,minHeight:52,WebkitTapHighlightColor:"transparent"}}>
-                  {vp.isMobile?"🔍":t('searchBtn')}
+                  {t('searchBtn')}
                 </button>
               </div>
 
               {/* Trust chips */}
               <div className="u3" style={{display:"flex",gap:vp.isMobile?16:22,flexWrap:"wrap",justifyContent:"center"}}>
                 {(vp.isMobile
-                  ?[["✓",t('trustVerified')],["🔒",t('trustStripe')],["💬",t('trustChat')],["🇦🇫",t('trustCulture')]]
-                  :[["✓",t('trustVerified')],["🔒",t('trustStripe')],["💬",t('trustChat')],["💳",t('trustDeposits')],["🇦🇫",t('trustCulture')]]
+                  ?[["✓",t('trustVerified')],["·",t('trustStripe')],["·",t('trustChat')],["·",t('trustCulture')]]
+                  :[["✓",t('trustVerified')],["·",t('trustStripe')],["·",t('trustChat')],["·",t('trustDeposits')],["·",t('trustCulture')]]
                 ).map(([icon,l])=>(
                   <div key={l} style={{display:"flex",alignItems:"center",gap:6,fontSize:T.sm,color:C.muted,fontFamily:"'DM Sans',sans-serif"}}>
                     <span style={{color:C.gold,fontSize:13}}>{icon}</span>{l}
@@ -9760,7 +9838,7 @@ function AppInner() {
               </div>
               <div style={{display:"grid",gridTemplateColumns:vp.isMobile?"1fr":vp.isTablet?"repeat(3,1fr)":"repeat(5,1fr)",gap:vp.isMobile?12:16,position:"relative"}}>
                 {!vp.isMobile&&<div style={{position:"absolute",top:28,left:"10%",right:"10%",height:1,background:`linear-gradient(90deg,transparent,${C.gold}24,${C.gold}24,transparent)`}}/>}
-                {[["🔍",t('howStep1Title'),t('howStep1Desc')],["📅",t('howStep2Title'),t('howStep2Desc')],["💳",t('howStep3Title'),t('howStep3Desc')],["💬",t('howStep4Title'),t('howStep4Desc')],["🎶",t('howStep5Title'),t('howStep5Desc')]].map(([icon,title,desc],i)=>(
+                {[["1.",t('howStep1Title'),t('howStep1Desc')],["2.",t('howStep2Title'),t('howStep2Desc')],["3.",t('howStep3Title'),t('howStep3Desc')],["4.",t('howStep4Title'),t('howStep4Desc')],["5.",t('howStep5Title'),t('howStep5Desc')]].map(([icon,title,desc],i)=>(
                   vp.isMobile?(
                     <div key={title} style={{display:"flex",gap:14,alignItems:"flex-start",padding:"12px 14px",background:C.card,borderRadius:10,border:`1px solid ${C.border}`}}>
                       <div style={{width:40,height:40,borderRadius:"50%",background:C.bg,border:`1px solid ${C.borderM}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>
@@ -9811,7 +9889,7 @@ function AppInner() {
 
             {/* Search */}
             <div style={{display:"flex",background:C.card,border:`1px solid ${C.border}`,borderRadius:10,padding:"0 14px",alignItems:"center",gap:8,height:52,marginBottom:12}}>
-              <span style={{color:C.muted,fontSize:16}}>🔍</span>
+              <span style={{color:C.muted,fontSize:16}}></span>
               <input placeholder={t('searchArtists')} value={search} onChange={e=>setSearch(e.target.value)}
                 style={{flex:1,background:"transparent",border:"none",color:C.text,fontSize:T.base,outline:"none",height:"100%",minWidth:0}}/>
               {search&&<button onClick={()=>setSearch("")} aria-label="Fjern søk" style={{background:"none",border:"none",color:C.muted,cursor:"pointer",fontSize:20,lineHeight:1,flexShrink:0,minWidth:32,minHeight:32,WebkitTapHighlightColor:"transparent"}}>×</button>}
@@ -9831,7 +9909,7 @@ function AppInner() {
 
             {filtered.length===0?(
               <div style={{textAlign:"center",padding:"40px 24px",background:C.card,borderRadius:12,border:`1px solid ${C.border}`}}>
-                <div style={{fontSize:40,marginBottom:14}}>🎵</div>
+                
                 <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text,marginBottom:6}}>{t('noArtistsFound')}</div>
                 <div style={{color:C.muted,fontSize:T.sm,marginBottom:16}}>{t('tryDifferent')}</div>
                 <Btn v="ghost" sz="md" onClick={()=>{setSearch("");setGenreF("All");}}>{t('clearFilters')}</Btn>
@@ -9854,7 +9932,7 @@ function AppInner() {
                   <div style={{marginBottom:24}}>
                     <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}>
                       <div style={{height:1,flex:1,background:`linear-gradient(90deg,${C.gold}33,transparent)`}}/>
-                      <span style={{color:C.gold,fontSize:T.xs,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase"}}>⭐ Featured Artists</span>
+                      <span style={{color:C.gold,fontSize:T.xs,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase"}}>Featured Artists</span>
                       <div style={{height:1,flex:1,background:`linear-gradient(270deg,${C.gold}33,transparent)`}}/>
                     </div>
                     <div style={{display:"grid",gridTemplateColumns:`repeat(${vp.isTablet?2:3},1fr)`,gap:16}}>
@@ -9893,37 +9971,37 @@ function AppInner() {
         // ── Step data — rewritten for clarity, trust, conversion ────────
         const steps=[
           {
-            n:"01", icon:"🔍", color:C.lapis,
+            n:"01", icon:"", color:C.lapis,
             title:t('step1Title'),
             desc:t('step1Desc'),
             badge:t('step1Badge'),
           },
           {
-            n:"02", icon:"📅", color:C.emerald,
+            n:"02", icon:"", color:C.emerald,
             title:t('step2Title'),
             desc:t('step2Desc'),
             badge:t('step2Badge'),
           },
           {
-            n:"03", icon:"📋", color:C.saffron,
+            n:"03", icon:"", color:C.saffron,
             title:t('step3Title'),
             desc:t('step3Desc'),
             badge:t('step3Badge'),
           },
           {
-            n:"04", icon:"💳", color:"#635BFF",
+            n:"04", icon:"", color:"#635BFF",
             title:t('step4Title'),
             desc:t('step4Desc'),
             badge:t('step4Badge'),
           },
           {
-            n:"05", icon:"💬", color:C.ruby,
+            n:"05", icon:"", color:C.ruby,
             title:t('step5Title'),
             desc:t('step5Desc'),
             badge:t('step5Badge'),
           },
           {
-            n:"06", icon:"🎶", color:C.gold,
+            n:"06", icon:"", color:C.gold,
             title:t('step6Title'),
             desc:t('step6Desc'),
             badge:t('step6Badge'),
@@ -10095,9 +10173,9 @@ function AppInner() {
                 gap:vp.isMobile?16:0,
               }}>
                 {[
-                  ["🔒",t('trustStripe'),t('trustStripeDesc')],
+                  ["·",t('trustStripe'),t('trustStripeDesc')],
                   ["✓",t('trustVerified'),t('trustVerifiedDesc')],
-                  ["💬",t('trustChat'),t('trustChatDesc')],
+                  ["·",t('trustChat'),t('trustChatDesc')],
                   ["0%",t('trustFees'),t('trustFeesDesc')],
                 ].map(([icon,title,sub],i)=>(
                   <div key={title} style={{
@@ -10151,8 +10229,8 @@ function AppInner() {
             <div style={{color:C.muted,fontSize:T.sm,marginBottom:20}}>{t('pricingSubtitle')}</div>
             <HR color={C.gold}/>
             <div style={{display:"grid",gridTemplateColumns:vp.isMobile?"1fr":"1fr 1fr",gap:14,marginTop:16,marginBottom:28}}>
-              {[{label:t('forClients'),icon:"🎉",color:C.gold,items:[t('pricingClient1'),t('pricingClient2'),t('pricingClient3'),t('pricingClient4'),t('pricingClient5')]},
-                {label:t('forArtists'),icon:"🎤",color:C.ruby,items:[t('pricingArtist1'),t('pricingArtist2'),t('pricingArtist3'),t('pricingArtist4'),t('pricingArtist5'),t('pricingArtist6')]}].map(({label,icon,color,items})=>(
+              {[{label:t('forClients'),icon:"",color:C.gold,items:[t('pricingClient1'),t('pricingClient2'),t('pricingClient3'),t('pricingClient4'),t('pricingClient5')]},
+                {label:t('forArtists'),icon:"",color:C.ruby,items:[t('pricingArtist1'),t('pricingArtist2'),t('pricingArtist3'),t('pricingArtist4'),t('pricingArtist5'),t('pricingArtist6')]}].map(({label,icon,color,items})=>(
                 <div key={label} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden"}}>
                   <div style={{height:3,background:`linear-gradient(90deg,${color},${C.gold})`}}/>
                   <div style={{padding:vp.isMobile?16:22}}>
@@ -10183,7 +10261,7 @@ function AppInner() {
               </div>
               {/* Example calculation */}
               <div style={{marginTop:14,background:C.surface,borderRadius:8,padding:"12px 14px",border:`1px solid ${C.emerald}22`,display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
-                <span style={{fontSize:16}}>💡</span>
+                
                 <span style={{color:C.muted,fontSize:T.xs,lineHeight:1.6}}>
                   Example: For a <strong style={{color:C.text}}>€1,000</strong> deposit, you receive <strong style={{color:C.emerald}}>€880</strong> automatically to your Stripe account. Awaz keeps <strong style={{color:C.lapis}}>€120</strong>.
                 </span>
@@ -10207,7 +10285,7 @@ function AppInner() {
                   The premier booking platform for Afghan artists performing across Europe. Transparent pricing, instant payments, real culture.
                 </div>
                 <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
-                  {[["🔒","Stripe Secure"],["✓","Verified Artists"],["🇪🇺","Europe-wide"]].map(([i,l])=>(
+                  {[["·","Stripe Secure"],["✓","Verified Artists"],["·","Europe-wide"]].map(([i,l])=>(
                     <span key={l} style={{fontSize:T.xs,color:C.muted,display:"flex",alignItems:"center",gap:4}}>
                       <span style={{color:C.gold}}>{i}</span>{l}
                     </span>
@@ -10255,7 +10333,7 @@ function AppInner() {
             <div style={{borderTop:`1px solid ${C.border}`,paddingTop:20,display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:12}}>
               <div style={{color:C.faint,fontSize:T.xs}}>© {new Date().getFullYear()} Awaz AS · All rights reserved · Norway</div>
               <div style={{display:"flex",gap:6,alignItems:"center"}}>
-                <span style={{fontSize:T.xs,color:C.faint}}>🔒 Payments secured by Stripe</span>
+                <span style={{fontSize:T.xs,color:C.faint}}>Payments secured by Stripe</span>
               </div>
             </div>
           </div>
@@ -10265,10 +10343,10 @@ function AppInner() {
       {/* ── Mobile Bottom Nav (public pages) ── */}
       {vp.isMobile&&["home","browse","how","pricing"].includes(view)&&(
         <nav style={{position:"fixed",bottom:0,left:0,right:0,zIndex:100,background:`${C.surface}F8`,backdropFilter:"blur(20px)",display:"flex",alignItems:"stretch",paddingBottom:"env(safe-area-inset-bottom,0px)",height:`calc(58px + env(safe-area-inset-bottom,0px))`}}>
-          {[ {id:"home",icon:"🏠",label:t('portalHome'),fn:()=>nav("home")}, {id:"browse",icon:"🔍",label:t('browseArtists'),fn:()=>nav("browse")}, {id:"apply",icon:"🎤",label:t('applyAsArtist'),fn:()=>setShowApply(true)},
+          {[ {id:"home",icon:"",label:t('portalHome'),fn:()=>nav("home")}, {id:"browse",icon:"",label:t('browseArtists'),fn:()=>nav("browse")}, {id:"apply",icon:"",label:t('applyAsArtist'),fn:()=>setShowApply(true)},
             session
-              ? {id:"logout",icon:"👋",label:t('signOut'),fn:()=>logout()}
-              : {id:"signin",icon:"👤",label:t('signIn'),fn:()=>setShowLogin(true)}
+              ? {id:"logout",icon:"",label:t('signOut'),fn:()=>logout()}
+              : {id:"signin",icon:"",label:t('signIn'),fn:()=>setShowLogin(true)}
           ].map(({id,icon,label,fn})=>{
             const isActive=(id==="home"&&view==="home")||(id==="browse"&&view==="browse");
             return(
@@ -10390,7 +10468,7 @@ function ApplySheet({ onSubmit, onClose }) {
   const next=()=>{const e=step===1?v1():v2();if(e){setErr(e);return;}setErr("");setStep(s=>s+1);};
   const submit=async()=>{
     setLoading(true);setErr("");
-    const emojis=["🎤","🪕","🎶","🎸","🪘","🎷","🎹"],cols=[C.ruby,C.lapis,C.emerald,C.saffron,C.gold,C.lavender];
+    const emojis=["","","","","","",""],cols=[C.ruby,C.lapis,C.emerald,C.saffron,C.gold,C.lavender];
     // Use UUID so it matches artists.id column type in Supabase
     const id=crypto.randomUUID();
     const depositAmt=Math.max(500,parseInt(f.deposit)||500);
@@ -10504,20 +10582,20 @@ function ApplySheet({ onSubmit, onClose }) {
   };
 
   return(
-    <Sheet open onClose={onClose} title={done?"🎉 Welcome to Awaz!":step===1?"Join Awaz — Step 1 of 2":"Almost done — Step 2 of 2"} maxH="96vh">
+    <Sheet open onClose={onClose} title={done?"Welcome to Awaz!":step===1?"Join Awaz — Step 1 of 2":"Almost done — Step 2 of 2"} maxH="96vh">
       <div style={{padding:"16px 20px 32px"}}>
         {done?(
           <div style={{textAlign:"center",padding:"20px 0"}}>
-            <div style={{fontSize:64,marginBottom:12}}>🎉</div>
+            
             <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:700,color:C.text,marginBottom:8}}>You're in! Account created.</div>
             <div style={{color:C.muted,fontSize:T.sm,lineHeight:1.8,marginBottom:20}}>Welcome to Awaz — the platform that helps Afghan artists across Europe get booked and paid.</div>
             <div style={{background:C.surface,borderRadius:10,padding:"14px 16px",marginBottom:16,textAlign:"left",border:`1px solid ${C.border}`}}>
               <div style={{fontSize:T.xs,fontWeight:700,color:C.gold,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:10}}>What happens next</div>
               {[
-                ["✉️","Check your email and confirm your account"],
-                ["🔐","Come back and click Sign In"],
-                ["📋","Complete your profile — add photo, bio, prices"],
-                ["⭐","Get approved within 24h and start getting bookings"],
+                ["","Check your email and confirm your account"],
+                ["","Come back and click Sign In"],
+                ["","Complete your profile — add photo, bio, prices"],
+                ["","Get approved within 24h and start getting bookings"],
               ].map(([icon,l])=>(
                 <div key={l} style={{display:"flex",gap:10,alignItems:"flex-start",marginBottom:8}}>
                   <span style={{fontSize:16,flexShrink:0}}>{icon}</span>
@@ -10526,7 +10604,7 @@ function ApplySheet({ onSubmit, onClose }) {
               ))}
             </div>
             <div style={{background:C.goldS,border:`1px solid ${C.gold}33`,borderRadius:8,padding:"12px 14px",marginBottom:16,fontSize:T.sm,color:C.text,lineHeight:1.6,textAlign:"left"}}>
-              💡 <strong>Pro tip:</strong> Artists with a complete profile (photo + bio + pricing) get <strong style={{color:C.gold}}>3x more bookings</strong>. Complete yours right after signing in!
+              Pro tip: Artists with a complete profile (photo + bio + pricing) get <strong style={{color:C.gold}}>3x more bookings</strong>. Complete yours right after signing in!
             </div>
             <Btn full sz="lg" onClick={onClose}>Sign In & Complete Profile →</Btn>
           </div>
@@ -10562,7 +10640,7 @@ function ApplySheet({ onSubmit, onClose }) {
               <div style={{display:"flex",flexDirection:"column",gap:14}}>
                 {/* Step title */}
                 <div style={{textAlign:"center",marginBottom:4}}>
-                  <div style={{fontSize:32,marginBottom:6}}>👤</div>
+                  
                   <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text}}>Who are you?</div>
                   <div style={{color:C.muted,fontSize:T.sm,marginTop:4}}>اسم و ایمیل خود را بنویسید</div>
                 </div>
@@ -10570,7 +10648,7 @@ function ApplySheet({ onSubmit, onClose }) {
                 {/* Name — large, clear */}
                 <div>
                   <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:6,display:"flex",gap:6,alignItems:"center"}}>
-                    🎤 Your artist name <span style={{color:C.ruby}}>*</span>
+                    Artist name <span style={{color:C.ruby}}>*</span>
                   </div>
                   <input value={f.name} onChange={e=>setF(p=>({...p,name:e.target.value}))}
                     placeholder="e.g. Ahmad Shah"
@@ -10579,7 +10657,7 @@ function ApplySheet({ onSubmit, onClose }) {
 
                 {/* Dari name */}
                 <div>
-                  <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:6}}>🔤 Name in Dari / Pashto (optional — اختیاری)</div>
+                  <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:6}}>Name in Dari / Pashto (optional — اختیاری)</div>
                   <input value={f.nameDari} onChange={e=>setF(p=>({...p,nameDari:e.target.value}))}
                     placeholder="احمد شاه"
                     dir="rtl"
@@ -10589,7 +10667,7 @@ function ApplySheet({ onSubmit, onClose }) {
                 {/* Email */}
                 <div>
                   <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:6,display:"flex",gap:6,alignItems:"center"}}>
-                    📧 Email address <span style={{color:C.ruby}}>*</span>
+                    Email address <span style={{color:C.ruby}}>*</span>
                   </div>
                   <input value={f.email} onChange={e=>setF(p=>({...p,email:e.target.value}))}
                     type="email" placeholder="you@gmail.com"
@@ -10599,7 +10677,7 @@ function ApplySheet({ onSubmit, onClose }) {
                 {/* Password */}
                 <div>
                   <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:6,display:"flex",gap:6,alignItems:"center"}}>
-                    🔒 Password <span style={{color:C.ruby}}>*</span>
+                    Password <span style={{color:C.ruby}}>*</span>
                   </div>
                   <input value={f.pass} onChange={e=>setF(p=>({...p,pass:e.target.value}))}
                     type="password" placeholder="At least 8 characters"
@@ -10608,7 +10686,7 @@ function ApplySheet({ onSubmit, onClose }) {
                 </div>
 
                 <div>
-                  <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:6}}>🔒 Repeat password <span style={{color:C.ruby}}>*</span></div>
+                  <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:6}}>Repeat password <span style={{color:C.ruby}}>*</span></div>
                   <input value={f.pass2} onChange={e=>setF(p=>({...p,pass2:e.target.value}))}
                     type="password" placeholder="Same password again"
                     style={{width:"100%",background:C.surface,border:`2px solid ${f.pass2&&f.pass2===f.pass?C.emerald:f.pass2?C.ruby:C.border}`,borderRadius:12,padding:"14px 16px",color:C.text,fontSize:16,outline:"none",fontFamily:"inherit",boxSizing:"border-box",transition:"border-color 0.2s"}}/>
@@ -10622,14 +10700,14 @@ function ApplySheet({ onSubmit, onClose }) {
               <div style={{display:"flex",flexDirection:"column",gap:14}}>
                 {/* Step title */}
                 <div style={{textAlign:"center",marginBottom:4}}>
-                  <div style={{fontSize:32,marginBottom:6}}>🎵</div>
+                  
                   <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text}}>Your music</div>
                   <div style={{color:C.muted,fontSize:T.sm,marginTop:4}}>چه نوع موسیقی می‌نوازید؟</div>
                 </div>
 
                 {/* Genre — big visual buttons */}
                 <div>
-                  <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:8}}>🎼 What type of music? <span style={{color:C.ruby}}>*</span></div>
+                  <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:8}}>What type of music? <span style={{color:C.ruby}}>*</span></div>
                   <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
                     {[["Ghazal","غزل"],["Herati","هراتی"],["Mast","مست"],["Pashto","پشتو"],["Logari","لوگری"],["Classical","کلاسیک"],["Folk","فولک"],["Fusion","فیوژن"]].map(([g,dari])=>(
                       <button key={g} onClick={()=>setF(p=>({...p,genre:g}))}
@@ -10643,7 +10721,7 @@ function ApplySheet({ onSubmit, onClose }) {
 
                 {/* Location */}
                 <div>
-                  <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:6}}>📍 Your city</div>
+                  <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:6}}>Your city</div>
                   <input value={f.location} onChange={e=>setF(p=>({...p,location:e.target.value}))}
                     placeholder="e.g. Oslo, Norway"
                     style={{width:"100%",background:C.surface,border:`2px solid ${f.location?C.emerald:C.border}`,borderRadius:12,padding:"14px 16px",color:C.text,fontSize:16,outline:"none",fontFamily:"inherit",boxSizing:"border-box"}}/>
@@ -10651,7 +10729,7 @@ function ApplySheet({ onSubmit, onClose }) {
 
                 {/* Price — simple slider */}
                 <div>
-                  <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:8}}>💶 Minimum deposit customers pay</div>
+                  <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:8}}>Minimum deposit customers pay</div>
                   <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:6}}>
                     {[500,800,1000,1500].map(d=>(
                       <button key={d} onClick={()=>setF(p=>({...p,deposit:String(d)}))}
@@ -10680,7 +10758,7 @@ function ApplySheet({ onSubmit, onClose }) {
               ):(
                 <button onClick={submit} disabled={loading}
                   style={{flex:2,background:loading?C.surface:`linear-gradient(135deg,${C.ruby},${C.rubyD||C.ruby})`,color:loading?C.muted:"#fff",border:"none",borderRadius:12,padding:"16px",fontWeight:800,fontSize:16,cursor:loading?"wait":"pointer",fontFamily:"inherit"}}>
-                  {loading?"Creating account…":"🎤 Create My Artist Profile"}
+                  {loading?"Creating account…":"Create My Artist Profile"}
                 </button>
               )}
             </div>
@@ -10715,9 +10793,9 @@ export function EventPlanForm({bookingId,customerName,eventType,eventDate,onSubm
   const addItem=()=>{if(!newItem.time||!newItem.title)return;setF("program",[...form.program,newItem]);setNewItem({time:"",title:"",note:"",type:"ceremony"});};
   const EP={card:{background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:14,padding:"18px 20px",marginBottom:16},lbl:{fontSize:11,fontWeight:700,color:"rgba(255,255,255,0.45)",letterSpacing:"0.7px",textTransform:"uppercase" as const,marginBottom:6,display:"block"},inp:{width:"100%",background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:10,padding:"10px 14px",color:"#EDE4CE",fontSize:14,fontFamily:"inherit",marginBottom:12,boxSizing:"border-box" as const,outline:"none"},btn:(col="#C8A84A")=>({background:col,color:col==="#C8A84A"?"#07060B":"#fff",border:"none",borderRadius:10,padding:"11px 20px",fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}),chip:(s:boolean)=>({display:"inline-block",padding:"5px 12px",borderRadius:20,fontSize:12,fontWeight:600,cursor:"pointer",border:s?"1px solid #C8A84A":"1px solid rgba(255,255,255,0.15)",background:s?"rgba(200,168,74,0.18)":"transparent",color:s?"#C8A84A":"rgba(255,255,255,0.55)",marginRight:6,marginBottom:6})};
   const submit=async()=>{setLoading(true);setError("");try{const sb=await getEPSupabase();const{error:e}=await sb.from("event_plans").upsert({...form,updated_at:new Date().toISOString()},{onConflict:"booking_id"});if(e)throw new Error(e.message);setStep("done");onSubmitted?.();}catch(e:any){setError(e.message);}setLoading(false);};
-  const tIcon:{[k:string]:string}={ceremony:"💍 Seremoni",dinner:"🍽️ Middag",dance:"💃 Dans",attan:"🥁 Attan",speech:"🎤 Tale",other:"⭐ Annet"};
+  const tIcon:{[k:string]:string}={ceremony:"Seremoni",dinner:"Middag",dance:"Dans",attan:"Attan",speech:"Tale",other:"Annet"};
 
-  if(step==="done")return(<div style={{textAlign:"center",padding:"40px 20px",color:"#EDE4CE"}}><div style={{fontSize:56,marginBottom:12}}>🎉</div><div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:26,fontWeight:700,marginBottom:8}}>Planen er sendt!</div><div style={{color:"rgba(255,255,255,0.5)",fontSize:14,lineHeight:1.7}}>Artisten forbereder seg nå til arrangementet ditt.</div></div>);
+  if(step==="done")return(<div style={{textAlign:"center",padding:"40px 20px",color:"#EDE4CE"}}><div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:26,fontWeight:700,marginBottom:8}}>Planen er sendt!</div><div style={{color:"rgba(255,255,255,0.5)",fontSize:14,lineHeight:1.7}}>Artisten forbereder seg nå til arrangementet ditt.</div></div>);
 
   return(
     <div style={{background:"#0F0D16",borderRadius:20,padding:"24px 20px 32px",color:"#EDE4CE",fontFamily:"'DM Sans',sans-serif"}}>
@@ -10732,7 +10810,7 @@ export function EventPlanForm({bookingId,customerName,eventType,eventDate,onSubm
       {step==="form"&&(<div>
         <div style={EP.card}>
           <label style={EP.lbl}>Type arrangement</label>
-          <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:12}}>{["Bryllup 💍","Forlovelse 💐","Eid 🌙","Bursdag 🎂","Konsert 🎤","Annet ⭐"].map(t=><span key={t} onClick={()=>setF("event_type",t)} style={EP.chip(form.event_type===t)}>{t}</span>)}</div>
+          <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:12}}>{["Bryllup","Forlovelse","Eid","Bursdag","Konsert","Annet"].map(t=><span key={t} onClick={()=>setF("event_type",t)} style={EP.chip(form.event_type===t)}>{t}</span>)}</div>
           <label style={EP.lbl}>Dato</label>
           <input type="date" value={form.event_date} onChange={e=>setF("event_date",e.target.value)} style={EP.inp}/>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}><div><label style={EP.lbl}>Start</label><input type="time" value={form.start_time} onChange={e=>setF("start_time",e.target.value)} style={EP.inp}/></div><div><label style={EP.lbl}>Slutt</label><input type="time" value={form.end_time} onChange={e=>setF("end_time",e.target.value)} style={EP.inp}/></div></div>
@@ -10763,7 +10841,7 @@ export function EventPlanForm({bookingId,customerName,eventType,eventDate,onSubm
 
       {step==="songs"&&(<div>
         <div style={EP.card}>
-          <label style={EP.lbl}>🎵 Ønskede sanger (én per linje)</label>
+          <label style={EP.lbl}>Ønskede sanger (én per linje)</label>
           <textarea value={form.special_songs} onChange={e=>setF("special_songs",e.target.value)} placeholder={"Laila — Ahmad Zahir\nDa Meena Shor — Nashenas"} rows={5} style={{...EP.inp,resize:"vertical"}}/>
           <label style={EP.lbl}>Dresscode</label>
           <input value={form.dress_code} onChange={e=>setF("dress_code",e.target.value)} placeholder="Tradisjonelt, formelt..." style={EP.inp}/>
@@ -10782,22 +10860,22 @@ export function EventPlanView({bookingId,C,T}:{bookingId:string;C:any;T:any}){
   const [open,setOpen]=useState(false);
   useEffect(()=>{(async()=>{try{const sb=await getEPSupabase();const{data}=await sb.from("event_plans").select("*").eq("booking_id",bookingId).single();setPlan(data||null);}catch{setPlan(null);}})();},[bookingId]);
   if(!plan)return null;
-  const tI:{[k:string]:string}={ceremony:"💍",dinner:"🍽️",dance:"💃",attan:"🥁",speech:"🎤",other:"⭐"};
+  const tI:{[k:string]:string}={ceremony:"",dinner:"",dance:"",attan:"",speech:"",other:""};
   return(
     <div style={{marginBottom:12}}>
       <button onClick={()=>setOpen(o=>!o)} style={{width:"100%",background:`linear-gradient(135deg,rgba(200,168,74,0.08),${C.card})`,border:`1px solid ${C.gold}44`,borderRadius:10,padding:"10px 14px",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"space-between",fontFamily:"inherit"}}>
-        <div style={{display:"flex",alignItems:"center",gap:8}}><span style={{fontSize:16}}>📋</span><span style={{fontSize:T.xs,fontWeight:700,color:C.gold}}>Arrangementplan mottatt</span>{plan.program?.length>0&&<span style={{background:C.goldS,color:C.gold,fontSize:10,fontWeight:700,padding:"1px 7px",borderRadius:10}}>{plan.program.length} punkter</span>}</div>
+        <div style={{display:"flex",alignItems:"center",gap:8}}><span style={{fontSize:16}}></span><span style={{fontSize:T.xs,fontWeight:700,color:C.gold}}>Arrangementplan mottatt</span>{plan.program?.length>0&&<span style={{background:C.goldS,color:C.gold,fontSize:10,fontWeight:700,padding:"1px 7px",borderRadius:10}}>{plan.program.length} punkter</span>}</div>
         <span style={{color:C.muted,fontSize:12}}>{open?"▲ Lukk":"▼ Vis"}</span>
       </button>
       {open&&<div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:"0 0 10px 10px",padding:"14px 16px",borderTop:"none"}}>
         <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:8,marginBottom:14}}>
-          {[["🎉 Type",plan.event_type],["📅 Dato",plan.event_date],["🕐 Tid",plan.start_time?`${plan.start_time}–${plan.end_time}`:null],["📍 Sted",plan.venue||plan.venue_city||null],["👥 Gjester",plan.guest_count?`ca. ${plan.guest_count}`:null],["👗 Dresscode",plan.dress_code||null]].map(([l,v])=>v?<div key={l as string} style={{background:C.surface,borderRadius:8,padding:"8px 10px"}}><div style={{fontSize:10,color:C.muted,fontWeight:700,textTransform:"uppercase" as const,letterSpacing:"0.5px",marginBottom:2}}>{l}</div><div style={{fontSize:T.xs,color:C.text}}>{v}</div></div>:null)}
+          {[["Type",plan.event_type],["Dato",plan.event_date],["Tid",plan.start_time?`${plan.start_time}–${plan.end_time}`:null],["Sted",plan.venue||plan.venue_city||null],["👥 Gjester",plan.guest_count?`ca. ${plan.guest_count}`:null],["👗 Dresscode",plan.dress_code||null]].map(([l,v])=>v?<div key={l as string} style={{background:C.surface,borderRadius:8,padding:"8px 10px"}}><div style={{fontSize:10,color:C.muted,fontWeight:700,textTransform:"uppercase" as const,letterSpacing:"0.5px",marginBottom:2}}>{l}</div><div style={{fontSize:T.xs,color:C.text}}>{v}</div></div>:null)}
         </div>
         {plan.languages?.length>0&&<div style={{marginBottom:12}}><div style={{fontSize:10,color:C.muted,fontWeight:700,textTransform:"uppercase" as const,marginBottom:6}}>Gjestespråk</div><div style={{display:"flex",gap:6,flexWrap:"wrap"}}>{plan.languages.map(l=><span key={l} style={{background:C.lapisS,color:C.lapis,fontSize:11,fontWeight:700,padding:"2px 8px",borderRadius:10,border:`1px solid ${C.lapis}33`}}>{l}</span>)}</div></div>}
         {plan.program?.length>0&&<div style={{marginBottom:12}}><div style={{fontSize:10,color:C.muted,fontWeight:700,textTransform:"uppercase" as const,marginBottom:8}}>Program</div>{plan.program.map((item,i)=><div key={i} style={{display:"flex",gap:10,padding:"8px 10px",background:C.surface,borderRadius:8,marginBottom:6,borderLeft:item.type==="attan"?`3px solid ${C.gold}`:`3px solid ${C.border}`}}><span style={{fontSize:15,flexShrink:0}}>{tI[item.type]||"⭐"}</span><div><div style={{fontSize:T.xs,fontWeight:700,color:C.text}}>{item.time} — {item.title}</div>{item.note&&<div style={{fontSize:11,color:C.muted,marginTop:2}}>{item.note}</div>}</div></div>)}</div>}
         {plan.special_songs&&<div style={{marginBottom:12}}><div style={{fontSize:10,color:C.muted,fontWeight:700,textTransform:"uppercase" as const,marginBottom:6}}>Ønskede sanger</div><div style={{background:C.goldS,border:`1px solid ${C.gold}33`,borderRadius:8,padding:"10px 12px",fontSize:T.xs,color:C.textD,lineHeight:1.7,whiteSpace:"pre-wrap"}}>🎵 {plan.special_songs}</div></div>}
         {plan.special_requests&&<div><div style={{fontSize:10,color:C.muted,fontWeight:700,textTransform:"uppercase" as const,marginBottom:6}}>Andre ønsker</div><div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,padding:"10px 12px",fontSize:T.xs,color:C.muted,lineHeight:1.7,whiteSpace:"pre-wrap"}}>📝 {plan.special_requests}</div></div>}
-        {plan.food_served&&<div style={{marginTop:10,fontSize:T.xs,color:C.muted,display:"flex",gap:6}}><span>🍽️</span>Mat serveres</div>}
+        {plan.food_served&&<div style={{marginTop:10,fontSize:T.xs,color:C.muted,display:"flex",gap:6}}><span>Mat serveres</div>}
       </div>}
     </div>
   );
