@@ -195,18 +195,18 @@ const DARK = {
 const LIGHT = {
   bg:'#FAF8F4', surface:'#F0EBE2', card:'#FFFFFF', cardH:'#FAF7F2',
   border:'#E2D8CC', borderM:'#CFC3B3',
-  // Brand — darkened for light bg
-  gold:'#6B4D08',    // 7.3:1 on bg — AAA ✓
-  goldLt:'#8A6510',
-  goldS:'rgba(107,77,8,0.08)',
-  ruby:'#8B1E2A',    // 8.6:1 — AAA ✓
-  rubyLt:'#A82533',
-  rubyS:'rgba(139,30,42,0.07)',
+  // Brand — refined for light bg (less brown, more golden/jewel-toned)
+  gold:'#8B6914',    // warm amber-gold, 5.8:1 on bg — AA+ ✓
+  goldLt:'#A67C1A',
+  goldS:'rgba(139,105,20,0.09)',
+  ruby:'#9B1E2A',    // 8.6:1 — AAA ✓
+  rubyLt:'#B82533',
+  rubyS:'rgba(155,30,42,0.07)',
   lapis:'#1A3F7C',   // 9.6:1 — AAA ✓
   lapisS:'rgba(26,63,124,0.07)',
   emerald:'#145E3C', // 7.2:1 — AAA ✓
   emeraldS:'rgba(20,94,60,0.07)',
-  saffron:'#7A4400', // 7.0:1 — AAA ✓
+  saffron:'#8B5200', // 7.0:1 — AAA ✓
   lavender:'#5B3F9A',
   stripe:'#4B44CC',
   // Typography — light mode
@@ -4641,7 +4641,9 @@ function StripePlatformBanner({ notify }: { notify: (msg:string, type?:string)=>
   );
 }
 
-function AdminDash({ artists, setArtists, bookings, setBookings, users, inquiries, onAction, onLogout, onMsg, onUpdateInquiry }) {
+function AdminDash({ artists, setArtists, bookings, setBookings, users, inquiries, onAction, onLogout, onMsg, onUpdateInquiry, theme, onToggleTheme }) {
+  // Sync module-level _theme so C proxy uses correct palette on every render
+  if(theme) _theme = theme;
   const vp=useViewport();
   const {show:notify}=useNotif();
   const [tab,setTab]=useState("overview");
@@ -5476,7 +5478,12 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
           <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.md,fontWeight:700,color:C.gold}}>Awaz Admin</div>
           <div style={{fontSize:T.xs,color:C.muted}}>Platform Control</div>
         </div>
-        <button onClick={onLogout} style={{background:C.surface,border:`1px solid ${C.border}`,color:C.muted,borderRadius:8,padding:"7px 14px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>{t('signOut')}</button>
+        <div style={{display:"flex",gap:6,alignItems:"center"}}>
+          <button onClick={onToggleTheme} style={{width:32,height:32,borderRadius:7,background:C.surface,border:`1px solid ${C.border}`,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,WebkitTapHighlightColor:"transparent"}}>
+            {_theme==="dark"?"☀️":"🌙"}
+          </button>
+          <button onClick={onLogout} style={{background:C.surface,border:`1px solid ${C.border}`,color:C.muted,borderRadius:8,padding:"7px 14px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>{t('signOut')}</button>
+        </div>
       </div>
       <div style={{paddingTop:72}}>{pageContent}</div>
       <BottomNav active={tab} onNav={setTab} items={navItems}/>
@@ -5525,6 +5532,9 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
         {/* User */}
         <div style={{padding:"16px 20px",borderTop:`1px solid ${C.border}`}}>
           <div style={{fontSize:T.xs,color:C.muted,marginBottom:10,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>Admin</div>
+          <button onClick={onToggleTheme} style={{width:"100%",background:C.surface,border:`1px solid ${C.border}`,color:C.muted,borderRadius:8,padding:"9px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit",marginBottom:6,display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+            {_theme==="dark"?"☀️ Light mode":"🌙 Dark mode"}
+          </button>
           <button onClick={onLogout} style={{width:"100%",background:C.surface,border:`1px solid ${C.border}`,color:C.muted,borderRadius:8,padding:"9px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>Sign Out</button>
         </div>
       </aside>
@@ -5686,7 +5696,9 @@ function BoostButton({ artist, onUpdateArtist, notify }) {
   );
 }
 
-function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, onMsg, onUpdateArtist }) {
+function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, onMsg, onUpdateArtist, theme, onToggleTheme }) {
+  // Sync module-level _theme so C proxy uses correct palette on every render
+  if(theme) _theme = theme;
   const vp=useViewport();
   const {show:notify}=useNotif();
   const [tab,setTab]=useState("overview");
@@ -7199,25 +7211,92 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
         .subscribe();
     });
     return ()=>{ if(channel) channel.unsubscribe(); };
-  },[artist.id]);return(
+  },[artist.id]);
+
+  // Mobile bottom nav tabs (most important ones)
+  const mobileNavItems=[
+    {id:"overview", icon:"🏠", label:"Home"},
+    {id:"bookings", icon:"📅", label:"Bookings", badge:pendingCount},
+    {id:"messages", icon:"💬", label:"Messages"},
+    {id:"profile",  icon:"👤", label:"Profile"},
+    {id:"settings", icon:"⚙️", label:"More"},
+  ];
+
+  return(
     <div style={{minHeight:"100vh",background:C.bg,display:"flex"}}>
       <div style={{height:2,background:`linear-gradient(90deg,${artist.color}88,${C.gold}88,${artist.color}88)`,position:"fixed",top:0,left:0,right:0,zIndex:200}}/>
-      <div style={{width:220,background:C.surface,borderRight:`1px solid ${C.border}`,padding:"40px 0 24px",display:"flex",flexDirection:"column",position:"fixed",top:3,bottom:0,zIndex:100}}>
-        <div style={{padding:"0 20px 20px",borderBottom:`1px solid ${C.border}`,marginBottom:14}}>
-          {artist.photo?<img src={artist.photo} alt="" style={{width:42,height:42,borderRadius:8,objectFit:"cover",marginBottom:10}}/>:<div style={{width:42,height:42,borderRadius:8,background:`${artist.color}18`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,marginBottom:10}}>{artist.emoji}</div>}
-          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.sm,fontWeight:700,color:C.text}}>{artist.name}</div>
-          <div style={{fontSize:T.xs,color:artist.color,textTransform:"uppercase",fontWeight:700,marginTop:2}}>{t('artistPortal')}</div>
-        </div>
-        {navItems.map(({id,icon,label})=>(
-          <button key={id} onClick={()=>setTab(id)} style={{display:"flex",gap:10,alignItems:"center",padding:"12px 20px",background:tab===id?`${artist.color}18`:"transparent",color:tab===id?artist.color:C.muted,border:"none",cursor:"pointer",fontFamily:"inherit",fontSize:T.sm,fontWeight:tab===id?700:400,borderLeft:`3px solid ${tab===id?artist.color:"transparent"}`,width:"100%",textAlign:"left",minHeight:48}}>
-            <span style={{fontSize:18}}>{icon}</span>{label}
-          </button>
-        ))}
-        <div style={{marginTop:"auto",padding:"16px 20px",}}>
-          <Btn v="ghost" sz="sm" onClick={onLogout} xs={{width:"100%"}}>{t('signOut')}</Btn>
-        </div>
-      </div>
-      <div style={{flex:1,marginLeft:220,paddingTop:3,overflow:"auto"}}>{content}</div>
+
+      {/* ── MOBILE LAYOUT ── */}
+      {vp.isMobile?(
+        <>
+          {/* Mobile top header */}
+          <div style={{position:"fixed",top:2,left:0,right:0,zIndex:100,height:52,background:`${C.surface}F8`,backdropFilter:"blur(20px)",borderBottom:`1px solid ${C.border}`,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 14px"}}>
+            <div style={{display:"flex",alignItems:"center",gap:10}}>
+              {artist.photo
+                ?<img src={artist.photo} alt="" style={{width:30,height:30,borderRadius:6,objectFit:"cover"}}/>
+                :<div style={{width:30,height:30,borderRadius:6,background:`${artist.color}18`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}}>{artist.emoji}</div>
+              }
+              <div>
+                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:13,fontWeight:700,color:C.text,lineHeight:1}}>{artist.name}</div>
+                <div style={{fontSize:9,color:artist.color,textTransform:"uppercase",fontWeight:700}}>{t('artistPortal')}</div>
+              </div>
+            </div>
+            <div style={{display:"flex",gap:6,alignItems:"center"}}>
+              <button onClick={onToggleTheme} aria-label="Toggle theme"
+                style={{width:32,height:32,borderRadius:7,background:C.surface,border:`1px solid ${C.border}`,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,WebkitTapHighlightColor:"transparent"}}>
+                {_theme==="dark"?"☀️":"🌙"}
+              </button>
+              <button onClick={onLogout} style={{background:C.rubyS,border:`1px solid ${C.ruby}44`,borderRadius:7,padding:"6px 10px",color:C.ruby,fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit",WebkitTapHighlightColor:"transparent"}}>{t('signOut')}</button>
+            </div>
+          </div>
+
+          {/* Mobile content area */}
+          <div style={{flex:1,width:"100%",paddingTop:54,paddingBottom:72,overflow:"auto"}}>
+            {content}
+          </div>
+
+          {/* Mobile bottom nav */}
+          <nav style={{position:"fixed",bottom:0,left:0,right:0,zIndex:100,background:`${C.surface}F8`,backdropFilter:"blur(20px)",borderTop:`1px solid ${C.border}`,display:"flex",alignItems:"stretch",paddingBottom:"env(safe-area-inset-bottom,0px)",height:`calc(58px + env(safe-area-inset-bottom,0px))`}}>
+            {mobileNavItems.map(({id,icon,label,badge})=>{
+              const isActive=tab===id;
+              return(
+                <button key={id} onClick={()=>setTab(id)}
+                  style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:2,background:"transparent",border:"none",cursor:"pointer",color:isActive?artist.color:C.muted,paddingTop:8,paddingBottom:4,minHeight:44,WebkitTapHighlightColor:"transparent",fontFamily:"inherit",position:"relative"}}>
+                  {isActive&&<div style={{position:"absolute",top:0,width:24,height:2,borderRadius:1,background:artist.color}}/>}
+                  {badge>0&&<div style={{position:"absolute",top:6,right:"calc(50% - 16px)",width:16,height:16,borderRadius:"50%",background:C.ruby,color:"#fff",fontSize:9,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",zIndex:1}}>{badge}</div>}
+                  <div style={{fontSize:20,lineHeight:1}}>{icon}</div>
+                  <div style={{fontSize:9,fontWeight:isActive?700:500}}>{label}</div>
+                </button>
+              );
+            })}
+          </nav>
+        </>
+      ):(
+        /* ── DESKTOP LAYOUT ── */
+        <>
+          <div style={{width:220,background:C.surface,borderRight:`1px solid ${C.border}`,padding:"40px 0 24px",display:"flex",flexDirection:"column",position:"fixed",top:3,bottom:0,zIndex:100}}>
+            <div style={{padding:"0 20px 20px",borderBottom:`1px solid ${C.border}`,marginBottom:14}}>
+              {artist.photo?<img src={artist.photo} alt="" style={{width:42,height:42,borderRadius:8,objectFit:"cover",marginBottom:10}}/>:<div style={{width:42,height:42,borderRadius:8,background:`${artist.color}18`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,marginBottom:10}}>{artist.emoji}</div>}
+              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.sm,fontWeight:700,color:C.text}}>{artist.name}</div>
+              <div style={{fontSize:T.xs,color:artist.color,textTransform:"uppercase",fontWeight:700,marginTop:2}}>{t('artistPortal')}</div>
+            </div>
+            {navItems.map(({id,label,badge}:{id:string,label:string,badge?:number})=>(
+              <button key={id} onClick={()=>setTab(id)} style={{display:"flex",gap:10,alignItems:"center",padding:"12px 20px",background:tab===id?`${artist.color}18`:"transparent",color:tab===id?artist.color:C.muted,border:"none",cursor:"pointer",fontFamily:"inherit",fontSize:T.sm,fontWeight:tab===id?700:400,borderLeft:`3px solid ${tab===id?artist.color:"transparent"}`,width:"100%",textAlign:"left",minHeight:48,position:"relative"}}>
+                {badge>0&&<div style={{position:"absolute",right:14,top:"50%",transform:"translateY(-50%)",width:18,height:18,borderRadius:"50%",background:C.ruby,color:"#fff",fontSize:10,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center"}}>{badge}</div>}
+                {label}
+              </button>
+            ))}
+            <div style={{marginTop:"auto",padding:"16px 20px",display:"flex",flexDirection:"column",gap:8}}>
+              <button onClick={onToggleTheme} style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:7,padding:"7px 12px",color:C.muted,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:6,justifyContent:"center"}}>
+                {_theme==="dark"?"☀️ Light mode":"🌙 Dark mode"}
+              </button>
+              <Btn v="ghost" sz="sm" onClick={onLogout} xs={{width:"100%"}}>{t('signOut')}</Btn>
+            </div>
+          </div>
+          <div style={{flex:1,marginLeft:220,paddingTop:3,overflow:"auto"}}>{content}</div>
+        </>
+      )}
+
       {chat&&<Chat booking={chat} artist={artist} myRole="artist" onClose={()=>setChat(null)} onSend={onMsg}/>}
       {showStripeConnect&&<StripeConnectSheet artist={artist} onConnected={u=>{onUpdateArtist(artist.id,u);setShowStripeConnect(false);}} onClose={()=>setShowStripeConnect(false)}/>}
     </div>
@@ -9588,11 +9667,11 @@ function AppInner() {
       <div style={{width:40,height:40,border:`3px solid ${C.border}`,borderTopColor:C.gold,borderRadius:"50%",animation:"spin 0.8s linear infinite"}}/>
     </div>
   );
-  if(session?.role==="admin") return <AdminDash key={lang} artists={artists} setArtists={setArtists} bookings={bookings} setBookings={setBookings} users={users} inquiries={inquiries} onAction={handleArtistAction} onLogout={logout} onMsg={handleMsg} onUpdateInquiry={handleUpdateInquiry}/>;
+  if(session?.role==="admin") return <AdminDash key={lang+theme} theme={theme} onToggleTheme={toggleTheme} artists={artists} setArtists={setArtists} bookings={bookings} setBookings={setBookings} users={users} inquiries={inquiries} onAction={handleArtistAction} onLogout={logout} onMsg={handleMsg} onUpdateInquiry={handleUpdateInquiry}/>;
   if(session?.role==="artist"){
     const myA=artists.find(a=>a.id===session.artistId);
     // Only show dashboard if artist is approved by admin
-    if(myA && myA.status==="approved") return <ArtistPortal key={lang} user={session} artist={myA} bookings={bookings} onLogout={logout} session={session} onToggleDay={handleToggle} onMsg={handleMsg} onUpdateArtist={handleUpdateArtist}/>;
+    if(myA && myA.status==="approved") return <ArtistPortal key={lang+theme} theme={theme} onToggleTheme={toggleTheme} user={session} artist={myA} bookings={bookings} onLogout={logout} session={session} onToggleDay={handleToggle} onMsg={handleMsg} onUpdateArtist={handleUpdateArtist}/>;
     // Wait for hydration — avoid race condition on page refresh
     if(!appReady) return(
       <div style={{minHeight:"100vh",background:C.bg,display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:16,fontFamily:"'DM Sans',sans-serif"}}>
@@ -9746,8 +9825,8 @@ function AppInner() {
               <Btn onClick={()=>setShowApply(true)} v="ruby" sz="sm">{t('applyAsArtist')}</Btn>
               <Btn onClick={()=>setShowLogin(true)} v="ghost" sz="sm">{t('signIn')}</Btn>
               <button onClick={toggleTheme} aria-label={theme==='dark'?'Switch to light mode':'Switch to dark mode'}
-                style={{width:36,height:36,borderRadius:8,background:C.surface,border:`1px solid ${C.border}`,color:C.muted,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',fontSize:16,flexShrink:0,WebkitTapHighlightColor:'transparent'}}>
-                {theme==='dark'?'Light':'Dark'}
+                style={{width:36,height:36,borderRadius:8,background:C.surface,border:`1px solid ${C.border}`,color:theme==='dark'?'#C8A84A':C.muted,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,flexShrink:0,WebkitTapHighlightColor:'transparent'}}>
+                {theme==='dark'?'☀️':'🌙'}
               </button>
             </>
           )}
@@ -9756,8 +9835,8 @@ function AppInner() {
               <span style={{color:C.muted,fontSize:T.xs}}>{session.name.split(" ")[0]}</span>
               <Btn onClick={logout} v="ghost" sz="sm">{t('signOut')}</Btn>
               <button onClick={toggleTheme} aria-label={theme==='dark'?'Switch to light mode':'Switch to dark mode'}
-                style={{width:36,height:36,borderRadius:8,background:C.surface,border:`1px solid ${C.border}`,color:C.muted,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',fontSize:16,flexShrink:0}}>
-                {theme==='dark'?'Light':'Dark'}
+                style={{width:36,height:36,borderRadius:8,background:C.surface,border:`1px solid ${C.border}`,color:theme==='dark'?'#C8A84A':C.muted,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,flexShrink:0}}>
+                {theme==='dark'?'☀️':'🌙'}
               </button>
             </div>
           )}
@@ -9765,8 +9844,8 @@ function AppInner() {
             <div style={{display:'flex',gap:6,alignItems:'center'}}>
               <LangSwitcher lang={lang} onSwitch={switchLang}/>
               <button onClick={toggleTheme} aria-label="Toggle theme"
-                style={{width:34,height:34,borderRadius:8,background:C.surface,border:`1px solid ${C.border}`,color:C.muted,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',fontSize:14,WebkitTapHighlightColor:'transparent'}}>
-                {theme==='dark'?'Light':'Dark'}
+                style={{width:34,height:34,borderRadius:8,background:C.surface,border:`1px solid ${C.border}`,color:theme==='dark'?'#C8A84A':C.muted,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,WebkitTapHighlightColor:'transparent'}}>
+                {theme==='dark'?'☀️':'🌙'}
               </button>
               {!session&&(
                 <button onClick={()=>setShowLogin(true)} aria-label={t('signIn')}
