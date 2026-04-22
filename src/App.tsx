@@ -8455,7 +8455,7 @@ function InquiryWidget({ artists, onSubmit }) {
               Send Private Inquiry
             </button>
             <div style={{textAlign:"center",fontSize:T.xs,color:C.muted,lineHeight:1.6}}>
-              Your message goes directly to the Awaz owner. Personal reply within 24 hours.
+              Your message goes directly to Awaz. Personal reply within 24 hours.
             </div>
           </div>
         )}
@@ -9971,37 +9971,37 @@ function AppInner() {
         // ── Step data — rewritten for clarity, trust, conversion ────────
         const steps=[
           {
-            n:"01", icon:"", color:C.lapis,
+            n:"01", icon:"🔍", color:C.lapis,
             title:t('step1Title'),
             desc:t('step1Desc'),
             badge:t('step1Badge'),
           },
           {
-            n:"02", icon:"", color:C.emerald,
+            n:"02", icon:"📅", color:C.emerald,
             title:t('step2Title'),
             desc:t('step2Desc'),
             badge:t('step2Badge'),
           },
           {
-            n:"03", icon:"", color:C.saffron,
+            n:"03", icon:"✍️", color:C.saffron,
             title:t('step3Title'),
             desc:t('step3Desc'),
             badge:t('step3Badge'),
           },
           {
-            n:"04", icon:"", color:"#635BFF",
+            n:"04", icon:"💳", color:"#635BFF",
             title:t('step4Title'),
             desc:t('step4Desc'),
             badge:t('step4Badge'),
           },
           {
-            n:"05", icon:"", color:C.ruby,
+            n:"05", icon:"💬", color:C.ruby,
             title:t('step5Title'),
             desc:t('step5Desc'),
             badge:t('step5Badge'),
           },
           {
-            n:"06", icon:"", color:C.gold,
+            n:"06", icon:"🎉", color:C.gold,
             title:t('step6Title'),
             desc:t('step6Desc'),
             badge:t('step6Badge'),
@@ -10083,26 +10083,14 @@ function AppInner() {
                   boxShadow:`-2px 0 24px ${s.color}0C`,
                 }}>
 
-                  {/* Icon column */}
-                  <div style={{flexShrink:0,display:"flex",flexDirection:"column",alignItems:"center",gap:8}}>
-                    {/* Step number */}
-                    <div style={{
-                      fontFamily:"'Cormorant Garamond',serif",
-                      fontSize:vp.isMobile?11:12,fontWeight:700,
-                      color:labelText,letterSpacing:"1.5px",
-                      lineHeight:1,
-                    }}>{s.n}</div>
-                    {/* Icon circle */}
-                    <div style={{
-                      width:vp.isMobile?52:60,height:vp.isMobile?52:60,
-                      borderRadius:14,
-                      background:`${s.color}14`,
-                      border:`1.5px solid ${s.color}30`,
-                      display:"flex",alignItems:"center",justifyContent:"center",
-                      fontSize:vp.isMobile?24:28,
-                      flexShrink:0,
-                    }}>{s.icon}</div>
-                  </div>
+                  {/* Step number */}
+                  <div style={{
+                    flexShrink:0,
+                    fontFamily:"'Cormorant Garamond',serif",
+                    fontSize:vp.isMobile?13:14,fontWeight:700,
+                    color:labelText,letterSpacing:"2px",
+                    paddingTop:4,
+                  }}>{s.n}</div>
 
                   {/* Text column */}
                   <div style={{flex:1,minWidth:0,paddingTop:2}}>
@@ -10875,7 +10863,7 @@ export function EventPlanView({bookingId,C,T}:{bookingId:string;C:any;T:any}){
         {plan.program?.length>0&&<div style={{marginBottom:12}}><div style={{fontSize:10,color:C.muted,fontWeight:700,textTransform:"uppercase" as const,marginBottom:8}}>Program</div>{plan.program.map((item,i)=><div key={i} style={{display:"flex",gap:10,padding:"8px 10px",background:C.surface,borderRadius:8,marginBottom:6,borderLeft:item.type==="attan"?`3px solid ${C.gold}`:`3px solid ${C.border}`}}><span style={{fontSize:15,flexShrink:0}}>{tI[item.type]||"⭐"}</span><div><div style={{fontSize:T.xs,fontWeight:700,color:C.text}}>{item.time} — {item.title}</div>{item.note&&<div style={{fontSize:11,color:C.muted,marginTop:2}}>{item.note}</div>}</div></div>)}</div>}
         {plan.special_songs&&<div style={{marginBottom:12}}><div style={{fontSize:10,color:C.muted,fontWeight:700,textTransform:"uppercase" as const,marginBottom:6}}>Ønskede sanger</div><div style={{background:C.goldS,border:`1px solid ${C.gold}33`,borderRadius:8,padding:"10px 12px",fontSize:T.xs,color:C.textD,lineHeight:1.7,whiteSpace:"pre-wrap"}}>🎵 {plan.special_songs}</div></div>}
         {plan.special_requests&&<div><div style={{fontSize:10,color:C.muted,fontWeight:700,textTransform:"uppercase" as const,marginBottom:6}}>Andre ønsker</div><div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,padding:"10px 12px",fontSize:T.xs,color:C.muted,lineHeight:1.7,whiteSpace:"pre-wrap"}}>📝 {plan.special_requests}</div></div>}
-        {plan.food_served&&<div style={{marginTop:10,fontSize:T.xs,color:C.muted,display:"flex",gap:6}}><span>🍽 Mat serveres</span></div>}
+        {plan.food_served&&<div style={{marginTop:10,fontSize:T.xs,color:C.muted,display:"flex",gap:6}}><span>Mat serveres</div>}
       </div>}
     </div>
   );
