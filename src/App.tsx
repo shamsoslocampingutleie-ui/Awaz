@@ -9843,13 +9843,19 @@ function AppInner() {
           {vp.isMobile&&(
             <div style={{display:'flex',gap:6,alignItems:'center'}}>
               <LangSwitcher lang={lang} onSwitch={switchLang}/>
-              <button onClick={toggleTheme} aria-label="Toggle theme"
-                style={{width:34,height:34,borderRadius:8,background:C.surface,border:`1px solid ${C.border}`,color:theme==='dark'?'#C8A84A':C.muted,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,WebkitTapHighlightColor:'transparent'}}>
-                {theme==='dark'?'☀️':'🌙'}
-              </button>
+              {/* Apply as Artist — compact pill, always visible on mobile */}
+              {!session&&(
+                <button onClick={()=>setShowApply(true)} aria-label={t('applyAsArtist')}
+                  style={{height:34,borderRadius:10,background:`linear-gradient(135deg,${C.ruby},${C.rubyLt})`,border:'none',color:'#FFFFFF',cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:"0 11px",fontSize:11,fontWeight:700,fontFamily:"inherit",letterSpacing:"0.3px",whiteSpace:"nowrap",WebkitTapHighlightColor:"transparent",flexShrink:0}}>
+                  {t('applyAsArtist')}
+                </button>
+              )}
+              {/* Sign In — high-contrast button, visible on both themes */}
               {!session&&(
                 <button onClick={()=>setShowLogin(true)} aria-label={t('signIn')}
-                  style={{width:38,height:38,borderRadius:10,background:C.surface,border:`1px solid ${C.border}`,color:C.muted,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,WebkitTapHighlightColor:"transparent"}}></button>
+                  style={{height:34,borderRadius:10,background:theme==='dark'?C.surface:'#1C160D',border:`1px solid ${theme==='dark'?C.borderM:'#1C160D'}`,color:theme==='dark'?C.text:'#FAF8F4',cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:"0 12px",fontSize:11,fontWeight:700,fontFamily:"inherit",letterSpacing:"0.3px",whiteSpace:"nowrap",WebkitTapHighlightColor:"transparent",flexShrink:0}}>
+                  {t('signIn')}
+                </button>
               )}
               {session&&(
                 <button onClick={logout} aria-label={t('signOut')}
@@ -9857,6 +9863,11 @@ function AppInner() {
                   {t('signOut')}
                 </button>
               )}
+              {/* Theme toggle */}
+              <button onClick={toggleTheme} aria-label="Toggle theme"
+                style={{width:34,height:34,borderRadius:8,background:C.surface,border:`1px solid ${C.borderM}`,color:theme==='dark'?'#C8A84A':C.text,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,flexShrink:0,WebkitTapHighlightColor:'transparent'}}>
+                {theme==='dark'?'☀️':'🌙'}
+              </button>
             </div>
           )}
         </div>
