@@ -4061,18 +4061,42 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
 
                   {/* Vocalist dual pricing — shown clearly */}
                   {(artist.artistType==="vocalist"||artist.artist_type==="vocalist")&&artist.depositWithBand&&(
-                    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
-                      <div style={{background:C.goldS,border:`2px solid ${C.gold}44`,borderRadius:10,padding:"12px 14px",textAlign:"center"}}>
-                        <div style={{fontSize:18,marginBottom:4}}>🎤</div>
-                        <div style={{fontWeight:700,color:C.text,fontSize:T.xs,marginBottom:4}}>Solo Performance</div>
-                        <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:800,color:C.gold,fontSize:T.xl}}>€{artist.deposit}</div>
-                        <div style={{fontSize:10,color:C.muted,marginTop:3}}>deposit · singer only</div>
+                    <>
+                      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:10}}>
+                        <div style={{background:C.goldS,border:`2px solid ${C.gold}44`,borderRadius:10,padding:"12px 14px",textAlign:"center"}}>
+                          <div style={{fontSize:18,marginBottom:4}}>🎤</div>
+                          <div style={{fontWeight:700,color:C.text,fontSize:T.xs,marginBottom:4}}>Solo — singer only</div>
+                          <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:800,color:C.gold,fontSize:T.xl}}>€{artist.deposit}</div>
+                          <div style={{fontSize:10,color:C.muted,marginTop:3}}>deposit · voice only, no instruments</div>
+                        </div>
+                        <div style={{background:C.lapisS,border:`2px solid ${C.lapis}44`,borderRadius:10,padding:"12px 14px",textAlign:"center"}}>
+                          <div style={{fontSize:18,marginBottom:4}}>🎼</div>
+                          <div style={{fontWeight:700,color:C.text,fontSize:T.xs,marginBottom:4}}>With Full Band</div>
+                          <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:800,color:C.lapis,fontSize:T.xl}}>€{artist.depositWithBand||artist.deposit_with_band}</div>
+                          <div style={{fontSize:10,color:C.muted,marginTop:3}}>deposit · singer + full ensemble</div>
+                        </div>
                       </div>
-                      <div style={{background:C.lapisS,border:`2px solid ${C.lapis}44`,borderRadius:10,padding:"12px 14px",textAlign:"center"}}>
-                        <div style={{fontSize:18,marginBottom:4}}>🎼</div>
-                        <div style={{fontWeight:700,color:C.text,fontSize:T.xs,marginBottom:4}}>With Full Band</div>
-                        <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:800,color:C.lapis,fontSize:T.xl}}>€{artist.depositWithBand||artist.deposit_with_band}</div>
-                        <div style={{fontSize:10,color:C.muted,marginTop:3}}>deposit · complete ensemble</div>
+                      {/* Important note for solo bookings */}
+                      <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:10,padding:"10px 14px",marginBottom:16,display:"flex",gap:10,alignItems:"flex-start"}}>
+                        <span style={{fontSize:16,flexShrink:0}}>💡</span>
+                        <div>
+                          <div style={{fontWeight:700,color:C.text,fontSize:T.xs,marginBottom:3}}>Booking solo = singer only, no instruments</div>
+                          <div style={{fontSize:11,color:C.muted,lineHeight:1.6}}>
+                            If you want tabla, keyboard or other musicians at your event, choose <strong style={{color:C.lapis}}>With Full Band</strong> above — or use <strong style={{color:C.lapis}}>Book a Band</strong> to add individual instrumentalists from the platform separately.
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                  {/* Solo vocalist without band configured — still show note */}
+                  {(artist.artistType==="vocalist"||artist.artist_type==="vocalist")&&!artist.depositWithBand&&!artist.deposit_with_band&&(
+                    <div style={{background:C.goldS,border:`1px solid ${C.gold}33`,borderRadius:10,padding:"10px 14px",marginBottom:16,display:"flex",gap:10,alignItems:"flex-start"}}>
+                      <span style={{fontSize:16,flexShrink:0}}>💡</span>
+                      <div>
+                        <div style={{fontWeight:700,color:C.text,fontSize:T.xs,marginBottom:3}}>This booking is for the vocalist only</div>
+                        <div style={{fontSize:11,color:C.muted,lineHeight:1.6}}>
+                          Need tabla, keyboard or other instruments? Use <strong style={{color:C.lapis}}>🎼 Book a Band</strong> to add musicians from the platform to your event.
+                        </div>
                       </div>
                     </div>
                   )}
@@ -4234,6 +4258,16 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
                     <div style={{display:"flex",justifyContent:"space-between",fontSize:T.sm}}><span style={{color:C.muted}}>{t('balance')}</span><span style={{color:C.textD}}>{t('cashAfterConcert')}</span></div>
                   </div>
                 )}
+                {/* Solo vocalist tip */}
+                {selDay&&!showBook&&(artist.artistType==="vocalist"||artist.artist_type==="vocalist")&&(
+                  <div style={{background:C.goldS,border:`1px solid ${C.gold}44`,borderRadius:8,padding:"9px 12px",marginBottom:12,display:"flex",gap:7,alignItems:"flex-start"}}>
+                    <span style={{fontSize:13,flexShrink:0}}>💡</span>
+                    <div style={{fontSize:11,color:C.muted,lineHeight:1.5}}>
+                      <strong style={{color:C.text}}>Vocalist only — no instruments.</strong>{" "}
+                      Need tabla or keyboard? Use <strong style={{color:C.lapis}}>🎼 Book a Band</strong>.
+                    </div>
+                  </div>
+                )}
                 {!showBook?(
                   <button onClick={()=>selDay&&setShowBook(true)} disabled={!selDay}
                     style={{width:"100%",background:selDay?`linear-gradient(135deg,${artist.color},${artist.color}AA)`:C.border,color:selDay?"#fff":C.muted,border:"none",borderRadius:10,padding:14,fontSize:T.base,fontWeight:800,cursor:selDay?"pointer":"not-allowed",fontFamily:"inherit",minHeight:50,letterSpacing:"0.2px"}}>
@@ -4347,6 +4381,19 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
             </div>
             <div style={{color:C.muted,fontSize:T.xs}}>{MONTHS[selMonth]} {selDay}, {selYear}</div>
           </div>
+
+          {/* ── Solo vocalist tip — shown when booking a vocalist without a band ── */}
+          {(artist.artistType==="vocalist"||artist.artist_type==="vocalist")&&(
+            <div style={{background:C.goldS,border:`1px solid ${C.gold}44`,borderRadius:10,padding:"10px 14px",display:"flex",gap:8,alignItems:"flex-start"}}>
+              <span style={{fontSize:16,flexShrink:0}}>💡</span>
+              <div>
+                <div style={{fontWeight:700,color:C.text,fontSize:11,marginBottom:3}}>This books the vocalist only — no instruments</div>
+                <div style={{fontSize:11,color:C.muted,lineHeight:1.6}}>
+                  Need tabla, keyboard or other musicians? Use <strong style={{color:C.lapis}}>🎼 Book a Band</strong> to add them from the platform.
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* ── Instrument selector — only if artist has multiple instruments ── */}
           {artist.instruments?.length>1&&(
@@ -12287,8 +12334,11 @@ function ApplySheet({ onSubmit, onClose }) {
                           <span style={{fontSize:18}}>🎤</span>
                           <div>
                             <div style={{fontWeight:700,color:C.text,fontSize:T.sm}}>Solo deposit <span style={{color:C.ruby}}>*</span></div>
-                            <div style={{fontSize:11,color:C.muted}}>Upfront deposit when you perform alone · min €500 · per country prices set in dashboard</div>
+                            <div style={{fontSize:11,color:C.muted}}>When you perform alone — <strong>singer only, no instruments</strong> · min €500</div>
                           </div>
+                        </div>
+                        <div style={{background:C.rubyS,border:`1px solid ${C.ruby}22`,borderRadius:8,padding:"8px 12px",marginBottom:10,fontSize:11,color:C.muted,lineHeight:1.6}}>
+                          ⚠️ <strong style={{color:C.text}}>Important:</strong> When customers book you solo, they get your voice only. If they want tabla, keyboard or other musicians, they must book a full band separately. Make sure your profile makes this clear.
                         </div>
                         <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:6}}>
                           {[500,800,1000,1500].map(d=>(
