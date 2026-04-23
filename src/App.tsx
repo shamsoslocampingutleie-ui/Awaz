@@ -11735,13 +11735,14 @@ function BandBookingSheet({artists, onClose, onBook}:{artists:any[];onClose:()=>
 
 function ApplySheet({ onSubmit, onClose }) {
   const [step,setStep]=useState(1);
-  const [f,setF]=useState({name:"",nameDari:"",email:"",pass:"",pass2:"",genre:"",country:"NO",location:"",currency:"EUR",priceInfo:"",deposit:"500",depositWithBand:"800",bio:"",instruments:"",tags:"",cancellationPolicy:"moderate",artistType:"" as ""|"vocalist"|"instrumentalist",selectedInstruments:[] as string[]});
+  const [f,setF]=useState({name:"",nameDari:"",email:"",pass:"",pass2:"",genres:[] as string[],country:"NO",location:"",currency:"EUR",priceInfo:"",deposit:"500",depositWithBand:"800",bio:"",instruments:"",tags:"",cancellationPolicy:"moderate",artistType:"" as ""|"vocalist"|"instrumentalist",selectedInstruments:[] as string[]});
+  const toggleGenre=(g:string)=>setF(p=>({...p,genres:p.genres.includes(g)?p.genres.filter(x=>x!==g):[...p.genres,g]}));
   const toggleInstrument=(inst:string)=>setF(p=>({...p,selectedInstruments:p.selectedInstruments.includes(inst)?p.selectedInstruments.filter(i=>i!==inst):[...p.selectedInstruments,inst]}));
   const [err,setErr]=useState(""),[done,setDone]=useState(false),[loading,setLoading]=useState(false);
 
   const v1=()=>{if(!f.name)return"Name required.";if(!f.email||!f.email.includes("@"))return"Valid email required.";if(f.pass.length<8)return"Password: 8+ chars.";if(!/[A-Z]/.test(f.pass))return"Need 1 uppercase.";if(!/[0-9]/.test(f.pass))return"Need 1 number.";if(f.pass!==f.pass2)return"Passwords don't match.";return null;};
   const v2=()=>{
-    if(!f.genre)return"Genre required.";
+    if(f.genres.length===0)return"Choose at least one genre.";
     if(!f.artistType)return"Please select your artist type — Vocalist or Instrumentalist.";
     if(f.artistType==="instrumentalist"&&f.selectedInstruments.length===0)return"Please select at least one instrument.";
     if(f.artistType==="vocalist"&&parseInt(f.deposit)<500)return"Vocalists: minimum deposit is €500.";
@@ -11758,7 +11759,7 @@ function ApplySheet({ onSubmit, onClose }) {
     const depositAmt=f.artistType==="instrumentalist"?Math.min(250,Math.max(50,parseInt(f.deposit)||100)):Math.max(500,parseInt(f.deposit)||500);
     const depositWithBandAmt=f.artistType==="vocalist"?Math.max(800,parseInt(f.depositWithBand)||800):null;
     const primaryInstrument=f.selectedInstruments[0]||"";
-    const artistData={id,name:f.name,nameDari:f.nameDari||"",genre:f.genre,location:f.location||"—",country:f.country||"NO",currency:f.currency||"EUR",rating:0,reviews:0,priceInfo:f.priceInfo||"On request",deposit:depositAmt,depositWithBand:depositWithBandAmt,emoji:emojis[Math.floor(Math.random()*emojis.length)],color:cols[Math.floor(Math.random()*cols.length)],photo:null,bio:f.bio||"",tags:f.tags.split(",").map(t=>t.trim()).filter(Boolean),instruments:f.artistType==="instrumentalist"?f.selectedInstruments:f.instruments.split(",").map(t=>t.trim()).filter(Boolean),superhost:false,status:"pending",joined:MONTHS[NOW.getMonth()]+" "+NOW.getFullYear(),available:{[MK]:[]},blocked:{[MK]:[]},earnings:0,totalBookings:0,verified:false,stripeConnected:false,stripeAccount:null,cancellationPolicy:f.cancellationPolicy,artistType:f.artistType||"vocalist",specificInstrument:primaryInstrument};
+    const artistData={id,name:f.name,nameDari:f.nameDari||"",genre:f.genres[0]||"",location:f.location||"—",country:f.country||"NO",currency:f.currency||"EUR",rating:0,reviews:0,priceInfo:f.priceInfo||"On request",deposit:depositAmt,depositWithBand:depositWithBandAmt,emoji:emojis[Math.floor(Math.random()*emojis.length)],color:cols[Math.floor(Math.random()*cols.length)],photo:null,bio:f.bio||"",tags:[...f.genres,...f.tags.split(",").map(t=>t.trim()).filter(Boolean)],instruments:f.artistType==="instrumentalist"?f.selectedInstruments:f.instruments.split(",").map(t=>t.trim()).filter(Boolean),superhost:false,status:"pending",joined:MONTHS[NOW.getMonth()]+" "+NOW.getFullYear(),available:{[MK]:[]},blocked:{[MK]:[]},earnings:0,totalBookings:0,verified:false,stripeConnected:false,stripeAccount:null,cancellationPolicy:f.cancellationPolicy,artistType:f.artistType||"vocalist",specificInstrument:primaryInstrument};
 
     // ── Supabase signup ───────────────────────────────────────────────
     // KEY: Use a SEPARATE temporary Supabase client for registration.
@@ -11801,7 +11802,7 @@ function ApplySheet({ onSubmit, onClose }) {
             id:                  authId,
             name:                f.name,
             name_dari:           f.nameDari||"",
-            genre:               f.genre,
+            genre:               f.genres[0]||"",
             location:            f.location||"—",
             country:             f.country||"NO",
             currency:            f.currency||"EUR",
@@ -12058,17 +12059,30 @@ function ApplySheet({ onSubmit, onClose }) {
                   </div>
                 )}
 
-                {/* Genre — big visual buttons */}
+                {/* Genre — multi-select */}
                 <div>
-                  <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:8}}>What type of music? <span style={{color:C.ruby}}>*</span></div>
+                  <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:4}}>
+                    What type of music? <span style={{color:C.ruby}}>*</span>
+                    <span style={{fontWeight:400,marginLeft:6,color:C.muted}}>Pick all that apply</span>
+                  </div>
+                  {f.genres.length===0&&(
+                    <div style={{fontSize:11,color:C.ruby,marginBottom:6}}>⚠ Select at least one genre</div>
+                  )}
+                  {f.genres.length>0&&(
+                    <div style={{fontSize:11,color:C.emerald,marginBottom:6}}>✓ {f.genres.join(", ")}</div>
+                  )}
                   <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-                    {[["Ghazal","غزل"],["Herati","هراتی"],["Mast","مست"],["Pashto","پشتو"],["Logari","لوگری"],["Classical","کلاسیک"],["Folk","فولک"],["Fusion","فیوژن"]].map(([g,dari])=>(
-                      <button key={g} onClick={()=>setF(p=>({...p,genre:g}))}
-                        style={{background:f.genre===g?C.goldS:C.surface,border:`2px solid ${f.genre===g?C.gold:C.border}`,borderRadius:10,padding:"12px 8px",cursor:"pointer",fontFamily:"inherit",textAlign:"center",transition:"all 0.15s"}}>
-                        <div style={{fontWeight:700,color:f.genre===g?C.gold:C.text,fontSize:T.sm}}>{g}</div>
-                        <div style={{fontSize:11,color:C.muted,fontFamily:"'Noto Naskh Arabic',serif"}}>{dari}</div>
-                      </button>
-                    ))}
+                    {[["Ghazal","غزل"],["Herati","هراتی"],["Mast","مست"],["Pashto","پشتو"],["Logari","لوگری"],["Classical","کلاسیک"],["Folk","فولک"],["Fusion","فیوژن"],["Sufi","صوفی"],["Wedding","عروسی"]].map(([g,dari])=>{
+                      const sel=f.genres.includes(g);
+                      return(
+                        <button key={g} onClick={()=>toggleGenre(g)}
+                          style={{background:sel?C.goldS:C.surface,border:`2px solid ${sel?C.gold:C.border}`,borderRadius:10,padding:"11px 8px",cursor:"pointer",fontFamily:"inherit",textAlign:"center",transition:"all 0.15s",position:"relative"}}>
+                          {sel&&<div style={{position:"absolute",top:5,right:7,fontSize:11,color:C.gold,fontWeight:900}}>✓</div>}
+                          <div style={{fontWeight:700,color:sel?C.gold:C.text,fontSize:T.sm}}>{g}</div>
+                          <div style={{fontSize:11,color:C.muted,fontFamily:"'Noto Naskh Arabic',serif"}}>{dari}</div>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -12094,17 +12108,37 @@ function ApplySheet({ onSubmit, onClose }) {
                   <div style={{fontSize:10,color:C.muted,marginTop:5}}>Stripe auto-converts · EUR is always the base rate</div>
                 </div>
 
-                {/* ── PRICING — context-aware by artist type ── */}
+                {/* ── PRICING ── */}
                 <div>
+                  {/* How pricing works — shown for everyone */}
+                  <div style={{background:C.goldS,border:`1px solid ${C.gold}33`,borderRadius:10,padding:"12px 14px",marginBottom:12}}>
+                    <div style={{fontSize:T.xs,fontWeight:700,color:C.gold,marginBottom:6}}>💡 How your pricing works</div>
+                    <div style={{display:"flex",flexDirection:"column",gap:5}}>
+                      {[
+                        ["💳","Deposit","Customers pay this upfront via Stripe to confirm the booking"],
+                        ["🌍","By country","After signing up, you set your own full price per country in your dashboard"],
+                        ["💵","After the event","The remaining balance is paid in cash directly to you on the night"],
+                      ].map(([icon,title,desc])=>(
+                        <div key={title} style={{display:"flex",gap:8,alignItems:"flex-start"}}>
+                          <span style={{fontSize:14,flexShrink:0}}>{icon}</span>
+                          <div>
+                            <span style={{fontWeight:700,color:C.text,fontSize:T.xs}}>{title}: </span>
+                            <span style={{fontSize:T.xs,color:C.muted}}>{desc}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
                   {f.artistType==="vocalist"||f.artistType===""?(
                     <>
-                      {/* Solo price */}
+                      {/* Solo deposit */}
                       <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,padding:"14px 16px",marginBottom:10}}>
                         <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
                           <span style={{fontSize:18}}>🎤</span>
                           <div>
-                            <div style={{fontWeight:700,color:C.text,fontSize:T.sm}}>Solo price <span style={{color:C.ruby}}>*</span></div>
-                            <div style={{fontSize:11,color:C.muted}}>When you perform alone (no band) · min €500</div>
+                            <div style={{fontWeight:700,color:C.text,fontSize:T.sm}}>Solo deposit <span style={{color:C.ruby}}>*</span></div>
+                            <div style={{fontSize:11,color:C.muted}}>Upfront deposit when you perform alone · min €500 · per country prices set in dashboard</div>
                           </div>
                         </div>
                         <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:6}}>
@@ -12115,16 +12149,19 @@ function ApplySheet({ onSubmit, onClose }) {
                             </button>
                           ))}
                         </div>
-                        <div style={{fontSize:11,color:C.muted,marginTop:6,textAlign:"center"}}>You keep 88% = €{Math.round(parseInt(f.deposit||"500")*0.88)}</div>
+                        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:8}}>
+                          <div style={{fontSize:11,color:C.muted}}>You keep 88% of deposit = <strong style={{color:C.gold}}>€{Math.round(parseInt(f.deposit||"500")*0.88)}</strong></div>
+                          <div style={{fontSize:10,color:C.muted}}>+ balance paid cash after event</div>
+                        </div>
                       </div>
 
-                      {/* With-band price */}
+                      {/* With-band deposit */}
                       <div style={{background:C.lapisS,border:`1px solid ${C.lapis}33`,borderRadius:12,padding:"14px 16px"}}>
                         <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
                           <span style={{fontSize:18}}>🎼</span>
                           <div>
-                            <div style={{fontWeight:700,color:C.lapis,fontSize:T.sm}}>With-band price <span style={{color:C.ruby}}>*</span></div>
-                            <div style={{fontSize:11,color:C.muted}}>When you bring your full band · min €800</div>
+                            <div style={{fontWeight:700,color:C.lapis,fontSize:T.sm}}>With-band deposit <span style={{color:C.ruby}}>*</span></div>
+                            <div style={{fontSize:11,color:C.muted}}>Upfront deposit when you bring your full band · min €800 · per country prices set in dashboard</div>
                           </div>
                         </div>
                         <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:6}}>
@@ -12135,17 +12172,20 @@ function ApplySheet({ onSubmit, onClose }) {
                             </button>
                           ))}
                         </div>
-                        <div style={{fontSize:11,color:C.muted,marginTop:6,textAlign:"center"}}>You keep 88% = €{Math.round(parseInt(f.depositWithBand||"800")*0.88)}</div>
+                        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:8}}>
+                          <div style={{fontSize:11,color:C.muted}}>You keep 88% of deposit = <strong style={{color:C.lapis}}>€{Math.round(parseInt(f.depositWithBand||"800")*0.88)}</strong></div>
+                          <div style={{fontSize:10,color:C.muted}}>+ balance paid cash after event</div>
+                        </div>
                       </div>
                     </>
                   ):(
                     <>
                       <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:4}}>
-                        Instrumentalist price <span style={{color:C.ruby}}>*</span>
-                        <span style={{fontWeight:400,marginLeft:6}}>€50 – €250</span>
+                        Session deposit <span style={{color:C.ruby}}>*</span>
+                        <span style={{fontWeight:400,marginLeft:6}}>€50 – €250 · per country prices set in dashboard</span>
                       </div>
                       <div style={{background:C.lapisS,border:`1px solid ${C.lapis}33`,borderRadius:10,padding:"10px 12px",marginBottom:8,fontSize:11,color:C.muted,lineHeight:1.6}}>
-                        💡 Instrumentalists set a flexible per-session price. Customers pay this directly via Stripe before booking is confirmed.
+                        💡 This is the deposit customers pay upfront via Stripe. You set full prices per country in your dashboard after signing up. The remaining balance is paid in cash after the event.
                       </div>
                       <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:6,marginBottom:6}}>
                         {[50,100,150,200,250].slice(0,4).map(d=>(
