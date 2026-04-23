@@ -3643,8 +3643,11 @@ function ArtistCard({ artist, onClick, compact=false }) {
             <Badge color={C.emerald}>{open} {t('openDates')}</Badge>
           )}
         </div>
-        <div style={{display:"flex",flexWrap:"wrap",gap:5,marginBottom:14}}>
+        <div style={{display:"flex",flexWrap:"wrap",gap:5,marginBottom:12}}>
           {artist.tags.slice(0,3).map((tg:string)=><Badge key={tg} color={artist.color}>{tg}</Badge>)}
+          {Array.isArray(artist.bandMembers)&&artist.bandMembers.length>0&&(
+            <span style={{background:C.lapisS,border:`1px solid ${C.lapis}33`,borderRadius:12,padding:"3px 9px",fontSize:10,fontWeight:700,color:C.lapis}}>🎼 Has Band</span>
+          )}
         </div>
         <div style={{height:1,background:C.border,marginBottom:12}}/>
         {/* Instrument chips for instrumentalists */}
@@ -6890,7 +6893,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
                 <div style={{marginBottom:20}}>
                   <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text}}>My Band</div>
                   <div style={{color:C.muted,fontSize:T.sm,marginTop:4,lineHeight:1.6}}>
-                    Add musicians to your ensemble. Customers will see your full band on your profile and can book you as a complete group.
+                    This is your primary group. You decide who's in it and how many members. Customers can book you as a complete ensemble — your configured band appears as <strong style={{color:C.gold}}>Option A</strong> in the band booking flow.
                   </div>
                 </div>
 
@@ -10495,30 +10498,20 @@ function AppInner() {
                 </div>
                 {!vp.isMobile&&(
                   <div style={{color:C.muted,fontSize:T.sm,lineHeight:1.8,marginBottom:20,maxWidth:440}}>
-                    Choose a pre-built Classic Afghan Band or hand-pick individual artists. Vocalist, tabla, rubab, drums, keyboard — dynamically priced and paid securely via Stripe.
+                    Book an artist's own band — they decide who's in it and how many. Or pick your own musicians from verified artists on the platform.
                   </div>
                 )}
 
-                {/* Role chips — compact on mobile */}
-                <div style={{display:"flex",flexWrap:"wrap" as const,gap:6,marginBottom:16}}>
-                  {[["🎤","Vocalist",C.ruby],["🥁","Tabla",C.gold],["🪕","Rubab",C.gold],["🎶","Drums",C.emerald],["🎹","Keyboard",C.lapis],["🎸","Guitar",C.lapis]].map(([icon,en,col])=>(
-                    <div key={en} style={{display:"flex",alignItems:"center",gap:4,background:`${col as string}14`,border:`1px solid ${col as string}44`,borderRadius:20,padding:vp.isMobile?"4px 10px":"5px 12px"}}>
-                      <span style={{fontSize:12}}>{icon as string}</span>
-                      <span style={{fontSize:11,fontWeight:700,color:col as string}}>{en as string}</span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Two options — side by side, compact on mobile */}
+                {/* Two options */}
                 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:16}}>
                   {[
-                    {label:"Option A",desc:"Pre-built Band",icon:"🎼",color:C.gold},
-                    {label:"Option B",desc:"Build Your Own",icon:"🎛️",color:C.lapis},
-                  ].map(({label,desc,icon,color})=>(
+                    {label:"Option A",desc:"Artist's own band",sub:"Artist sets the group",icon:"🎼",color:C.gold},
+                    {label:"Option B",desc:"Build your own",sub:"Pick from platform artists",icon:"🎛️",color:C.lapis},
+                  ].map(({label,desc,sub,icon,color})=>(
                     <div key={label} style={{background:C.card,border:`1px solid ${color}33`,borderRadius:10,padding:"10px 12px"}}>
                       <span style={{fontSize:16}}>{icon}</span>
-                      <div style={{fontWeight:700,color:color,fontSize:T.xs,marginTop:4}}>{label}</div>
-                      <div style={{fontSize:10,color:C.muted,marginTop:2,lineHeight:1.4}}>{desc}</div>
+                      <div style={{fontWeight:700,color:color,fontSize:T.xs,marginTop:4}}>{label} — {desc}</div>
+                      <div style={{fontSize:10,color:C.muted,marginTop:2,lineHeight:1.4}}>{sub}</div>
                     </div>
                   ))}
                 </div>
@@ -10539,37 +10532,28 @@ function AppInner() {
                 <div style={{fontSize:11,color:C.muted,marginTop:8,textAlign:vp.isMobile?"center":"left"}}>Deposit paid via Stripe · No booking without payment</div>
               </div>
 
-              {/* Right — visual pricing card */}
+              {/* Right — how it works card */}
               {!vp.isMobile&&(
                 <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:20,overflow:"hidden",boxShadow:`0 24px 80px rgba(0,0,0,0.12)`}}>
                   <div style={{height:4,background:`linear-gradient(90deg,${C.lapis},${C.gold},${C.ruby})`}}/>
                   <div style={{padding:"24px 20px"}}>
-                    <div style={{fontSize:11,fontWeight:700,color:C.gold,letterSpacing:"1px",textTransform:"uppercase" as const,marginBottom:4}}>Classic Afghan Band</div>
-                    <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:700,color:C.text,marginBottom:16}}>Complete ensemble · 4 artists</div>
+                    <div style={{fontSize:11,fontWeight:700,color:C.gold,letterSpacing:"1px",textTransform:"uppercase" as const,marginBottom:4}}>How Band Booking Works</div>
+                    <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:700,color:C.text,marginBottom:16}}>Real artists · Real prices</div>
 
                     {[
-                      {icon:"🎤",role:"Vocalist",type:"vocalist",price:"from €500"},
-                      {icon:"🥁",role:"Tabla",type:"instrumentalist",price:"€50 – €250"},
-                      {icon:"🪕",role:"Rubab",type:"instrumentalist",price:"€50 – €250"},
-                      {icon:"🎶",role:"Drums",type:"instrumentalist",price:"€50 – €250"},
-                    ].map(({icon,role,type,price})=>(
-                      <div key={role} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 0",borderBottom:`1px solid ${C.border}`}}>
-                        <div style={{display:"flex",alignItems:"center",gap:10}}>
-                          <span style={{fontSize:18}}>{icon}</span>
-                          <div>
-                            <div style={{fontWeight:700,color:C.text,fontSize:T.xs}}>{role}</div>
-                            <div style={{fontSize:10,color:type==="vocalist"?C.ruby:C.lapis,fontWeight:600,textTransform:"uppercase" as const,letterSpacing:"0.5px"}}>{type}</div>
-                          </div>
+                      {icon:"🎤",label:"Option A — Artist's Band",desc:"Book a vocalist who has set up their own band. The artist decides who performs with them."},
+                      {icon:"🎛️",label:"Option B — Build Your Own",desc:"Pick individual musicians from the platform. Choose from verified artists who are actually available."},
+                      {icon:"💳",label:"Deposit via Stripe",desc:"Pay the deposit to confirm. Prices are set by each artist — no hidden fees."},
+                      {icon:"💵",label:"Balance after the event",desc:"Remaining amount paid in cash directly to the artists on the night."},
+                    ].map(({icon,label,desc})=>(
+                      <div key={label} style={{display:"flex",gap:12,padding:"10px 0",borderBottom:`1px solid ${C.border}`}}>
+                        <span style={{fontSize:18,flexShrink:0,marginTop:2}}>{icon}</span>
+                        <div>
+                          <div style={{fontWeight:700,color:C.text,fontSize:T.xs,marginBottom:2}}>{label}</div>
+                          <div style={{fontSize:11,color:C.muted,lineHeight:1.5}}>{desc}</div>
                         </div>
-                        <div style={{fontWeight:700,color:C.gold,fontSize:T.xs}}>{price}</div>
                       </div>
                     ))}
-
-                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",paddingTop:14,marginTop:4}}>
-                      <div style={{fontSize:T.xs,color:C.muted}}>Total deposit (Stripe)</div>
-                      <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:800,color:C.gold,fontSize:T.lg}}>from €650</div>
-                    </div>
-                    <div style={{fontSize:10,color:C.muted,marginTop:4}}>Artists receive 88% · Awaz 12% · Balance cash after event</div>
 
                     <button onClick={()=>setShowBandBooking(true)} style={{
                       width:"100%",marginTop:16,
@@ -11327,9 +11311,8 @@ function getArtistRole(artist:any):string{
 
 function BandBookingSheet({artists, onClose, onBook}:{artists:any[];onClose:()=>void;onBook:(selection:any)=>void}){
   const [mode,setMode]=useState<"choose"|"prebuilt"|"custom"|"confirm"|"pay">("choose");
-  const [selected,setSelected]=useState<{role:string;artistId:string|null}[]>(
-    PREBUILT_BAND.roles.map(r=>({role:r,artistId:null}))
-  );
+  const [selectedLeadId,setSelectedLeadId]=useState<string|null>(null);
+  const [selected,setSelected]=useState<{role:string;artistId:string|null}[]>([]);
   const [customRoles,setCustomRoles]=useState<string[]>([]);
   const [bookingDate,setBookingDate]=useState("");
   const [eventType,setEventType]=useState("");
@@ -11372,8 +11355,19 @@ function BandBookingSheet({artists, onClose, onBook}:{artists:any[];onClose:()=>
     return map;
   },[artists,bookingDate]);
 
+  // Build slots for prebuilt mode from the lead artist's configured band
+  const leadArtist=selectedLeadId?artists.find(a=>a.id===selectedLeadId):null;
+  const prebuiltSlots=useMemo(()=>{
+    if(!leadArtist) return [];
+    const slots:[{role:string;artistId:string|null}]=[{role:"vocalist",artistId:leadArtist.id}];
+    (leadArtist.bandMembers||[]).forEach((m:any)=>{
+      slots.push({role:m.role.toLowerCase(),artistId:null}); // customer picks the actual player
+    });
+    return slots;
+  },[leadArtist]);
+
   const currentSlots = mode==="prebuilt"
-    ? PREBUILT_BAND.roles.map(r=>({role:r,artistId:selected.find(s=>s.role===r)?.artistId||null}))
+    ? prebuiltSlots.map(s=>({...s,artistId:selected.find(x=>x.role===s.role)?.artistId??s.artistId}))
     : customRoles.map(r=>({role:r,artistId:selected.find(s=>s.role===r)?.artistId||null}));
 
   const assignArtist=(role:string,artistId:string|null)=>{
@@ -11383,15 +11377,16 @@ function BandBookingSheet({artists, onClose, onBook}:{artists:any[];onClose:()=>
     });
   };
 
-  const totalEur=currentSlots.reduce((sum,slot)=>{
-    if(!slot.artistId) return sum;
-    const a=artists.find(x=>x.id===slot.artistId);
-    // Use with-band price for vocalists in a band context
-    const price=(a?.artistType==="vocalist"||a?.artist_type==="vocalist")&&(a?.depositWithBand||a?.deposit_with_band)
-      ? (a.depositWithBand||a.deposit_with_band)
-      : (a?.deposit||0);
-    return sum+price;
-  },[0] as unknown as number);
+  const totalEur=selectedLeadId&&leadArtist
+    ? (leadArtist.depositWithBand||leadArtist.deposit_with_band||leadArtist.deposit||0)+(leadArtist.bandMembers as any[]).reduce((s:number,m:any)=>s+(m.price||0),0)
+    : currentSlots.reduce((sum,slot)=>{
+        if(!slot.artistId) return sum;
+        const a=artists.find(x=>x.id===slot.artistId);
+        const price=(a?.artistType==="vocalist"||a?.artist_type==="vocalist")&&(a?.depositWithBand||a?.deposit_with_band)
+          ? (a.depositWithBand||a.deposit_with_band)
+          : (a?.deposit||0);
+        return sum+price;
+      },[0] as unknown as number);
 
   const missingRoles=currentSlots.filter(s=>!s.artistId).map(s=>s.role);
   const filledRoles=currentSlots.filter(s=>!!s.artistId).map(s=>s.role);
@@ -11522,35 +11517,64 @@ function BandBookingSheet({artists, onClose, onBook}:{artists:any[];onClose:()=>
               <div style={{color:C.muted,fontSize:T.sm,lineHeight:1.6}}>Pick one — both are easy ✓</div>
             </div>
 
-            {/* Pre-built band card */}
-            <div onClick={()=>setMode("prebuilt")} style={{background:`linear-gradient(135deg,${C.goldS},${C.surface})`,border:`2px solid ${C.gold}`,borderRadius:16,padding:"20px 18px",marginBottom:12,cursor:"pointer",transition:"all 0.2s"}}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
-                <div>
-                  <div style={{fontSize:11,fontWeight:700,color:C.gold,letterSpacing:"1px",textTransform:"uppercase" as const,marginBottom:4}}>⭐ Easiest option</div>
-                  <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text}}>Ready-made Band</div>
-                  <div style={{color:C.muted,fontSize:T.xs,marginTop:4}}>Singer + Tabla + Rubab + Drums — already put together for you</div>
+            {/* Option A — Artist-configured bands */}
+            {(()=>{
+              const bandsAvailable=artists.filter(a=>(a.status==="approved"||a.verified)&&Array.isArray(a.bandMembers)&&a.bandMembers.length>0);
+              return bandsAvailable.length>0?(
+                <div style={{marginBottom:12}}>
+                  <div style={{fontSize:11,fontWeight:700,color:C.gold,letterSpacing:"1px",textTransform:"uppercase" as const,marginBottom:8}}>⭐ Complete bands — book as a group</div>
+                  {bandsAvailable.map(lead=>{
+                    const members:any[]=lead.bandMembers||[];
+                    const totalDeposit=(lead.depositWithBand||lead.deposit_with_band||lead.deposit||0)+members.reduce((s:number,m:any)=>s+(m.price||0),0);
+                    const roleIcons:Record<string,string>={Tabla:"🥁",Rubab:"🪕",Drums:"🎶",Keyboard:"🎹",Guitar:"🎸",Harmonium:"🎵",Vocalist:"🎤"};
+                    return(
+                      <div key={lead.id} onClick={()=>{
+                        setSelectedLeadId(lead.id);
+                        setSelected([{role:"vocalist",artistId:lead.id}]);
+                        setMode("prebuilt");
+                      }} style={{background:`linear-gradient(135deg,${C.goldS},${C.surface})`,border:`2px solid ${C.gold}`,borderRadius:14,padding:"16px 18px",marginBottom:10,cursor:"pointer",transition:"all 0.2s"}}>
+                        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
+                          <div>
+                            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text}}>{lead.name}</div>
+                            <div style={{color:C.muted,fontSize:T.xs,marginTop:2}}>{lead.genre} · {lead.location}</div>
+                          </div>
+                          <div style={{textAlign:"right"}}>
+                            <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:800,color:C.gold,fontSize:T.lg}}>{toLocalCurrency(totalDeposit,currency)}</div>
+                            <div style={{fontSize:10,color:C.muted}}>deposit</div>
+                          </div>
+                        </div>
+                        {/* Band members */}
+                        <div style={{display:"flex",gap:6,flexWrap:"wrap" as const}}>
+                          <span style={{background:C.goldS,border:`1px solid ${C.gold}44`,borderRadius:20,padding:"3px 10px",fontSize:11,color:C.gold,fontWeight:600}}>🎤 {lead.name.split(" ")[0]}</span>
+                          {members.map((m,i)=>(
+                            <span key={i} style={{background:C.lapisS,border:`1px solid ${C.lapis}33`,borderRadius:20,padding:"3px 10px",fontSize:11,color:C.lapis,fontWeight:600}}>
+                              {roleIcons[m.role]||"🎵"} {m.name||m.role}
+                            </span>
+                          ))}
+                        </div>
+                        <div style={{fontSize:11,color:C.muted,marginTop:8}}>
+                          {members.length+1} musicians · Deposit paid via Stripe · Balance cash after event
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-                <span style={{fontSize:28}}>🎼</span>
-              </div>
-              <div style={{display:"flex",gap:6,marginBottom:10,flexWrap:"wrap" as const}}>
-                {PREBUILT_BAND.roles.map(r=>{
-                  const d=BAND_ROLES.find(x=>x.role===r);
-                  return<span key={r} style={{background:C.goldS,border:`1px solid ${C.gold}44`,borderRadius:20,padding:"3px 10px",fontSize:11,color:C.gold,fontWeight:600}}>{d?.icon} {d?.label}</span>;
-                })}
-              </div>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                <div style={{fontSize:T.xs,color:C.muted}}>Starts from</div>
-                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:800,color:C.gold}}>{toLocalCurrency(PREBUILT_BAND.basePrice,currency)}+</div>
-              </div>
-            </div>
+              ):(
+                <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,padding:"14px 16px",marginBottom:12,textAlign:"center"}}>
+                  <div style={{fontSize:20,marginBottom:6}}>🎼</div>
+                  <div style={{fontWeight:700,color:C.text,fontSize:T.sm,marginBottom:4}}>No complete bands yet</div>
+                  <div style={{color:C.muted,fontSize:T.xs,lineHeight:1.6}}>Artists who set up their own band will appear here. Use Build Your Own below to pick individual musicians.</div>
+                </div>
+              );
+            })()}
 
-            {/* Build your own */}
-            <div onClick={()=>{setMode("custom");setCustomRoles([]);}} style={{background:C.surface,border:`2px solid ${C.border}`,borderRadius:16,padding:"20px 18px",cursor:"pointer",transition:"all 0.2s"}}>
+            {/* Option B — Build your own */}
+            <div onClick={()=>{setMode("custom");setCustomRoles([]);setSelected([]);}} style={{background:C.surface,border:`2px solid ${C.border}`,borderRadius:16,padding:"20px 18px",cursor:"pointer",transition:"all 0.2s"}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
                 <div>
-                  <div style={{fontSize:11,fontWeight:700,color:C.lapis,letterSpacing:"1px",textTransform:"uppercase" as const,marginBottom:4}}>More control</div>
-                  <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text}}>Build Your Own</div>
-                  <div style={{color:C.muted,fontSize:T.xs,marginTop:4}}>Pick exactly which instruments and artists you want</div>
+                  <div style={{fontSize:11,fontWeight:700,color:C.lapis,letterSpacing:"1px",textTransform:"uppercase" as const,marginBottom:4}}>Build your own</div>
+                  <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text}}>Pick Your Musicians</div>
+                  <div style={{color:C.muted,fontSize:T.xs,marginTop:4}}>Choose from real artists on the platform — only those who are actually available</div>
                 </div>
                 <span style={{fontSize:28}}>🎛️</span>
               </div>
@@ -11571,17 +11595,109 @@ function BandBookingSheet({artists, onClose, onBook}:{artists:any[];onClose:()=>
           </div>
         )}
 
-        {/* ── PRE-BUILT BAND FLOW ── */}
-        {(mode==="prebuilt"||mode==="custom")&&(
+        {/* ── OPTION A — Artist's Primary Band ── */}
+        {mode==="prebuilt"&&leadArtist&&(
           <div>
             <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:16}}>
               <button onClick={()=>setMode("choose")} style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,padding:"6px 12px",cursor:"pointer",color:C.muted,fontSize:12,fontFamily:"inherit"}}>← Back</button>
-              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text}}>
-                {mode==="prebuilt"?"Ready-made Band":"Build Your Band"}
+              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text}}>{leadArtist.name}'s Band</div>
+            </div>
+
+            {/* Band preview card */}
+            <div style={{background:`linear-gradient(135deg,${C.goldS},${C.surface})`,border:`2px solid ${C.gold}44`,borderRadius:14,padding:"16px 18px",marginBottom:14}}>
+              <div style={{fontSize:11,fontWeight:700,color:C.gold,letterSpacing:"1px",textTransform:"uppercase" as const,marginBottom:10}}>Complete ensemble — as chosen by {leadArtist.name.split(" ")[0]}</div>
+              {/* Lead vocalist */}
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 0",borderBottom:`1px solid ${C.border}`}}>
+                <div style={{display:"flex",alignItems:"center",gap:10}}>
+                  <span style={{fontSize:20}}>🎤</span>
+                  <div>
+                    <div style={{fontWeight:700,color:C.gold,fontSize:T.sm}}>{leadArtist.name}</div>
+                    <div style={{fontSize:10,color:C.muted}}>{leadArtist.genre} · {leadArtist.location}</div>
+                  </div>
+                </div>
+                <div style={{textAlign:"right"}}>
+                  <div style={{fontWeight:700,color:C.gold,fontSize:T.sm}}>{toLocalCurrency(leadArtist.depositWithBand||leadArtist.deposit_with_band||leadArtist.deposit||0,currency)}</div>
+                  <div style={{fontSize:10,color:C.muted}}>vocalist deposit</div>
+                </div>
+              </div>
+              {/* Band members */}
+              {(leadArtist.bandMembers as any[]).map((m:any,i:number)=>{
+                const roleIcons:Record<string,string>={Tabla:"🥁",Rubab:"🪕",Drums:"🎶",Keyboard:"🎹",Guitar:"🎸",Harmonium:"🎵",Vocalist:"🎤"};
+                return(
+                  <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 0",borderBottom:`1px solid ${C.border}`}}>
+                    <div style={{display:"flex",alignItems:"center",gap:10}}>
+                      <span style={{fontSize:20}}>{roleIcons[m.role]||"🎵"}</span>
+                      <div>
+                        <div style={{fontWeight:700,color:C.text,fontSize:T.sm}}>{m.name||m.role}</div>
+                        <div style={{fontSize:10,color:C.lapis,fontWeight:600,textTransform:"uppercase" as const}}>{m.role}</div>
+                      </div>
+                    </div>
+                    <div style={{fontWeight:700,color:C.text,fontSize:T.sm}}>{toLocalCurrency(m.price||0,currency)}</div>
+                  </div>
+                );
+              })}
+              {/* Total */}
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",paddingTop:12,marginTop:4}}>
+                <div>
+                  <div style={{fontSize:T.xs,color:C.muted}}>Total deposit · {(leadArtist.bandMembers as any[]).length+1} musicians</div>
+                  <div style={{fontSize:10,color:C.muted,marginTop:2}}>Balance paid cash to artists after the event</div>
+                </div>
+                <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:800,color:C.gold,fontSize:T.xl}}>
+                  {toLocalCurrency((leadArtist.depositWithBand||leadArtist.deposit_with_band||leadArtist.deposit||0)+(leadArtist.bandMembers as any[]).reduce((s:number,m:any)=>s+(m.price||0),0),currency)}
+                </div>
               </div>
             </div>
 
-            {/* Step 1 — Pick date FIRST (enables availability) */}
+            {/* Availability check */}
+            {bookingDate&&!isAvailableOn(leadArtist,bookingDate)&&(
+              <div style={{background:C.rubyS,border:`1px solid ${C.ruby}28`,borderRadius:10,padding:"10px 14px",marginBottom:12,fontSize:T.xs,color:C.ruby}}>
+                ⚠ {leadArtist.name} may not be available on this date — contact them to confirm
+              </div>
+            )}
+            {bookingDate&&isAvailableOn(leadArtist,bookingDate)&&(
+              <div style={{background:C.emeraldS,border:`1px solid ${C.emerald}33`,borderRadius:10,padding:"10px 14px",marginBottom:12,fontSize:T.xs,color:C.emerald,fontWeight:700}}>
+                ✓ {leadArtist.name.split(" ")[0]} is available on this date
+              </div>
+            )}
+
+            {/* Date + event */}
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>
+              <div>
+                <div style={{fontSize:11,color:C.muted,marginBottom:4}}>📅 Event date</div>
+                <input type="date" value={bookingDate} onChange={e=>setBookingDate(e.target.value)}
+                  style={{width:"100%",background:C.card,border:`2px solid ${bookingDate?C.gold:C.border}`,borderRadius:10,padding:"10px 12px",color:C.text,fontSize:T.sm,outline:"none",fontFamily:"inherit",boxSizing:"border-box" as const}}/>
+              </div>
+              <div>
+                <div style={{fontSize:11,color:C.muted,marginBottom:4}}>🎉 Event type</div>
+                <select value={eventType} onChange={e=>setEventType(e.target.value)}
+                  style={{width:"100%",background:C.card,border:`2px solid ${eventType?C.gold:C.border}`,borderRadius:10,padding:"10px 12px",color:eventType?C.text:C.muted,fontSize:T.sm,outline:"none",fontFamily:"inherit",cursor:"pointer",boxSizing:"border-box" as const}}>
+                  <option value="">Choose…</option>
+                  {["Wedding 💍","Eid 🌙","Birthday 🎂","Concert 🎪","Corporate 🏢","Other"].map(t=><option key={t} value={t}>{t}</option>)}
+                </select>
+              </div>
+            </div>
+
+            {err&&<div style={{background:C.rubyS,border:`1px solid ${C.ruby}28`,borderRadius:10,padding:"10px 14px",color:C.ruby,fontSize:T.xs,marginBottom:10}}>⚠️ {err}</div>}
+
+            <button onClick={()=>{
+              if(!bookingDate){setErr("Pick a date first.");return;}
+              if(!eventType){setErr("What kind of event is it?");return;}
+              setErr("");setMode("confirm");
+            }} style={{width:"100%",background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:12,padding:"16px",fontWeight:800,fontSize:16,cursor:"pointer",fontFamily:"inherit"}}>
+              Review &amp; Pay Deposit →
+            </button>
+          </div>
+        )}
+
+        {/* ── OPTION B — Build Your Own ── */}
+        {mode==="custom"&&(
+          <div>
+            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:16}}>
+              <button onClick={()=>setMode("choose")} style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,padding:"6px 12px",cursor:"pointer",color:C.muted,fontSize:12,fontFamily:"inherit"}}>← Back</button>
+              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text}}>Build Your Band</div>
+            </div>
+
+            {/* Step 1 — date first */}
             <div style={{background:C.goldS,border:`1px solid ${C.gold}33`,borderRadius:12,padding:"14px 16px",marginBottom:14}}>
               <div style={{fontSize:T.xs,fontWeight:700,color:C.gold,marginBottom:8}}>📅 Step 1 — Pick your event date</div>
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
@@ -11602,53 +11718,46 @@ function BandBookingSheet({artists, onClose, onBook}:{artists:any[];onClose:()=>
               {bookingDate&&<div style={{fontSize:11,color:C.gold,marginTop:8,fontWeight:600}}>✓ We'll show which artists are free on this date</div>}
             </div>
 
-            {/* Custom role builder */}
-            {mode==="custom"&&(
-              <div style={{marginBottom:14}}>
-                <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:8}}>🎵 Step 2 — Which instruments do you want?</div>
-                <div style={{display:"flex",flexWrap:"wrap" as const,gap:6,marginBottom:4}}>
-                  {BAND_ROLES.map(({role,icon,label})=>(
-                    <button key={role} onClick={()=>customRoles.includes(role)?removeCustomRole(role):addCustomRole(role)}
-                      style={{background:customRoles.includes(role)?C.lapisS:C.surface,border:`1px solid ${customRoles.includes(role)?C.lapis:C.border}`,borderRadius:20,padding:"7px 14px",cursor:"pointer",fontSize:12,fontWeight:600,color:customRoles.includes(role)?C.lapis:C.muted,fontFamily:"inherit",transition:"all 0.15s"}}>
-                      {icon} {label} {customRoles.includes(role)?"✓":"＋"}
-                    </button>
-                  ))}
-                </div>
-                {customRoles.length===0&&<div style={{fontSize:11,color:C.muted,fontStyle:"italic"}}>Tap the instruments you need ↑</div>}
+            {/* Step 2 — pick instruments */}
+            <div style={{marginBottom:14}}>
+              <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:8}}>🎵 Step 2 — Which instruments do you want?</div>
+              <div style={{display:"flex",flexWrap:"wrap" as const,gap:6,marginBottom:4}}>
+                {BAND_ROLES.map(({role,icon,label})=>(
+                  <button key={role} onClick={()=>customRoles.includes(role)?removeCustomRole(role):addCustomRole(role)}
+                    style={{background:customRoles.includes(role)?C.lapisS:C.surface,border:`1px solid ${customRoles.includes(role)?C.lapis:C.border}`,borderRadius:20,padding:"7px 14px",cursor:"pointer",fontSize:12,fontWeight:600,color:customRoles.includes(role)?C.lapis:C.muted,fontFamily:"inherit",transition:"all 0.15s"}}>
+                    {icon} {label} {customRoles.includes(role)?"✓":"＋"}
+                  </button>
+                ))}
               </div>
-            )}
+              {customRoles.length===0&&<div style={{fontSize:11,color:C.muted,fontStyle:"italic"}}>Tap the instruments you need ↑</div>}
+            </div>
 
-            {/* Artists unavailable warning summary */}
+            {/* Unavailable warning */}
             {bookingDate&&currentSlots.some(s=>s.artistId&&!isAvailableOn(artists.find(a=>a.id===s.artistId),bookingDate))&&(
               <div style={{background:C.rubyS,border:`1px solid ${C.ruby}28`,borderRadius:10,padding:"10px 14px",marginBottom:12,fontSize:T.xs,color:C.ruby}}>
                 ⚠ Some chosen artists are busy on this date — see suggestions below
               </div>
             )}
 
-            {/* Smart suggestion banner for missing roles */}
-            {mode==="prebuilt"&&missingRoles.length>0&&bookingDate&&(
-              <div style={{background:C.lapisS,border:`1px solid ${C.lapis}33`,borderRadius:10,padding:"10px 12px",marginBottom:12,fontSize:T.xs,color:C.muted,lineHeight:1.6}}>
-                💡 <strong style={{color:C.text}}>Tip:</strong> Still need: {missingRoles.map(r=>BAND_ROLES.find(x=>x.role===r)?.label||r).join(", ")} — available artists shown below.
-              </div>
+            {/* Step 3 — pick artists per role */}
+            {customRoles.length>0&&(
+              <>
+                <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:8}}>👤 Step 3 — Choose your artists</div>
+                {currentSlots.map(slot=><RoleCard key={slot.role} slot={slot}/>)}
+              </>
             )}
 
-            {/* Role cards */}
-            <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:8}}>
-              {mode==="prebuilt"?"👤 Step 2 — Choose your artists":"👤 Step 3 — Choose your artists"}
-            </div>
-            {currentSlots.map(slot=><RoleCard key={slot.role} slot={slot}/>)}
-
-            {/* Total price */}
+            {/* Total */}
             {currentSlots.length>0&&(
               <div style={{background:C.goldS,border:`1px solid ${C.gold}33`,borderRadius:12,padding:"14px 16px",marginBottom:14,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                 <div>
-                  <div style={{fontSize:T.xs,color:C.muted,marginBottom:2}}>{filledRoles.length} of {currentSlots.length} artists chosen</div>
+                  <div style={{fontSize:T.xs,color:C.muted,marginBottom:2}}>{filledRoles.length} of {currentSlots.length} chosen</div>
                   <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:800,color:C.gold,fontSize:T.xl}}>{toLocalCurrency(totalEur,currency)}</div>
-                  {currency!=="EUR"&&<div style={{fontSize:10,color:C.muted}}>≈ €{totalEur} EUR · paid securely via Stripe</div>}
+                  {currency!=="EUR"&&<div style={{fontSize:10,color:C.muted}}>≈ €{totalEur} EUR</div>}
                 </div>
                 <div style={{textAlign:"right",fontSize:11,color:C.muted,lineHeight:1.7}}>
-                  <div>You pay the deposit</div>
-                  <div>Artists get 88%</div>
+                  <div>Deposit via Stripe</div>
+                  <div>Balance cash after</div>
                 </div>
               </div>
             )}
@@ -11670,39 +11779,79 @@ function BandBookingSheet({artists, onClose, onBook}:{artists:any[];onClose:()=>
           <div>
             <div style={{textAlign:"center",marginBottom:20}}>
               <div style={{fontSize:32,marginBottom:8}}>🎼</div>
-              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:700,color:C.text,marginBottom:6}}>Confirm Your Band</div>
+              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:700,color:C.text,marginBottom:6}}>
+                {selectedLeadId&&leadArtist?`${leadArtist.name}'s Band`:"Your Band"}
+              </div>
               <div style={{color:C.muted,fontSize:T.sm}}>{eventType} · {bookingDate}</div>
             </div>
 
             <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,padding:"14px 16px",marginBottom:16}}>
-              {currentSlots.map(slot=>{
-                const def=BAND_ROLES.find(r=>r.role===slot.role);
-                const a=artists.find(x=>x.id===slot.artistId);
-                return(
-                  <div key={slot.role} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderBottom:`1px solid ${C.border}`}}>
+              {selectedLeadId&&leadArtist?(
+                // Option A: show artist's band as configured
+                <>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderBottom:`1px solid ${C.border}`}}>
                     <div style={{display:"flex",alignItems:"center",gap:8}}>
-                      <span style={{fontSize:18}}>{def?.icon||"🎵"}</span>
+                      <span style={{fontSize:18}}>🎤</span>
                       <div>
-                        <div style={{fontWeight:700,color:C.text,fontSize:T.sm}}>{a?.name||"—"}</div>
-                        <div style={{fontSize:10,color:C.muted}}>{def?.label}</div>
+                        <div style={{fontWeight:700,color:C.text,fontSize:T.sm}}>{leadArtist.name}</div>
+                        <div style={{fontSize:10,color:C.muted}}>Vocalist · {leadArtist.genre}</div>
                       </div>
                     </div>
-                    <div style={{fontWeight:700,color:C.gold,fontSize:T.sm}}>{toLocalCurrency(a?.deposit||0,currency)}</div>
+                    <div style={{fontWeight:700,color:C.gold,fontSize:T.sm}}>{toLocalCurrency(leadArtist.depositWithBand||leadArtist.deposit_with_band||leadArtist.deposit||0,currency)}</div>
                   </div>
-                );
-              })}
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",paddingTop:10,marginTop:4}}>
-                <div style={{fontWeight:700,color:C.text,fontSize:T.sm}}>Total deposit</div>
-                <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:800,color:C.gold,fontSize:T.lg}}>{toLocalCurrency(totalEur,currency)}</div>
-              </div>
+                  {(leadArtist.bandMembers as any[]).map((m:any,i:number)=>{
+                    const roleIcons:Record<string,string>={Tabla:"🥁",Rubab:"🪕",Drums:"🎶",Keyboard:"🎹",Guitar:"🎸",Harmonium:"🎵",Vocalist:"🎤"};
+                    return(
+                      <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderBottom:`1px solid ${C.border}`}}>
+                        <div style={{display:"flex",alignItems:"center",gap:8}}>
+                          <span style={{fontSize:18}}>{roleIcons[m.role]||"🎵"}</span>
+                          <div>
+                            <div style={{fontWeight:700,color:C.text,fontSize:T.sm}}>{m.name||m.role}</div>
+                            <div style={{fontSize:10,color:C.muted}}>{m.role}</div>
+                          </div>
+                        </div>
+                        <div style={{fontWeight:700,color:C.text,fontSize:T.sm}}>{toLocalCurrency(m.price||0,currency)}</div>
+                      </div>
+                    );
+                  })}
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",paddingTop:10,marginTop:4}}>
+                    <div style={{fontWeight:700,color:C.text,fontSize:T.sm}}>Total deposit · {(leadArtist.bandMembers as any[]).length+1} musicians</div>
+                    <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:800,color:C.gold,fontSize:T.lg}}>{toLocalCurrency(totalEur,currency)}</div>
+                  </div>
+                </>
+              ):(
+                // Option B: show individually picked slots
+                <>
+                  {currentSlots.map(slot=>{
+                    const def=BAND_ROLES.find(r=>r.role===slot.role);
+                    const a=artists.find(x=>x.id===slot.artistId);
+                    return(
+                      <div key={slot.role} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderBottom:`1px solid ${C.border}`}}>
+                        <div style={{display:"flex",alignItems:"center",gap:8}}>
+                          <span style={{fontSize:18}}>{def?.icon||"🎵"}</span>
+                          <div>
+                            <div style={{fontWeight:700,color:C.text,fontSize:T.sm}}>{a?.name||"—"}</div>
+                            <div style={{fontSize:10,color:C.muted}}>{def?.label}</div>
+                          </div>
+                        </div>
+                        <div style={{fontWeight:700,color:C.gold,fontSize:T.sm}}>{toLocalCurrency(a?.deposit||0,currency)}</div>
+                      </div>
+                    );
+                  })}
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",paddingTop:10,marginTop:4}}>
+                    <div style={{fontWeight:700,color:C.text,fontSize:T.sm}}>Total deposit</div>
+                    <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:800,color:C.gold,fontSize:T.lg}}>{toLocalCurrency(totalEur,currency)}</div>
+                  </div>
+                </>
+              )}
             </div>
 
             <div style={{background:C.lapisS,border:`1px solid ${C.lapis}33`,borderRadius:10,padding:"10px 14px",marginBottom:16,fontSize:11,color:C.muted,lineHeight:1.7}}>
-              🔒 Payment required before booking is confirmed. You will be redirected to Stripe. No booking goes through without successful payment. Balance paid in cash to artists after the event.
+              🔒 Deposit paid securely via Stripe · Balance paid cash to artists after the event · No booking without successful payment
             </div>
 
             <div style={{display:"flex",gap:8}}>
-              <button onClick={()=>setMode(customRoles.length>0?"custom":"prebuilt")}
+              <button onClick={()=>setMode(selectedLeadId?"prebuilt":"custom")}
                 style={{flex:1,background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,padding:"14px",fontWeight:700,fontSize:15,cursor:"pointer",fontFamily:"inherit",color:C.muted}}>
                 ← Edit
               </button>
