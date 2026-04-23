@@ -3198,10 +3198,27 @@ function StripePaywall({
         </div>
 
         {/* What happens */}
-        <div style={{background:C.surface,borderRadius:10,padding:"12px 14px",marginBottom:20,border:`1px solid ${C.border}`}}>
-          <div style={{fontSize:T.xs,color:C.muted,lineHeight:1.7}}>
-            You will be redirected to <strong style={{color:C.text}}>Stripe's secure payment page</strong> to enter your card details. Your payment information is never stored on Awaz.
-          </div>
+        <div style={{background:C.surface,borderRadius:10,padding:"14px 16px",marginBottom:16,border:`1px solid ${C.border}`}}>
+          <div style={{fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase" as const,letterSpacing:"0.5px",marginBottom:8}}>What happens</div>
+          {[
+            {icon:"🔒","text":"You'll be taken to Stripe's secure payment page — your card details never touch our servers"},
+            {icon:"💬","text":"After payment, chat with the artist unlocks instantly"},
+            {icon:"💵","text":"Balance paid in cash directly to the artist after the event"},
+          ].map(({icon,text})=>(
+            <div key={text} style={{display:"flex",gap:8,alignItems:"flex-start",marginBottom:6}}>
+              <span style={{fontSize:14,flexShrink:0,marginTop:1}}>{icon}</span>
+              <span style={{fontSize:11,color:C.muted,lineHeight:1.5}}>{text}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Trust row */}
+        <div style={{display:"flex",justifyContent:"center",gap:14,marginBottom:16,flexWrap:"wrap" as const}}>
+          {[["🔒","SSL"],["🛡️","PCI DSS"],["💳","Stripe"],["✓","Verified"]].map(([ico,lbl])=>(
+            <div key={lbl as string} style={{display:"flex",alignItems:"center",gap:4,fontSize:11,color:C.muted}}>
+              <span style={{fontSize:13}}>{ico}</span><span style={{fontWeight:600}}>{lbl}</span>
+            </div>
+          ))}
         </div>
 
         {error&&(
@@ -3215,8 +3232,8 @@ function StripePaywall({
           {loading?"Preparing secure payment…":`Pay €${amount} with Stripe →`}
         </button>
 
-        <div style={{color:C.faint,fontSize:11,textAlign:"center",marginTop:12,lineHeight:1.6}}>
-          SSL encrypted · Powered by Stripe · You will be redirected to complete payment
+        <div style={{color:C.faint,fontSize:11,textAlign:"center",marginTop:10,lineHeight:1.6}}>
+          Bank-level encryption · Powered by Stripe · Your card is never stored
         </div>
       </div>
     </div>
@@ -3600,9 +3617,22 @@ function ArtistCard({ artist, onClick, compact=false }) {
         <div style={{display:"flex",flexWrap:"wrap",gap:5,marginBottom:14}}>
           {artist.tags.slice(0,3).map(t=><Badge key={t} color={artist.color}>{t}</Badge>)}
         </div>
-        <div style={{height:1,background:C.border,marginBottom:14}}/>
+        <div style={{height:1,background:C.border,marginBottom:12}}/>
+        {/* Instrument chips for instrumentalists */}
+        {artist.instruments?.length>0&&(artist.artistType==="instrumentalist"||artist.artist_type==="instrumentalist")&&(
+          <div style={{display:"flex",flexWrap:"wrap",gap:5,marginBottom:10}}>
+            {(artist.instruments as string[]).slice(0,4).map((ins:string)=>{
+              const icons:Record<string,string>={Tabla:"🥁",Rubab:"🪕",Drums:"🎶",Keyboard:"🎹",Guitar:"🎸",Harmonium:"🎵"};
+              return<span key={ins} style={{background:C.lapisS,border:`1px solid ${C.lapis}33`,borderRadius:12,padding:"3px 9px",fontSize:10,fontWeight:700,color:C.lapis,display:"flex",alignItems:"center",gap:3}}><span>{icons[ins]||"🎵"}</span>{ins}</span>;
+            })}
+            {artist.instruments.length>4&&<span style={{fontSize:10,color:C.muted,alignSelf:"center"}}>+{artist.instruments.length-4} more</span>}
+          </div>
+        )}
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-          <Stars rating={artist.rating} count={artist.reviews} size={13}/>
+          <div style={{display:"flex",flexDirection:"column",gap:3}}>
+            <Stars rating={artist.rating} count={artist.reviews} size={13}/>
+            {artist.verified&&<span style={{fontSize:10,color:C.emerald,fontWeight:700,display:"flex",alignItems:"center",gap:3}}>🔒 Secure booking</span>}
+          </div>
           <div style={{textAlign:"right"}}>
             <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:artist.color}}>{artist.priceInfo}</div>
             <div style={{fontSize:T.xs,color:C.muted,marginTop:2}}>€{artist.deposit} deposit · Stripe</div>
@@ -3833,7 +3863,7 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
   const [tab,setTab]=useState("about");
   const [showBook,setShowBook]=useState(false);
   const [showCal,setShowCal]=useState(false);
-  const [form,setForm]=useState({name:"",email:"",phone:"",event:"",notes:""});
+  const [form,setForm]=useState({name:"",email:"",phone:"",event:"",notes:"",selectedInstrument:""});
   const [pending,setPending]=useState(null);
   const [showStripe,setShowStripe]=useState(false);
   const [chat,setChat]=useState(null);
@@ -3846,7 +3876,8 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
     setErr("");
     const nb={id:`b${Date.now()}`,artistId:artist.id,customerName:form.name,customerEmail:form.email,
       date:`${MONTHS[selMonth]} ${selDay}, ${selYear}`,event:form.event||"Private Event",
-      deposit:artist.deposit,depositPaid:false,status:"pending_payment",chatUnlocked:false,messages:[]};
+      deposit:artist.deposit,depositPaid:false,status:"pending_payment",chatUnlocked:false,messages:[],
+      selectedInstrument:form.selectedInstrument||artist.instruments?.[0]||""};
     setPending(nb);setShowBook(false);setShowStripe(true);
   };
   const [showEventPlan,setShowEventPlan]=useState(false);
@@ -4001,12 +4032,38 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
             )}
             {tab==="instruments"&&(
               <div style={{background:C.card,borderRadius:12,padding:vp.isMobile?16:24,border:`1px solid ${C.border}`}}>
-                <div style={{fontFamily:"'Cormorant Garamond',serif",color:C.gold,fontSize:T.lg,fontWeight:700,marginBottom:14}}>Instruments & Skills</div>
-                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-                  {artist.instruments.map(ins=>(
-                    <div key={ins} style={{background:C.surface,border:`1px solid ${C.border}`,borderLeft:`3px solid ${artist.color}`,borderRadius:8,padding:"13px 15px",fontFamily:"'Cormorant Garamond',serif",fontSize:T.md,color:C.text,fontWeight:600}}>{ins}</div>
-                  ))}
+                <div style={{fontFamily:"'Cormorant Garamond',serif",color:C.gold,fontSize:T.lg,fontWeight:700,marginBottom:4}}>Instruments &amp; Skills</div>
+                {artist.instruments?.length>1&&(
+                  <div style={{color:C.muted,fontSize:T.sm,marginBottom:14,lineHeight:1.6}}>
+                    This artist can perform with <strong style={{color:C.text}}>{artist.instruments.length} different instruments</strong>. You choose which one when booking.
+                  </div>
+                )}
+                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:artist.instruments?.length>1?16:0}}>
+                  {(artist.instruments as string[]).map((ins,i)=>{
+                    const icons:Record<string,string>={Tabla:"🥁",Rubab:"🪕",Drums:"🎶",Keyboard:"🎹",Guitar:"🎸",Harmonium:"🎵"};
+                    const dariNames:Record<string,string>={Tabla:"طبله",Rubab:"رباب",Drums:"درامز",Keyboard:"کیبورد",Guitar:"گیتار",Harmonium:"هارمونیم"};
+                    const isPrimary=i===0&&artist.artistType==="instrumentalist";
+                    return(
+                      <div key={ins} style={{background:C.surface,border:`1px solid ${isPrimary?artist.color:C.border}`,borderLeft:`3px solid ${isPrimary?artist.color:C.borderM}`,borderRadius:10,padding:"13px 14px",position:"relative"}}>
+                        {isPrimary&&<div style={{position:"absolute",top:6,right:8,fontSize:10,fontWeight:700,color:artist.color,background:`${artist.color}15`,padding:"2px 7px",borderRadius:10}}>Primary</div>}
+                        <div style={{fontSize:22,marginBottom:5}}>{icons[ins]||"🎵"}</div>
+                        <div style={{fontWeight:700,color:C.text,fontSize:T.sm}}>{ins}</div>
+                        {dariNames[ins]&&<div style={{fontSize:11,color:C.muted,fontFamily:"'Noto Naskh Arabic',serif",marginTop:2}}>{dariNames[ins]}</div>}
+                      </div>
+                    );
+                  })}
                 </div>
+                {/* CTA: if multiple instruments, nudge customer to book */}
+                {artist.instruments?.length>1&&selDay&&(
+                  <div style={{background:`${C.lapis}0F`,border:`1px solid ${C.lapis}33`,borderRadius:10,padding:"12px 14px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,flexWrap:"wrap" as const}}>
+                    <div style={{fontSize:T.xs,color:C.muted,lineHeight:1.5}}>
+                      You've selected <strong style={{color:C.text}}>{MONTHS[selMonth]} {selDay}</strong>. Choose your preferred instrument when booking.
+                    </div>
+                    <button onClick={()=>setShowBook(true)} style={{background:`linear-gradient(135deg,${C.lapis},#1A3F9C)`,color:"#fff",border:"none",borderRadius:8,padding:"8px 16px",fontSize:T.xs,fontWeight:800,cursor:"pointer",fontFamily:"inherit",flexShrink:0,whiteSpace:"nowrap" as const}}>
+                      Book &amp; Choose →
+                    </button>
+                  </div>
+                )}
               </div>
             )}
             {tab==="reviews"&&(
@@ -4061,8 +4118,33 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
                   </button>
                 ):(
                   <div style={{display:"flex",flexDirection:"column",gap:10}}>
+                    {/* Trust badge */}
+                    <div style={{background:`${C.emerald}10`,border:`1px solid ${C.emerald}33`,borderRadius:8,padding:"8px 12px",display:"flex",alignItems:"center",gap:8}}>
+                      <span style={{fontSize:14}}>🔒</span>
+                      <span style={{fontSize:11,color:C.emerald,fontWeight:700}}>Safe &amp; Secure · Stripe encrypted</span>
+                    </div>
                     <button onClick={()=>{setShowBook(false);setErr("");}} style={{background:"none",border:"none",color:C.muted,cursor:"pointer",fontSize:T.sm,fontFamily:"inherit",textAlign:"left",minHeight:36}}>← Change date</button>
                     {err&&<div style={{background:C.rubyS,border:`1px solid ${C.ruby}28`,borderRadius:7,padding:"10px 12px",color:C.ruby,fontSize:T.sm}}>⚠ {err}</div>}
+
+                    {/* Instrument selector — multi-instrument artists */}
+                    {artist.instruments?.length>1&&(
+                      <div>
+                        <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:6}}>Which instrument? <span style={{color:C.ruby}}>*</span></div>
+                        <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+                          {(artist.instruments as string[]).map((inst:string)=>{
+                            const icons:Record<string,string>={Tabla:"🥁",Rubab:"🪕",Drums:"🎶",Keyboard:"🎹",Guitar:"🎸",Harmonium:"🎵"};
+                            const sel=form.selectedInstrument===inst;
+                            return(
+                              <button key={inst} onClick={()=>setForm(f=>({...f,selectedInstrument:inst}))}
+                                style={{display:"flex",alignItems:"center",gap:5,background:sel?`${C.lapis}22`:C.surface,border:`2px solid ${sel?C.lapis:C.border}`,borderRadius:20,padding:"5px 12px",cursor:"pointer",fontFamily:"inherit",fontSize:T.xs,fontWeight:700,color:sel?C.lapis:C.muted,transition:"all 0.15s"}}>
+                                <span>{icons[inst]||"🎵"}</span>{inst}{sel&&<span style={{color:C.lapis}}>✓</span>}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
                     <Inp label={t('yourName')+' *'} placeholder={t('yourName')} value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))}/>
                     <Inp label="Email *" type="email" placeholder="you@email.com" value={form.email} onChange={e=>setForm(f=>({...f,email:e.target.value}))}/>
                     <Inp label={t('eventType')} placeholder={t('eventPlaceholder')} value={form.event} onChange={e=>setForm(f=>({...f,event:e.target.value}))}/>
@@ -4071,7 +4153,18 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
                       style={{width:"100%",background:"linear-gradient(135deg,#635BFF,#7B72FF)",color:"#fff",border:"none",borderRadius:10,padding:14,fontSize:T.base,fontWeight:800,cursor:"pointer",opacity:!form.name||!form.email?0.5:1,fontFamily:"inherit",minHeight:50,letterSpacing:"0.2px"}}>
                       Pay €{artist.deposit} via Stripe →
                     </button>
-                    <div style={{textAlign:"center",color:C.muted,fontSize:T.sm}}>Stripe · SSL · PCI compliant</div>
+
+                    {/* What happens next */}
+                    <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,padding:"10px 12px"}}>
+                      <div style={{fontSize:10,fontWeight:700,color:C.muted,textTransform:"uppercase" as const,letterSpacing:"0.5px",marginBottom:7}}>What happens next</div>
+                      {[["💳","Deposit charged via Stripe"],["💬","Chat unlocks immediately"],["🎵","Artist performs at your event"],["💵","Balance paid cash after event"]].map(([ico,txt])=>(
+                        <div key={txt as string} style={{display:"flex",gap:7,alignItems:"flex-start",marginBottom:4}}>
+                          <span style={{fontSize:12,flexShrink:0}}>{ico}</span>
+                          <span style={{fontSize:10,color:C.muted,lineHeight:1.5}}>{txt}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{textAlign:"center",color:C.muted,fontSize:10}}>🔒 Your card details are never stored on our servers</div>
                   </div>
                 )}
               </div>
@@ -4101,21 +4194,75 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
       {/* Mobile: Booking form sheet */}
       <Sheet open={showBook&&vp.isMobile} onClose={()=>setShowBook(false)} title={t('completeBooking')}>
         <div style={{padding:"16px 20px 32px",display:"flex",flexDirection:"column",gap:12}}>
+
+          {/* ── Trust banner ── */}
+          <div style={{background:`linear-gradient(135deg,${C.emeraldS},${C.surface})`,border:`1px solid ${C.emerald}33`,borderRadius:10,padding:"10px 14px",display:"flex",alignItems:"center",gap:10}}>
+            <span style={{fontSize:20,flexShrink:0}}>🔒</span>
+            <div>
+              <div style={{fontWeight:700,color:C.emerald,fontSize:T.xs}}>Safe &amp; Secure Booking</div>
+              <div style={{color:C.muted,fontSize:11,lineHeight:1.5,marginTop:1}}>Payment handled by Stripe · Bank-level encryption · Your card is never stored</div>
+            </div>
+          </div>
+
+          {/* Booking summary */}
           <div style={{background:C.surface,borderRadius:10,padding:"12px 14px",border:`1px solid ${C.border}`}}>
-            <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}><span style={{color:C.muted,fontSize:T.sm}}>{artist.name}</span><span style={{color:C.gold,fontWeight:700,fontSize:T.md,fontFamily:"'Cormorant Garamond',serif"}}>€{artist.deposit}</span></div>
+            <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
+              <span style={{color:C.muted,fontSize:T.sm}}>{artist.name}</span>
+              <span style={{color:C.gold,fontWeight:700,fontSize:T.md,fontFamily:"'Cormorant Garamond',serif"}}>€{artist.deposit}</span>
+            </div>
             <div style={{color:C.muted,fontSize:T.xs}}>{MONTHS[selMonth]} {selDay}, {selYear}</div>
           </div>
+
+          {/* ── Instrument selector — only if artist has multiple instruments ── */}
+          {artist.instruments?.length>1&&(
+            <div>
+              <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:8}}>
+                Which instrument should {artist.name.split(" ")[0]} play? <span style={{color:C.ruby}}>*</span>
+              </div>
+              <div style={{display:"flex",flexWrap:"wrap",gap:7}}>
+                {(artist.instruments as string[]).map((inst:string)=>{
+                  const icons:Record<string,string>={Tabla:"🥁",Rubab:"🪕",Drums:"🎶",Keyboard:"🎹",Guitar:"🎸",Harmonium:"🎵"};
+                  const sel=form.selectedInstrument===inst;
+                  return(
+                    <button key={inst} onClick={()=>setForm(f=>({...f,selectedInstrument:inst}))}
+                      style={{display:"flex",alignItems:"center",gap:5,background:sel?`${C.lapis}22`:C.surface,border:`2px solid ${sel?C.lapis:C.border}`,borderRadius:20,padding:"7px 14px",cursor:"pointer",fontFamily:"inherit",fontSize:T.xs,fontWeight:700,color:sel?C.lapis:C.muted,transition:"all 0.15s"}}>
+                      <span style={{fontSize:15}}>{icons[inst]||"🎵"}</span>{inst}
+                      {sel&&<span style={{color:C.lapis}}>✓</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {err&&<div style={{background:C.rubyS,border:`1px solid ${C.ruby}28`,borderRadius:8,padding:"10px 13px",color:C.ruby,fontSize:T.xs}}>⚠ {err}</div>}
           <Inp label={t('yourName')+' *'} placeholder={t('yourName')} value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))}/>
           <Inp label="Email *" type="email" placeholder="you@email.com" value={form.email} onChange={e=>setForm(f=>({...f,email:e.target.value}))}/>
           <Inp label="Phone" type="tel" placeholder="+47 …" value={form.phone} onChange={e=>setForm(f=>({...f,phone:e.target.value}))}/>
           <Inp label={t('eventType')} placeholder={t('eventPlaceholder')} value={form.event} onChange={e=>setForm(f=>({...f,event:e.target.value}))}/>
           <Inp label={t('notes')} placeholder={t('notesPlaceholder')} value={form.notes} onChange={e=>setForm(f=>({...f,notes:e.target.value}))} rows={2}/>
+
           <button onClick={doBook} disabled={!form.name||!form.email}
             style={{width:"100%",background:"linear-gradient(135deg,#635BFF,#7B72FF)",color:"#fff",border:"none",borderRadius:10,padding:16,fontSize:T.md,fontWeight:800,cursor:"pointer",opacity:!form.name||!form.email?0.5:1,fontFamily:"inherit",minHeight:52}}>
             Pay €{artist.deposit} via Stripe →
           </button>
-          <div style={{textAlign:"center",color:C.muted,fontSize:T.xs}}>Stripe · SSL · PCI compliant</div>
+
+          {/* ── What happens after payment ── */}
+          <div style={{background:C.surface,borderRadius:10,padding:"12px 14px",border:`1px solid ${C.border}`}}>
+            <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:8,textTransform:"uppercase" as const,letterSpacing:"0.5px"}}>What happens next</div>
+            {[
+              {icon:"💳",step:"You pay the deposit securely via Stripe"},
+              {icon:"💬",step:"Chat unlocks — message the artist directly"},
+              {icon:"🎵",step:"The artist performs at your event"},
+              {icon:"💵",step:"Pay the balance in cash after the concert"},
+            ].map(({icon,step})=>(
+              <div key={step} style={{display:"flex",alignItems:"flex-start",gap:8,marginBottom:6}}>
+                <span style={{fontSize:14,flexShrink:0,marginTop:1}}>{icon}</span>
+                <span style={{fontSize:11,color:C.muted,lineHeight:1.5}}>{step}</span>
+              </div>
+            ))}
+          </div>
+          <div style={{textAlign:"center",color:C.muted,fontSize:T.xs}}>🔒 Stripe · SSL · PCI compliant · Never share card details with us</div>
         </div>
       </Sheet>
 
@@ -9855,6 +10002,18 @@ function AppInner() {
                 {l}
               </button>
             ))}
+            {/* ── Book a Band — pill badge ── */}
+            <button onClick={()=>setShowBandBooking(true)} style={{
+              display:"flex",alignItems:"center",gap:6,
+              background:`linear-gradient(135deg,${C.lapis}22,${C.lapis}0F)`,
+              border:`1.5px solid ${C.lapis}`,
+              borderRadius:20,padding:"6px 14px",cursor:"pointer",
+              fontFamily:"inherit",fontSize:T.xs,fontWeight:700,
+              color:C.lapis,minHeight:36,WebkitTapHighlightColor:"transparent",
+              boxShadow:`0 0 12px ${C.lapis}22`,
+            }}>
+              🎼 Book a Band
+            </button>
           </nav>
         )}
 
@@ -9905,6 +10064,23 @@ function AppInner() {
       {/* ── HOME ── */}
       {view==="home"&&(
         <div style={{paddingTop:vp.isMobile?56:62}}>
+
+          {/* ── Trust ticker bar ── */}
+          <div style={{background:`linear-gradient(90deg,${C.emerald}14,${C.emerald}0A)`,borderBottom:`1px solid ${C.emerald}22`,padding:"7px 16px",overflow:"hidden"}}>
+            <div style={{display:"flex",justifyContent:"center",alignItems:"center",gap:vp.isMobile?16:32,flexWrap:"wrap" as const}}>
+              {[
+                {icon:"🔒","label":"Payments secured by Stripe"},
+                {icon:"✓", "label":"Verified artists only"},
+                {icon:"💬","label":"Direct messaging after booking"},
+                {icon:"0%","label":"No hidden fees"},
+              ].map(({icon,label})=>(
+                <div key={label} style={{display:"flex",alignItems:"center",gap:5,fontSize:vp.isMobile?10:11,color:C.emerald,fontWeight:600,flexShrink:0}}>
+                  <span style={{fontSize:12,opacity:0.9}}>{icon}</span>{label}
+                </div>
+              ))}
+            </div>
+          </div>
+
           {/* Hero */}
           <section style={{minHeight:vp.isMobile?"85vh":"90vh",display:"flex",flexDirection:"column",justifyContent:"center",position:"relative",overflow:"hidden",background:"transparent"}}>
             <Geo id="hero" op={0.03}/>
@@ -9998,6 +10174,122 @@ function AppInner() {
                 {displaySource.slice(0,4).map(a=><ArtistCard key={a.id} artist={a} onClick={art=>{setSelArtist(art);nav("profile");}} compact/>)}
               </div>
             )}
+          </section>
+
+          {/* ══════════════════════════════════════════════════
+              🎼  BAND BOOKING FEATURE SECTION
+              Full-width showcase — home page only
+          ══════════════════════════════════════════════════ */}
+          <section style={{
+            background:`linear-gradient(135deg,${C.lapis}18 0%,${C.bg} 60%,${C.gold}0A 100%)`,
+            borderTop:`1px solid ${C.lapis}33`,
+            borderBottom:`1px solid ${C.lapis}22`,
+            position:"relative",overflow:"hidden",
+          }}>
+            {/* Background pattern */}
+            <div style={{position:"absolute",inset:0,opacity:0.03,backgroundImage:`radial-gradient(circle at 20% 50%, ${C.lapis} 1px, transparent 1px), radial-gradient(circle at 80% 20%, ${C.gold} 1px, transparent 1px)`,backgroundSize:"40px 40px"}}/>
+
+            <div style={{maxWidth:1240,margin:"0 auto",padding:vp.isMobile?"32px 16px":"60px 48px",position:"relative",display:vp.isMobile?"block":"grid",gridTemplateColumns:"1fr 1fr",gap:48,alignItems:"center"}}>
+
+              {/* Left — copy */}
+              <div style={{marginBottom:vp.isMobile?28:0}}>
+                <div style={{display:"inline-flex",alignItems:"center",gap:6,background:`${C.lapis}22`,border:`1px solid ${C.lapis}44`,borderRadius:20,padding:"4px 12px",marginBottom:14}}>
+                  <span style={{fontSize:13}}>🎼</span>
+                  <span style={{fontSize:11,fontWeight:700,color:C.lapis,letterSpacing:"1px",textTransform:"uppercase" as const}}>Band Booking</span>
+                </div>
+                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:vp.isMobile?T["2xl"]:T["3xl"],fontWeight:800,color:C.text,lineHeight:1.1,marginBottom:14}}>
+                  Book a full Afghan<br/>
+                  <span style={{color:C.lapis}}>ensemble</span> — instantly
+                </div>
+                <div style={{color:C.muted,fontSize:T.sm,lineHeight:1.8,marginBottom:20,maxWidth:440}}>
+                  Choose a pre-built Classic Afghan Band or hand-pick individual artists. Vocalist, tabla, rubab, drums, keyboard — dynamically priced and paid securely via Stripe before your booking is confirmed.
+                </div>
+
+                {/* Role chips */}
+                <div style={{display:"flex",flexWrap:"wrap" as const,gap:8,marginBottom:24}}>
+                  {[["🎤","Vocalist","خواننده",C.ruby],["🥁","Tabla","طبله",C.gold],["🪕","Rubab","رباب",C.gold],["🎶","Drums","درامز",C.emerald],["🎹","Keyboard","کیبورد",C.lapis],["🎸","Guitar","گیتار",C.lapis]].map(([icon,en,dari,col])=>(
+                    <div key={en} style={{display:"flex",alignItems:"center",gap:5,background:`${col as string}14`,border:`1px solid ${col as string}44`,borderRadius:20,padding:"5px 12px"}}>
+                      <span style={{fontSize:14}}>{icon as string}</span>
+                      <span style={{fontSize:12,fontWeight:700,color:col as string}}>{en as string}</span>
+                      <span style={{fontSize:10,color:C.muted,fontFamily:"'Noto Naskh Arabic',serif"}}>{dari as string}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Two options highlight */}
+                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:24}}>
+                  {[
+                    {label:"Option A",desc:"Pre-built Classic Band",icon:"🎼",color:C.gold},
+                    {label:"Option B",desc:"Build Your Own Ensemble",icon:"🎛️",color:C.lapis},
+                  ].map(({label,desc,icon,color})=>(
+                    <div key={label} style={{background:C.card,border:`1px solid ${color}33`,borderRadius:10,padding:"10px 12px"}}>
+                      <span style={{fontSize:18}}>{icon}</span>
+                      <div style={{fontWeight:700,color:color,fontSize:T.xs,marginTop:4}}>{label}</div>
+                      <div style={{fontSize:11,color:C.muted,marginTop:2,lineHeight:1.4}}>{desc}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <button onClick={()=>setShowBandBooking(true)} style={{
+                  display:"flex",alignItems:"center",gap:10,
+                  background:`linear-gradient(135deg,${C.lapis},#1A3F9C)`,
+                  color:"#fff",border:"none",borderRadius:14,
+                  padding:"16px 28px",cursor:"pointer",
+                  fontFamily:"inherit",fontWeight:800,fontSize:16,
+                  boxShadow:`0 8px 32px ${C.lapis}44`,
+                  width:vp.isMobile?"100%":"auto",
+                  justifyContent:vp.isMobile?"center":"flex-start",
+                }}>
+                  <span style={{fontSize:20}}>🎼</span>
+                  Book a Band Now →
+                </button>
+                <div style={{fontSize:11,color:C.muted,marginTop:8}}>Deposit paid securely via Stripe · No booking without payment</div>
+              </div>
+
+              {/* Right — visual pricing card */}
+              {!vp.isMobile&&(
+                <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:20,overflow:"hidden",boxShadow:`0 24px 80px rgba(0,0,0,0.12)`}}>
+                  <div style={{height:4,background:`linear-gradient(90deg,${C.lapis},${C.gold},${C.ruby})`}}/>
+                  <div style={{padding:"24px 20px"}}>
+                    <div style={{fontSize:11,fontWeight:700,color:C.gold,letterSpacing:"1px",textTransform:"uppercase" as const,marginBottom:4}}>Classic Afghan Band</div>
+                    <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:700,color:C.text,marginBottom:16}}>Complete ensemble · 4 artists</div>
+
+                    {[
+                      {icon:"🎤",role:"Vocalist",type:"vocalist",price:"from €500"},
+                      {icon:"🥁",role:"Tabla",type:"instrumentalist",price:"€50 – €250"},
+                      {icon:"🪕",role:"Rubab",type:"instrumentalist",price:"€50 – €250"},
+                      {icon:"🎶",role:"Drums",type:"instrumentalist",price:"€50 – €250"},
+                    ].map(({icon,role,type,price})=>(
+                      <div key={role} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 0",borderBottom:`1px solid ${C.border}`}}>
+                        <div style={{display:"flex",alignItems:"center",gap:10}}>
+                          <span style={{fontSize:18}}>{icon}</span>
+                          <div>
+                            <div style={{fontWeight:700,color:C.text,fontSize:T.xs}}>{role}</div>
+                            <div style={{fontSize:10,color:type==="vocalist"?C.ruby:C.lapis,fontWeight:600,textTransform:"uppercase" as const,letterSpacing:"0.5px"}}>{type}</div>
+                          </div>
+                        </div>
+                        <div style={{fontWeight:700,color:C.gold,fontSize:T.xs}}>{price}</div>
+                      </div>
+                    ))}
+
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",paddingTop:14,marginTop:4}}>
+                      <div style={{fontSize:T.xs,color:C.muted}}>Total deposit (Stripe)</div>
+                      <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:800,color:C.gold,fontSize:T.lg}}>from €650</div>
+                    </div>
+                    <div style={{fontSize:10,color:C.muted,marginTop:4}}>Artists receive 88% · Awaz 12% · Balance cash after event</div>
+
+                    <button onClick={()=>setShowBandBooking(true)} style={{
+                      width:"100%",marginTop:16,
+                      background:`linear-gradient(135deg,${C.gold},${C.saffron})`,
+                      color:C.bg,border:"none",borderRadius:12,padding:"14px",
+                      fontWeight:800,fontSize:15,cursor:"pointer",fontFamily:"inherit",
+                    }}>
+                      🎼 Start Band Booking →
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </section>
 
           {/* How it works */}
@@ -10372,10 +10664,24 @@ function AppInner() {
                 xs={vp.isMobile?{width:"100%",justifyContent:"center"}:{}}>
                 Browse Artists Now →
               </Btn>
-              <Btn onClick={()=>setShowBandBooking(true)} v="ghost" sz="lg"
-                xs={vp.isMobile?{width:"100%",justifyContent:"center"}:{}}>
-                🎼 Book a Band
-              </Btn>
+
+              {/* ── Band Booking — visually elevated CTA ── */}
+              <button onClick={()=>setShowBandBooking(true)} style={{
+                display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
+                gap:2,
+                background:`linear-gradient(135deg,rgba(30,78,140,0.18),rgba(30,78,140,0.08))`,
+                border:`2px solid ${C.lapis}`,
+                borderRadius:14,
+                padding:vp.isMobile?"14px 20px":"12px 22px",
+                cursor:"pointer",fontFamily:"inherit",
+                width:vp.isMobile?"100%":"auto",
+                transition:"all 0.2s",
+              }}>
+                <span style={{fontSize:18,lineHeight:1}}>🎼</span>
+                <span style={{fontWeight:800,fontSize:15,color:C.lapis,letterSpacing:"0.2px"}}>Book a Band</span>
+                <span style={{fontSize:10,color:C.muted,fontWeight:500}}>Full ensemble · from €500</span>
+              </button>
+
               <Btn onClick={()=>setShowApply(true)} v="ghost" sz="lg"
                 xs={vp.isMobile?{width:"100%",justifyContent:"center"}:{}}>
                 Apply as an Artist
@@ -10460,11 +10766,20 @@ function AppInner() {
               {/* Platform */}
               <div>
                 <div style={{fontSize:T.xs,fontWeight:700,color:C.text,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:14}}>Platform</div>
-                {[["Browse Artists",()=>nav("browse")],["How It Works",()=>nav("how")],["Pricing",()=>nav("pricing")],["Artist Demo",()=>nav("demo")],["🎼 Book a Band",()=>setShowBandBooking(true)],["Apply as Artist",()=>setShowApply(true)]].map(([l,fn])=>(
+                {[["Browse Artists",()=>nav("browse")],["How It Works",()=>nav("how")],["Pricing",()=>nav("pricing")],["Artist Demo",()=>nav("demo")]].map(([l,fn])=>(
                   <button key={l as string} onClick={fn as ()=>void} style={{display:"block",background:"none",border:"none",color:C.muted,fontSize:T.sm,cursor:"pointer",fontFamily:"inherit",padding:"4px 0",textAlign:"left",lineHeight:1.7}}>
                     {l}
                   </button>
                 ))}
+                {/* Book a Band — highlighted */}
+                <button onClick={()=>setShowBandBooking(true)} style={{
+                  display:"flex",alignItems:"center",gap:6,marginTop:8,
+                  background:`${C.lapis}14`,border:`1px solid ${C.lapis}44`,
+                  borderRadius:8,padding:"6px 10px",
+                  color:C.lapis,fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit",
+                }}>
+                  🎼 Book a Band
+                </button>
               </div>
               {/* For Artists */}
               <div>
@@ -11004,14 +11319,15 @@ function BandBookingSheet({artists, onClose, onBook}:{artists:any[];onClose:()=>
 
 function ApplySheet({ onSubmit, onClose }) {
   const [step,setStep]=useState(1);
-  const [f,setF]=useState({name:"",nameDari:"",email:"",pass:"",pass2:"",genre:"",country:"NO",location:"",currency:"EUR",priceInfo:"",deposit:"500",bio:"",instruments:"",tags:"",cancellationPolicy:"moderate",artistType:"" as ""  |"vocalist"|"instrumentalist",specificInstrument:""});
+  const [f,setF]=useState({name:"",nameDari:"",email:"",pass:"",pass2:"",genre:"",country:"NO",location:"",currency:"EUR",priceInfo:"",deposit:"500",bio:"",instruments:"",tags:"",cancellationPolicy:"moderate",artistType:"" as ""|"vocalist"|"instrumentalist",selectedInstruments:[] as string[]});
+  const toggleInstrument=(inst:string)=>setF(p=>({...p,selectedInstruments:p.selectedInstruments.includes(inst)?p.selectedInstruments.filter(i=>i!==inst):[...p.selectedInstruments,inst]}));
   const [err,setErr]=useState(""),[done,setDone]=useState(false),[loading,setLoading]=useState(false);
 
   const v1=()=>{if(!f.name)return"Name required.";if(!f.email||!f.email.includes("@"))return"Valid email required.";if(f.pass.length<8)return"Password: 8+ chars.";if(!/[A-Z]/.test(f.pass))return"Need 1 uppercase.";if(!/[0-9]/.test(f.pass))return"Need 1 number.";if(f.pass!==f.pass2)return"Passwords don't match.";return null;};
   const v2=()=>{
     if(!f.genre)return"Genre required.";
     if(!f.artistType)return"Please select your artist type — Vocalist or Instrumentalist.";
-    if(f.artistType==="instrumentalist"&&!f.specificInstrument)return"Please select your primary instrument.";
+    if(f.artistType==="instrumentalist"&&f.selectedInstruments.length===0)return"Please select at least one instrument.";
     if(f.artistType==="vocalist"&&parseInt(f.deposit)<500)return"Vocalists: minimum deposit is €500.";
     if(f.artistType==="instrumentalist"){const d=parseInt(f.deposit);if(d<50||d>250)return"Instrumentalists: price must be between €50 and €250.";}
     return null;
@@ -11024,7 +11340,8 @@ function ApplySheet({ onSubmit, onClose }) {
     // Use UUID so it matches artists.id column type in Supabase
     const id=crypto.randomUUID();
     const depositAmt=f.artistType==="instrumentalist"?Math.min(250,Math.max(50,parseInt(f.deposit)||100)):Math.max(500,parseInt(f.deposit)||500);
-    const artistData={id,name:f.name,nameDari:f.nameDari||"",genre:f.genre,location:f.location||"—",country:f.country||"NO",currency:f.currency||"EUR",rating:0,reviews:0,priceInfo:f.priceInfo||"On request",deposit:depositAmt,emoji:emojis[Math.floor(Math.random()*emojis.length)],color:cols[Math.floor(Math.random()*cols.length)],photo:null,bio:f.bio||"",tags:f.tags.split(",").map(t=>t.trim()).filter(Boolean),instruments:f.artistType==="instrumentalist"&&f.specificInstrument?[f.specificInstrument,...f.instruments.split(",").map(t=>t.trim()).filter(Boolean)]:f.instruments.split(",").map(t=>t.trim()).filter(Boolean),superhost:false,status:"pending",joined:MONTHS[NOW.getMonth()]+" "+NOW.getFullYear(),available:{[MK]:[]},blocked:{[MK]:[]},earnings:0,totalBookings:0,verified:false,stripeConnected:false,stripeAccount:null,cancellationPolicy:f.cancellationPolicy,artistType:f.artistType||"vocalist",specificInstrument:f.specificInstrument||""};
+    const primaryInstrument=f.selectedInstruments[0]||"";
+    const artistData={id,name:f.name,nameDari:f.nameDari||"",genre:f.genre,location:f.location||"—",country:f.country||"NO",currency:f.currency||"EUR",rating:0,reviews:0,priceInfo:f.priceInfo||"On request",deposit:depositAmt,emoji:emojis[Math.floor(Math.random()*emojis.length)],color:cols[Math.floor(Math.random()*cols.length)],photo:null,bio:f.bio||"",tags:f.tags.split(",").map(t=>t.trim()).filter(Boolean),instruments:f.artistType==="instrumentalist"?f.selectedInstruments:f.instruments.split(",").map(t=>t.trim()).filter(Boolean),superhost:false,status:"pending",joined:MONTHS[NOW.getMonth()]+" "+NOW.getFullYear(),available:{[MK]:[]},blocked:{[MK]:[]},earnings:0,totalBookings:0,verified:false,stripeConnected:false,stripeAccount:null,cancellationPolicy:f.cancellationPolicy,artistType:f.artistType||"vocalist",specificInstrument:primaryInstrument};
 
     // ── Supabase signup ───────────────────────────────────────────────
     // KEY: Use a SEPARATE temporary Supabase client for registration.
@@ -11061,7 +11378,8 @@ function ApplySheet({ onSubmit, onClose }) {
 
           // 1. Insert into artists table
           const depositFinal = f.artistType==="instrumentalist"?Math.min(250,Math.max(50,parseInt(f.deposit)||100)):Math.max(500,parseInt(f.deposit)||500);
-          const instList=f.artistType==="instrumentalist"&&f.specificInstrument?[f.specificInstrument,...f.instruments.split(",").map(t=>t.trim()).filter(Boolean)]:f.instruments.split(",").map(t=>t.trim()).filter(Boolean);
+          const instList=f.artistType==="instrumentalist"?f.selectedInstruments:f.instruments.split(",").map(t=>t.trim()).filter(Boolean);
+          const primaryInst=f.selectedInstruments[0]||null;
           const{error:aErr}=await regSb.from("artists").insert([{
             id:                  authId,
             name:                f.name,
@@ -11081,7 +11399,7 @@ function ApplySheet({ onSubmit, onClose }) {
             cancellation_policy: f.cancellationPolicy,
             joined_date:         MONTHS[NOW.getMonth()]+" "+NOW.getFullYear(),
             artist_type:         f.artistType||"vocalist",
-            specific_instrument: f.specificInstrument||null,
+            specific_instrument: primaryInst,
           }]);
           if(aErr) console.warn("artists insert error:",aErr.message);
 
@@ -11269,7 +11587,7 @@ function ApplySheet({ onSubmit, onClose }) {
                       {v:"vocalist",   icon:"🎤", en:"Vocalist",      dari:"خواننده",   desc:"Singer / Ghazal"},
                       {v:"instrumentalist", icon:"🎸", en:"Instrumentalist", dari:"نوازنده", desc:"Plays an instrument"},
                     ] as const).map(({v,icon,en,dari,desc})=>(
-                      <button key={v} onClick={()=>setF(p=>({...p,artistType:v,deposit:v==="vocalist"?"500":"100",specificInstrument:""}))}
+                      <button key={v} onClick={()=>setF(p=>({...p,artistType:v,deposit:v==="vocalist"?"500":"100",selectedInstruments:[]}))}
                         style={{background:f.artistType===v?C.goldS:C.surface,border:`2px solid ${f.artistType===v?C.gold:C.border}`,borderRadius:12,padding:"14px 10px",cursor:"pointer",fontFamily:"inherit",textAlign:"center",transition:"all 0.2s"}}>
                         <div style={{fontSize:24,marginBottom:4}}>{icon}</div>
                         <div style={{fontWeight:700,color:f.artistType===v?C.gold:C.text,fontSize:T.sm}}>{en}</div>
@@ -11280,12 +11598,19 @@ function ApplySheet({ onSubmit, onClose }) {
                   </div>
                 </div>
 
-                {/* ── INSTRUMENT SELECTOR — only for instrumentalists ── */}
+                {/* ── INSTRUMENT SELECTOR — multi-select for instrumentalists ── */}
                 {f.artistType==="instrumentalist"&&(
                   <div>
-                    <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:8}}>
-                      Primary instrument <span style={{color:C.ruby}}>*</span>
+                    <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:4}}>
+                      Your instruments <span style={{color:C.ruby}}>*</span>
+                      <span style={{fontWeight:400,marginLeft:6,color:C.muted}}>Select all you can play</span>
                     </div>
+                    {f.selectedInstruments.length===0&&(
+                      <div style={{fontSize:11,color:C.ruby,marginBottom:6}}>⚠ Select at least one instrument</div>
+                    )}
+                    {f.selectedInstruments.length>0&&(
+                      <div style={{fontSize:11,color:C.emerald,marginBottom:6}}>✓ {f.selectedInstruments.length} instrument{f.selectedInstruments.length>1?"s":""} selected: {f.selectedInstruments.join(", ")}</div>
+                    )}
                     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
                       {([
                         {v:"Tabla",    icon:"🥁", dari:"طبله"},
@@ -11294,15 +11619,24 @@ function ApplySheet({ onSubmit, onClose }) {
                         {v:"Keyboard", icon:"🎹", dari:"کیبورد"},
                         {v:"Guitar",   icon:"🎸", dari:"گیتار"},
                         {v:"Harmonium",icon:"🎵", dari:"هارمونیم"},
-                      ] as const).map(({v,icon,dari})=>(
-                        <button key={v} onClick={()=>setF(p=>({...p,specificInstrument:v}))}
-                          style={{background:f.specificInstrument===v?`${C.lapis}22`:C.surface,border:`2px solid ${f.specificInstrument===v?C.lapis:C.border}`,borderRadius:10,padding:"10px 8px",cursor:"pointer",fontFamily:"inherit",textAlign:"center",transition:"all 0.15s"}}>
-                          <div style={{fontSize:20,marginBottom:2}}>{icon}</div>
-                          <div style={{fontWeight:700,color:f.specificInstrument===v?C.lapis:C.text,fontSize:T.xs}}>{v}</div>
-                          <div style={{fontSize:10,color:C.muted,fontFamily:"'Noto Naskh Arabic',serif"}}>{dari}</div>
-                        </button>
-                      ))}
+                      ] as const).map(({v,icon,dari})=>{
+                        const sel=f.selectedInstruments.includes(v);
+                        return(
+                          <button key={v} onClick={()=>toggleInstrument(v)}
+                            style={{background:sel?`${C.lapis}22`:C.surface,border:`2px solid ${sel?C.lapis:C.border}`,borderRadius:10,padding:"10px 8px",cursor:"pointer",fontFamily:"inherit",textAlign:"center",transition:"all 0.15s",position:"relative"}}>
+                            {sel&&<div style={{position:"absolute",top:5,right:7,fontSize:11,color:C.lapis,fontWeight:900}}>✓</div>}
+                            <div style={{fontSize:20,marginBottom:2}}>{icon}</div>
+                            <div style={{fontWeight:700,color:sel?C.lapis:C.text,fontSize:T.xs}}>{v}</div>
+                            <div style={{fontSize:10,color:C.muted,fontFamily:"'Noto Naskh Arabic',serif"}}>{dari}</div>
+                          </button>
+                        );
+                      })}
                     </div>
+                    {f.selectedInstruments.length>1&&(
+                      <div style={{background:C.lapisS,border:`1px solid ${C.lapis}22`,borderRadius:8,padding:"8px 12px",marginTop:8,fontSize:11,color:C.muted,lineHeight:1.6}}>
+                        💡 Customers can choose which instrument they want you to play when booking. Your primary instrument will be: <strong style={{color:C.lapis}}>{f.selectedInstruments[0]}</strong> (first selected)
+                      </div>
+                    )}
                   </div>
                 )}
 
