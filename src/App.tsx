@@ -3342,7 +3342,7 @@ function StripeCheckout({ booking, artist, onSuccess, onClose }) {
           <div style={{textAlign:"center",padding:"20px 0"}}>
             
             <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:700,color:C.text,marginBottom:8}}>Booking Confirmed!</div>
-            <div style={{color:C.muted,fontSize:T.sm,lineHeight:1.7,marginBottom:20}}>
+            <div style={{color:C.textD,fontSize:T.sm,lineHeight:1.7,marginBottom:20}}>
               Deposit of <strong style={{color:C.gold}}>€{deposit}</strong> secured.<br/>
               {artist.name} has been notified and will be in touch.
             </div>
@@ -3839,7 +3839,7 @@ function LoginSheet({ users, open, onLogin, onClose }) {
           {mode==="forgot_sent"
             ?<>
                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text,marginBottom:6}}>{t('emailSent2')}</div>
-               <div style={{color:C.muted,fontSize:T.sm,lineHeight:1.7,marginBottom:20}}>{t("checkInbox2")} <strong style={{color:C.gold}}>{email}</strong> {t("forResetLink")}</div>
+               <div style={{color:C.textD,fontSize:T.sm,lineHeight:1.7,marginBottom:20}}>{t("checkInbox2")} <strong style={{color:C.gold}}>{email}</strong> {t("forResetLink")}</div>
                <Btn full sz="lg" onClick={()=>setMode("login")}>{t('backToSignIn2')}</Btn></>
             :<><div style={{color:C.muted,fontSize:T.sm,marginBottom:16,lineHeight:1.6}}>{t('enterYourEmail2')}</div>
                <Inp label={t('email')} type="email" placeholder="you@email.com" value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==="Enter"&&doForgot()}/>
@@ -3997,7 +3997,7 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
                     <span style={{fontSize:16}}>🔥</span>
                     <div style={{flex:1}}>
                       <span style={{fontWeight:700,color:C.text,fontSize:T.xs}}>In Demand</span>
-                      <span style={{color:C.muted,fontSize:T.xs,marginLeft:6}}>
+                      <span style={{color:C.textD,fontSize:T.xs,marginLeft:6}}>
                         {(artist.totalBookings||0)>0&&`Booked ${artist.totalBookings} times · `}
                         {(artist.reviews||0)>0&&`${artist.reviews} verified reviews · `}
                         Book early to secure your date
@@ -4010,10 +4010,10 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
                 <div style={{background:C.card,borderRadius:12,padding:vp.isMobile?20:28,border:`1px solid ${C.border}`}}>
                   <div style={{fontFamily:"'Cormorant Garamond',serif",color:C.gold,fontSize:T.xl,fontWeight:700,marginBottom:14,letterSpacing:"-0.3px"}}>About {artist.name.split(" ")[0]}</div>
                   <p style={{
-                    color:C.textD,lineHeight:1.85,margin:"0 0 16px",
+                    color:C.text,lineHeight:1.9,margin:"0 0 16px",
                     fontSize:T.base,
                     fontFamily:"'DM Sans',sans-serif",
-                    fontWeight:400,
+                    fontWeight:450,
                   }}>{artist.bio}</p>
                   <div style={{display:"flex",flexWrap:"wrap",gap:7}}>{artist.tags.map((tg:string)=><Badge key={tg} color={artist.color} sm={false}>{tg}</Badge>)}</div>
                 </div>
@@ -4026,7 +4026,7 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
                       <span style={{fontSize:20}}>🎼</span>
                       <div style={{fontFamily:"'Cormorant Garamond',serif",color:C.text,fontSize:T.lg,fontWeight:700}}>Performs with a Band</div>
                     </div>
-                    <div style={{color:C.muted,fontSize:T.sm,marginBottom:14,lineHeight:1.6}}>
+                    <div style={{color:C.textD,fontSize:T.sm,marginBottom:14,lineHeight:1.7}}>
                       This artist brings their own ensemble. Book them as a complete group for the full Afghan music experience.
                     </div>
                     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:14}}>
@@ -4081,7 +4081,7 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
                         <span style={{fontSize:16,flexShrink:0}}>💡</span>
                         <div>
                           <div style={{fontWeight:700,color:C.text,fontSize:T.xs,marginBottom:3}}>Booking solo = singer only, no instruments</div>
-                          <div style={{fontSize:11,color:C.muted,lineHeight:1.6}}>
+                          <div style={{fontSize:11,color:C.textD,lineHeight:1.6}}>
                             If you want tabla, keyboard or other musicians at your event, choose <strong style={{color:C.lapis}}>With Full Band</strong> above — or use <strong style={{color:C.lapis}}>Book a Band</strong> to add individual instrumentalists from the platform separately.
                           </div>
                         </div>
@@ -4094,7 +4094,7 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
                       <span style={{fontSize:16,flexShrink:0}}>💡</span>
                       <div>
                         <div style={{fontWeight:700,color:C.text,fontSize:T.xs,marginBottom:3}}>This booking is for the vocalist only</div>
-                        <div style={{fontSize:11,color:C.muted,lineHeight:1.6}}>
+                        <div style={{fontSize:11,color:C.textD,lineHeight:1.6}}>
                           Need tabla, keyboard or other instruments? Use <strong style={{color:C.lapis}}>🎼 Book a Band</strong> to add musicians from the platform to your event.
                         </div>
                       </div>
@@ -4106,7 +4106,7 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
                       <div key={k} style={{background:C.surface,borderRadius:8,padding:"12px 14px",border:`1px solid ${C.border}`,borderLeft:`3px solid ${artist.color}35`}}>
                         <div style={{fontSize:18,marginBottom:6}}>{icon}</div>
                         <div style={{color:C.text,fontWeight:700,fontSize:T.xs,marginBottom:3}}>{k}</div>
-                        <div style={{color:C.muted,fontSize:T.xs,lineHeight:1.5}}>{v}</div>
+                        <div style={{color:C.textD,fontSize:T.xs,lineHeight:1.6}}>{v}</div>
                       </div>
                     ))}
                   </div>
@@ -4388,7 +4388,7 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
               <span style={{fontSize:16,flexShrink:0}}>💡</span>
               <div>
                 <div style={{fontWeight:700,color:C.text,fontSize:11,marginBottom:3}}>This books the vocalist only — no instruments</div>
-                <div style={{fontSize:11,color:C.muted,lineHeight:1.6}}>
+                <div style={{fontSize:11,color:C.textD,lineHeight:1.6}}>
                   Need tabla, keyboard or other musicians? Use <strong style={{color:C.lapis}}>🎼 Book a Band</strong> to add them from the platform.
                 </div>
               </div>
@@ -4922,7 +4922,7 @@ function StripePlatformBanner({ notify }: { notify: (msg:string, type?:string)=>
             Connect Awaz to Stripe
             {platformId&&<span style={{background:"rgba(99,91,255,0.15)",color:"#635BFF",border:"1px solid rgba(99,91,255,0.4)",borderRadius:6,padding:"2px 10px",fontSize:T.xs,fontWeight:700}}>✓ CONFIGURED</span>}
           </div>
-          <div style={{color:C.muted,fontSize:T.sm,lineHeight:1.7,marginBottom:12}}>
+          <div style={{color:C.textD,fontSize:T.sm,lineHeight:1.7,marginBottom:12}}>
             To receive the 12% platform fee automatically, paste your Stripe Platform ID below.<br/>
             <strong style={{color:C.text}}>Steps:</strong> Go to{" "}
             <a href="https://dashboard.stripe.com" target="_blank" style={{color:"#635BFF",textDecoration:"none"}}>dashboard.stripe.com</a>
@@ -6677,7 +6677,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
                   </div>
                 ):(
                   <div>
-                    <div style={{color:C.muted,fontSize:T.sm,lineHeight:1.7,marginBottom:12}}>
+                    <div style={{color:C.textD,fontSize:T.sm,lineHeight:1.7,marginBottom:12}}>
                       Get featured at the top of the browse page for <strong style={{color:C.gold}}>6 months</strong>. Your profile appears before all regular listings with a ⭐ Featured badge.
                     </div>
                     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:16}}>
@@ -7506,7 +7506,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
                 </div>
               ):(
                 <>
-                  <p style={{color:C.textD,fontSize:T.sm,lineHeight:1.8,marginBottom:14,fontFamily:"'Cormorant Garamond',serif"}}>{artist.bio}</p>
+                  <p style={{color:C.text,fontSize:T.sm,lineHeight:1.85,marginBottom:14,fontFamily:"'DM Sans',sans-serif",fontWeight:450}}>{artist.bio}</p>
                   <HR color={artist.color}/>
                   <div style={{display:"flex",flexWrap:"wrap",gap:8,alignItems:"center",marginBottom:12}}>
                     <span style={{color:C.muted,fontSize:T.xs}}>{t('stripeLabel')}</span>
@@ -7862,7 +7862,7 @@ function StripeConnectSheet({ artist, onConnected, onClose }) {
           <div style={{textAlign:"center",padding:"20px 0"}}>
             
             <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:700,color:C.text,marginBottom:8}}>Stripe Connected!</div>
-            <div style={{color:C.muted,fontSize:T.sm,lineHeight:1.7,marginBottom:20}}>
+            <div style={{color:C.textD,fontSize:T.sm,lineHeight:1.7,marginBottom:20}}>
               You will receive <strong style={{color:C.gold}}>88%</strong> of every deposit automatically. Payments arrive weekly every Monday.
             </div>
             <Btn full v="gold" onClick={onClose}>Back to Dashboard</Btn>
@@ -12248,7 +12248,7 @@ function ApplySheet({ onSubmit, onClose }) {
                       })}
                     </div>
                     {f.selectedInstruments.length>1&&(
-                      <div style={{background:C.lapisS,border:`1px solid ${C.lapis}22`,borderRadius:8,padding:"8px 12px",marginTop:8,fontSize:11,color:C.muted,lineHeight:1.6}}>
+                      <div style={{background:C.lapisS,border:`1px solid ${C.lapis}22`,borderRadius:8,padding:"8px 12px",marginTop:8,fontSize:11,color:C.textD,lineHeight:1.6}}>
                         💡 Customers can choose which instrument they want you to play when booking. Your primary instrument will be: <strong style={{color:C.lapis}}>{f.selectedInstruments[0]}</strong> (first selected)
                       </div>
                     )}
@@ -12337,7 +12337,7 @@ function ApplySheet({ onSubmit, onClose }) {
                             <div style={{fontSize:11,color:C.muted}}>When you perform alone — <strong>singer only, no instruments</strong> · min €500</div>
                           </div>
                         </div>
-                        <div style={{background:C.rubyS,border:`1px solid ${C.ruby}22`,borderRadius:8,padding:"8px 12px",marginBottom:10,fontSize:11,color:C.muted,lineHeight:1.6}}>
+                        <div style={{background:C.rubyS,border:`1px solid ${C.ruby}22`,borderRadius:8,padding:"8px 12px",marginBottom:10,fontSize:11,color:C.textD,lineHeight:1.6}}>
                           ⚠️ <strong style={{color:C.text}}>Important:</strong> When customers book you solo, they get your voice only. If they want tabla, keyboard or other musicians, they must book a full band separately. Make sure your profile makes this clear.
                         </div>
                         <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:6}}>
@@ -12383,7 +12383,7 @@ function ApplySheet({ onSubmit, onClose }) {
                         Session deposit <span style={{color:C.ruby}}>*</span>
                         <span style={{fontWeight:400,marginLeft:6}}>€50 – €250 · per country prices set in dashboard</span>
                       </div>
-                      <div style={{background:C.lapisS,border:`1px solid ${C.lapis}33`,borderRadius:10,padding:"10px 12px",marginBottom:8,fontSize:11,color:C.muted,lineHeight:1.6}}>
+                      <div style={{background:C.lapisS,border:`1px solid ${C.lapis}33`,borderRadius:10,padding:"10px 12px",marginBottom:8,fontSize:11,color:C.textD,lineHeight:1.6}}>
                         💡 This is the deposit customers pay upfront via Stripe. You set full prices per country in your dashboard after signing up. The remaining balance is paid in cash after the event.
                       </div>
                       <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:6,marginBottom:6}}>
