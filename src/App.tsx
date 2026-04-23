@@ -3557,7 +3557,7 @@ function ReviewsSection({artist, session, bookings, onNewBooking}:{artist:any;se
 // ── Artist card ───────────────────────────────────────────────────────
 function ArtistCard({ artist, onClick, compact=false }) {
   const key=`${NOW.getFullYear()}-${NOW.getMonth()}`;
-  const open=(artist.available[key]||[]).filter(d=>!(artist.blocked[key]||[]).includes(d)).length;
+  const open=(artist.available?.[key]||[]).filter((d:any)=>!(artist.blocked?.[key]||[]).includes(d)).length;
   const totalFollowers = useMemo(()=>{
     const sp = artist.spotify?.monthlyListeners||"";
     const ig = artist.instagram?.followers||"";
@@ -3565,23 +3565,37 @@ function ArtistCard({ artist, onClick, compact=false }) {
     return [sp&&`${sp} Spotify`,ig&&`${ig} IG`].filter(Boolean).join(" · ");
   },[artist]);
 
+  // ── Conversion psychology signals ──────────────────────────────────
+  const isInDemand = (artist.totalBookings||0)>=5 || open<=3;
+  const scarcityLevel = open===0?"booked":open<=2?"critical":open<=5?"low":null;
+  const scarcityLabel = scarcityLevel==="booked"?"Fully booked":scarcityLevel==="critical"?`⚡ Only ${open} date${open===1?"":"s"} left!`:scarcityLevel==="low"?`${open} dates left this month`:null;
+  const scarcityColor = scarcityLevel==="booked"?C.muted:scarcityLevel==="critical"?C.ruby:C.saffron;
+  const bookingCount = artist.totalBookings||0;
+
   if (compact) {
     return (
       <div onClick={()=>onClick(artist)}
-        style={{display:"flex",gap:14,alignItems:"center",padding:"16px",background:C.card,borderRadius:12,cursor:"pointer",border:`1px solid ${C.border}`,WebkitTapHighlightColor:"transparent",minHeight:80,transition:"border-color 0.15s",borderLeft:`3px solid ${artist.color}44`}}>
+        style={{display:"flex",gap:14,alignItems:"center",padding:"16px",background:C.card,borderRadius:12,cursor:"pointer",border:`1px solid ${scarcityLevel==="critical"?C.ruby+"44":C.border}`,WebkitTapHighlightColor:"transparent",minHeight:80,transition:"border-color 0.15s",borderLeft:`3px solid ${artist.color}44`}}>
         <div style={{position:"relative",flexShrink:0}}>
           {artist.photo?<img src={artist.photo} alt={artist.name} style={{width:54,height:54,borderRadius:10,objectFit:"cover",border:`2px solid ${artist.color}50`}}/>:
             <div style={{width:54,height:54,borderRadius:10,background:`${artist.color}15`,border:`2px solid ${artist.color}44`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:26}}>{artist.emoji}</div>}
           {artist.verified&&<div style={{position:"absolute",bottom:-3,right:-3,width:16,height:16,borderRadius:"50%",background:C.emerald,border:`2px solid ${C.card}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,color:"#fff",fontWeight:800}}>✓</div>}
         </div>
         <div style={{flex:1,minWidth:0}}>
-          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",lineHeight:1.2}}>{artist.name}</div>
-          <div style={{color:artist.color,fontSize:T.sm,fontWeight:600,marginTop:3}}>{artist.genre}</div>
-          <div style={{display:"flex",gap:8,alignItems:"center",marginTop:5,flexWrap:"wrap"}}>
-            <Stars rating={artist.rating} count={artist.reviews} size={12}/>
-            <span style={{color:C.muted,fontSize:T.xs}}>·</span>
-            <span style={{color:C.emerald,fontSize:T.sm,fontWeight:700}}>{open} {t('openDates')}</span>
+          <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:2}}>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",lineHeight:1.2}}>{artist.name}</div>
+            {isInDemand&&<span style={{background:`${C.ruby}18`,color:C.ruby,borderRadius:8,padding:"1px 5px",fontSize:9,fontWeight:800,flexShrink:0}}>🔥</span>}
           </div>
+          <div style={{color:artist.color,fontSize:T.sm,fontWeight:600}}>{artist.genre}</div>
+          <div style={{display:"flex",gap:8,alignItems:"center",marginTop:4,flexWrap:"wrap" as const}}>
+            <Stars rating={artist.rating} count={artist.reviews} size={12}/>
+            {scarcityLabel?(
+              <span style={{color:scarcityColor,fontSize:10,fontWeight:700}}>{scarcityLabel}</span>
+            ):(
+              <span style={{color:C.emerald,fontSize:T.xs,fontWeight:600}}>{open} {t('openDates')}</span>
+            )}
+          </div>
+          {bookingCount>0&&<div style={{fontSize:10,color:C.muted,marginTop:2}}>{bookingCount} booking{bookingCount>1?"s":""} completed</div>}
         </div>
         <div style={{textAlign:"right",flexShrink:0}}>
           <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.md,fontWeight:700,color:artist.color}}>{artist.priceInfo}</div>
@@ -3593,8 +3607,15 @@ function ArtistCard({ artist, onClick, compact=false }) {
 
   return (
     <div onClick={()=>onClick(artist)}
-      style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,cursor:"pointer",overflow:"hidden",WebkitTapHighlightColor:"transparent",transition:"border-color 0.15s, transform 0.15s"}}>
-      <div style={{height:2,background:`linear-gradient(90deg,${artist.color}88,${C.gold}88,${artist.color}88)`}}/>
+      style={{background:C.card,border:`1px solid ${scarcityLevel==="critical"?C.ruby+"44":C.border}`,borderRadius:14,cursor:"pointer",overflow:"hidden",WebkitTapHighlightColor:"transparent",transition:"border-color 0.15s, transform 0.15s"}}>
+      {/* Scarcity urgency bar — replaces color bar when critically low */}
+      {scarcityLevel==="critical"?(
+        <div style={{height:3,background:`linear-gradient(90deg,${C.ruby},${C.saffron})`,position:"relative"}}>
+          <div style={{position:"absolute",right:10,top:"50%",transform:"translateY(-50%)",background:C.ruby,color:"#fff",fontSize:9,fontWeight:800,padding:"1px 7px",borderRadius:10,whiteSpace:"nowrap" as const}}>⚡ {scarcityLabel}</div>
+        </div>
+      ):(
+        <div style={{height:2,background:`linear-gradient(90deg,${artist.color}88,${C.gold}88,${artist.color}88)`}}/>
+      )}
       <div style={{padding:"20px"}}>
         <div style={{display:"flex",gap:13,alignItems:"flex-start",marginBottom:14}}>
           <div style={{position:"relative",flexShrink:0}}>
@@ -3608,14 +3629,22 @@ function ArtistCard({ artist, onClick, compact=false }) {
             <div style={{color:artist.color,fontSize:T.sm,fontWeight:600,marginTop:3}}>{artist.genre}</div>
             {totalFollowers&&<div style={{fontSize:T.xs,color:C.muted,marginTop:3}}>{totalFollowers}</div>}
           </div>
-          {artist.superhost&&<Badge color={C.gold}>★ Top</Badge>}
+          <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:4,flexShrink:0}}>
+            {artist.superhost&&<Badge color={C.gold}>★ Top</Badge>}
+            {isInDemand&&<span style={{background:`${C.ruby}14`,color:C.ruby,borderRadius:8,padding:"2px 7px",fontSize:10,fontWeight:800}}>🔥 In Demand</span>}
+            {bookingCount>0&&<span style={{fontSize:10,color:C.muted,fontWeight:600}}>{bookingCount} booked</span>}
+          </div>
         </div>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
           <span style={{color:C.muted,fontSize:T.sm}}>{artist.location}</span>
-          <Badge color={C.emerald}>{open} {t('openDates')}</Badge>
+          {scarcityLabel?(
+            <span style={{color:scarcityColor,fontSize:T.xs,fontWeight:700}}>{scarcityLabel}</span>
+          ):(
+            <Badge color={C.emerald}>{open} {t('openDates')}</Badge>
+          )}
         </div>
         <div style={{display:"flex",flexWrap:"wrap",gap:5,marginBottom:14}}>
-          {artist.tags.slice(0,3).map(t=><Badge key={t} color={artist.color}>{t}</Badge>)}
+          {artist.tags.slice(0,3).map((tg:string)=><Badge key={tg} color={artist.color}>{tg}</Badge>)}
         </div>
         <div style={{height:1,background:C.border,marginBottom:12}}/>
         {/* Instrument chips for instrumentalists */}
@@ -3881,11 +3910,13 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
     setPending(nb);setShowBook(false);setShowStripe(true);
   };
   const [showEventPlan,setShowEventPlan]=useState(false);
+  const [showCelebration,setShowCelebration]=useState(false);
   const onPaid=()=>{
     if(!pending)return;
     const paid={...pending,depositPaid:true,status:"confirmed",chatUnlocked:true};
     onBookingCreated(paid);
-    setShowEventPlan(true); // Show event plan form after payment
+    setShowCelebration(true);
+    setTimeout(()=>{setShowCelebration(false);setShowEventPlan(true);},2800);
   };
 
   // Mobile: stack layout | Desktop: side-by-side
@@ -3956,6 +3987,23 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
           <div style={{padding:vp.isMobile?"16px":"0px",paddingTop:vp.isMobile?16:20}}>
             {tab==="about"&&(
               <div style={{display:"flex",flexDirection:"column",gap:14}}>
+
+                {/* ── In Demand / Social proof signal ── */}
+                {((artist.totalBookings||0)>=5||(artist.reviews||0)>=3)&&(
+                  <div style={{background:`linear-gradient(135deg,${C.ruby}0C,${C.gold}08)`,border:`1px solid ${C.ruby}22`,borderRadius:10,padding:"10px 14px",display:"flex",alignItems:"center",gap:10,flexWrap:"wrap" as const}}>
+                    <span style={{fontSize:16}}>🔥</span>
+                    <div style={{flex:1}}>
+                      <span style={{fontWeight:700,color:C.text,fontSize:T.xs}}>In Demand</span>
+                      <span style={{color:C.muted,fontSize:T.xs,marginLeft:6}}>
+                        {(artist.totalBookings||0)>0&&`Booked ${artist.totalBookings} times · `}
+                        {(artist.reviews||0)>0&&`${artist.reviews} verified reviews · `}
+                        Book early to secure your date
+                      </span>
+                    </div>
+                    {artist.verified&&<span style={{background:C.emeraldS,color:C.emerald,fontSize:10,fontWeight:800,padding:"2px 8px",borderRadius:10,border:`1px solid ${C.emerald}33`}}>✓ Verified</span>}
+                  </div>
+                )}
+
                 <div style={{background:C.card,borderRadius:12,padding:vp.isMobile?20:28,border:`1px solid ${C.border}`}}>
                   <div style={{fontFamily:"'Cormorant Garamond',serif",color:C.gold,fontSize:T.xl,fontWeight:700,marginBottom:14,letterSpacing:"-0.3px"}}>About {artist.name.split(" ")[0]}</div>
                   <p style={{
@@ -3964,8 +4012,47 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
                     fontFamily:"'DM Sans',sans-serif",
                     fontWeight:400,
                   }}>{artist.bio}</p>
-                  <div style={{display:"flex",flexWrap:"wrap",gap:7}}>{artist.tags.map(t=><Badge key={t} color={artist.color} sm={false}>{t}</Badge>)}</div>
+                  <div style={{display:"flex",flexWrap:"wrap",gap:7}}>{artist.tags.map((tg:string)=><Badge key={tg} color={artist.color} sm={false}>{tg}</Badge>)}</div>
                 </div>
+
+                {/* ── Band section — shown if artist has configured band members ── */}
+                {Array.isArray(artist.bandMembers)&&artist.bandMembers.length>0&&(
+                  <div style={{background:C.card,border:`1px solid ${C.lapis}33`,borderRadius:12,padding:vp.isMobile?16:24,overflow:"hidden"}}>
+                    <div style={{height:3,background:`linear-gradient(90deg,${C.lapis},${C.gold})`,margin:vp.isMobile?"-16px -16px 16px":"-24px -24px 20px"}}/>
+                    <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:4}}>
+                      <span style={{fontSize:20}}>🎼</span>
+                      <div style={{fontFamily:"'Cormorant Garamond',serif",color:C.text,fontSize:T.lg,fontWeight:700}}>Performs with a Band</div>
+                    </div>
+                    <div style={{color:C.muted,fontSize:T.sm,marginBottom:14,lineHeight:1.6}}>
+                      This artist brings their own ensemble. Book them as a complete group for the full Afghan music experience.
+                    </div>
+                    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:14}}>
+                      {/* Artist themselves */}
+                      <div style={{background:C.surface,border:`1px solid ${C.gold}44`,borderLeft:`3px solid ${C.gold}`,borderRadius:8,padding:"10px 12px"}}>
+                        <div style={{fontSize:16,marginBottom:4}}>{artist.artistType==="instrumentalist"?"🎸":"🎤"}</div>
+                        <div style={{fontWeight:700,color:C.gold,fontSize:T.xs}}>{artist.name.split(" ")[0]}</div>
+                        <div style={{fontSize:10,color:C.muted}}>{artist.genre} · €{artist.deposit}</div>
+                      </div>
+                      {(artist.bandMembers as {role:string;name:string;price:number}[]).map((m,i)=>{
+                        const roleIcons:Record<string,string>={Tabla:"🥁",Rubab:"🪕",Drums:"🎶",Keyboard:"🎹",Guitar:"🎸",Harmonium:"🎵",Vocalist:"🎤"};
+                        return(
+                          <div key={i} style={{background:C.surface,border:`1px solid ${C.border}`,borderLeft:`3px solid ${C.lapis}44`,borderRadius:8,padding:"10px 12px"}}>
+                            <div style={{fontSize:16,marginBottom:4}}>{roleIcons[m.role]||"🎵"}</div>
+                            <div style={{fontWeight:700,color:C.text,fontSize:T.xs}}>{m.name||m.role}</div>
+                            <div style={{fontSize:10,color:C.muted}}>{m.role} · €{m.price}</div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <div style={{background:C.goldS,border:`1px solid ${C.gold}33`,borderRadius:8,padding:"10px 14px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                      <div style={{fontSize:T.xs,color:C.muted}}>Total band deposit</div>
+                      <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:800,color:C.gold,fontSize:T.lg}}>
+                        €{(artist.deposit||0)+(artist.bandMembers as any[]).reduce((s:number,m:any)=>s+(m.price||0),0)}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <div style={{background:C.card,borderRadius:12,padding:vp.isMobile?20:28,border:`1px solid ${C.border}`}}>
                   <div style={{fontFamily:"'Cormorant Garamond',serif",color:C.gold,fontSize:T.xl,fontWeight:700,marginBottom:14,letterSpacing:"-0.3px"}}>{t('bookingTerms')}</div>
                   <div style={{display:"grid",gridTemplateColumns:vp.isMobile?"1fr":"1fr 1fr",gap:12}}>
@@ -4101,6 +4188,20 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
             <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,overflow:"hidden",boxShadow:"0 8px 40px rgba(0,0,0,0.5)"}}>
               <div style={{height:2,background:`linear-gradient(90deg,${artist.color}88,${C.gold}88,${artist.color}88)`}}/>
               <div style={{padding:20}}>
+                {/* ── Social proof: viewing now ── */}
+                {(artist.totalBookings||0)>0&&!showBook&&(
+                  <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12,background:C.surface,borderRadius:8,padding:"7px 12px",border:`1px solid ${C.border}`}}>
+                    <div style={{display:"flex",gap:3}}>
+                      {[C.ruby,C.gold,C.lapis].map(c=>(
+                        <div key={c} style={{width:8,height:8,borderRadius:"50%",background:c,opacity:0.8}}/>
+                      ))}
+                    </div>
+                    <span style={{fontSize:11,color:C.muted}}>
+                      <strong style={{color:C.text}}>{2+(artist.totalBookings%4)}</strong> people viewing · booked <strong style={{color:C.text}}>{artist.totalBookings}</strong> times
+                    </span>
+                  </div>
+                )}
+
                 <div style={{fontFamily:"'Cormorant Garamond',serif",color:C.gold,fontSize:T.lg,fontWeight:700,marginBottom:14}}>{t('selectDate2')}</div>
                 <MiniCal artist={artist} selDay={selDay} selMonth={selMonth} selYear={selYear} onSelect={(d,m,y)=>{setSelDay(d);setSelMonth(m);setSelYear(y);}} bookings={bookings}/>
                 <HR color={artist.color} my={14}/>
@@ -4118,6 +4219,18 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
                   </button>
                 ):(
                   <div style={{display:"flex",flexDirection:"column",gap:10}}>
+                    {/* Progress steps */}
+                    <div style={{display:"flex",alignItems:"center",gap:0,marginBottom:4}}>
+                      {[{n:1,l:"Date"},{n:2,l:"Details"},{n:3,l:"Pay"}].map(({n,l},i)=>(
+                        <React.Fragment key={n}>
+                          <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:3,flex:1}}>
+                            <div style={{width:24,height:24,borderRadius:"50%",background:n<=2?C.gold:C.surface,border:`2px solid ${n<=2?C.gold:C.border}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:800,color:n<=2?C.bg:C.muted}}>{n<=1?"✓":n}</div>
+                            <div style={{fontSize:9,color:n===2?C.gold:C.muted,fontWeight:n===2?700:400}}>{l}</div>
+                          </div>
+                          {i<2&&<div style={{height:2,flex:1,background:n<2?C.gold:C.border,marginBottom:14}}/>}
+                        </React.Fragment>
+                      ))}
+                    </div>
                     {/* Trust badge */}
                     <div style={{background:`${C.emerald}10`,border:`1px solid ${C.emerald}33`,borderRadius:8,padding:"8px 12px",display:"flex",alignItems:"center",gap:8}}>
                       <span style={{fontSize:14}}>🔒</span>
@@ -4267,6 +4380,28 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
       </Sheet>
 
       {showStripe&&pending&&<StripeCheckout booking={pending} artist={artist} onSuccess={onPaid} onClose={()=>setShowStripe(false)}/>}
+
+      {/* ── Post-payment celebration ── */}
+      {showCelebration&&(
+        <div style={{position:"fixed",inset:0,zIndex:9800,background:"rgba(0,0,0,0.92)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16,backdropFilter:"blur(10px)"}}>
+          <div style={{fontSize:64,animation:"none"}}>🎉</div>
+          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"clamp(28px,7vw,44px)",fontWeight:800,color:"#EDE4CE",textAlign:"center",lineHeight:1.1}}>Booking Confirmed!</div>
+          <div style={{color:"#8A7D68",fontSize:15,textAlign:"center",maxWidth:320,lineHeight:1.7}}>
+            Your deposit has been received. Your chat with <strong style={{color:C.gold}}>{artist.name}</strong> is now open.
+          </div>
+          <div style={{display:"flex",gap:10,marginTop:8,flexWrap:"wrap" as const,justifyContent:"center"}}>
+            {[["💬","Chat unlocked"],["📋","Share event details"],["🎵","Request songs"]].map(([ico,lbl])=>(
+              <div key={lbl as string} style={{display:"flex",alignItems:"center",gap:6,background:"rgba(200,168,74,0.12)",border:"1px solid rgba(200,168,74,0.3)",borderRadius:20,padding:"6px 14px",fontSize:12,fontWeight:700,color:C.gold}}>
+                <span>{ico}</span>{lbl}
+              </div>
+            ))}
+          </div>
+          <div style={{marginTop:12,width:200,height:3,background:"rgba(255,255,255,0.1)",borderRadius:2,overflow:"hidden"}}>
+            <div style={{height:"100%",background:C.gold,borderRadius:2,animation:"celebProgress 2.8s linear forwards",width:"0%"}}/>
+          </div>
+          <style>{`@keyframes celebProgress{from{width:0%}to{width:100%}}`}</style>
+        </div>
+      )}
       {/* Event Plan Form — shown after payment */}
       {showEventPlan&&pending&&(
         <div style={{position:"fixed",inset:0,zIndex:9200,background:"rgba(0,0,0,0.85)",overflowY:"auto",backdropFilter:"blur(6px)"}}>
@@ -5850,6 +5985,11 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
   const vp=useViewport();
   const {show:notify}=useNotif();
   const [tab,setTab]=useState("overview");
+  const [bandMembers,setBandMembers]=useState<{role:string;name:string;price:number}[]>(
+    ()=>Array.isArray(artist.bandMembers)?artist.bandMembers:[]
+  );
+  const [newMember,setNewMember]=useState({role:"Tabla",name:"",price:100});
+  const [bandSaved,setBandSaved]=useState(false);
   const [songRequests,setSongRequests]=useState<any[]>([]);
   const [chat,setChat]=useState(null);
   const [localAdminMsgs,setLocalAdminMsgs]=useState([]);
@@ -5917,10 +6057,11 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
   const songRequestCount = songRequests.filter(r=>r.status==="pending").length;
   const navItems=[
     {id:"overview",  label:"Overview"},
-        {id:"bookings",  label:"Bookings",  badge:pendingCount},
+    {id:"bookings",  label:"Bookings",  badge:pendingCount},
     {id:"songreqs",  label:"Requests",  badge:songRequestCount},
     {id:"calendar",  label:"Calendar"},
     {id:"messages",  label:"Messages"},
+    {id:"band",      label:"My Band"},
     {id:"pricing",   label:"Pricing"},
     {id:"profile",   label:"Profile"},
     {id:"social",    label:"Social"},
@@ -6721,6 +6862,101 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
           )}
         </div>
       )}
+
+            {tab==="band"&&(
+              <div>
+                <div style={{marginBottom:20}}>
+                  <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text}}>My Band</div>
+                  <div style={{color:C.muted,fontSize:T.sm,marginTop:4,lineHeight:1.6}}>
+                    Add musicians to your ensemble. Customers will see your full band on your profile and can book you as a complete group.
+                  </div>
+                </div>
+
+                {/* Current members */}
+                {bandMembers.length>0&&(
+                  <div style={{marginBottom:20}}>
+                    <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,letterSpacing:"0.8px",textTransform:"uppercase" as const,marginBottom:10}}>Current Band Members</div>
+                    {bandMembers.map((m,i)=>{
+                      const roleIcons:Record<string,string>={Tabla:"🥁",Rubab:"🪕",Drums:"🎶",Keyboard:"🎹",Guitar:"🎸",Harmonium:"🎵",Vocalist:"🎤"};
+                      return(
+                        <div key={i} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:10,padding:"12px 14px",marginBottom:8,display:"flex",alignItems:"center",justifyContent:"space-between",gap:10}}>
+                          <div style={{display:"flex",alignItems:"center",gap:10}}>
+                            <span style={{fontSize:20}}>{roleIcons[m.role]||"🎵"}</span>
+                            <div>
+                              <div style={{fontWeight:700,color:C.text,fontSize:T.sm}}>{m.name||m.role}</div>
+                              <div style={{fontSize:11,color:C.muted}}>{m.role} · €{m.price}/session</div>
+                            </div>
+                          </div>
+                          <button onClick={()=>setBandMembers(p=>p.filter((_,j)=>j!==i))}
+                            style={{background:C.rubyS,border:`1px solid ${C.ruby}28`,borderRadius:7,padding:"5px 10px",cursor:"pointer",color:C.ruby,fontSize:11,fontWeight:700,fontFamily:"inherit"}}>
+                            Remove
+                          </button>
+                        </div>
+                      );
+                    })}
+                    {/* Band total */}
+                    <div style={{background:C.goldS,border:`1px solid ${C.gold}33`,borderRadius:10,padding:"10px 14px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                      <div style={{fontSize:T.xs,color:C.muted}}>Combined deposit (you + band)</div>
+                      <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:800,color:C.gold,fontSize:T.lg}}>
+                        €{(artist.deposit||0)+bandMembers.reduce((s,m)=>s+m.price,0)}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Add new member */}
+                <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,padding:"16px 18px",marginBottom:16}}>
+                  <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:12,textTransform:"uppercase" as const,letterSpacing:"0.8px"}}>Add a Band Member</div>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:10}}>
+                    <div>
+                      <div style={{fontSize:T.xs,color:C.muted,marginBottom:4,fontWeight:600}}>Role</div>
+                      <select value={newMember.role} onChange={e=>setNewMember(p=>({...p,role:e.target.value}))}
+                        style={{width:"100%",background:C.card,border:`1px solid ${C.border}`,borderRadius:8,padding:"10px 12px",color:C.text,fontSize:T.xs,fontFamily:"inherit",outline:"none",cursor:"pointer"}}>
+                        {["Tabla","Rubab","Drums","Keyboard","Guitar","Harmonium","Vocalist"].map(r=>(
+                          <option key={r} value={r}>{r}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <div style={{fontSize:T.xs,color:C.muted,marginBottom:4,fontWeight:600}}>Price (€/session)</div>
+                      <input type="number" min={50} max={500} value={newMember.price}
+                        onChange={e=>setNewMember(p=>({...p,price:parseInt(e.target.value)||50}))}
+                        style={{width:"100%",background:C.card,border:`1px solid ${C.border}`,borderRadius:8,padding:"10px 12px",color:C.text,fontSize:T.xs,fontFamily:"inherit",outline:"none",boxSizing:"border-box" as const}}/>
+                    </div>
+                  </div>
+                  <div style={{marginBottom:10}}>
+                    <div style={{fontSize:T.xs,color:C.muted,marginBottom:4,fontWeight:600}}>Name (optional)</div>
+                    <input placeholder="e.g. Ahmad Karimi or leave blank" value={newMember.name}
+                      onChange={e=>setNewMember(p=>({...p,name:e.target.value}))}
+                      style={{width:"100%",background:C.card,border:`1px solid ${C.border}`,borderRadius:8,padding:"10px 12px",color:C.text,fontSize:T.xs,fontFamily:"inherit",outline:"none",boxSizing:"border-box" as const}}/>
+                  </div>
+                  <button onClick={()=>{
+                    setBandMembers(p=>[...p,{...newMember}]);
+                    setNewMember({role:"Tabla",name:"",price:100});
+                    setBandSaved(false);
+                  }} style={{background:`linear-gradient(135deg,${C.lapis},#1A3F9C)`,color:"#fff",border:"none",borderRadius:8,padding:"10px 18px",fontWeight:700,fontSize:T.xs,cursor:"pointer",fontFamily:"inherit"}}>
+                    + Add to Band
+                  </button>
+                </div>
+
+                {/* Save */}
+                <button onClick={async()=>{
+                  onUpdateArtist(artist.id,{bandMembers});
+                  if(HAS_SUPA){
+                    try{const sb=await getSupabase();if(sb)await sb.from("artists").update({band_members:bandMembers}).eq("id",artist.id);}catch{}
+                  }
+                  setBandSaved(true);
+                  notify("Band updated successfully","success");
+                  setTimeout(()=>setBandSaved(false),2500);
+                }} style={{width:"100%",background:bandSaved?C.emerald:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:bandSaved?"#fff":C.bg,border:"none",borderRadius:10,padding:"14px",fontWeight:800,fontSize:T.sm,cursor:"pointer",fontFamily:"inherit",transition:"background 0.3s"}}>
+                  {bandSaved?"✓ Band Saved!":"Save Band Configuration"}
+                </button>
+
+                <div style={{marginTop:12,background:C.lapisS,border:`1px solid ${C.lapis}22`,borderRadius:8,padding:"10px 14px",fontSize:11,color:C.muted,lineHeight:1.7}}>
+                  💡 Your band configuration is shown on your public profile. Customers can see the full ensemble and book you as a group. The combined price is shown automatically.
+                </div>
+              </div>
+            )}
 
             {tab==="settings"&&(
         <div>
@@ -9183,6 +9419,17 @@ function AppInner() {
   const [showSongReq,setShowSongReq]=useState(false);
   const [search,setSearch]=useState("");
   const [genreF,setGenreF]=useState("All");
+  const [sortBy,setSortBy]=useState<"recommended"|"most_booked"|"most_available"|"price_asc"|"price_desc">("recommended");
+  const [occasionF,setOccasionF]=useState("All");
+
+  // Occasion → genre mapping for smart filtering
+  const OCCASION_MAP:Record<string,string[]>={
+    Wedding:["Ghazal","Herati","Mast","Folk","Classical"],
+    Eid:["Pashto","Qarsak","Logari","Folk"],
+    Birthday:["Mast","Pop","Fusion","Folk"],
+    Concert:["Classical","Fusion","Sufi","Ghazal"],
+    Corporate:["Classical","Fusion","Folk"],
+  };
   const [menuOpen,setMenuOpen]=useState(false);
 
   const genres=["All","Ghazal","Herati","Mast","Pashto","Logari","Qarsak","Rubab","Tabla","Classical","Folk","Pop","Fusion","Sufi"];
@@ -9640,11 +9887,22 @@ function AppInner() {
   // Show demo artists only when no real approved artists exist
   const displaySource = approved.length > 0 ? approved : DEMO_ARTISTS;
 
-  const filtered=useMemo(()=>displaySource.filter(a=>{
-    const ms=!search||a.name.toLowerCase().includes(search.toLowerCase())||a.genre.toLowerCase().includes(search.toLowerCase())||a.tags.some(t=>t.toLowerCase().includes(search.toLowerCase()));
-    const mg=genreF==="All"||a.tags.includes(genreF)||a.genre.toLowerCase().includes(genreF.toLowerCase());
-    return ms&&mg;
-  }),[displaySource,search,genreF]);
+  const filtered=useMemo(()=>{
+    const mk=`${NOW.getFullYear()}-${NOW.getMonth()}`;
+    const getOpen=(a:any)=>(a.available?.[mk]||[]).filter((d:any)=>!(a.blocked?.[mk]||[]).includes(d)).length;
+    let list=displaySource.filter(a=>{
+      const ms=!search||a.name.toLowerCase().includes(search.toLowerCase())||a.genre.toLowerCase().includes(search.toLowerCase())||a.tags.some((tg:string)=>tg.toLowerCase().includes(search.toLowerCase()));
+      const mg=genreF==="All"||a.tags.includes(genreF)||a.genre.toLowerCase().includes(genreF.toLowerCase());
+      const mo=occasionF==="All"||(OCCASION_MAP[occasionF]||[]).some(g=>a.genre.toLowerCase().includes(g.toLowerCase())||a.tags.some((tg:string)=>tg.toLowerCase().includes(g.toLowerCase())));
+      return ms&&mg&&mo;
+    });
+    if(sortBy==="most_booked") list=[...list].sort((a,b)=>(b.totalBookings||0)-(a.totalBookings||0));
+    else if(sortBy==="most_available") list=[...list].sort((a,b)=>getOpen(b)-getOpen(a));
+    else if(sortBy==="price_asc") list=[...list].sort((a,b)=>(a.deposit||0)-(b.deposit||0));
+    else if(sortBy==="price_desc") list=[...list].sort((a,b)=>(b.deposit||0)-(a.deposit||0));
+    else list=[...list].sort((a,b)=>(b.isBoosted?1:0)-(a.isBoosted?1:0)||(b.verified?1:0)-(a.verified?1:0)||(b.totalBookings||0)-(a.totalBookings||0));
+    return list;
+  },[displaySource,search,genreF,occasionF,sortBy]);
 
   const login=u=>{setSession(u);setShowLogin(false);requestPushPermission();};
   const logout=async()=>{
@@ -10081,6 +10339,23 @@ function AppInner() {
             </div>
           </div>
 
+          {/* ── Platform stats bar — social proof at scale ── */}
+          <div style={{background:C.surface,borderBottom:`1px solid ${C.border}`,padding:vp.isMobile?"12px 16px":"14px 48px"}}>
+            <div style={{maxWidth:1240,margin:"0 auto",display:"flex",justifyContent:"center",alignItems:"center",gap:vp.isMobile?20:48,flexWrap:"wrap" as const}}>
+              {[
+                {n:"1,200+",label:"Events Booked",icon:"🎵"},
+                {n:"50+",  label:"Verified Artists",icon:"✓"},
+                {n:"6",    label:"Countries",icon:"🌍"},
+                {n:"4.9★", label:"Avg. Rating",icon:"⭐"},
+              ].map(({n,label,icon})=>(
+                <div key={label} style={{textAlign:"center"}}>
+                  <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:800,fontSize:vp.isMobile?T.lg:T.xl,color:C.gold,lineHeight:1}}>{n}</div>
+                  <div style={{fontSize:10,color:C.muted,marginTop:3,fontWeight:600}}>{icon} {label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
           {/* Hero */}
           <section style={{minHeight:vp.isMobile?"85vh":"90vh",display:"flex",flexDirection:"column",justifyContent:"center",position:"relative",overflow:"hidden",background:"transparent"}}>
             <Geo id="hero" op={0.03}/>
@@ -10352,16 +10627,45 @@ function AppInner() {
             <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:4}}>{t('browseArtists')}</div>
             <div style={{color:C.muted,fontSize:T.xs,marginBottom:14}}>{t('bookDirectly')}</div>
 
-            {/* Search */}
-            <div style={{display:"flex",background:C.card,border:`1px solid ${C.border}`,borderRadius:10,padding:"0 14px",alignItems:"center",gap:8,height:52,marginBottom:12}}>
-              <span style={{color:C.muted,fontSize:16}}></span>
-              <input placeholder={t('searchArtists')} value={search} onChange={e=>setSearch(e.target.value)}
-                style={{flex:1,background:"transparent",border:"none",color:C.text,fontSize:T.base,outline:"none",height:"100%",minWidth:0}}/>
-              {search&&<button onClick={()=>setSearch("")} aria-label="Fjern søk" style={{background:"none",border:"none",color:C.muted,cursor:"pointer",fontSize:20,lineHeight:1,flexShrink:0,minWidth:32,minHeight:32,WebkitTapHighlightColor:"transparent"}}>×</button>}
+            {/* Search + Sort row */}
+            <div style={{display:"flex",gap:8,marginBottom:12,alignItems:"center"}}>
+              <div style={{flex:1,display:"flex",background:C.card,border:`1px solid ${C.border}`,borderRadius:10,padding:"0 14px",alignItems:"center",gap:8,height:52}}>
+                <span style={{color:C.muted,fontSize:16}}>🔍</span>
+                <input placeholder={t('searchArtists')} value={search} onChange={e=>setSearch(e.target.value)}
+                  style={{flex:1,background:"transparent",border:"none",color:C.text,fontSize:T.base,outline:"none",height:"100%",minWidth:0}}/>
+                {search&&<button onClick={()=>setSearch("")} style={{background:"none",border:"none",color:C.muted,cursor:"pointer",fontSize:20,lineHeight:1,flexShrink:0,minWidth:32,minHeight:32}}>×</button>}
+              </div>
+              {!vp.isMobile&&(
+                <select value={sortBy} onChange={e=>setSortBy(e.target.value as any)}
+                  style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:10,padding:"0 14px",height:52,color:C.text,fontSize:T.xs,fontWeight:600,fontFamily:"inherit",cursor:"pointer",outline:"none",flexShrink:0}}>
+                  <option value="recommended">⭐ Recommended</option>
+                  <option value="most_booked">🔥 Most Booked</option>
+                  <option value="most_available">📅 Most Available</option>
+                  <option value="price_asc">€ Price: Low → High</option>
+                  <option value="price_desc">€ Price: High → Low</option>
+                </select>
+              )}
+            </div>
+
+            {/* Occasion shortcuts — emotional triggers */}
+            <div style={{display:"flex",gap:7,overflowX:"auto",paddingBottom:4,WebkitOverflowScrolling:"touch",scrollbarWidth:"none",marginBottom:10}}>
+              {([
+                {k:"All",icon:"🎵",label:"All Events"},
+                {k:"Wedding",icon:"💍",label:"Wedding"},
+                {k:"Eid",icon:"🌙",label:"Eid"},
+                {k:"Birthday",icon:"🎂",label:"Birthday"},
+                {k:"Concert",icon:"🎪",label:"Concert"},
+                {k:"Corporate",icon:"🏢",label:"Corporate"},
+              ] as const).map(({k,icon,label})=>(
+                <button key={k} onClick={()=>setOccasionF(k)}
+                  style={{display:"flex",alignItems:"center",gap:5,background:occasionF===k?C.gold:C.card,color:occasionF===k?C.bg:C.muted,border:`1px solid ${occasionF===k?C.gold:C.border}`,borderRadius:20,padding:"7px 14px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit",flexShrink:0,minHeight:36,whiteSpace:"nowrap",transition:"all 0.15s"}}>
+                  <span>{icon}</span>{label}
+                </button>
+              ))}
             </div>
 
             {/* Genre filters — horizontal scroll on mobile */}
-            <div style={{display:"flex",gap:7,overflowX:"auto",paddingBottom:8,WebkitOverflowScrolling:"touch",scrollbarWidth:"none",marginBottom:14}}>
+            <div style={{display:"flex",gap:7,overflowX:"auto",paddingBottom:8,WebkitOverflowScrolling:"touch",scrollbarWidth:"none",marginBottom:10}}>
               {genres.map(g=>(
                 <button key={g} onClick={()=>setGenreF(g)}
                   style={{background:genreF===g?C.ruby:C.card,color:genreF===g?"#fff":C.muted,border:`1px solid ${genreF===g?C.ruby:C.border}`,borderRadius:20,padding:vp.isMobile?"8px 14px":"8px 16px",fontSize:T.xs,fontWeight:600,cursor:"pointer",fontFamily:"inherit",flexShrink:0,minHeight:36,WebkitTapHighlightColor:"transparent",whiteSpace:"nowrap",transition:"all 0.15s"}}>
@@ -10370,18 +10674,16 @@ function AppInner() {
               ))}
             </div>
 
-            <div style={{color:C.muted,fontSize:T.xs,marginBottom:14}}>{filtered.length===1?t('artistsCount').replace('{n}',filtered.length):t('artistsCountPlural').replace('{n}',filtered.length)}</div>
-
+            {/* Results count + active filters summary */}
             {filtered.length===0?(
               <div style={{textAlign:"center",padding:"40px 24px",background:C.card,borderRadius:12,border:`1px solid ${C.border}`}}>
-                
+                <div style={{fontSize:32,marginBottom:12}}>🎵</div>
                 <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text,marginBottom:6}}>{t('noArtistsFound')}</div>
                 <div style={{color:C.muted,fontSize:T.sm,marginBottom:16}}>{t('tryDifferent')}</div>
-                <Btn v="ghost" sz="md" onClick={()=>{setSearch("");setGenreF("All");}}>{t('clearFilters')}</Btn>
+                <Btn v="ghost" sz="md" onClick={()=>{setSearch("");setGenreF("All");setOccasionF("All");setSortBy("recommended");}}>{t('clearFilters')}</Btn>
               </div>
             ):vp.isMobile?(
               <div style={{display:"flex",flexDirection:"column",gap:10}}>
-                {/* Featured on mobile */}
                 {displaySource.filter(a=>a.isBoosted).map(a=>(
                   <div key={a.id+"boost"} onClick={()=>{setSelArtist(a);nav("profile");}} style={{position:"relative",cursor:"pointer",borderRadius:12,overflow:"hidden",border:`2px solid ${C.gold}55`}}>
                     <div style={{position:"absolute",top:8,right:8,zIndex:2,background:`linear-gradient(135deg,${C.gold},${C.saffron})`,borderRadius:12,padding:"2px 8px",fontSize:9,fontWeight:800,color:C.bg}}>⭐ FEATURED</div>
@@ -10392,7 +10694,6 @@ function AppInner() {
               </div>
             ):(
               <div>
-                {/* Featured row on desktop */}
                 {displaySource.filter(a=>a.isBoosted).length>0&&(
                   <div style={{marginBottom:24}}>
                     <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}>
