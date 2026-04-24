@@ -4119,7 +4119,7 @@ function ArtistCard({ artist, onClick, compact=false }) {
   if (compact) {
     return (
       <div onClick={()=>onClick(artist)}
-        style={{display:"flex",gap:14,alignItems:"center",padding:"16px",background:C.card,borderRadius:12,cursor:"pointer",border:`1px solid ${scarcityLevel==="critical"?C.ruby+"44":C.border}`,WebkitTapHighlightColor:"transparent",minHeight:80,transition:"border-color 0.15s",borderLeft:`3px solid ${artist.color}44`}}>
+        style={{display:"flex",gap:14,alignItems:"center",padding:"16px",background:C.card,borderRadius:12,cursor:"pointer",border:`1px solid ${C.border}`,WebkitTapHighlightColor:"transparent",minHeight:80,transition:"border-color 0.15s",borderLeft:`3px solid ${artist.color}44`}}>
         <div style={{position:"relative",flexShrink:0}}>
           {artist.photo?<img src={artist.photo} alt={artist.name} style={{width:54,height:54,borderRadius:10,objectFit:"cover",border:`2px solid ${artist.color}50`}}/>:
             <div style={{width:54,height:54,borderRadius:10,background:`${artist.color}15`,border:`2px solid ${artist.color}44`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:26}}>{artist.emoji}</div>}
@@ -4128,13 +4128,13 @@ function ArtistCard({ artist, onClick, compact=false }) {
         <div style={{flex:1,minWidth:0}}>
           <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:2}}>
             <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",lineHeight:1.2}}>{artist.name}</div>
-            {isInDemand&&<span style={{background:`${C.ruby}18`,color:C.ruby,borderRadius:8,padding:"1px 5px",fontSize:9,fontWeight:800,flexShrink:0}}>🔥</span>}
+            
           </div>
           <div style={{color:artist.color,fontSize:T.sm,fontWeight:600}}>{artist.genre}</div>
           <div style={{display:"flex",gap:8,alignItems:"center",marginTop:4,flexWrap:"wrap" as const}}>
             <Stars rating={artist.rating} count={artist.reviews} size={12}/>
             {scarcityLabel?(
-              <span style={{color:scarcityColor,fontSize:10,fontWeight:700}}>{scarcityLabel}</span>
+              <span style={{color:C.muted,fontSize:10}}>{scarcityLabel}</span>
             ):(
               <span style={{color:C.emerald,fontSize:T.xs,fontWeight:600}}>{open} {t('openDates')}</span>
             )}
@@ -4151,11 +4151,10 @@ function ArtistCard({ artist, onClick, compact=false }) {
 
   return (
     <div onClick={()=>onClick(artist)}
-      style={{background:C.card,border:`1px solid ${scarcityLevel==="critical"?C.ruby+"44":C.border}`,borderRadius:14,cursor:"pointer",overflow:"hidden",WebkitTapHighlightColor:"transparent",transition:"border-color 0.15s, transform 0.15s"}}>
+      style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,cursor:"pointer",overflow:"hidden",WebkitTapHighlightColor:"transparent",transition:"border-color 0.15s, transform 0.15s"}}>
       {/* Scarcity urgency bar — replaces color bar when critically low */}
       {scarcityLevel==="critical"?(
-        <div style={{height:3,background:`linear-gradient(90deg,${C.ruby},${C.saffron})`,position:"relative"}}>
-          <div style={{position:"absolute",right:10,top:"50%",transform:"translateY(-50%)",background:C.ruby,color:"#fff",fontSize:9,fontWeight:800,padding:"1px 7px",borderRadius:10,whiteSpace:"nowrap" as const}}>⚡ {scarcityLabel}</div>
+        <div style={{height:3,background:`linear-gradient(90deg,${C.gold}88,${C.gold}44)`}}/>
         </div>
       ):(
         <div style={{height:2,background:`linear-gradient(90deg,${artist.color}88,${C.gold}88,${artist.color}88)`}}/>
@@ -4175,16 +4174,16 @@ function ArtistCard({ artist, onClick, compact=false }) {
           </div>
           <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:4,flexShrink:0}}>
             {artist.superhost&&<Badge color={C.gold}>★ Top</Badge>}
-            {isInDemand&&<span style={{background:`${C.ruby}14`,color:C.ruby,borderRadius:8,padding:"2px 7px",fontSize:10,fontWeight:800}}>🔥 {t('inDemand')}</span>}
+            {isInDemand&&<span style={{background:`${C.gold}14`,color:C.gold,borderRadius:6,padding:"2px 8px",fontSize:10,fontWeight:600,letterSpacing:'0.2px'}}>{t('inDemand')}</span>}
             {bookingCount>0&&<span style={{fontSize:10,color:C.muted,fontWeight:600}}>{bookingCount} booked</span>}
           </div>
         </div>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
           <span style={{color:C.muted,fontSize:T.sm}}>{artist.location}</span>
           {scarcityLabel?(
-            <span style={{color:scarcityColor,fontSize:T.xs,fontWeight:700}}>{scarcityLabel}</span>
+            <span style={{color:C.muted,fontSize:T.xs}}>{scarcityLabel}</span>
           ):(
-            <Badge color={C.emerald}>{open} {t('openDates')}</Badge>
+            <span style={{color:C.muted,fontSize:T.xs}}>{open} {t('openDates')}</span>
           )}
         </div>
         <div style={{display:"flex",flexWrap:"wrap",gap:5,marginBottom:12}}>
@@ -4537,7 +4536,7 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
 
                 {/* ── In Demand / Social proof signal ── */}
                 {((artist.totalBookings||0)>=5||(artist.reviews||0)>=3)&&(
-                  <div style={{background:`linear-gradient(135deg,${C.ruby}0C,${C.gold}08)`,border:`1px solid ${C.ruby}22`,borderRadius:10,padding:"10px 14px",display:"flex",alignItems:"center",gap:10,flexWrap:"wrap" as const}}>
+                  <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:10,padding:"10px 14px",display:"flex",alignItems:"center",gap:10,flexWrap:"wrap" as const}}>
                     <span style={{fontSize:16}}>🔥</span>
                     <div style={{flex:1}}>
                       <span style={{fontWeight:700,color:C.text,fontSize:T.xs}}>{t('inDemand')}</span>
@@ -4736,7 +4735,7 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
                     <div style={{fontSize:T.xs,color:C.muted,lineHeight:1.5}}>
                       You've selected <strong style={{color:C.text}}>{MONTHS[selMonth]} {selDay}</strong>. Choose your preferred instrument when booking.
                     </div>
-                    <button onClick={()=>setShowBook(true)} style={{background:`linear-gradient(135deg,${C.lapis},#1A3F9C)`,color:"#fff",border:"none",borderRadius:8,padding:"8px 16px",fontSize:T.xs,fontWeight:800,cursor:"pointer",fontFamily:"inherit",flexShrink:0,whiteSpace:"nowrap" as const}}>
+                    <button onClick={()=>setShowBook(true)} style={{background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:"#fff",border:"none",borderRadius:8,padding:"8px 16px",fontSize:T.xs,fontWeight:800,cursor:"pointer",fontFamily:"inherit",flexShrink:0,whiteSpace:"nowrap" as const}}>
                       Book &amp; Choose →
                     </button>
                   </div>
@@ -7555,7 +7554,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
                     setBandMembers(p=>[...p,{...newMember}]);
                     setNewMember({role:"Tabla",name:"",price:100});
                     setBandSaved(false);
-                  }} style={{background:`linear-gradient(135deg,${C.lapis},#1A3F9C)`,color:"#fff",border:"none",borderRadius:8,padding:"10px 18px",fontWeight:700,fontSize:T.xs,cursor:"pointer",fontFamily:"inherit"}}>
+                  }} style={{background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:"#fff",border:"none",borderRadius:8,padding:"10px 18px",fontWeight:700,fontSize:T.xs,cursor:"pointer",fontFamily:"inherit"}}>
                     + {t('myBandAddMember')}
                   </button>
                 </div>
@@ -10901,7 +10900,7 @@ function AppInner() {
         <div onClick={()=>nav("home")} style={{cursor:"pointer",display:"flex",alignItems:"center",gap:10,WebkitTapHighlightColor:"transparent"}}>
           <div>
             <div style={{fontFamily:"'Noto Naskh Arabic',serif",fontSize:vp.isMobile?17:19,color:C.gold,lineHeight:1}}>آواز</div>
-            <div style={{height:1,background:`linear-gradient(90deg,${C.ruby},${C.gold},${C.lapis})`,marginTop:2}}/>
+            <div style={{height:1,background:C.gold,opacity:0.4,marginTop:2}}/>
           </div>
           <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:vp.isMobile?19:21,fontWeight:700,color:C.text,letterSpacing:"0.3px"}}>Awaz</div>
         </div>
@@ -10916,14 +10915,13 @@ function AppInner() {
             {/* ── Book a Band — pill badge ── */}
             <button onClick={()=>setShowBandBooking(true)} style={{
               display:"flex",alignItems:"center",gap:6,
-              background:`linear-gradient(135deg,${C.lapis}22,${C.lapis}0F)`,
-              border:`1.5px solid ${C.lapis}`,
+              background:"transparent",
+              border:`1px solid ${C.gold}66`,
               borderRadius:20,padding:"6px 14px",cursor:"pointer",
-              fontFamily:"inherit",fontSize:T.xs,fontWeight:700,
-              color:C.lapis,minHeight:36,WebkitTapHighlightColor:"transparent",
-              boxShadow:`0 0 12px ${C.lapis}22`,
+              fontFamily:"inherit",fontSize:T.xs,fontWeight:600,
+              color:C.gold,minHeight:36,WebkitTapHighlightColor:"transparent",
             }}>
-              🎼 Book a Band
+              Book a Band
             </button>
           </nav>
         )}
@@ -10951,21 +10949,17 @@ function AppInner() {
             </div>
           )}
           {vp.isMobile&&(
-            <div style={{display:'flex',gap:6,alignItems:'center'}}>
+            <div style={{display:'flex',gap:8,alignItems:'center'}}>
               <LangSwitcher lang={lang} onSwitch={switchLang}/>
-              <button onClick={toggleTheme} aria-label="Toggle theme"
-                style={{width:34,height:34,borderRadius:8,background:C.surface,border:`1px solid ${C.border}`,color:theme==='dark'?'#C8A84A':C.muted,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,WebkitTapHighlightColor:'transparent',flexShrink:0}}>
-                {theme==='dark'?'☀️':'🌙'}
-              </button>
               {!session&&(
                 <button onClick={()=>setShowLogin(true)}
-                  style={{height:34,borderRadius:8,background:C.gold,border:"none",color:C.bg,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:"0 12px",fontSize:12,fontWeight:800,fontFamily:"inherit",WebkitTapHighlightColor:"transparent",flexShrink:0,letterSpacing:"0.2px"}}>
+                  style={{height:32,borderRadius:20,background:"transparent",border:`1px solid ${C.gold}`,color:C.gold,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:"0 14px",fontSize:12,fontWeight:600,fontFamily:"inherit",WebkitTapHighlightColor:"transparent",flexShrink:0,letterSpacing:"0.3px"}}>
                   {t('signIn')}
                 </button>
               )}
               {session&&(
                 <button onClick={logout}
-                  style={{height:34,borderRadius:8,background:C.rubyS,border:`1px solid ${C.ruby}44`,color:C.ruby,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:"0 10px",fontSize:11,fontWeight:700,fontFamily:"inherit",WebkitTapHighlightColor:"transparent",flexShrink:0}}>
+                  style={{height:32,borderRadius:20,background:"transparent",border:`1px solid ${C.border}`,color:C.muted,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:"0 12px",fontSize:11,fontWeight:500,fontFamily:"inherit",WebkitTapHighlightColor:"transparent",flexShrink:0}}>
                   {t('signOut')}
                 </button>
               )}
@@ -10978,20 +10972,20 @@ function AppInner() {
       {view==="home"&&(
         <div style={{paddingTop:vp.isMobile?56:62}}>
 
-          {/* ── Trust ticker bar ── */}
-          <div style={{background:`linear-gradient(90deg,${C.emerald}14,${C.emerald}0A)`,borderBottom:`1px solid ${C.emerald}22`,padding:"7px 16px",overflow:"hidden"}}>
-            <div style={{display:"flex",justifyContent:"center",alignItems:"center",gap:vp.isMobile?14:32,flexWrap:"nowrap" as const,overflow:"hidden"}}>
+          {/* ── Trust bar ── */}
+          <div style={{background:C.surface,borderBottom:`1px solid ${C.border}`,padding:"8px 16px"}}>
+            <div style={{display:"flex",justifyContent:"center",alignItems:"center",gap:vp.isMobile?20:40,flexWrap:"nowrap" as const,overflow:"hidden"}}>
               {(vp.isMobile?[
-                {icon:"🔒","label":"Stripe secured"},
-                {icon:"✓", "label":"Verified artists"},
+                "Stripe secured",
+                "Verified artists",
               ]:[
-                {icon:"🔒","label":"Payments secured by Stripe"},
-                {icon:"✓", "label":"Verified artists only"},
-                {icon:"💬","label":"Direct messaging after booking"},
-                {icon:"0%","label":"No hidden fees"},
-              ]).map(({icon,label})=>(
-                <div key={label} style={{display:"flex",alignItems:"center",gap:5,fontSize:vp.isMobile?11:11,color:C.emerald,fontWeight:700,flexShrink:0}}>
-                  <span style={{fontSize:12}}>{icon}</span>{label}
+                "Payments secured by Stripe",
+                "Verified artists only",
+                "Direct messaging after booking",
+                "No hidden fees",
+              ]).map(label=>(
+                <div key={label} style={{fontSize:11,color:C.muted,fontWeight:500,flexShrink:0,letterSpacing:"0.2px"}}>
+                  {label}
                 </div>
               ))}
             </div>
@@ -11097,9 +11091,9 @@ function AppInner() {
               Full-width showcase — home page only
           ══════════════════════════════════════════════════ */}
           <section style={{
-            background:`linear-gradient(135deg,${C.lapis}18 0%,${C.bg} 60%,${C.gold}0A 100%)`,
-            borderTop:`1px solid ${C.lapis}33`,
-            borderBottom:`1px solid ${C.lapis}22`,
+            background:C.surface,
+            borderTop:`1px solid ${C.border}`,
+            borderBottom:`1px solid ${C.border}`,
             position:"relative",overflow:"hidden",
           }}>
             {/* Background pattern */}
@@ -11109,7 +11103,7 @@ function AppInner() {
 
               {/* Left — copy */}
               <div style={{marginBottom:vp.isMobile?0:0}}>
-                <div style={{display:"inline-flex",alignItems:"center",gap:6,background:`${C.lapis}22`,border:`1px solid ${C.lapis}44`,borderRadius:20,padding:"4px 12px",marginBottom:10}}>
+                <div style={{display:"inline-flex",alignItems:"center",gap:6,background:C.goldS,border:`1px solid ${C.gold}33`,borderRadius:20,padding:"4px 12px",marginBottom:10}}>
                   <span style={{fontSize:13}}>🎼</span>
                   <span style={{fontSize:11,fontWeight:700,color:C.lapis,letterSpacing:"1px",textTransform:"uppercase" as const}}>Band Booking</span>
                 </div>
@@ -11126,7 +11120,7 @@ function AppInner() {
                 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:16}}>
                   {[
                     {label:"Option A",desc:t('bandOptionAHeading')||"Artist's own band",sub:t('bandCompleteAs')||"Artist sets the group",icon:"🎼",color:C.gold},
-                    {label:t('bandBuildOwn'),desc:t('bandPickMusicians'),sub:t('bandPickDesc'),icon:"🎛️",color:C.lapis},
+                    {label:t('bandBuildOwn'),desc:t('bandPickMusicians'),sub:t('bandPickDesc'),icon:"🎛️",color:C.gold},
                   ].map(({label,desc,sub,icon,color})=>(
                     <div key={label} style={{background:C.card,border:`1px solid ${color}33`,borderRadius:10,padding:"10px 12px"}}>
                       <span style={{fontSize:16}}>{icon}</span>
@@ -11138,8 +11132,8 @@ function AppInner() {
 
                 <button onClick={()=>setShowBandBooking(true)} style={{
                   display:"flex",alignItems:"center",gap:10,
-                  background:`linear-gradient(135deg,${C.lapis},#1A3F9C)`,
-                  color:"#fff",border:"none",borderRadius:12,
+                  background:`linear-gradient(135deg,${C.gold},${C.saffron})`,
+                  color:C.bg,border:"none",borderRadius:12,
                   padding:vp.isMobile?"14px 20px":"16px 28px",cursor:"pointer",
                   fontFamily:"inherit",fontWeight:800,fontSize:vp.isMobile?14:16,
                   boxShadow:`0 8px 32px ${C.lapis}44`,
@@ -11745,32 +11739,31 @@ function AppInner() {
 
       {/* ── Mobile Bottom Nav (public pages) ── */}
       {vp.isMobile&&["home","browse","how","pricing","how","pricing"].includes(view)&&(
-        <nav style={{position:"fixed",bottom:0,left:0,right:0,zIndex:100,background:`${C.surface}FA`,backdropFilter:"blur(20px)",borderTop:`1px solid ${C.border}`,display:"flex",alignItems:"stretch",paddingBottom:"env(safe-area-inset-bottom,0px)",height:`calc(56px + env(safe-area-inset-bottom,0px))`}}>
+        <nav style={{position:"fixed",bottom:0,left:0,right:0,zIndex:100,background:`${C.bg}F8`,backdropFilter:"blur(24px)",borderTop:`1px solid ${C.border}`,display:"flex",alignItems:"stretch",paddingBottom:"env(safe-area-inset-bottom,0px)",height:`calc(56px + env(safe-area-inset-bottom,0px))`}}>
           {[
-            {id:"home",   icon:"🏠", label:t('portalHome'),       fn:()=>nav("home")},
-            {id:"browse", icon:"🎵", label:t('browseArtists'),    fn:()=>nav("browse")},
-            {id:"band",   icon:"🎼", label:"Band",                fn:()=>setShowBandBooking(true)},
+            {id:"home",   icon:"⌂",  label:t('portalHome'),      fn:()=>nav("home")},
+            {id:"browse", icon:"♪",  label:t('browseArtists'),   fn:()=>nav("browse")},
+            {id:"band",   icon:"♫",  label:"Band",               fn:()=>setShowBandBooking(true)},
             ...(session ? [
-              {id:"logout", icon:"👋", label:t('signOut'),        fn:()=>logout()},
+              {id:"logout", icon:"→", label:t('signOut'),         fn:()=>logout()},
             ] : [
-              {id:"apply",  icon:"✨", label:t('applyAsArtist'),  fn:()=>setShowApply(true)},
-              {id:"signin", icon:"🔑", label:t('signIn'),         fn:()=>setShowLogin(true)},
+              {id:"apply",  icon:"✦",  label:t('applyAsArtist'),  fn:()=>setShowApply(true)},
+              {id:"signin", icon:"→",  label:t('signIn'),         fn:()=>setShowLogin(true)},
             ]),
           ].map(({id,icon,label,fn})=>{
             const isActive=(id==="home"&&view==="home")||(id==="browse"&&view==="browse");
             const isSignIn=id==="signin";
-            const isApply=id==="apply";
             return(
               <button key={id} onClick={fn} style={{
                 flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
                 gap:3,border:"none",cursor:"pointer",paddingTop:8,paddingBottom:4,
                 minHeight:44,WebkitTapHighlightColor:"transparent",fontFamily:"inherit",position:"relative",
-                background:isSignIn?C.gold:isApply?`${C.lapis}18`:"transparent",
-                color:isSignIn?C.bg:isApply?C.lapis:isActive?C.gold:id==="logout"?C.ruby:C.muted,
+                background:"transparent",
+                color:isActive?C.gold:isSignIn?C.text:C.muted,
               }}>
-                {isActive&&<div style={{position:"absolute",top:0,width:24,height:2,borderRadius:1,background:C.gold}}/>}
-                <div style={{fontSize:isApply?16:18,lineHeight:1}}>{icon}</div>
-                <div style={{fontSize:9,fontWeight:isActive||isSignIn||isApply?700:500,lineHeight:1.2,textAlign:"center"}}>{label}</div>
+                {isActive&&<div style={{position:"absolute",top:0,left:"50%",transform:"translateX(-50%)",width:20,height:2,borderRadius:1,background:C.gold}}/>}
+                <div style={{fontSize:isSignIn?16:18,lineHeight:1,fontWeight:isActive||isSignIn?600:400}}>{icon}</div>
+                <div style={{fontSize:9,fontWeight:isActive?700:isSignIn?600:400,letterSpacing:"0.2px"}}>{isSignIn?label:label}</div>
               </button>
             );
           })}
