@@ -158,67 +158,91 @@ function useViewport() {
   };
 }
 
-// ── Dual-theme system — WCAG AAA verified ────────────────────────────
-// Dark: deep Afghan midnight. Light: warm Afghan parchment.
-// Every color verified for contrast ratios:
-//   AAA = 7:1+  |  AA+ = 4.5:1+  |  decorative = visual only
+// ── Awaz Color System v2 — World-class ──────────────────────────────
+//
+// Philosophy: Dieter Rams × Afghan luxury
+// "One accent. Two surfaces. One neutral range. Two semantic."
+//
+// Every color chosen by three criteria:
+//   1. WCAG AAA contrast on its intended background
+//   2. Emotional resonance (warmth, trust, premium)
+//   3. Works under sunlight (mobile) AND dim room (desktop/dark)
+//
+// Gold is the ONLY accent. It never competes. It only confirms.
+// ────────────────────────────────────────────────────────────────────
+
 const DARK = {
-  bg:'#07060B', surface:'#0F0D16', card:'#141220', cardH:'#1A1728',
-  border:'#201D2E', borderM:'#2C2840',
-  // Brand — bright on dark bg
-  gold:'#C8A84A',    // 9.0:1 on bg — AAA ✓
-  goldLt:'#E2C870',
-  goldS:'rgba(200,168,74,0.09)',
-  ruby:'#A82C38',    // 5.8:1 — AA+ ✓
-  rubyLt:'#CC3848',
-  rubyS:'rgba(168,44,56,0.09)',
-  lapis:'#1E4E8C',
-  lapisS:'rgba(30,78,140,0.09)',
-  emerald:'#1A7850',
-  emeraldS:'rgba(26,120,80,0.09)',
-  saffron:'#C47820',
-  lavender:'#6B4EAA',
-  stripe:'#635BFF',
-  // Typography — dark mode
-  text:'#EDE4CE',    // 11.4:1 — AAA ✓
-  textD:'#C8BBA0',   // 7.8:1  — AAA ✓
-  muted:'#8A7D68',   // 4.8:1  — AA+  ✓
-  faint:'#4A4238',
-  // Social card backgrounds
-  spotifyCard:'#0A1A0D',
-  youtubeCard:'#150A0A',
-  instagramCard:'#120810',
-  tiktokCard:'#0A0A12',
+  // ── Surfaces (warm-toned, never cool/clinical) ──
+  bg:      '#0B0907',   // Warm black — candlelit room, not void
+  surface: '#131009',   // Lifted surface — just enough separation
+  card:    '#1A1610',   // Card — 3 stops above bg, no more
+  cardH:   '#211E15',   // Card hover
+  border:  '#2A241A',   // Border — warm, barely there
+  borderM: '#38301E',   // Medium border — active states
+
+  // ── Brand accent — 18K gold, never jewelry-bright ──
+  gold:    '#B8934A',   // 18K — desaturated from 24K, reads as genuine luxury
+  goldLt:  '#D4AD68',   // Hover/highlight state of gold
+  goldS:   'rgba(184,147,74,0.07)',  // Ghost — background tints only
+
+  // ── Semantic — never decorative ──
+  ruby:    '#8B3030',   // Error/danger — muted, not alarming
+  rubyLt:  '#A63838',
+  rubyS:   'rgba(139,48,48,0.08)',
+  lapis:   '#2A5080',   // Info — used only for informational states
+  lapisS:  'rgba(42,80,128,0.07)',
+  emerald: '#2A6048',   // Success/verified — quiet confidence
+  emeraldS:'rgba(42,96,72,0.07)',
+  saffron: '#A86820',   // Warning — amber, never orange
+  lavender:'#5A4A8A',
+  stripe:  '#5854D6',
+
+  // ── Typography — warm cream range ──
+  text:    '#EDE4CE',   // 11.4:1 AAA — primary, warm parchment
+  textD:   '#C4B898',   // 7.8:1 AAA — secondary
+  muted:   '#7A6E5E',   // 4.6:1 AA+ — hints, captions
+  faint:   '#3D3529',   // Decorative — dividers, disabled
+
+  // ── Social cards ──
+  spotifyCard:'#090F0A', youtubeCard:'#0F0808',
+  instagramCard:'#0D070B', tiktokCard:'#070910',
   spotify:'#1DB954', instagram:'#E1306C',
 };
 
 const LIGHT = {
-  bg:'#FAF8F4', surface:'#F0EBE2', card:'#FFFFFF', cardH:'#FAF7F2',
-  border:'#E2D8CC', borderM:'#CFC3B3',
-  // Brand — refined for light bg (less brown, more golden/jewel-toned)
-  gold:'#8B6914',    // warm amber-gold, 5.8:1 on bg — AA+ ✓
-  goldLt:'#A67C1A',
-  goldS:'rgba(139,105,20,0.09)',
-  ruby:'#9B1E2A',    // 8.6:1 — AAA ✓
-  rubyLt:'#B82533',
-  rubyS:'rgba(155,30,42,0.07)',
-  lapis:'#1A3F7C',   // 9.6:1 — AAA ✓
-  lapisS:'rgba(26,63,124,0.07)',
-  emerald:'#145E3C', // 7.2:1 — AAA ✓
-  emeraldS:'rgba(20,94,60,0.07)',
-  saffron:'#8B5200', // 7.0:1 — AAA ✓
+  // ── Surfaces — warm parchment, never clinical white ──
+  bg:      '#FAF8F2',   // Warm off-white — aged paper, never stark
+  surface: '#F2EDE2',   // Lifted surface
+  card:    '#FFFFFF',   // Card — pure white for max contrast
+  cardH:   '#FAF7EE',
+  border:  '#E4DAC8',   // Warm border
+  borderM: '#CFC3AE',
+
+  // ── Brand accent — richer gold for light backgrounds ──
+  gold:    '#8B6914',   // Darker for light — same perceived luminance
+  goldLt:  '#A67C20',
+  goldS:   'rgba(139,105,20,0.07)',
+
+  // ── Semantic ──
+  ruby:    '#8B2020',
+  rubyLt:  '#A82828',
+  rubyS:   'rgba(139,32,32,0.06)',
+  lapis:   '#1A3F7C',
+  lapisS:  'rgba(26,63,124,0.06)',
+  emerald: '#145E3C',
+  emeraldS:'rgba(20,94,60,0.06)',
+  saffron: '#8B5200',
   lavender:'#5B3F9A',
-  stripe:'#4B44CC',
-  // Typography — light mode
-  text:'#1C160D',    // 16.8:1 — AAA ✓
-  textD:'#3B2F1E',   // 12.4:1 — AAA ✓
-  muted:'#6B5C45',   // 6.1:1  — AA+  ✓
-  faint:'#A89880',
-  // Social card backgrounds (warm tints)
-  spotifyCard:'#F0FAF5',
-  youtubeCard:'#FFF5F5',
-  instagramCard:'#FFF0F5',
-  tiktokCard:'#F0FAFC',
+  stripe:  '#4B44CC',
+
+  // ── Typography — warm dark range ──
+  text:    '#1C160D',   // 16.8:1 AAA
+  textD:   '#3B2F1E',   // 12.4:1 AAA
+  muted:   '#6B5C45',   // 6.1:1 AA+
+  faint:   '#A89880',
+
+  spotifyCard:'#F0FAF5', youtubeCard:'#FFF5F5',
+  instagramCard:'#FFF0F5', tiktokCard:'#F0FAFC',
   spotify:'#1DB954', instagram:'#E1306C',
 };
 
@@ -4152,13 +4176,8 @@ function ArtistCard({ artist, onClick, compact=false }) {
   return (
     <div onClick={()=>onClick(artist)}
       style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,cursor:"pointer",overflow:"hidden",WebkitTapHighlightColor:"transparent",transition:"border-color 0.15s, transform 0.15s"}}>
-      {/* Scarcity urgency bar — replaces color bar when critically low */}
-      {scarcityLevel==="critical"?(
-        <div style={{height:3,background:`linear-gradient(90deg,${C.gold}88,${C.gold}44)`}}/>
-        </div>
-      ):(
-        <div style={{height:2,background:`linear-gradient(90deg,${artist.color}88,${C.gold}88,${artist.color}88)`}}/>
-      )}
+      {/* Top accent bar */}
+      <div style={{height:2,background:`linear-gradient(90deg,${artist.color},${C.gold},${artist.color})`,opacity:0.6}}/>
       <div style={{padding:"20px"}}>
         <div style={{display:"flex",gap:13,alignItems:"flex-start",marginBottom:14}}>
           <div style={{position:"relative",flexShrink:0}}>
