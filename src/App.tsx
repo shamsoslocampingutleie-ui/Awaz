@@ -592,6 +592,100 @@ const TRANSLATIONS = {
     demoSplitNote:"For every €1,000 deposit, you receive €880 (88%) directly to your Stripe account. Awaz keeps €120 (12%) as platform fee.",
     demoSongPh:"e.g. Leili Jan, Bya Ke Bya…",
     demoNamePh:"e.g. Layla, Ahmad…",
+
+    applyWelcome:"Welcome to Awaz!",
+    applyStep1Title:"Join Awaz — Step 1 of 2",
+    applyStep2Title:"Almost done — Step 2 of 2",
+    applyInEarning:"Artists on Awaz earn",
+    applyKeep:"of every booking",
+    applyFree:"to join",
+    applyApproved:"to get approved",
+    applyNextSteps:"What happens next",
+    applyNext1:"Check your email and confirm your account",
+    applyNext2:"Come back and click Sign In",
+    applyNext3:"Complete your profile — add photo, bio, prices",
+    applyNext4:"Get approved within 24 hours and start getting booked",
+    applyProTip:"Artists with a complete profile get 3x more bookings. Complete yours right after signing in!",
+    applySignInComplete:"Sign In & Complete Profile →",
+    chatUnlocked:"Chat with the artist unlocks right away",
+    artistPerforms:"The artist comes and performs at your event",
+    availableIn:"Available In",
+    performingCountriesDesc:"This artist performs in the following countries",
+    completeProfileCta:"Complete your profile to get bookings",
+    artistsLive:"Artists are getting booked across Europe right now",
+    artistPerforms:"The artist comes and performs at your event",
+    depositLabel:"deposit",
+    // ── Band booking ──
+    bandBookTitle:"How would you like to book?",
+    bandBookSub:"Pick one — both are easy ✓",
+    bandOptionAHeading:"⭐ Complete bands — book as a group",
+    bandNoBands:"No complete bands yet",
+    bandNoBandsDesc:"Artists who set up their own band will appear here. Use Build Your Own below to pick individual musicians.",
+    bandBuildOwn:"Build your own",
+    bandPickMusicians:"Pick Your Musicians",
+    bandPickDesc:"Choose from real artists on the platform — only those who are actually available",
+    bandDisplayPrices:"Display prices in",
+    bandEasiest:"⭐ Easiest option",
+    bandCompleteAs:"Complete ensemble — as chosen by",
+    bandAvailableDate:"✓ is available on this date",
+    bandNotAvailable:"may not be available on this date — contact them to confirm",
+    bandStep1:"📅 Step 1 — Pick your event date",
+    bandStep2Instr:"🎵 Step 2 — Which instruments do you want?",
+    bandStep3Artists:"👤 Step 3 — Choose your artists",
+    bandStep2Artists:"👤 Step 2 — Choose your artists",
+    bandChooseWho:"Choose who plays",
+    bandFreeSuffix:"free",
+    bandBusySuffix:"(busy)",
+    bandReviewPay:"Review & Pay →",
+    bandBackEdit:"← Edit",
+    bandTapInstruments:"Tap the instruments you need ↑",
+    bandBusyWarning:"Some chosen artists are busy on this date — see suggestions below",
+    bandSwitchTo:"Switch →",
+    bandFreeLabel:"✓ Available",
+    bandBusyLabel:"✗ Busy",
+    bandTotalDeposit:"Total deposit",
+    bandMusicianCount:"musicians",
+    bandSecureNote:"Deposit paid securely via Stripe · Balance paid cash to artists after the event · No booking without successful payment",
+    bandPayBtn:"Pay via Stripe →",
+    bandConfirmTitle:"Confirm Your Band",
+    bandReadyTitle:"Ready-made Band",
+    // ── Solo vocalist ──
+    soloOnlyNote:"This books the vocalist only — no instruments",
+    soloNeedInstr:"Need tabla, keyboard or other musicians? Use 🎼 Book a Band to add them from the platform.",
+    soloSidebarNote:"Vocalist only — no instruments.",
+    soloSidebarTip:"Need tabla or keyboard? Use 🎼 Book a Band.",
+    bookingTermsSoloNote:"Booking solo = singer only, no instruments",
+    bookingTermsSoloDesc:"If you want tabla, keyboard or other musicians at your event, choose With Full Band above — or use Book a Band to add individual instrumentalists from the platform separately.",
+    bookingTermsVocalistOnly:"This booking is for the vocalist only",
+    bookingTermsVocalistOnlyDesc:"Need tabla, keyboard or other instruments? Use 🎼 Book a Band to add musicians from the platform to your event.",
+    // ── My Band portal ──
+    myBandTitle:"My Band",
+    myBandDesc:"This is your primary group. You decide who's in it and how many members. Customers can book you as a complete ensemble — your configured band appears as Option A in the band booking flow.",
+    myBandCurrentMembers:"Current Band Members",
+    myBandAddMember:"Add a Band Member",
+    myBandCombinedDeposit:"Combined deposit (you + band)",
+    myBandSaveBtn:"Save Band Configuration",
+    myBandSaved:"✓ Band Saved!",
+    myBandTip:"💡 Your band configuration is shown on your public profile. Customers can see the full ensemble and book you as a group. The combined price is shown automatically.",
+    myBandPrimary:"Primary",
+    hasBand:"Has Band",
+    inDemand:"In Demand",
+    bookEarlySub:"Book early to secure your date",
+    // ── Pricing how-it-works ──
+    pricingHowTitle:"💡 How your pricing works",
+    pricingDepositLabel:"Deposit",
+    pricingDepositDesc:"Customers pay this upfront via Stripe to confirm the booking",
+    pricingCountryLabel:"By country",
+    pricingCountryDesc:"After signing up, you set your own full price per country in your dashboard",
+    pricingAfterLabel:"After the event",
+    pricingAfterDesc:"The remaining balance is paid in cash directly to you on the night",
+    soloDepositLabel:"Solo deposit",
+    soloDepositSub:"When you perform alone — singer only, no instruments · min €500",
+    soloImportant:"Important: When customers book you solo, they get your voice only. If they want tabla, keyboard or other musicians, they must book a full band separately.",
+    withBandDepositLabel:"With-band deposit",
+    withBandDepositSub:"Upfront deposit when you bring your full band · min €800 · per country prices set in dashboard",
+    keepPct:"You keep 88% of deposit =",
+    balanceCashAfter:"+ balance paid cash after event",
   },
 
   no: {
@@ -913,6 +1007,96 @@ const TRANSLATIONS = {
     demoSplitNote:"For hvert €1 000-depositum mottar du €880 (88%) direkte til din Stripe-konto. Awaz beholder €120 (12%) som plattformgebyr.",
     demoSongPh:"f.eks. Leili Jan, Bya Ke Bya…",
     demoNamePh:"f.eks. Layla, Ahmad…",
+
+    applyWelcome:"Velkommen til Awaz!",
+    applyStep1Title:"Bli med på Awaz — Steg 1 av 2",
+    applyStep2Title:"Nesten ferdig — Steg 2 av 2",
+    applyInEarning:"Artister på Awaz tjener",
+    applyKeep:"av hver bestilling",
+    applyFree:"å bli med",
+    applyApproved:"for å bli godkjent",
+    applyNextSteps:"Hva skjer videre",
+    applyNext1:"Sjekk e-posten din og bekreft kontoen",
+    applyNext2:"Kom tilbake og klikk Logg inn",
+    applyNext3:"Fullfør profilen din — legg til bilde, bio og priser",
+    applyNext4:"Bli godkjent innen 24 timer og begynn å få bestillinger",
+    applyProTip:"Artister med en komplett profil får 3x flere bestillinger. Fullfør din rett etter innlogging!",
+    applySignInComplete:"Logg inn og fullfør profil →",
+    chatUnlocked:"Chat med artisten åpnes med én gang",
+    artistPerforms:"Artisten kommer og opptrer på arrangementet ditt",
+    availableIn:"Tilgjengelig i",
+    performingCountriesDesc:"Denne artisten opptrer i følgende land",
+    completeProfileCta:"Fullfør profilen din for å få bestillinger",
+    artistsLive:"Artister bli bestilt i hele Europa akkurat nå",
+    artistPerforms:"Artisten kommer og opptrer på arrangementet ditt",
+    depositLabel:"depositum",
+    bandBookTitle:"Hvordan vil du bestille?",
+    bandBookSub:"Velg ett — begge er enkle ✓",
+    bandOptionAHeading:"⭐ Komplette band — bestill som gruppe",
+    bandNoBands:"Ingen fullstendige band ennå",
+    bandNoBandsDesc:"Artister som setter opp sitt eget band vil vises her. Bruk Bygg ditt eget nedenfor for å velge individuelle musikere.",
+    bandBuildOwn:"Bygg ditt eget",
+    bandPickMusicians:"Velg dine musikere",
+    bandPickDesc:"Velg fra ekte artister på plattformen — bare de som faktisk er tilgjengelige",
+    bandDisplayPrices:"Vis priser i",
+    bandEasiest:"⭐ Enkleste valg",
+    bandCompleteAs:"Komplett ensemble — satt sammen av",
+    bandAvailableDate:"✓ er tilgjengelig på denne datoen",
+    bandNotAvailable:"er kanskje ikke tilgjengelig på denne datoen — kontakt dem for bekreftelse",
+    bandStep1:"📅 Steg 1 — Velg dato for arrangementet",
+    bandStep2Instr:"🎵 Steg 2 — Hvilke instrumenter ønsker du?",
+    bandStep3Artists:"👤 Steg 3 — Velg dine artister",
+    bandStep2Artists:"👤 Steg 2 — Velg dine artister",
+    bandChooseWho:"Velg hvem som spiller",
+    bandFreeSuffix:"ledig",
+    bandBusySuffix:"(opptatt)",
+    bandReviewPay:"Se gjennom og betal →",
+    bandBackEdit:"← Endre",
+    bandTapInstruments:"Trykk på instrumentene du trenger ↑",
+    bandBusyWarning:"Noen valgte artister er opptatt på denne datoen — se forslag nedenfor",
+    bandSwitchTo:"Bytt →",
+    bandFreeLabel:"✓ Ledig",
+    bandBusyLabel:"✗ Opptatt",
+    bandTotalDeposit:"Totalt depositum",
+    bandMusicianCount:"musikere",
+    bandSecureNote:"Depositum betales sikkert via Stripe · Restbeløp betales kontant til artistene etter arrangementet · Ingen bestilling uten vellykket betaling",
+    bandPayBtn:"Betal via Stripe →",
+    bandConfirmTitle:"Bekreft bandet ditt",
+    bandReadyTitle:"Ferdig sammensatt band",
+    soloOnlyNote:"Dette bestiller kun vokalisten — ingen instrumenter",
+    soloNeedInstr:"Trenger du tabla, keyboard eller andre musikere? Bruk 🎼 Bestill band for å legge dem til fra plattformen.",
+    soloSidebarNote:"Kun vokalist — ingen instrumenter.",
+    soloSidebarTip:"Trenger du tabla eller keyboard? Bruk 🎼 Bestill band.",
+    bookingTermsSoloNote:"Bestille solo = kun sanger, ingen instrumenter",
+    bookingTermsSoloDesc:"Hvis du vil ha tabla, keyboard eller andre musikere på arrangementet, velg Med fullt band ovenfor — eller bruk Bestill band for å legge til instrumentalister fra plattformen.",
+    bookingTermsVocalistOnly:"Denne bestillingen er kun for vokalisten",
+    bookingTermsVocalistOnlyDesc:"Trenger du tabla, keyboard eller andre instrumenter? Bruk 🎼 Bestill band for å legge til musikere fra plattformen.",
+    myBandTitle:"Mitt band",
+    myBandDesc:"Dette er din primære gruppe. Du bestemmer hvem som er med og hvor mange. Kunder kan bestille deg som et komplett ensemble — ditt konfigurerte band vises som Alternativ A i band-bookingflyten.",
+    myBandCurrentMembers:"Nåværende bandmedlemmer",
+    myBandAddMember:"Legg til et bandmedlem",
+    myBandCombinedDeposit:"Samlet depositum (deg + band)",
+    myBandSaveBtn:"Lagre bandkonfigurasjon",
+    myBandSaved:"✓ Band lagret!",
+    myBandTip:"💡 Din bandkonfigurasjon vises på din offentlige profil. Kunder kan se hele ensemblet og bestille deg som gruppe.",
+    myBandPrimary:"Primær",
+    hasBand:"Har band",
+    inDemand:"Etterspurt",
+    bookEarlySub:"Bestill tidlig for å sikre datoen din",
+    pricingHowTitle:"💡 Slik fungerer prisene dine",
+    pricingDepositLabel:"Depositum",
+    pricingDepositDesc:"Kunder betaler dette på forhånd via Stripe for å bekrefte bestillingen",
+    pricingCountryLabel:"Per land",
+    pricingCountryDesc:"Etter registrering setter du dine egne fullpriser per land i dashbordet",
+    pricingAfterLabel:"Etter arrangementet",
+    pricingAfterDesc:"Restbeløpet betales kontant direkte til deg på kvelden",
+    soloDepositLabel:"Solo-depositum",
+    soloDepositSub:"Når du opptrer alene — kun sanger, ingen instrumenter · min €500",
+    soloImportant:"Viktig: Når kunder bestiller deg solo, får de kun stemmen din. Hvis de ønsker tabla, keyboard eller andre musikere, må de bestille et fullt band separat.",
+    withBandDepositLabel:"Med-band depositum",
+    withBandDepositSub:"Forhåndsdeposit når du tar med ditt fulle band · min €800 · priser per land settes i dashbordet",
+    keepPct:"Du beholder 88 % av depositumet =",
+    balanceCashAfter:"+ restbeløp betales kontant etter arrangementet",
   },
 
   de: {
@@ -1234,6 +1418,96 @@ const TRANSLATIONS = {
     demoSplitNote:"Bei jeder €1.000-Anzahlung erhalten Sie €880 (88%) direkt auf Ihr Stripe-Konto. Awaz behält €120 (12%) als Plattformgebühr.",
     demoSongPh:"z.B. Leili Jan, Bya Ke Bya…",
     demoNamePh:"z.B. Layla, Ahmad…",
+
+    applyWelcome:"Willkommen bei Awaz!",
+    applyStep1Title:"Awaz beitreten — Schritt 1 von 2",
+    applyStep2Title:"Fast fertig — Schritt 2 von 2",
+    applyInEarning:"Künstler auf Awaz verdienen",
+    applyKeep:"jeder Buchung",
+    applyFree:"beitreten",
+    applyApproved:"bis zur Genehmigung",
+    applyNextSteps:"Was passiert als nächstes",
+    applyNext1:"E-Mail prüfen und Konto bestätigen",
+    applyNext2:"Zurückkommen und auf Anmelden klicken",
+    applyNext3:"Profil vervollständigen — Foto, Bio, Preise hinzufügen",
+    applyNext4:"Innerhalb von 24 Stunden genehmigt werden und Buchungen erhalten",
+    applyProTip:"Künstler mit vollständigem Profil erhalten 3x mehr Buchungen. Vervollständige deins gleich nach der Anmeldung!",
+    applySignInComplete:"Anmelden & Profil vervollständigen →",
+    chatUnlocked:"Chat mit dem Künstler wird sofort freigeschaltet",
+    artistPerforms:"Der Künstler kommt und tritt bei Ihrer Veranstaltung auf",
+    availableIn:"Verfügbar in",
+    performingCountriesDesc:"Dieser Künstler tritt in folgenden Ländern auf",
+    completeProfileCta:"Vervollständige dein Profil für Buchungen",
+    artistsLive:"Künstler werden gerade in ganz Europa gebucht",
+    artistPerforms:"Der Künstler kommt und tritt bei Ihrer Veranstaltung auf",
+    depositLabel:"Anzahlung",
+    bandBookTitle:"Wie möchten Sie buchen?",
+    bandBookSub:"Wählen Sie eine — beide sind einfach ✓",
+    bandOptionAHeading:"⭐ Komplette Bands — als Gruppe buchen",
+    bandNoBands:"Noch keine vollständigen Bands",
+    bandNoBandsDesc:"Künstler, die ihre eigene Band einrichten, erscheinen hier. Verwenden Sie „Eigene erstellen" unten, um einzelne Musiker auszuwählen.",
+    bandBuildOwn:"Eigene erstellen",
+    bandPickMusicians:"Musiker wählen",
+    bandPickDesc:"Wählen Sie aus echten Künstlern auf der Plattform — nur die, die tatsächlich verfügbar sind",
+    bandDisplayPrices:"Preise anzeigen in",
+    bandEasiest:"⭐ Einfachste Option",
+    bandCompleteAs:"Komplettes Ensemble — zusammengestellt von",
+    bandAvailableDate:"✓ ist an diesem Datum verfügbar",
+    bandNotAvailable:"ist an diesem Datum möglicherweise nicht verfügbar — kontaktieren Sie ihn/sie zur Bestätigung",
+    bandStep1:"📅 Schritt 1 — Wählen Sie das Datum",
+    bandStep2Instr:"🎵 Schritt 2 — Welche Instrumente möchten Sie?",
+    bandStep3Artists:"👤 Schritt 3 — Künstler wählen",
+    bandStep2Artists:"👤 Schritt 2 — Künstler wählen",
+    bandChooseWho:"Wählen Sie, wer spielt",
+    bandFreeSuffix:"verfügbar",
+    bandBusySuffix:"(besetzt)",
+    bandReviewPay:"Überprüfen & Bezahlen →",
+    bandBackEdit:"← Bearbeiten",
+    bandTapInstruments:"Tippen Sie auf die benötigten Instrumente ↑",
+    bandBusyWarning:"Einige gewählte Künstler sind an diesem Datum besetzt — Alternativen unten",
+    bandSwitchTo:"Wechseln →",
+    bandFreeLabel:"✓ Verfügbar",
+    bandBusyLabel:"✗ Besetzt",
+    bandTotalDeposit:"Gesamtanzahlung",
+    bandMusicianCount:"Musiker",
+    bandSecureNote:"Anzahlung sicher via Stripe · Restbetrag bar an Künstler nach Veranstaltung · Keine Buchung ohne erfolgreiche Zahlung",
+    bandPayBtn:"Bezahlen via Stripe →",
+    bandConfirmTitle:"Band bestätigen",
+    bandReadyTitle:"Fertige Band",
+    soloOnlyNote:"Dies bucht nur den Vokalisten — keine Instrumente",
+    soloNeedInstr:"Benötigen Sie Tabla, Keyboard oder andere Musiker? Verwenden Sie 🎼 Band buchen.",
+    soloSidebarNote:"Nur Vokaliste — keine Instrumente.",
+    soloSidebarTip:"Tabla oder Keyboard gewünscht? Nutzen Sie 🎼 Band buchen.",
+    bookingTermsSoloNote:"Solo buchen = nur Sänger/in, keine Instrumente",
+    bookingTermsSoloDesc:"Wenn Sie Tabla, Keyboard oder andere Musiker möchten, wählen Sie „Mit voller Band" oder nutzen Sie Band buchen.",
+    bookingTermsVocalistOnly:"Diese Buchung ist nur für den Vokalisten",
+    bookingTermsVocalistOnlyDesc:"Benötigen Sie Tabla, Keyboard oder andere Instrumente? Verwenden Sie 🎼 Band buchen.",
+    myBandTitle:"Meine Band",
+    myBandDesc:"Das ist Ihre Hauptgruppe. Sie entscheiden, wer dabei ist und wie viele Mitglieder. Kunden können Sie als komplettes Ensemble buchen — Ihre konfigurierte Band erscheint als Option A.",
+    myBandCurrentMembers:"Aktuelle Bandmitglieder",
+    myBandAddMember:"Bandmitglied hinzufügen",
+    myBandCombinedDeposit:"Gesamtanzahlung (Sie + Band)",
+    myBandSaveBtn:"Bandkonfiguration speichern",
+    myBandSaved:"✓ Band gespeichert!",
+    myBandTip:"💡 Ihre Bandkonfiguration wird auf Ihrem öffentlichen Profil angezeigt.",
+    myBandPrimary:"Primär",
+    hasBand:"Hat Band",
+    inDemand:"Sehr gefragt",
+    bookEarlySub:"Früh buchen, um Ihren Termin zu sichern",
+    pricingHowTitle:"💡 So funktioniert Ihre Preisgestaltung",
+    pricingDepositLabel:"Anzahlung",
+    pricingDepositDesc:"Kunden zahlen dies im Voraus via Stripe, um die Buchung zu bestätigen",
+    pricingCountryLabel:"Je nach Land",
+    pricingCountryDesc:"Nach der Registrierung legen Sie Ihre eigenen Preise pro Land im Dashboard fest",
+    pricingAfterLabel:"Nach der Veranstaltung",
+    pricingAfterDesc:"Der Restbetrag wird direkt an Sie in bar bezahlt",
+    soloDepositLabel:"Solo-Anzahlung",
+    soloDepositSub:"Wenn Sie allein auftreten — nur Sänger/in, keine Instrumente · min €500",
+    soloImportant:"Wichtig: Bei einer Solo-Buchung erhalten die Kunden nur Ihre Stimme. Für Tabla, Keyboard usw. muss eine Band separat gebucht werden.",
+    withBandDepositLabel:"Mit-Band-Anzahlung",
+    withBandDepositSub:"Vorauszahlung wenn Sie mit Ihrer vollen Band auftreten · min €800",
+    keepPct:"Sie behalten 88% der Anzahlung =",
+    balanceCashAfter:"+ Restbetrag bar nach der Veranstaltung",
   },
 
   fr: {
@@ -1555,6 +1829,96 @@ const TRANSLATIONS = {
     demoSplitNote:"Pour chaque acompte de €1 000, vous recevez €880 (88%) directement sur votre compte Stripe. Awaz garde €120 (12%).",
     demoSongPh:"ex. Leili Jan, Bya Ke Bya…",
     demoNamePh:"ex. Layla, Ahmad…",
+
+    applyWelcome:"Bienvenue sur Awaz !",
+    applyStep1Title:"Rejoindre Awaz — Étape 1 sur 2",
+    applyStep2Title:"Presque fini — Étape 2 sur 2",
+    applyInEarning:"Les artistes sur Awaz gagnent",
+    applyKeep:"de chaque réservation",
+    applyFree:"pour rejoindre",
+    applyApproved:"pour être approuvé",
+    applyNextSteps:"Prochaines étapes",
+    applyNext1:"Vérifiez votre e-mail et confirmez votre compte",
+    applyNext2:"Revenez et cliquez sur Se connecter",
+    applyNext3:"Complétez votre profil — ajoutez photo, bio, prix",
+    applyNext4:"Soyez approuvé en 24h et commencez à recevoir des réservations",
+    applyProTip:"Les artistes avec un profil complet reçoivent 3x plus de réservations. Complétez le vôtre dès la connexion !",
+    applySignInComplete:"Se connecter et compléter le profil →",
+    chatUnlocked:"Le chat avec l'artiste s'ouvre immédiatement",
+    artistPerforms:"L'artiste vient et se produit à votre événement",
+    availableIn:"Disponible en",
+    performingCountriesDesc:"Cet artiste se produit dans les pays suivants",
+    completeProfileCta:"Complétez votre profil pour obtenir des réservations",
+    artistsLive:"Des artistes sont réservés dans toute l'Europe en ce moment",
+    artistPerforms:"L'artiste vient et se produit à votre événement",
+    depositLabel:"acompte",
+    bandBookTitle:"Comment souhaitez-vous réserver ?",
+    bandBookSub:"Choisissez l'une — les deux sont faciles ✓",
+    bandOptionAHeading:"⭐ Groupes complets — réserver en ensemble",
+    bandNoBands:"Aucun groupe complet pour l'instant",
+    bandNoBandsDesc:"Les artistes qui configurent leur propre groupe apparaîtront ici. Utilisez Créer le vôtre ci-dessous pour choisir des musiciens individuels.",
+    bandBuildOwn:"Créer le vôtre",
+    bandPickMusicians:"Choisissez vos musiciens",
+    bandPickDesc:"Choisissez parmi de vrais artistes sur la plateforme — uniquement ceux qui sont réellement disponibles",
+    bandDisplayPrices:"Afficher les prix en",
+    bandEasiest:"⭐ Option la plus facile",
+    bandCompleteAs:"Ensemble complet — composé par",
+    bandAvailableDate:"✓ est disponible à cette date",
+    bandNotAvailable:"pourrait ne pas être disponible à cette date — contactez-le/la pour confirmation",
+    bandStep1:"📅 Étape 1 — Choisissez la date de l'événement",
+    bandStep2Instr:"🎵 Étape 2 — Quels instruments souhaitez-vous ?",
+    bandStep3Artists:"👤 Étape 3 — Choisissez vos artistes",
+    bandStep2Artists:"👤 Étape 2 — Choisissez vos artistes",
+    bandChooseWho:"Choisissez qui joue",
+    bandFreeSuffix:"libre",
+    bandBusySuffix:"(occupé)",
+    bandReviewPay:"Vérifier et payer →",
+    bandBackEdit:"← Modifier",
+    bandTapInstruments:"Appuyez sur les instruments dont vous avez besoin ↑",
+    bandBusyWarning:"Certains artistes choisis sont occupés à cette date — voir les suggestions ci-dessous",
+    bandSwitchTo:"Changer →",
+    bandFreeLabel:"✓ Disponible",
+    bandBusyLabel:"✗ Occupé",
+    bandTotalDeposit:"Acompte total",
+    bandMusicianCount:"musiciens",
+    bandSecureNote:"Acompte payé via Stripe · Solde payé en espèces aux artistes après l'événement · Aucune réservation sans paiement réussi",
+    bandPayBtn:"Payer via Stripe →",
+    bandConfirmTitle:"Confirmer votre groupe",
+    bandReadyTitle:"Groupe prêt",
+    soloOnlyNote:"Ceci réserve uniquement le(la) chanteur(se) — aucun instrument",
+    soloNeedInstr:"Besoin de tabla, clavier ou d'autres musiciens ? Utilisez 🎼 Réserver un groupe.",
+    soloSidebarNote:"Vocaliste uniquement — aucun instrument.",
+    soloSidebarTip:"Besoin de tabla ou clavier ? Utilisez 🎼 Réserver un groupe.",
+    bookingTermsSoloNote:"Réserver solo = chanteur(se) uniquement, aucun instrument",
+    bookingTermsSoloDesc:"Si vous souhaitez des tabla, claviers ou autres musiciens, choisissez Avec groupe complet ou utilisez Réserver un groupe.",
+    bookingTermsVocalistOnly:"Cette réservation est uniquement pour le(la) vocaliste",
+    bookingTermsVocalistOnlyDesc:"Besoin de tabla, clavier ou d'autres instruments ? Utilisez 🎼 Réserver un groupe.",
+    myBandTitle:"Mon groupe",
+    myBandDesc:"C'est votre groupe principal. Vous décidez qui en fait partie et combien de membres. Les clients peuvent vous réserver en tant qu'ensemble complet — votre groupe configuré apparaît en Option A.",
+    myBandCurrentMembers:"Membres actuels du groupe",
+    myBandAddMember:"Ajouter un membre",
+    myBandCombinedDeposit:"Acompte combiné (vous + groupe)",
+    myBandSaveBtn:"Enregistrer la configuration du groupe",
+    myBandSaved:"✓ Groupe enregistré !",
+    myBandTip:"💡 La configuration de votre groupe est affichée sur votre profil public.",
+    myBandPrimary:"Principal",
+    hasBand:"A un groupe",
+    inDemand:"Très demandé",
+    bookEarlySub:"Réservez tôt pour sécuriser votre date",
+    pricingHowTitle:"💡 Comment fonctionne votre tarification",
+    pricingDepositLabel:"Acompte",
+    pricingDepositDesc:"Les clients paient ceci à l'avance via Stripe pour confirmer la réservation",
+    pricingCountryLabel:"Par pays",
+    pricingCountryDesc:"Après l'inscription, définissez vos propres prix par pays dans votre tableau de bord",
+    pricingAfterLabel:"Après l'événement",
+    pricingAfterDesc:"Le solde restant est payé en espèces directement à vous",
+    soloDepositLabel:"Acompte solo",
+    soloDepositSub:"Quand vous vous produisez seul(e) — chanteur(se) uniquement, aucun instrument · min €500",
+    soloImportant:"Important : En solo, les clients reçoivent uniquement votre voix. Pour tabla, clavier, etc., une réservation de groupe séparée est nécessaire.",
+    withBandDepositLabel:"Acompte avec groupe",
+    withBandDepositSub:"Acompte anticipé quand vous amenez votre groupe complet · min €800",
+    keepPct:"Vous gardez 88% de l'acompte =",
+    balanceCashAfter:"+ solde payé en espèces après l'événement",
   },
 
   da: {
@@ -1877,6 +2241,96 @@ const TRANSLATIONS = {
     demoSplitNote:"برای هر پیش‌پرداخت €۱۰۰۰، €۸۸۰ (۸۸٪) مستقیماً به حساب Stripe شما می‌رسد. آواز €۱۲۰ (۱۲٪) را نگه می‌دارد.",
     demoSongPh:"مثلاً لیلی جان، بیا که بیا…",
     demoNamePh:"مثلاً لیلا، احمد…",
+
+    applyWelcome:"به Awaz خوش آمدید!",
+    applyStep1Title:"پیوستن به Awaz — مرحله ۱ از ۲",
+    applyStep2Title:"تقریباً تمام شد — مرحله ۲ از ۲",
+    applyInEarning:"هنرمندان در Awaz درآمد دارند",
+    applyKeep:"از هر رزرو",
+    applyFree:"برای پیوستن",
+    applyApproved:"برای تأیید",
+    applyNextSteps:"مرحله بعد چیست",
+    applyNext1:"ایمیل خود را بررسی کنید و حساب را تأیید کنید",
+    applyNext2:"بازگردید و روی ورود کلیک کنید",
+    applyNext3:"پروفایل خود را کامل کنید — عکس، بیوگرافی و قیمت اضافه کنید",
+    applyNext4:"ظرف ۲۴ ساعت تأیید شوید و رزرو دریافت کنید",
+    applyProTip:"هنرمندانی که پروفایل کاملی دارند ۳ برابر بیشتر رزرو می‌گیرند!",
+    applySignInComplete:"ورود و تکمیل پروفایل →",
+    chatUnlocked:"گپ با هنرمند فوراً باز می‌شود",
+    artistPerforms:"هنرمند می‌آید و در رویداد شما اجرا می‌کند",
+    availableIn:"در دسترس در",
+    performingCountriesDesc:"این هنرمند در کشورهای زیر اجرا می‌کند",
+    completeProfileCta:"پروفایل خود را برای دریافت رزرو تکمیل کنید",
+    artistsLive:"هنرمندان اکنون در سراسر اروپا رزرو می‌شوند",
+    artistPerforms:"هنرمند می‌آید و در رویداد شما اجرا می‌کند",
+    depositLabel:"پیش‌پرداخت",
+    bandBookTitle:"چطور می‌خواهید رزرو کنید؟",
+    bandBookSub:"یکی را انتخاب کنید — هر دو آسان هستند ✓",
+    bandOptionAHeading:"⭐ گروه‌های کامل — رزرو به عنوان گروه",
+    bandNoBands:"هنوز هیچ گروه کاملی وجود ندارد",
+    bandNoBandsDesc:"هنرمندانی که گروه خود را تنظیم می‌کنند اینجا نمایش داده می‌شوند. از گزینه «ساخت گروه خود» استفاده کنید.",
+    bandBuildOwn:"ساخت گروه خود",
+    bandPickMusicians:"موزیسین‌های خود را انتخاب کنید",
+    bandPickDesc:"از هنرمندان واقعی روی پلتفرم انتخاب کنید — فقط کسانی که واقعاً در دسترس هستند",
+    bandDisplayPrices:"نمایش قیمت‌ها در",
+    bandEasiest:"⭐ آسان‌ترین گزینه",
+    bandCompleteAs:"گروه کامل — انتخاب شده توسط",
+    bandAvailableDate:"✓ در این تاریخ در دسترس است",
+    bandNotAvailable:"ممکن است در این تاریخ در دسترس نباشد — برای تأیید با او تماس بگیرید",
+    bandStep1:"📅 مرحله ۱ — تاریخ رویداد را انتخاب کنید",
+    bandStep2Instr:"🎵 مرحله ۲ — چه سازهایی می‌خواهید؟",
+    bandStep3Artists:"👤 مرحله ۳ — هنرمندان خود را انتخاب کنید",
+    bandStep2Artists:"👤 مرحله ۲ — هنرمندان خود را انتخاب کنید",
+    bandChooseWho:"انتخاب کنید چه کسی بنوازد",
+    bandFreeSuffix:"آزاد",
+    bandBusySuffix:"(مشغول)",
+    bandReviewPay:"بررسی و پرداخت →",
+    bandBackEdit:"→ ویرایش",
+    bandTapInstruments:"روی سازهای مورد نیاز ضربه بزنید ↑",
+    bandBusyWarning:"برخی هنرمندان انتخاب شده در این تاریخ مشغول هستند — پیشنهادات را ببینید",
+    bandSwitchTo:"تغییر →",
+    bandFreeLabel:"✓ در دسترس",
+    bandBusyLabel:"✗ مشغول",
+    bandTotalDeposit:"کل پیش‌پرداخت",
+    bandMusicianCount:"موزیسین",
+    bandSecureNote:"پیش‌پرداخت از طریق Stripe · مانده به صورت نقدی به هنرمندان پس از رویداد · بدون پرداخت موفق هیچ رزروی انجام نمی‌شود",
+    bandPayBtn:"پرداخت از طریق Stripe →",
+    bandConfirmTitle:"تأیید گروه شما",
+    bandReadyTitle:"گروه آماده",
+    soloOnlyNote:"این فقط خواننده را رزرو می‌کند — بدون ساز",
+    soloNeedInstr:"به طبله، کیبورد یا موزیسین‌های دیگر نیاز دارید؟ از 🎼 رزرو گروه استفاده کنید.",
+    soloSidebarNote:"فقط خواننده — بدون ساز.",
+    soloSidebarTip:"طبله یا کیبورد می‌خواهید؟ از 🎼 رزرو گروه استفاده کنید.",
+    bookingTermsSoloNote:"رزرو سولو = فقط خواننده، بدون ساز",
+    bookingTermsSoloDesc:"اگر طبله، کیبورد یا موزیسین‌های دیگر می‌خواهید، گزینه «با گروه کامل» را انتخاب کنید یا از رزرو گروه استفاده کنید.",
+    bookingTermsVocalistOnly:"این رزرو فقط برای خواننده است",
+    bookingTermsVocalistOnlyDesc:"به طبله، کیبورد یا سازهای دیگر نیاز دارید؟ از 🎼 رزرو گروه استفاده کنید.",
+    myBandTitle:"گروه من",
+    myBandDesc:"این گروه اصلی شماست. شما تصمیم می‌گیرید چه کسانی و چند نفر در آن باشند. مشتریان می‌توانند شما را به عنوان یک گروه کامل رزرو کنند.",
+    myBandCurrentMembers:"اعضای فعلی گروه",
+    myBandAddMember:"افزودن عضو گروه",
+    myBandCombinedDeposit:"پیش‌پرداخت ترکیبی (شما + گروه)",
+    myBandSaveBtn:"ذخیره تنظیمات گروه",
+    myBandSaved:"✓ گروه ذخیره شد!",
+    myBandTip:"💡 تنظیمات گروه شما در پروفایل عمومی نمایش داده می‌شود.",
+    myBandPrimary:"اصلی",
+    hasBand:"دارای گروه",
+    inDemand:"پرتقاضا",
+    bookEarlySub:"زود رزرو کنید تا تاریخ خود را تأمین کنید",
+    pricingHowTitle:"💡 قیمت‌گذاری شما چگونه کار می‌کند",
+    pricingDepositLabel:"پیش‌پرداخت",
+    pricingDepositDesc:"مشتریان این مبلغ را از طریق Stripe برای تأیید رزرو پیشاپیش پرداخت می‌کنند",
+    pricingCountryLabel:"بر اساس کشور",
+    pricingCountryDesc:"پس از ثبت‌نام، قیمت‌های کامل خود را برای هر کشور در داشبورد تنظیم کنید",
+    pricingAfterLabel:"پس از رویداد",
+    pricingAfterDesc:"مبلغ باقیمانده به صورت نقدی مستقیم به شما پرداخت می‌شود",
+    soloDepositLabel:"پیش‌پرداخت سولو",
+    soloDepositSub:"وقتی تنها اجرا می‌کنید — فقط خواننده، بدون ساز · حداقل €500",
+    soloImportant:"مهم: وقتی مشتریان شما را سولو رزرو می‌کنند، فقط صدای شما را دریافت می‌کنند. برای طبله، کیبورد و غیره باید گروه جداگانه رزرو کنند.",
+    withBandDepositLabel:"پیش‌پرداخت با گروه",
+    withBandDepositSub:"پیش‌پرداخت هنگام آوردن گروه کامل · حداقل €800",
+    keepPct:"شما ۸۸٪ پیش‌پرداخت را نگه می‌دارید =",
+    balanceCashAfter:"+ مانده به صورت نقدی پس از رویداد",
   },
 
   ps: {
@@ -2199,6 +2653,96 @@ const TRANSLATIONS = {
     demoSplitNote:"د هرې €۱۰۰۰ پیش پیسو لپاره، تاسو €۸۸۰ (۸۸٪) مستقیم خپل Stripe حساب ته ترلاسه کوئ.",
     demoSongPh:"د بیلګې: لیلي جانه، بیا که بیا…",
     demoNamePh:"د بیلګې: لیلا، احمد…",
+
+    applyWelcome:"Awaz ته ښه راغلاست!",
+    applyStep1Title:"Awaz سره یوځای شئ — ګام ۱ له ۲",
+    applyStep2Title:"تقریباً بشپړ — ګام ۲ له ۲",
+    applyInEarning:"د Awaz هنرمندان کماوي",
+    applyKeep:"د هر بک نه",
+    applyFree:"د یوځای کیدو لپاره",
+    applyApproved:"د تأیید لپاره",
+    applyNextSteps:"بعد څه کیږي",
+    applyNext1:"خپل بریښنالیک وګورئ او حساب تأیید کړئ",
+    applyNext2:"بیرته راشئ او Signin کلیک کړئ",
+    applyNext3:"خپل پروفایل بشپړ کړئ — انځور، بیو او قیمتونه اضافه کړئ",
+    applyNext4:"د ۲۴ ساعتونو دننه تأیید شئ او بکونه ترلاسه کړئ",
+    applyProTip:"د بشپړ پروفایل سره هنرمندان ۳ چنده ډیر بکونه ترلاسه کوي!",
+    applySignInComplete:"Signin کړئ او پروفایل بشپړ کړئ →",
+    chatUnlocked:"د هنرمند سره چیټ سمدلاسه خلاصیږي",
+    artistPerforms:"هنرمند راځي او ستاسو پیښه کې اجرا کوي",
+    availableIn:"شتون لري",
+    performingCountriesDesc:"دا هنرمند لاندې هیوادونو کې اجرا کوي",
+    completeProfileCta:"د بکونو ترلاسه کولو لپاره پروفایل بشپړ کړئ",
+    artistsLive:"هنرمندان اوس د اروپا په سراسر کې بک کیږي",
+    artistPerforms:"هنرمند راځي او ستاسو پیښه کې اجرا کوي",
+    depositLabel:"پیش پیسه",
+    bandBookTitle:"تاسو څنګه غواړئ بک کړئ؟",
+    bandBookSub:"یو غوره کړئ — دواړه اسانه دي ✓",
+    bandOptionAHeading:"⭐ بشپړ ډلې — د ګروپ په توګه بک کړئ",
+    bandNoBands:"لاهم هیڅ بشپړه ډله نشته",
+    bandNoBandsDesc:"هغه هنرمندان چې خپله ډله تنظیم کوي دلته ښکاره کیږي. لاندې خپله ډله جوړه کړئ.",
+    bandBuildOwn:"خپله ډله جوړه کړئ",
+    bandPickMusicians:"موسیقارانو غوره کړئ",
+    bandPickDesc:"د پلیټفارم ریښتیني هنرمندانو نه غوره کړئ — یوازې هغه چې واقعاً شتون لري",
+    bandDisplayPrices:"قیمتونه ښودل",
+    bandEasiest:"⭐ تر ټولو اسانه",
+    bandCompleteAs:"بشپړ انسامبل — د لخوا ترتیب شوی",
+    bandAvailableDate:"✓ پدې نیټه شتون لري",
+    bandNotAvailable:"ممکن پدې نیټه شتون ونلري — د تأیید لپاره ورسره اړیکه ونیسئ",
+    bandStep1:"📅 ګام ۱ — د پیښې نیټه غوره کړئ",
+    bandStep2Instr:"🎵 ګام ۲ — کوم آلات غواړئ؟",
+    bandStep3Artists:"👤 ګام ۳ — هنرمندان غوره کړئ",
+    bandStep2Artists:"👤 ګام ۲ — هنرمندان غوره کړئ",
+    bandChooseWho:"غوره کړئ چا وغږوي",
+    bandFreeSuffix:"وړیا",
+    bandBusySuffix:"(بوخت)",
+    bandReviewPay:"بیاکتنه او ورکونه →",
+    bandBackEdit:"→ سمول",
+    bandTapInstruments:"اړین آلاتو ته ټپ کړئ ↑",
+    bandBusyWarning:"ځینې هنرمندان پدې نیټه بوخت دي — لاندې وړاندیزونه وګورئ",
+    bandSwitchTo:"بدلون →",
+    bandFreeLabel:"✓ شتون لري",
+    bandBusyLabel:"✗ بوخت",
+    bandTotalDeposit:"ټول پیش پیسه",
+    bandMusicianCount:"موسیقاران",
+    bandSecureNote:"د Stripe له لارې خوندي پیش پیسه · پاتې برخه د پیښې وروسته نغده هنرمندانو ته · د بریالي ورکونې پرته هیڅ بک نشته",
+    bandPayBtn:"د Stripe له لارې ورکونه →",
+    bandConfirmTitle:"خپله ډله تأیید کړئ",
+    bandReadyTitle:"چمتو ډله",
+    soloOnlyNote:"دا یوازې سندریز بکوي — هیڅ آله نشته",
+    soloNeedInstr:"طبله، کیبورد یا نور موسیقاران ته اړتیا لرئ؟ د 🎼 ډله بک کولو نه استفاده وکړئ.",
+    soloSidebarNote:"یوازې سندریز — هیڅ آله نشته.",
+    soloSidebarTip:"طبله یا کیبورد غواړئ؟ د 🎼 ډله بک کولو نه استفاده وکړئ.",
+    bookingTermsSoloNote:"سولو بک کول = یوازې سندریز، هیڅ آله نشته",
+    bookingTermsSoloDesc:"که طبله، کیبورد یا نور موسیقاران غواړئ، بشپړه ډله غوره کړئ یا د ډله بک کولو نه استفاده وکړئ.",
+    bookingTermsVocalistOnly:"دا بک یوازې د سندریز لپاره دی",
+    bookingTermsVocalistOnlyDesc:"طبله، کیبورد یا نورو آلاتو ته اړتیا لرئ؟ د 🎼 ډله بک کولو نه استفاده وکړئ.",
+    myBandTitle:"زما ډله",
+    myBandDesc:"دا ستاسو لومړنۍ ګروپ دی. تاسو پریکړه کوئ چې چا شامل وي. پیرودونکي کولی شي تاسو د بشپړ انسامبل په توګه بک کړي.",
+    myBandCurrentMembers:"اوسني غړي",
+    myBandAddMember:"د ډلې غړی اضافه کړئ",
+    myBandCombinedDeposit:"ګډه پیش پیسه (تاسو + ډله)",
+    myBandSaveBtn:"د ډلې تنظیمات خوندي کړئ",
+    myBandSaved:"✓ ډله خوندي شوه!",
+    myBandTip:"💡 ستاسو د ډلې تنظیمات ستاسو عامه پروفایل کې ښودل کیږي.",
+    myBandPrimary:"لومړنی",
+    hasBand:"ډله لري",
+    inDemand:"پوښتنه لري",
+    bookEarlySub:"د خپلې نیټې د ډاډمن کولو لپاره ژر بک کړئ",
+    pricingHowTitle:"💡 ستاسو قیمت ګذاري څنګه کار کوي",
+    pricingDepositLabel:"پیش پیسه",
+    pricingDepositDesc:"پیرودونکي دا د بک تأیید لپاره د Stripe له لارې دمخه ورکوي",
+    pricingCountryLabel:"د هیواد له مخې",
+    pricingCountryDesc:"د ثبت نام وروسته، خپل بشپړ قیمتونه د هر هیواد لپاره داشبورډ کې تنظیم کړئ",
+    pricingAfterLabel:"د پیښې وروسته",
+    pricingAfterDesc:"پاتې برخه مستقیم تاسو ته نغده ورکول کیږي",
+    soloDepositLabel:"سولو پیش پیسه",
+    soloDepositSub:"کله چې یوازې اجرا کوئ — یوازې سندریز، هیڅ آله نشته · لږترلږه €500",
+    soloImportant:"مهم: کله چې پیرودونکي تاسو سولو بکوي، یوازې ستاسو غږ ترلاسه کوي. د طبله، کیبورد لپاره باید جلا ډله بکه کړي.",
+    withBandDepositLabel:"د ډلې سره پیش پیسه",
+    withBandDepositSub:"کله چې خپله بشپړه ډله راوړئ · لږترلږه €800",
+    keepPct:"تاسو د پیش پیسو ۸۸٪ ساتئ =",
+    balanceCashAfter:"+ پاتې برخه د پیښې وروسته نغده",
   },
 };
 
@@ -3199,7 +3743,7 @@ function StripePaywall({
 
         {/* What happens */}
         <div style={{background:C.surface,borderRadius:10,padding:"14px 16px",marginBottom:16,border:`1px solid ${C.border}`}}>
-          <div style={{fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase" as const,letterSpacing:"0.5px",marginBottom:8}}>What happens</div>
+          <div style={{fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase" as const,letterSpacing:"0.5px",marginBottom:8}}>{t('applyNextSteps')}</div>
           {[
             {icon:"🔒","text":"You'll be taken to Stripe's secure payment page — your card details never touch our servers"},
             {icon:"💬","text":"After payment, chat with the artist unlocks instantly"},
@@ -3631,7 +4175,7 @@ function ArtistCard({ artist, onClick, compact=false }) {
           </div>
           <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:4,flexShrink:0}}>
             {artist.superhost&&<Badge color={C.gold}>★ Top</Badge>}
-            {isInDemand&&<span style={{background:`${C.ruby}14`,color:C.ruby,borderRadius:8,padding:"2px 7px",fontSize:10,fontWeight:800}}>🔥 In Demand</span>}
+            {isInDemand&&<span style={{background:`${C.ruby}14`,color:C.ruby,borderRadius:8,padding:"2px 7px",fontSize:10,fontWeight:800}}>🔥 {t('inDemand')}</span>}
             {bookingCount>0&&<span style={{fontSize:10,color:C.muted,fontWeight:600}}>{bookingCount} booked</span>}
           </div>
         </div>
@@ -3646,7 +4190,7 @@ function ArtistCard({ artist, onClick, compact=false }) {
         <div style={{display:"flex",flexWrap:"wrap",gap:5,marginBottom:12}}>
           {artist.tags.slice(0,3).map((tg:string)=><Badge key={tg} color={artist.color}>{tg}</Badge>)}
           {Array.isArray(artist.bandMembers)&&artist.bandMembers.length>0&&(
-            <span style={{background:C.lapisS,border:`1px solid ${C.lapis}33`,borderRadius:12,padding:"3px 9px",fontSize:10,fontWeight:700,color:C.lapis}}>🎼 Has Band</span>
+            <span style={{background:C.lapisS,border:`1px solid ${C.lapis}33`,borderRadius:12,padding:"3px 9px",fontSize:10,fontWeight:700,color:C.lapis}}>🎼 {t('hasBand')}</span>
           )}
         </div>
         <div style={{height:1,background:C.border,marginBottom:12}}/>
@@ -3996,11 +4540,11 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
                   <div style={{background:`linear-gradient(135deg,${C.ruby}0C,${C.gold}08)`,border:`1px solid ${C.ruby}22`,borderRadius:10,padding:"10px 14px",display:"flex",alignItems:"center",gap:10,flexWrap:"wrap" as const}}>
                     <span style={{fontSize:16}}>🔥</span>
                     <div style={{flex:1}}>
-                      <span style={{fontWeight:700,color:C.text,fontSize:T.xs}}>In Demand</span>
+                      <span style={{fontWeight:700,color:C.text,fontSize:T.xs}}>{t('inDemand')}</span>
                       <span style={{color:C.textD,fontSize:T.xs,marginLeft:6}}>
                         {(artist.totalBookings||0)>0&&`Booked ${artist.totalBookings} times · `}
                         {(artist.reviews||0)>0&&`${artist.reviews} verified reviews · `}
-                        Book early to secure your date
+                        {t('bookEarlySub')}
                       </span>
                     </div>
                     {artist.verified&&<span style={{background:C.emeraldS,color:C.emerald,fontSize:10,fontWeight:800,padding:"2px 8px",borderRadius:10,border:`1px solid ${C.emerald}33`}}>✓ Verified</span>}
@@ -4080,7 +4624,7 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
                       <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:10,padding:"10px 14px",marginBottom:16,display:"flex",gap:10,alignItems:"flex-start"}}>
                         <span style={{fontSize:16,flexShrink:0}}>💡</span>
                         <div>
-                          <div style={{fontWeight:700,color:C.text,fontSize:T.xs,marginBottom:3}}>Booking solo = singer only, no instruments</div>
+                          <div style={{fontWeight:700,color:C.text,fontSize:T.xs,marginBottom:3}}>{t('bookingTermsSoloNote')}</div>
                           <div style={{fontSize:11,color:C.textD,lineHeight:1.6}}>
                             If you want tabla, keyboard or other musicians at your event, choose <strong style={{color:C.lapis}}>With Full Band</strong> above — or use <strong style={{color:C.lapis}}>Book a Band</strong> to add individual instrumentalists from the platform separately.
                           </div>
@@ -4093,7 +4637,7 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
                     <div style={{background:C.goldS,border:`1px solid ${C.gold}33`,borderRadius:10,padding:"10px 14px",marginBottom:16,display:"flex",gap:10,alignItems:"flex-start"}}>
                       <span style={{fontSize:16,flexShrink:0}}>💡</span>
                       <div>
-                        <div style={{fontWeight:700,color:C.text,fontSize:T.xs,marginBottom:3}}>This booking is for the vocalist only</div>
+                        <div style={{fontWeight:700,color:C.text,fontSize:T.xs,marginBottom:3}}>{t('bookingTermsVocalistOnly')}</div>
                         <div style={{fontSize:11,color:C.textD,lineHeight:1.6}}>
                           Need tabla, keyboard or other instruments? Use <strong style={{color:C.lapis}}>🎼 Book a Band</strong> to add musicians from the platform to your event.
                         </div>
@@ -4114,8 +4658,8 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
                 {/* Performing countries — shown to customers */}
                 {artist.performingCountries?.length>0&&(
                   <div style={{background:C.card,borderRadius:12,padding:vp.isMobile?16:24,border:`1px solid ${C.border}`}}>
-                    <div style={{fontFamily:"'Cormorant Garamond',serif",color:C.gold,fontSize:T.lg,fontWeight:700,marginBottom:4}}>Available In</div>
-                    <div style={{color:C.muted,fontSize:T.xs,marginBottom:14}}>This artist performs in the following countries</div>
+                    <div style={{fontFamily:"'Cormorant Garamond',serif",color:C.gold,fontSize:T.lg,fontWeight:700,marginBottom:4}}>{t('availableIn')||'Available In'}</div>
+                    <div style={{color:C.muted,fontSize:T.xs,marginBottom:14}}>{t('performingCountriesDesc')||'This artist performs in the following countries'}</div>
                     <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
                       {artist.performingCountries.map((code:string)=>{
                         const m=MARKETS.find(m=>m.code===code);
@@ -4263,7 +4807,7 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
                   <div style={{background:C.goldS,border:`1px solid ${C.gold}44`,borderRadius:8,padding:"9px 12px",marginBottom:12,display:"flex",gap:7,alignItems:"flex-start"}}>
                     <span style={{fontSize:13,flexShrink:0}}>💡</span>
                     <div style={{fontSize:11,color:C.muted,lineHeight:1.5}}>
-                      <strong style={{color:C.text}}>Vocalist only — no instruments.</strong>{" "}
+                      {t('soloSidebarNote')}{" "}
                       Need tabla or keyboard? Use <strong style={{color:C.lapis}}>🎼 Book a Band</strong>.
                     </div>
                   </div>
@@ -4325,8 +4869,13 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
 
                     {/* What happens next */}
                     <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,padding:"10px 12px"}}>
-                      <div style={{fontSize:10,fontWeight:700,color:C.muted,textTransform:"uppercase" as const,letterSpacing:"0.5px",marginBottom:7}}>What happens next</div>
-                      {[["💳","Deposit charged via Stripe"],["💬","Chat unlocks immediately"],["🎵","Artist performs at your event"],["💵","Balance paid cash after event"]].map(([ico,txt])=>(
+                      <div style={{fontSize:10,fontWeight:700,color:C.muted,textTransform:"uppercase" as const,letterSpacing:"0.5px",marginBottom:7}}>{t('applyNextSteps')}</div>
+                      {[
+                        ["💳",t('pricingDepositDesc')||"Deposit charged via Stripe"],
+                        ["💬",t('chatUnlocked')||"Chat unlocks immediately"],
+                        ["🎵",t('artistPerforms')||"Artist performs at your event"],
+                        ["💵",t('pricingAfterDesc')||"Balance paid cash after event"],
+                      ].map(([ico,txt])=>(
                         <div key={txt as string} style={{display:"flex",gap:7,alignItems:"flex-start",marginBottom:4}}>
                           <span style={{fontSize:12,flexShrink:0}}>{ico}</span>
                           <span style={{fontSize:10,color:C.muted,lineHeight:1.5}}>{txt}</span>
@@ -4387,7 +4936,7 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
             <div style={{background:C.goldS,border:`1px solid ${C.gold}44`,borderRadius:10,padding:"10px 14px",display:"flex",gap:8,alignItems:"flex-start"}}>
               <span style={{fontSize:16,flexShrink:0}}>💡</span>
               <div>
-                <div style={{fontWeight:700,color:C.text,fontSize:11,marginBottom:3}}>This books the vocalist only — no instruments</div>
+                <div style={{fontWeight:700,color:C.text,fontSize:11,marginBottom:3}}>{t('soloOnlyNote')}</div>
                 <div style={{fontSize:11,color:C.textD,lineHeight:1.6}}>
                   Need tabla, keyboard or other musicians? Use <strong style={{color:C.lapis}}>🎼 Book a Band</strong> to add them from the platform.
                 </div>
@@ -4431,7 +4980,7 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
 
           {/* ── What happens after payment ── */}
           <div style={{background:C.surface,borderRadius:10,padding:"12px 14px",border:`1px solid ${C.border}`}}>
-            <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:8,textTransform:"uppercase" as const,letterSpacing:"0.5px"}}>What happens next</div>
+            <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:8,textTransform:"uppercase" as const,letterSpacing:"0.5px"}}{t('applyNextSteps')}</div>
             {[
               {icon:"💳",step:"You pay the deposit securely via Stripe"},
               {icon:"💬",step:"Chat unlocks — message the artist directly"},
@@ -6131,7 +6680,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
     {id:"songreqs",  label:"Requests",  badge:songRequestCount},
     {id:"calendar",  label:"Calendar"},
     {id:"messages",  label:"Messages"},
-    {id:"band",      label:"My Band"},
+    {id:"band",      label:t('myBandTitle')},
     {id:"pricing",   label:"Pricing"},
     {id:"profile",   label:"Profile"},
     {id:"social",    label:"Social"},
@@ -6458,7 +7007,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
             ?<div>
               {(!artist.genre||!artist.bio||!artist.spotify)&&(
                 <div style={{background:`linear-gradient(135deg,rgba(200,168,74,0.06),${C.card})`,border:`1px solid ${C.gold}33`,borderRadius:12,padding:"18px 20px",marginBottom:12}}>
-                  <div style={{fontWeight:700,color:C.gold,fontSize:T.sm,marginBottom:4}}>Complete your profile to get bookings</div>
+                  <div style={{fontWeight:700,color:C.gold,fontSize:T.sm,marginBottom:4}}>{t('completeProfileCta')||'Complete your profile to get bookings'}</div>
                   <div style={{color:C.muted,fontSize:T.xs,marginBottom:12}}>Artists with complete profiles get 3× more views</div>
                   <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
                     {!artist.genre&&<button onClick={()=>setTab("profile")} style={{background:C.card,border:`1px solid ${C.gold}44`,borderRadius:8,padding:"7px 14px",color:C.gold,fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit",minHeight:34}}>+ Add Genre</button>}
@@ -6938,16 +7487,16 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
             {tab==="band"&&(
               <div>
                 <div style={{marginBottom:20}}>
-                  <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text}}>My Band</div>
+                  <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text}}>{t('myBandTitle')}</div>
                   <div style={{color:C.muted,fontSize:T.sm,marginTop:4,lineHeight:1.6}}>
-                    This is your primary group. You decide who's in it and how many members. Customers can book you as a complete ensemble — your configured band appears as <strong style={{color:C.gold}}>Option A</strong> in the band booking flow.
+                    {t('myBandDesc')}
                   </div>
                 </div>
 
                 {/* Current members */}
                 {bandMembers.length>0&&(
                   <div style={{marginBottom:20}}>
-                    <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,letterSpacing:"0.8px",textTransform:"uppercase" as const,marginBottom:10}}>Current Band Members</div>
+                    <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,letterSpacing:"0.8px",textTransform:"uppercase" as const,marginBottom:10}}>{t('myBandCurrentMembers')}</div>
                     {bandMembers.map((m,i)=>{
                       const roleIcons:Record<string,string>={Tabla:"🥁",Rubab:"🪕",Drums:"🎶",Keyboard:"🎹",Guitar:"🎸",Harmonium:"🎵",Vocalist:"🎤"};
                       return(
@@ -6978,7 +7527,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
 
                 {/* Add new member */}
                 <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,padding:"16px 18px",marginBottom:16}}>
-                  <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:12,textTransform:"uppercase" as const,letterSpacing:"0.8px"}}>Add a Band Member</div>
+                  <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:12,textTransform:"uppercase" as const,letterSpacing:"0.8px"}}>{t('myBandAddMember')}</div>
                   <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:10}}>
                     <div>
                       <div style={{fontSize:T.xs,color:C.muted,marginBottom:4,fontWeight:600}}>Role</div>
@@ -7007,7 +7556,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
                     setNewMember({role:"Tabla",name:"",price:100});
                     setBandSaved(false);
                   }} style={{background:`linear-gradient(135deg,${C.lapis},#1A3F9C)`,color:"#fff",border:"none",borderRadius:8,padding:"10px 18px",fontWeight:700,fontSize:T.xs,cursor:"pointer",fontFamily:"inherit"}}>
-                    + Add to Band
+                    + {t('myBandAddMember')}
                   </button>
                 </div>
 
@@ -7018,14 +7567,14 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
                     try{const sb=await getSupabase();if(sb)await sb.from("artists").update({band_members:bandMembers}).eq("id",artist.id);}catch{}
                   }
                   setBandSaved(true);
-                  notify("Band updated successfully","success");
+                  notify(t('myBandSaved'),"success");
                   setTimeout(()=>setBandSaved(false),2500);
                 }} style={{width:"100%",background:bandSaved?C.emerald:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:bandSaved?"#fff":C.bg,border:"none",borderRadius:10,padding:"14px",fontWeight:800,fontSize:T.sm,cursor:"pointer",fontFamily:"inherit",transition:"background 0.3s"}}>
-                  {bandSaved?"✓ Band Saved!":"Save Band Configuration"}
+                  {bandSaved?t('myBandSaved'):t('myBandSaveBtn')}
                 </button>
 
                 <div style={{marginTop:12,background:C.lapisS,border:`1px solid ${C.lapis}22`,borderRadius:8,padding:"10px 14px",fontSize:11,color:C.muted,lineHeight:1.7}}>
-                  💡 Your band configuration is shown on your public profile. Customers can see the full ensemble and book you as a group. The combined price is shown automatically.
+                  {t('myBandTip')}
                 </div>
               </div>
             )}
@@ -10552,8 +11101,8 @@ function AppInner() {
                 {/* Two options */}
                 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:16}}>
                   {[
-                    {label:"Option A",desc:"Artist's own band",sub:"Artist sets the group",icon:"🎼",color:C.gold},
-                    {label:"Option B",desc:"Build your own",sub:"Pick from platform artists",icon:"🎛️",color:C.lapis},
+                    {label:"Option A",desc:t('bandOptionAHeading')||"Artist's own band",sub:t('bandCompleteAs')||"Artist sets the group",icon:"🎼",color:C.gold},
+                    {label:t('bandBuildOwn'),desc:t('bandPickMusicians'),sub:t('bandPickDesc'),icon:"🎛️",color:C.lapis},
                   ].map(({label,desc,sub,icon,color})=>(
                     <div key={label} style={{background:C.card,border:`1px solid ${color}33`,borderRadius:10,padding:"10px 12px"}}>
                       <span style={{fontSize:16}}>{icon}</span>
@@ -10584,14 +11133,14 @@ function AppInner() {
                 <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:20,overflow:"hidden",boxShadow:`0 24px 80px rgba(0,0,0,0.12)`}}>
                   <div style={{height:4,background:`linear-gradient(90deg,${C.lapis},${C.gold},${C.ruby})`}}/>
                   <div style={{padding:"24px 20px"}}>
-                    <div style={{fontSize:11,fontWeight:700,color:C.gold,letterSpacing:"1px",textTransform:"uppercase" as const,marginBottom:4}}>How Band Booking Works</div>
-                    <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:700,color:C.text,marginBottom:16}}>Real artists · Real prices</div>
+                    <div style={{fontSize:11,fontWeight:700,color:C.gold,letterSpacing:"1px",textTransform:"uppercase" as const,marginBottom:4}}>{t('bandBookTitle')}</div>
+                    <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:700,color:C.text,marginBottom:16}}>{t('bandPickMusicians')}</div>
 
                     {[
-                      {icon:"🎤",label:"Option A — Artist's Band",desc:"Book a vocalist who has set up their own band. The artist decides who performs with them."},
-                      {icon:"🎛️",label:"Option B — Build Your Own",desc:"Pick individual musicians from the platform. Choose from verified artists who are actually available."},
-                      {icon:"💳",label:"Deposit via Stripe",desc:"Pay the deposit to confirm. Prices are set by each artist — no hidden fees."},
-                      {icon:"💵",label:"Balance after the event",desc:"Remaining amount paid in cash directly to the artists on the night."},
+                      {icon:"🎤",label:`Option A — ${t('bandOptionAHeading')||"Artist's Band"}`,desc:t('bandPickDesc')||"Book a vocalist who has set up their own band."},
+                      {icon:"🎛️",label:`Option B — ${t('bandBuildOwn')||"Build Your Own"}`,desc:t('bandNoBandsDesc')||"Pick individual musicians from the platform."},
+                      {icon:"💳",label:t('pricingDepositLabel')||"Deposit via Stripe",desc:t('pricingDepositDesc')||"Pay the deposit to confirm. Prices are set by each artist — no hidden fees."},
+                      {icon:"💵",label:t('pricingAfterLabel')||"Balance after the event",desc:t('pricingAfterDesc')||"Remaining amount paid in cash directly to the artists on the night."},
                     ].map(({icon,label,desc})=>(
                       <div key={label} style={{display:"flex",gap:12,padding:"10px 0",borderBottom:`1px solid ${C.border}`}}>
                         <span style={{fontSize:18,flexShrink:0,marginTop:2}}>{icon}</span>
@@ -11458,7 +12007,7 @@ function BandBookingSheet({artists, onClose, onBook}:{artists:any[];onClose:()=>
     if(!eventType) return"What kind of event is it?";
     if(currentSlots.length===0) return"Add at least one musician.";
     const unfilled=currentSlots.filter(s=>!s.artistId);
-    if(unfilled.length>0) return`Choose an artist for: ${unfilled.map(s=>s.role).join(", ")}.`;
+    if(unfilled.length>0) return`Still need to choose: ${unfilled.map(s=>BAND_ROLES.find(r=>r.role===s.role)?.label||s.role).join(", ")}.`;
     return null;
   };
 
@@ -11560,8 +12109,8 @@ function BandBookingSheet({artists, onClose, onBook}:{artists:any[];onClose:()=>
         {mode==="choose"&&(
           <div>
             <div style={{textAlign:"center",marginBottom:20}}>
-              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:700,color:C.text,marginBottom:6}}>How would you like to book?</div>
-              <div style={{color:C.muted,fontSize:T.sm,lineHeight:1.6}}>Pick one — both are easy ✓</div>
+              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:700,color:C.text,marginBottom:6}}>{t('bandBookTitle')}</div>
+              <div style={{color:C.muted,fontSize:T.sm,lineHeight:1.6}}>{t('bandBookSub')}</div>
             </div>
 
             {/* Option A — Artist-configured bands */}
@@ -11569,7 +12118,7 @@ function BandBookingSheet({artists, onClose, onBook}:{artists:any[];onClose:()=>
               const bandsAvailable=artists.filter(a=>(a.status==="approved"||a.verified)&&Array.isArray(a.bandMembers)&&a.bandMembers.length>0);
               return bandsAvailable.length>0?(
                 <div style={{marginBottom:12}}>
-                  <div style={{fontSize:11,fontWeight:700,color:C.gold,letterSpacing:"1px",textTransform:"uppercase" as const,marginBottom:8}}>⭐ Complete bands — book as a group</div>
+                  <div style={{fontSize:11,fontWeight:700,color:C.gold,letterSpacing:"1px",textTransform:"uppercase" as const,marginBottom:8}}>{t('bandOptionAHeading')}</div>
                   {bandsAvailable.map(lead=>{
                     const members:any[]=lead.bandMembers||[];
                     const totalDeposit=(lead.depositWithBand||lead.deposit_with_band||lead.deposit||0)+members.reduce((s:number,m:any)=>s+(m.price||0),0);
@@ -11587,10 +12136,9 @@ function BandBookingSheet({artists, onClose, onBook}:{artists:any[];onClose:()=>
                           </div>
                           <div style={{textAlign:"right"}}>
                             <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:800,color:C.gold,fontSize:T.lg}}>{toLocalCurrency(totalDeposit,currency)}</div>
-                            <div style={{fontSize:10,color:C.muted}}>deposit</div>
+                            <div style={{fontSize:10,color:C.muted}}>{t('depositLabel')}</div>
                           </div>
                         </div>
-                        {/* Band members */}
                         <div style={{display:"flex",gap:6,flexWrap:"wrap" as const}}>
                           <span style={{background:C.goldS,border:`1px solid ${C.gold}44`,borderRadius:20,padding:"3px 10px",fontSize:11,color:C.gold,fontWeight:600}}>🎤 {lead.name.split(" ")[0]}</span>
                           {members.map((m,i)=>(
@@ -11600,7 +12148,7 @@ function BandBookingSheet({artists, onClose, onBook}:{artists:any[];onClose:()=>
                           ))}
                         </div>
                         <div style={{fontSize:11,color:C.muted,marginTop:8}}>
-                          {members.length+1} musicians · Deposit paid via Stripe · Balance cash after event
+                          {members.length+1} {t('bandMusicianCount')} · {t('bandSecureNote')}
                         </div>
                       </div>
                     );
@@ -11609,19 +12157,19 @@ function BandBookingSheet({artists, onClose, onBook}:{artists:any[];onClose:()=>
               ):(
                 <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,padding:"14px 16px",marginBottom:12,textAlign:"center"}}>
                   <div style={{fontSize:20,marginBottom:6}}>🎼</div>
-                  <div style={{fontWeight:700,color:C.text,fontSize:T.sm,marginBottom:4}}>No complete bands yet</div>
-                  <div style={{color:C.muted,fontSize:T.xs,lineHeight:1.6}}>Artists who set up their own band will appear here. Use Build Your Own below to pick individual musicians.</div>
+                  <div style={{fontWeight:700,color:C.text,fontSize:T.sm,marginBottom:4}}>{t('bandNoBands')}</div>
+                  <div style={{color:C.muted,fontSize:T.xs,lineHeight:1.6}}>{t('bandNoBandsDesc')}</div>
                 </div>
               );
             })()}
 
-            {/* Option B — Build your own */}
+            {/* Option B */}
             <div onClick={()=>{setMode("custom");setCustomRoles([]);setSelected([]);}} style={{background:C.surface,border:`2px solid ${C.border}`,borderRadius:16,padding:"20px 18px",cursor:"pointer",transition:"all 0.2s"}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
                 <div>
-                  <div style={{fontSize:11,fontWeight:700,color:C.lapis,letterSpacing:"1px",textTransform:"uppercase" as const,marginBottom:4}}>Build your own</div>
-                  <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text}}>Pick Your Musicians</div>
-                  <div style={{color:C.muted,fontSize:T.xs,marginTop:4}}>Choose from real artists on the platform — only those who are actually available</div>
+                  <div style={{fontSize:11,fontWeight:700,color:C.lapis,letterSpacing:"1px",textTransform:"uppercase" as const,marginBottom:4}}>{t('bandBuildOwn')}</div>
+                  <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text}}>{t('bandPickMusicians')}</div>
+                  <div style={{color:C.muted,fontSize:T.xs,marginTop:4}}>{t('bandPickDesc')}</div>
                 </div>
                 <span style={{fontSize:28}}>🎛️</span>
               </div>
@@ -11629,7 +12177,7 @@ function BandBookingSheet({artists, onClose, onBook}:{artists:any[];onClose:()=>
 
             {/* Currency selector */}
             <div style={{marginTop:16}}>
-              <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:6}}>Display prices in</div>
+              <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:6}}>{t('bandDisplayPrices')}</div>
               <div style={{display:"flex",gap:6}}>
                 {["EUR","NOK","SEK","DKK","GBP"].map(cur=>(
                   <button key={cur} onClick={e=>{e.stopPropagation();setCurrency(cur);}}
@@ -11687,7 +12235,7 @@ function BandBookingSheet({artists, onClose, onBook}:{artists:any[];onClose:()=>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",paddingTop:12,marginTop:4}}>
                 <div>
                   <div style={{fontSize:T.xs,color:C.muted}}>Total deposit · {(leadArtist.bandMembers as any[]).length+1} musicians</div>
-                  <div style={{fontSize:10,color:C.muted,marginTop:2}}>Balance paid cash to artists after the event</div>
+                  <div style={{fontSize:10,color:C.muted,marginTop:2}}>{t('pricingAfterLabel')}</div>
                 </div>
                 <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:800,color:C.gold,fontSize:T.xl}}>
                   {toLocalCurrency((leadArtist.depositWithBand||leadArtist.deposit_with_band||leadArtist.deposit||0)+(leadArtist.bandMembers as any[]).reduce((s:number,m:any)=>s+(m.price||0),0),currency)}
@@ -11803,8 +12351,8 @@ function BandBookingSheet({artists, onClose, onBook}:{artists:any[];onClose:()=>
                   {currency!=="EUR"&&<div style={{fontSize:10,color:C.muted}}>≈ €{totalEur} EUR</div>}
                 </div>
                 <div style={{textAlign:"right",fontSize:11,color:C.muted,lineHeight:1.7}}>
-                  <div>Deposit via Stripe</div>
-                  <div>Balance cash after</div>
+                  <div>{t('pricingDepositLabel')}</div>
+                  <div>{t('pricingAfterLabel')}</div>
                 </div>
               </div>
             )}
@@ -11894,7 +12442,7 @@ function BandBookingSheet({artists, onClose, onBook}:{artists:any[];onClose:()=>
             </div>
 
             <div style={{background:C.lapisS,border:`1px solid ${C.lapis}33`,borderRadius:10,padding:"10px 14px",marginBottom:16,fontSize:11,color:C.muted,lineHeight:1.7}}>
-              🔒 Deposit paid securely via Stripe · Balance paid cash to artists after the event · No booking without successful payment
+              {t('bandSecureNote')}
             </div>
 
             <div style={{display:"flex",gap:8}}>
@@ -11936,13 +12484,21 @@ function ApplySheet({ onSubmit, onClose }) {
   const toggleInstrument=(inst:string)=>setF(p=>({...p,selectedInstruments:p.selectedInstruments.includes(inst)?p.selectedInstruments.filter(i=>i!==inst):[...p.selectedInstruments,inst]}));
   const [err,setErr]=useState(""),[done,setDone]=useState(false),[loading,setLoading]=useState(false);
 
-  const v1=()=>{if(!f.name)return"Name required.";if(!f.email||!f.email.includes("@"))return"Valid email required.";if(f.pass.length<8)return"Password: 8+ chars.";if(!/[A-Z]/.test(f.pass))return"Need 1 uppercase.";if(!/[0-9]/.test(f.pass))return"Need 1 number.";if(f.pass!==f.pass2)return"Passwords don't match.";return null;};
+  const v1=()=>{
+    if(!f.name)return"Please enter your name.";
+    if(!f.email||!f.email.includes("@"))return"Please enter a valid email address.";
+    if(f.pass.length<8)return"Password must be at least 8 characters.";
+    if(!/[A-Z]/.test(f.pass))return"Add at least one uppercase letter to your password.";
+    if(!/[0-9]/.test(f.pass))return"Add at least one number to your password.";
+    if(f.pass!==f.pass2)return"The two passwords don't match — please check.";
+    return null;
+  };
   const v2=()=>{
-    if(f.genres.length===0)return"Choose at least one genre.";
-    if(!f.artistType)return"Please select your artist type — Vocalist or Instrumentalist.";
-    if(f.artistType==="instrumentalist"&&f.selectedInstruments.length===0)return"Please select at least one instrument.";
-    if(f.artistType==="vocalist"&&parseInt(f.deposit)<500)return"Vocalists: minimum deposit is €500.";
-    if(f.artistType==="instrumentalist"){const d=parseInt(f.deposit);if(d<50||d>250)return"Instrumentalists: price must be between €50 and €250.";}
+    if(f.genres.length===0)return"Choose at least one type of music.";
+    if(!f.artistType)return"Are you a Singer or an Instrumentalist? Please choose one.";
+    if(f.artistType==="instrumentalist"&&f.selectedInstruments.length===0)return"Please select which instrument you play.";
+    if(f.artistType==="vocalist"&&parseInt(f.deposit)<500)return"Singers must set a deposit of at least €500.";
+    if(f.artistType==="instrumentalist"){const d=parseInt(f.deposit);if(d<50||d>250)return"Instrumentalists: your price must be between €50 and €250.";}
     return null;
   };
 
@@ -12070,7 +12626,7 @@ function ApplySheet({ onSubmit, onClose }) {
   };
 
   return(
-    <Sheet open onClose={onClose} title={done?"Welcome to Awaz!":step===1?"Join Awaz — Step 1 of 2":"Almost done — Step 2 of 2"} maxH="96vh">
+    <Sheet open onClose={onClose} title={done?t('applyWelcome')||"Welcome to Awaz!":step===1?t('applyStep1Title')||"Join Awaz — Step 1 of 2":t('applyStep2Title')||"Almost done — Step 2 of 2"} maxH="96vh">
       <div style={{padding:"16px 20px 32px"}}>
         {done?(
           <div style={{textAlign:"center",padding:"20px 0"}}>
@@ -12078,12 +12634,12 @@ function ApplySheet({ onSubmit, onClose }) {
             <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:700,color:C.text,marginBottom:8}}>You're in! Account created.</div>
             <div style={{color:C.muted,fontSize:T.sm,lineHeight:1.8,marginBottom:20}}>Welcome to Awaz — the platform that helps Afghan artists across Europe get booked and paid.</div>
             <div style={{background:C.surface,borderRadius:10,padding:"14px 16px",marginBottom:16,textAlign:"left",border:`1px solid ${C.border}`}}>
-              <div style={{fontSize:T.xs,fontWeight:700,color:C.gold,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:10}}>What happens next</div>
+              <div style={{fontSize:T.xs,fontWeight:700,color:C.gold,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:10}}{t('applyNextSteps')}</div>
               {[
-                ["","Check your email and confirm your account"],
-                ["","Come back and click Sign In"],
-                ["","Complete your profile — add photo, bio, prices"],
-                ["","Get approved within 24h and start getting bookings"],
+                ["📧",t('applyNext1')||"Check your email and confirm your account"],
+                ["🔑",t('applyNext2')||"Come back and click Sign In"],
+                ["🎵",t('applyNext3')||"Complete your profile — add photo, bio, prices"],
+                ["🚀",t('applyNext4')||"Get approved within 24h and start getting bookings"],
               ].map(([icon,l])=>(
                 <div key={l} style={{display:"flex",gap:10,alignItems:"flex-start",marginBottom:8}}>
                   <span style={{fontSize:16,flexShrink:0}}>{icon}</span>
@@ -12092,9 +12648,9 @@ function ApplySheet({ onSubmit, onClose }) {
               ))}
             </div>
             <div style={{background:C.goldS,border:`1px solid ${C.gold}33`,borderRadius:8,padding:"12px 14px",marginBottom:16,fontSize:T.sm,color:C.text,lineHeight:1.6,textAlign:"left"}}>
-              Pro tip: Artists with a complete profile (photo + bio + pricing) get <strong style={{color:C.gold}}>3x more bookings</strong>. Complete yours right after signing in!
+              {t('applyProTip')||"Pro tip: Artists with a complete profile get 3x more bookings. Complete yours right after signing in!"}
             </div>
-            <Btn full sz="lg" onClick={onClose}>Sign In & Complete Profile →</Btn>
+            <Btn full sz="lg" onClick={onClose}>{t('applySignInComplete')||"Sign In & Complete Profile →"}</Btn>
           </div>
         ):(
           <>
@@ -12103,7 +12659,7 @@ function ApplySheet({ onSubmit, onClose }) {
               <div style={{background:`linear-gradient(135deg,${C.goldS},${C.card})`,border:`1px solid ${C.gold}33`,borderRadius:12,padding:"14px 16px",marginBottom:18}}>
                 <div style={{fontSize:T.xs,fontWeight:800,color:C.gold,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:10}}>Artists on Awaz earn</div>
                 <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:10}}>
-                  {[["88%","of every booking","kept by you"],["€0","to join","completely free"],["48h","to get approved","& go live"]].map(([v,l,s])=>(
+                  {[["88%",t('applyKeep')||"of every booking","kept by you"],["€0",t('applyFree')||"to join","completely free"],["48h",t('applyApproved')||"to get approved","& go live"]].map(([v,l,s])=>(
                     <div key={l} style={{textAlign:"center",background:C.card,borderRadius:8,padding:"10px 6px",border:`1px solid ${C.border}`}}>
                       <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:800,color:C.gold,fontSize:"1.4rem",lineHeight:1}}>{v}</div>
                       <div style={{fontSize:9,color:C.muted,marginTop:3,lineHeight:1.4}}>{l}<br/><span style={{color:C.text,fontWeight:600}}>{s}</span></div>
@@ -12112,7 +12668,7 @@ function ApplySheet({ onSubmit, onClose }) {
                 </div>
                 <div style={{display:"flex",alignItems:"center",gap:6,fontSize:11,color:C.muted}}>
                   <span style={{color:C.emerald}}>●</span>
-                  <span>Artists are getting booked in Norway, Sweden, Germany and UK right now</span>
+                  <span>{t('artistsLive')||'Artists are getting booked in Norway, Sweden, Germany and UK right now'}</span>
                 </div>
               </div>
             )}
@@ -12308,13 +12864,13 @@ function ApplySheet({ onSubmit, onClose }) {
                 <div>
                   {/* How pricing works — shown for everyone */}
                   <div style={{background:C.goldS,border:`1px solid ${C.gold}33`,borderRadius:10,padding:"12px 14px",marginBottom:12}}>
-                    <div style={{fontSize:T.xs,fontWeight:700,color:C.gold,marginBottom:6}}>💡 How your pricing works</div>
+                    <div style={{fontSize:T.xs,fontWeight:700,color:C.gold,marginBottom:6}}>{t('pricingHowTitle')}</div>
                     <div style={{display:"flex",flexDirection:"column",gap:5}}>
                       {[
-                        ["💳","Deposit","Customers pay this upfront via Stripe to confirm the booking"],
-                        ["🌍","By country","After signing up, you set your own full price per country in your dashboard"],
-                        ["💵","After the event","The remaining balance is paid in cash directly to you on the night"],
-                      ].map(([icon,title,desc])=>(
+                        [t('pricingDepositLabel'),t('pricingDepositDesc'),"💳"],
+                        [t('pricingCountryLabel'),t('pricingCountryDesc'),"🌍"],
+                        [t('pricingAfterLabel'),t('pricingAfterDesc'),"💵"],
+                      ].map(([title,desc,icon])=>(
                         <div key={title} style={{display:"flex",gap:8,alignItems:"flex-start"}}>
                           <span style={{fontSize:14,flexShrink:0}}>{icon}</span>
                           <div>
@@ -12333,12 +12889,12 @@ function ApplySheet({ onSubmit, onClose }) {
                         <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
                           <span style={{fontSize:18}}>🎤</span>
                           <div>
-                            <div style={{fontWeight:700,color:C.text,fontSize:T.sm}}>Solo deposit <span style={{color:C.ruby}}>*</span></div>
-                            <div style={{fontSize:11,color:C.muted}}>When you perform alone — <strong>singer only, no instruments</strong> · min €500</div>
+                            <div style={{fontWeight:700,color:C.text,fontSize:T.sm}}>{t('soloDepositLabel')} <span style={{color:C.ruby}}>*</span></div>
+                            <div style={{fontSize:11,color:C.muted}}>{t('soloDepositSub')}</div>
                           </div>
                         </div>
                         <div style={{background:C.rubyS,border:`1px solid ${C.ruby}22`,borderRadius:8,padding:"8px 12px",marginBottom:10,fontSize:11,color:C.textD,lineHeight:1.6}}>
-                          ⚠️ <strong style={{color:C.text}}>Important:</strong> When customers book you solo, they get your voice only. If they want tabla, keyboard or other musicians, they must book a full band separately. Make sure your profile makes this clear.
+                          ⚠️ <strong style={{color:C.text}}>!</strong> {t('soloImportant')}
                         </div>
                         <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:6}}>
                           {[500,800,1000,1500].map(d=>(
@@ -12349,7 +12905,7 @@ function ApplySheet({ onSubmit, onClose }) {
                           ))}
                         </div>
                         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:8}}>
-                          <div style={{fontSize:11,color:C.muted}}>You keep 88% of deposit = <strong style={{color:C.gold}}>€{Math.round(parseInt(f.deposit||"500")*0.88)}</strong></div>
+                          <div style={{fontSize:11,color:C.muted}}>{t('keepPct')} <strong style={{color:C.gold}}>€{Math.round(parseInt(f.deposit||"500")*0.88)}</strong></div>
                           <div style={{fontSize:10,color:C.muted}}>+ balance paid cash after event</div>
                         </div>
                       </div>
@@ -12359,7 +12915,7 @@ function ApplySheet({ onSubmit, onClose }) {
                         <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
                           <span style={{fontSize:18}}>🎼</span>
                           <div>
-                            <div style={{fontWeight:700,color:C.lapis,fontSize:T.sm}}>With-band deposit <span style={{color:C.ruby}}>*</span></div>
+                            <div style={{fontWeight:700,color:C.lapis,fontSize:T.sm}}>{t('withBandDepositLabel')} <span style={{color:C.ruby}}>*</span></div>
                             <div style={{fontSize:11,color:C.muted}}>Upfront deposit when you bring your full band · min €800 · per country prices set in dashboard</div>
                           </div>
                         </div>
@@ -12372,7 +12928,7 @@ function ApplySheet({ onSubmit, onClose }) {
                           ))}
                         </div>
                         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:8}}>
-                          <div style={{fontSize:11,color:C.muted}}>You keep 88% of deposit = <strong style={{color:C.lapis}}>€{Math.round(parseInt(f.depositWithBand||"800")*0.88)}</strong></div>
+                          <div style={{fontSize:11,color:C.muted}}>{t('keepPct')} <strong style={{color:C.lapis}}>€{Math.round(parseInt(f.depositWithBand||"800")*0.88)}</strong></div>
                           <div style={{fontSize:10,color:C.muted}}>+ balance paid cash after event</div>
                         </div>
                       </div>
