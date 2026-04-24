@@ -2770,6 +2770,26 @@ const TRANSLATIONS = {
   },
 };
 
+// ── Email notification helper ─────────────────────────────────────────
+async function sendEmailNotification(payload:{
+  type:"new_booking"|"new_message"|"booking_confirmed"|"artist_approved"|"artist_rejected";
+  toEmail?:string; toName?:string; fromName?:string; message?:string;
+  artistName?:string; bookingDate?:string; depositAmount?:number;
+  currency?:string; eventType?:string; feedbackText?:string;
+}){
+  if(!payload.toEmail) return;
+  try{
+    const SUPA_URL=(import.meta as any).env?.VITE_SUPABASE_URL;
+    const SUPA_KEY=(import.meta as any).env?.VITE_SUPABASE_ANON_KEY;
+    if(!SUPA_URL||!SUPA_KEY) return;
+    await fetch(`${SUPA_URL}/functions/v1/send-email`,{
+      method:"POST",
+      headers:{"Content-Type":"application/json","Authorization":`Bearer ${SUPA_KEY}`,"apikey":SUPA_KEY},
+      body:JSON.stringify(payload),
+    });
+  }catch{ /* silent fail — never block UI */ }
+}
+
 // ── Slug utility — creates clean SEO URLs for artist profiles ─────────
 const slugify=(name:string)=>name
   .toLowerCase()
@@ -3592,46 +3612,83 @@ function Chat({ booking, artist, myRole, onClose, onSend }) {
     if(!msg.trim()||!booking.chatUnlocked)return;
     const m={from:myRole,text:msg.trim(),time:new Date().toLocaleTimeString("en",{hour:"2-digit",minute:"2-digit"})};
     setMsgs(p=>[...p,m]);onSend?.(booking.id,m);setMsg("");
+    // Send email notification to recipient
+    sendEmailNotification({
+      type:"new_message",
+      toEmail:myRole==="customer"?artist?.email:booking.customerEmail,
+      toName:myRole==="customer"?artist?.name:booking.customerName,
+      fromName:myRole==="customer"?"A customer":artist?.name||"Artist",
+      message:msg.trim(),
+      artistName:artist?.name,
+      bookingDate:booking.date,
+    });
   };
   const bub=from=>from==="customer"?{bg:C.goldS,align:"flex-end"}:from==="artist"?{bg:`${artist?.color||C.ruby}18`,align:"flex-start"}:{bg:C.lapisS,align:"flex-start"};
 
   return(
-    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.88)",zIndex:900,display:"flex",flexDirection:"column"}} onClick={onClose}>
-      <div style={{flex:1,maxWidth:540,width:"100%",margin:"auto",display:"flex",flexDirection:"column",background:C.card,borderRadius:14,overflow:"hidden",maxHeight:"90vh",boxShadow:"0 40px 100px #000"}} onClick={e=>e.stopPropagation()}>
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.92)",zIndex:900,display:"flex",flexDirection:"column"}} onClick={onClose}>
+      <div style={{flex:1,maxWidth:600,width:"100%",margin:"auto",display:"flex",flexDirection:"column",background:C.card,borderRadius:16,overflow:"hidden",maxHeight:"92vh",boxShadow:"0 40px 100px #000"}} onClick={e=>e.stopPropagation()}>
+        {/* Header */}
         <div style={{height:2,background:artist?`linear-gradient(90deg,${artist.color},${C.gold})`:`linear-gradient(90deg,${C.gold},${C.ruby})`}}/>
-        <div style={{padding:"12px 16px",borderBottom:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:12,background:C.surface,flexShrink:0}}>
-          {artist?.photo?<img src={artist.photo} alt="" style={{width:38,height:38,borderRadius:8,objectFit:"cover",flexShrink:0}}/>:
-            <div style={{width:38,height:38,borderRadius:8,background:`${artist?.color||C.gold}18`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>{artist?.emoji}</div>}
+        <div style={{padding:"14px 18px",borderBottom:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:12,background:C.surface,flexShrink:0}}>
+          {artist?.photo?<img src={artist.photo} alt="" style={{width:42,height:42,borderRadius:10,objectFit:"cover",flexShrink:0}}/>:
+            <div style={{width:42,height:42,borderRadius:10,background:`${artist?.color||C.gold}18`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}}>{artist?.emoji}</div>}
           <div style={{flex:1,minWidth:0}}>
-            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.md,fontWeight:700,color:C.text,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{artist?.name}</div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{artist?.name}</div>
             <div style={{fontSize:T.xs,color:booking.chatUnlocked?C.emerald:C.ruby,display:"flex",alignItems:"center",gap:4}}>
               <div style={{width:5,height:5,borderRadius:"50%",background:booking.chatUnlocked?C.emerald:C.ruby}}/>
-              {booking.chatUnlocked?"Active":"Locked — deposit required"}
+              {booking.chatUnlocked?"Active — messages are delivered by email":"Locked — deposit required"}
             </div>
           </div>
           <button onClick={onClose} style={{width:36,height:36,borderRadius:"50%",background:C.surface,border:"none",color:C.muted,cursor:"pointer",fontSize:20,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>×</button>
         </div>
-        <div style={{flex:1,overflow:"auto",padding:"14px 14px",display:"flex",flexDirection:"column",gap:10}}>
+
+        {/* Messages area */}
+        <div style={{flex:1,overflow:"auto",padding:"16px",display:"flex",flexDirection:"column",gap:12,minHeight:0}}>
           {!booking.chatUnlocked&&(
-            <div style={{background:C.rubyS,border:`1px solid ${C.ruby}28`,borderRadius:12,padding:20,textAlign:"center",margin:"auto 0"}}>
-              
+            <div style={{background:C.rubyS,border:`1px solid ${C.ruby}28`,borderRadius:12,padding:24,textAlign:"center",margin:"auto 0"}}>
               <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text,marginBottom:6}}>{t('chatLockedTitle2')}</div>
               <div style={{color:C.muted,fontSize:T.sm,lineHeight:1.6}}>{t('chatLockedBody2')}</div>
             </div>
           )}
-          {msgs.map((m,i)=>{const s=bub(m.from);return(
-            <div key={i} style={{display:"flex",flexDirection:"column",alignItems:s.align}}>
-              <div style={{fontSize:9,color:C.muted,marginBottom:3}}>{m.from} · {m.time}</div>
-              <div style={{background:s.bg,border:`1px solid rgba(255,255,255,0.04)`,borderRadius:12,padding:"10px 14px",maxWidth:"80%",fontSize:T.sm,color:C.text,lineHeight:1.55}}>{m.text}</div>
-            </div>
-          );})}
+          {msgs.map((m,i)=>{
+            const s=bub(m.from);
+            const isAdmin=m.from==="admin";
+            return(
+              <div key={i} style={{display:"flex",flexDirection:"column",alignItems:s.align,maxWidth:"100%"}}>
+                <div style={{fontSize:10,color:C.muted,marginBottom:4,paddingLeft:4}}>
+                  {isAdmin?"Awaz":m.from==="customer"?"You":artist?.name||m.from} · {m.time}
+                </div>
+                <div style={{
+                  background:s.bg,
+                  border:`1px solid ${isAdmin?C.gold+"33":"rgba(255,255,255,0.04)"}`,
+                  borderRadius:m.from==="customer"?"14px 14px 3px 14px":"14px 14px 14px 3px",
+                  padding:"12px 16px",
+                  maxWidth:"82%",
+                  fontSize:T.sm,
+                  color:C.text,
+                  lineHeight:1.75,
+                  // KEY FIX: pre-wrap renders \n as line breaks
+                  whiteSpace:"pre-wrap" as const,
+                  wordBreak:"break-word" as const,
+                }}>
+                  {m.text}
+                </div>
+              </div>
+            );
+          })}
           <div ref={endRef}/>
         </div>
-        <div style={{padding:"10px 12px",display:"flex",gap:8,background:C.surface,flexShrink:0,paddingBottom:`max(10px,env(safe-area-inset-bottom,10px))`}}>
-          <input value={msg} onChange={e=>setMsg(e.target.value)} onKeyDown={e=>e.key==="Enter"&&send()}
-            placeholder={booking.chatUnlocked?"Type a message…":"Deposit required"}
+
+        {/* Input */}
+        <div style={{padding:"12px 14px",display:"flex",gap:8,background:C.surface,flexShrink:0,borderTop:`1px solid ${C.border}`,paddingBottom:`max(12px,env(safe-area-inset-bottom,12px))`}}>
+          <textarea value={msg}
+            onChange={e=>setMsg(e.target.value)}
+            onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send();}}}
+            placeholder={booking.chatUnlocked?"Type a message… (Enter to send, Shift+Enter for new line)":"Deposit required to unlock chat"}
             disabled={!booking.chatUnlocked}
-            style={{flex:1,background:C.card,border:`1px solid ${C.border}`,borderRadius:10,padding:"10px 14px",color:C.text,fontSize:T.base,outline:"none",fontFamily:"inherit",opacity:booking.chatUnlocked?1:0.5,minHeight:44}}/>
+            rows={2}
+            style={{flex:1,background:C.card,border:`1px solid ${C.border}`,borderRadius:10,padding:"10px 14px",color:C.text,fontSize:T.base,outline:"none",fontFamily:"inherit",opacity:booking.chatUnlocked?1:0.5,resize:"none",lineHeight:1.5}}/>
           <Btn onClick={send} sz="md" disabled={!booking.chatUnlocked||!msg.trim()}>→</Btn>
         </div>
       </div>
@@ -4487,6 +4544,29 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
     onBookingCreated(paid);
     setShowCelebration(true);
     setTimeout(()=>{setShowCelebration(false);setShowEventPlan(true);},2800);
+    // Email the customer confirmation
+    sendEmailNotification({
+      type:"booking_confirmed",
+      toEmail:pending.customerEmail,
+      toName:pending.customerName,
+      artistName:artist.name,
+      bookingDate:pending.date,
+      depositAmount:artist.deposit,
+      currency:artist.currency||"EUR",
+      eventType:pending.eventType,
+    });
+    // Email the artist — new booking
+    sendEmailNotification({
+      type:"new_booking",
+      toEmail:artist.email,
+      toName:artist.name,
+      fromName:pending.customerName,
+      artistName:artist.name,
+      bookingDate:pending.date,
+      depositAmount:artist.deposit,
+      currency:artist.currency||"EUR",
+      eventType:pending.eventType,
+    });
   };
 
   // Mobile: stack layout | Desktop: side-by-side
@@ -6541,9 +6621,28 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
         <AdminReviewSheet
           artist={reviewArtist}
           onClose={()=>setReviewArtist(null)}
-          onApprove={(id)=>{onAction(id,"approved");setReviewArtist(null);notify("Artist approved and published","success");}}
-          onReject={(id,msg)=>{onAction(id,"rejected");setAdminChatArtist(reviewArtist);setTab("chat");onMsg({artistId:id,text:`❌ Your profile was rejected. Feedback: ${msg}`,from:"admin"});setReviewArtist(null);notify("Rejected — feedback sent","success");}}
-          onUnpublish={(id,msg)=>{onAction(id,"pending");setAdminChatArtist(reviewArtist);setTab("chat");onMsg({artistId:id,text:`⚠️ Your profile has been unpublished. Please make the following changes:\n\n${msg}\n\nOnce done, your profile will be reviewed again.`,from:"admin"});setReviewArtist(null);notify("Unpublished — feedback sent to artist","success");}}
+          onApprove={(id)=>{
+            onAction(id,"approved");
+            setReviewArtist(null);
+            notify("Artist approved and published","success");
+            sendEmailNotification({type:"artist_approved",toEmail:reviewArtist?.email,toName:reviewArtist?.name,artistName:reviewArtist?.name});
+          }}
+          onReject={(id,msg)=>{
+            onAction(id,"rejected");
+            setAdminChatArtist(reviewArtist);setTab("chat");
+            onMsg({artistId:id,text:`❌ Your profile was rejected. Feedback: ${msg}`,from:"admin"});
+            setReviewArtist(null);
+            notify("Rejected — feedback sent","success");
+            sendEmailNotification({type:"artist_rejected",toEmail:reviewArtist?.email,toName:reviewArtist?.name,artistName:reviewArtist?.name,feedbackText:msg});
+          }}
+          onUnpublish={(id,msg)=>{
+            onAction(id,"pending");
+            setAdminChatArtist(reviewArtist);setTab("chat");
+            onMsg({artistId:id,text:`⚠️ Your profile has been unpublished. Please make the following changes:\n\n${msg}\n\nOnce done, your profile will be reviewed again.`,from:"admin"});
+            setReviewArtist(null);
+            notify("Unpublished — feedback sent to artist","success");
+            sendEmailNotification({type:"artist_rejected",toEmail:reviewArtist?.email,toName:reviewArtist?.name,artistName:reviewArtist?.name,feedbackText:msg});
+          }}
           bookings={bookings}
         />
       )}
