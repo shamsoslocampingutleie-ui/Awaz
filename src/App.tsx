@@ -5734,6 +5734,18 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
     setAdminChats(p=>({...p,[adminChatArtist.id]:[...(p[adminChatArtist.id]||[]),localMsg]}));
     setAdminChatMsg("");
     setAdminChatImage(null);
+    // ── Email the artist ──────────────────────────────────────────────
+    if(text&&adminChatArtist.email){
+      sendEmailNotification({
+        type:"new_message",
+        toEmail:adminChatArtist.email,
+        toName:adminChatArtist.name,
+        fromName:"Awaz Admin",
+        message:text,
+        artistName:adminChatArtist.name,
+      });
+    }
+    // ─────────────────────────────────────────────────────────────────
     if(!HAS_SUPA) return;
     try{
       const sb=await getSupabase();
@@ -10578,6 +10590,7 @@ function AppInner() {
               earnings:a.earnings||0,totalBookings:a.total_bookings||0,verified:a.verified||false,
               isHidden:a.is_hidden||false,boostedUntil:a.boosted_until||null,
               stripeConnected:a.stripe_connected||false,stripeAccount:a.stripe_account||null,iban:a.bank_iban||null,bankName:a.bank_name||null,
+              email:a.email||a.contact_email||"",
               cancellationPolicy:a.cancellation_policy||"moderate",
               spotify:a.spotify_data||null,instagram:a.instagram_data||null,
               youtube:a.youtube_data||null,tiktok:a.tiktok_data||null,
@@ -10635,6 +10648,7 @@ function AppInner() {
                 boostedUntil:aRow.boosted_until||null,
                 stripeConnected:aRow.stripe_connected||false,
                 stripeAccount:aRow.stripe_account||null,
+                email:aRow.email||aRow.contact_email||"",
                 iban:aRow.bank_iban||null,bankName:aRow.bank_name||null,
                 cancellationPolicy:aRow.cancellation_policy||"moderate",
                 spotify:aRow.spotify_data||null,
@@ -10875,6 +10889,7 @@ function AppInner() {
             isHidden:a.is_hidden||false,
             stripeConnected:a.stripe_connected||false,
             stripeAccount:a.stripe_account||null,
+            email:a.email||a.contact_email||"",
             cancellationPolicy:a.cancellation_policy||"moderate",
             spotify:a.spotify_data||null,
             instagram:a.instagram_data||null,
@@ -11184,33 +11199,46 @@ function AppInner() {
     if(v==="profile")setPrevView(view);
     window.scrollTo({top:0,behavior:"instant"});
     setView(v);setMenuOpen(false);
-    // Artist profile gets clean shareable URL
     if(v==="profile"&&artist){
       const slug=slugify(artist.name);
       window.history.pushState({view:"profile",artistId:artist.id},`${artist.name} · Awaz`,`/artist/${slug}`);
+      document.title=`${artist.name} · ${artist.genre} · Book on Awaz`;
+      // Update meta description for social sharing
+      let meta=document.querySelector('meta[name="description"]');
+      if(!meta){meta=document.createElement("meta");(meta as HTMLMetaElement).name="description";document.head.appendChild(meta);}
+      (meta as HTMLMetaElement).content=`Book ${artist.name} for your wedding, Eid or event. ${artist.genre} artist based in ${artist.location}. Secure booking via Awaz.`;
     } else {
       const url = v==="home" ? "/" : `/?view=${v}`;
-      window.history.pushState({view:v},"",url);
+      window.history.replaceState({view:v},"",url);
+      document.title="Awaz — Book Afghan Artists";
     }
   };
-  // Restore view from URL on load — handles /artist/slug, /?view=browse etc.
+  // ── URL routing — runs once on mount ──────────────────────────────
   React.useEffect(()=>{
-    const params = new URLSearchParams(window.location.search);
-    const viewParam = params.get("view");
-    const path = window.location.pathname;
-    // Handle /artist/slug
-    if(path.startsWith("/artist/")){
-      const slug=path.replace("/artist/","").replace(/-/g," ").toLowerCase();
-      // Wait for artists to load, then find by name slug
-      const tryFind=()=>{
-        const found=artists.find(a=>slugify(a.name)===path.replace("/artist/",""));
-        if(found){setSelArtist(found);setView("profile");}
-        else if(artists.length===0)setTimeout(tryFind,300);
-      };
-      tryFind();
-    } else if(viewParam && ["browse","how","pricing"].includes(viewParam)){
-      setView(viewParam);
-    }
+    const restore=()=>{
+      const params = new URLSearchParams(window.location.search);
+      const viewParam = params.get("view");
+      const path = window.location.pathname;
+
+      if(path.startsWith("/artist/")){
+        const slug=path.replace("/artist/","").split("?")[0];
+        const tryFind=()=>{
+          const found=artists.find(a=>slugify(a.name)===slug&&(a.status==="approved"||a.verified));
+          if(found){setSelArtist(found);setView("profile");document.title=`${found.name} · Awaz`;}
+          else if(artists.length===0)setTimeout(tryFind,400);
+          else setView("browse"); // artist not found — go to browse
+        };
+        tryFind();
+      } else if(viewParam&&["browse","how","pricing"].includes(viewParam)){
+        setView(viewParam);
+      }
+    };
+    restore();
+
+    // Handle browser back/forward buttons
+    const onPop=()=>restore();
+    window.addEventListener("popstate",onPop);
+    return()=>window.removeEventListener("popstate",onPop);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   },[artists.length]);
 
