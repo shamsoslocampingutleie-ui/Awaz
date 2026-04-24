@@ -6890,10 +6890,10 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
           {!artist.stripeConnected&&artist.status==="approved"&&(
             <div style={{background:"rgba(99,91,255,0.10)",border:"2px solid rgba(99,91,255,0.35)",borderRadius:12,padding:"14px 16px",marginBottom:12,fontSize:T.sm,color:C.textD,fontFamily:"'DM Sans',sans-serif",display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,flexWrap:"wrap"}}>
               <div>
-                <div style={{fontWeight:700,color:"#8B83FF",marginBottom:3}}>Connect Stripe to get paid</div>
-                <div style={{fontSize:T.xs,color:C.muted}}>Required to receive deposits from bookings</div>
+                <div style={{fontWeight:700,color:C.gold,marginBottom:3}}>💳 Add your bank account to get paid</div>
+                <div style={{fontSize:T.xs,color:C.muted}}>Enter your IBAN so Awaz can transfer your 88% after each booking</div>
               </div>
-              <Btn v="stripe" sz="sm" onClick={()=>setShowStripeConnect(true)}>Connect now →</Btn>
+              <Btn v="gold" sz="sm" onClick={()=>setShowStripeConnect(true)}>Add now →</Btn>
             </div>
           )}
           {!artist.spotify&&!artist.instagram&&artist.status==="approved"&&(
@@ -7624,13 +7624,32 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
               [t('location')||"Location",        artist.location||"—"],
               [t('currency')||"Currency",        artist.currency||"EUR"],
               [t('status')||"Status",            artist.status==="approved"?`✓ ${t('approved')||"Approved"}`:`${t('pendingApproval')||"Pending Approval"}`],
-              ["Stripe",                         artist.stripeConnected?`✓ ${t('connected')||"Connected"}`:t('notConnected')||"Not connected"],
+              ["Bank Account",                   artist.iban
+                ? `✓ ${artist.iban.slice(0,4)} •••• ${artist.iban.slice(-4)}`
+                : artist.stripeConnected
+                  ? `✓ ${t('connected')||"Connected"}`
+                  : "Not added yet"],
             ].map(([k,v])=>(
               <div key={k} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 0",borderBottom:`1px solid ${C.border}`,fontSize:T.sm}}>
                 <span style={{color:C.muted}}>{k}</span>
-                <span style={{color:C.text,fontWeight:600}}>{v}</span>
+                <span style={{color:(v as string).startsWith("✓")?C.emerald:C.text,fontWeight:600}}>{v}</span>
               </div>
             ))}
+            {/* Add / update bank account button */}
+            {!artist.iban&&(
+              <div style={{marginTop:12}}>
+                <button onClick={()=>setShowStripeConnect(true)}
+                  style={{width:"100%",background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:10,padding:"12px",fontWeight:800,fontSize:T.sm,cursor:"pointer",fontFamily:"inherit"}}>
+                  💳 Add Bank Account to Get Paid →
+                </button>
+              </div>
+            )}
+            {artist.iban&&(
+              <button onClick={()=>setShowStripeConnect(true)}
+                style={{marginTop:10,background:"none",border:"none",color:C.muted,fontSize:11,cursor:"pointer",fontFamily:"inherit",padding:0}}>
+                Update bank account
+              </button>
+            )}
           </div>
 
           {/* ── Visibility ── */}
@@ -10104,7 +10123,7 @@ function AppInner() {
               isBoosted:a.is_boosted||false,available:a.available||{},blocked:a.blocked||{},
               earnings:a.earnings||0,totalBookings:a.total_bookings||0,verified:a.verified||false,
               isHidden:a.is_hidden||false,boostedUntil:a.boosted_until||null,
-              stripeConnected:a.stripe_connected||false,stripeAccount:a.stripe_account||null,
+              stripeConnected:a.stripe_connected||false,stripeAccount:a.stripe_account||null,iban:a.bank_iban||null,bankName:a.bank_name||null,
               cancellationPolicy:a.cancellation_policy||"moderate",
               spotify:a.spotify_data||null,instagram:a.instagram_data||null,
               youtube:a.youtube_data||null,tiktok:a.tiktok_data||null,
@@ -10162,6 +10181,7 @@ function AppInner() {
                 boostedUntil:aRow.boosted_until||null,
                 stripeConnected:aRow.stripe_connected||false,
                 stripeAccount:aRow.stripe_account||null,
+                iban:aRow.bank_iban||null,bankName:aRow.bank_name||null,
                 cancellationPolicy:aRow.cancellation_policy||"moderate",
                 spotify:aRow.spotify_data||null,
                 instagram:aRow.instagram_data||null,
@@ -10617,6 +10637,8 @@ function AppInner() {
     if(updates.isHidden!==undefined)       dbUpdates.is_hidden        = updates.isHidden;
     if(updates.stripeConnected!==undefined)dbUpdates.stripe_connected = updates.stripeConnected;
     if(updates.stripeAccount!==undefined)  dbUpdates.stripe_account   = updates.stripeAccount;
+    if(updates.iban!==undefined)           dbUpdates.bank_iban        = updates.iban;
+    if(updates.bankName!==undefined)       dbUpdates.bank_name        = updates.bankName;
     if(updates.available!==undefined)      dbUpdates.available        = updates.available;
     if(updates.blocked!==undefined)        dbUpdates.blocked          = updates.blocked;
     if(updates.countryPricing!==undefined) dbUpdates.country_pricing  = updates.countryPricing;
@@ -10886,7 +10908,7 @@ function AppInner() {
 
         {vp.isDesktop&&(
           <nav style={{display:"flex",gap:2,alignItems:"center"}}>
-            {[[t('browseArtists'),"browse"],[t('howItWorks'),"how"],[t('pricing'),"pricing"],["Artist Demo","demo"]].map(([l,v])=>(
+            {[[t('browseArtists'),"browse"],[t('howItWorks'),"how"],[t('pricing'),"pricing"]].map(([l,v])=>(
               <button key={v} onClick={()=>nav(v)} style={{background:"transparent",border:"none",color:view===v?C.gold:C.muted,cursor:"pointer",fontFamily:"inherit",fontSize:T.sm,fontWeight:500,padding:"6px 13px",borderRadius:6,minHeight:44,WebkitTapHighlightColor:"transparent"}}>
                 {l}
               </button>
@@ -10910,8 +10932,8 @@ function AppInner() {
           {vp.isDesktop&&<LangSwitcher lang={lang} onSwitch={switchLang}/>}
           {vp.isDesktop&&!session&&(
             <>
-              <Btn onClick={()=>setShowApply(true)} v="ruby" sz="sm">{t('applyAsArtist')}</Btn>
-              <Btn onClick={()=>setShowLogin(true)} v="ghost" sz="sm">{t('signIn')}</Btn>
+              <Btn onClick={()=>setShowLogin(true)} v="gold" sz="sm">{t('signIn')}</Btn>
+              <Btn onClick={()=>setShowApply(true)} v="ghost" sz="sm">{t('applyAsArtist')}</Btn>
               <button onClick={toggleTheme} aria-label={theme==='dark'?'Switch to light mode':'Switch to dark mode'}
                 style={{width:36,height:36,borderRadius:8,background:C.surface,border:`1px solid ${C.border}`,color:theme==='dark'?'#C8A84A':C.muted,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,flexShrink:0,WebkitTapHighlightColor:'transparent'}}>
                 {theme==='dark'?'☀️':'🌙'}
@@ -11667,7 +11689,7 @@ function AppInner() {
               {/* Platform */}
               <div>
                 <div style={{fontSize:T.xs,fontWeight:700,color:C.text,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:14}}>Platform</div>
-                {[["Browse Artists",()=>nav("browse")],["How It Works",()=>nav("how")],["Pricing",()=>nav("pricing")],["Artist Demo",()=>nav("demo")]].map(([l,fn])=>(
+                {[["Browse Artists",()=>nav("browse")],["How It Works",()=>nav("how")],["Pricing",()=>nav("pricing")]].map(([l,fn])=>(
                   <button key={l as string} onClick={fn as ()=>void} style={{display:"block",background:"none",border:"none",color:C.muted,fontSize:T.sm,cursor:"pointer",fontFamily:"inherit",padding:"4px 0",textAlign:"left",lineHeight:1.7}}>
                     {l}
                   </button>
