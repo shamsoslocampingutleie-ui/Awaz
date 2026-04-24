@@ -8354,132 +8354,107 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
 
 // ── Stripe Connect Sheet ───────────────────────────────────────────────
 function StripeConnectSheet({ artist, onConnected, onClose }) {
+  const [iban, setIban]   = useState(artist.iban||artist.bank_iban||"");
+  const [name, setName]   = useState(artist.bankName||artist.bank_name||artist.name||"");
+  const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [done, setDone]       = useState(false);
-  const [error, setError]     = useState("");
+  const [error, setError] = useState("");
 
-  const startConnect = async () => {
+  const save = async () => {
+    const cleaned = iban.replace(/\s/g,"").toUpperCase();
+    if(cleaned.length < 15) { setError("Please enter a valid IBAN — at least 15 characters."); return; }
     setLoading(true); setError("");
     try {
-      const SUPA_URL = import.meta.env.VITE_SUPABASE_URL;
-      const SUPA_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-      if(!SUPA_URL || !SUPA_KEY) throw new Error("no-env");
-
-      const res = await fetch(`${SUPA_URL}/functions/v1/stripe-connect-onboard`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${SUPA_KEY}`,
-          "apikey": SUPA_KEY,
-        },
-        body: JSON.stringify({
-          artistId:    artist.id,
-          artistEmail: artist.email || "",
-          artistName:  artist.name,
-          returnUrl:   window.location.origin + "/?stripe=success",
-        }),
-      });
-
-      const data = await res.json();
-      if (!res.ok || data.error) throw new Error(data.error || "Connection failed");
-
-      onConnected({ stripeConnected: false, stripeAccount: data.accountId });
-      window.location.href = data.url;
-    } catch (e:any) {
-      const msg = e.message || "";
-      // Edge function not deployed yet — show helpful fallback
-      if(msg.includes("Failed to fetch") || msg.includes("no-env") || msg.includes("404") || msg.includes("network")) {
-        setError("edge-function-missing");
-      } else {
-        setError(msg || "Failed to connect Stripe. Please try again.");
+      if(HAS_SUPA){
+        const sb = await getSupabase();
+        if(sb) await sb.from("artists").update({
+          bank_iban: cleaned,
+          bank_name: name.trim(),
+          stripe_connected: true,
+        }).eq("id", artist.id);
       }
-      setLoading(false);
+      onConnected({ stripeConnected: true, stripeAccount: cleaned, iban: cleaned, bankName: name.trim() });
+      setSaved(true);
+    } catch(e:any){
+      setError("Could not save — please try again.");
     }
+    setLoading(false);
   };
 
-  // Handle return from Stripe onboarding
-  React.useEffect(()=>{
-    const params = new URLSearchParams(window.location.search);
-    if(params.get("stripe") === "success"){
-      onConnected({ stripeConnected: true, stripeAccount: artist.stripeAccount });
-      setDone(true);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  },[]);
+  if(saved) return(
+    <Sheet open title="Bank Account Saved ✓" onClose={onClose}>
+      <div style={{padding:"32px 20px",textAlign:"center"}}>
+        <div style={{fontSize:56,marginBottom:12}}>🎉</div>
+        <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:700,color:C.text,marginBottom:8}}>
+          You're ready to get paid!
+        </div>
+        <div style={{color:C.textD,fontSize:T.sm,lineHeight:1.8,marginBottom:24}}>
+          Awaz will transfer <strong style={{color:C.gold}}>88%</strong> of every deposit directly to your bank account after each booking.
+        </div>
+        <Btn full v="gold" onClick={onClose}>Back to Dashboard</Btn>
+      </div>
+    </Sheet>
+  );
 
   return(
-    <Sheet open title="Connect Stripe Account" onClose={onClose}>
-      <div style={{padding:"16px 20px 32px"}}>
-        {done?(
-          <div style={{textAlign:"center",padding:"20px 0"}}>
-            <div style={{fontSize:48,marginBottom:12}}>🎉</div>
-            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:700,color:C.text,marginBottom:8}}>Stripe Connected!</div>
-            <div style={{color:C.textD,fontSize:T.sm,lineHeight:1.7,marginBottom:20}}>
-              You will receive <strong style={{color:C.gold}}>88%</strong> of every deposit automatically. Payments arrive weekly every Monday.
+    <Sheet open title="Add Bank Account" onClose={onClose}>
+      <div style={{padding:"16px 20px 32px",display:"flex",flexDirection:"column",gap:14}}>
+
+        <div style={{background:C.goldS,border:`1px solid ${C.gold}33`,borderRadius:12,padding:"14px 16px"}}>
+          <div style={{fontWeight:700,color:C.gold,fontSize:T.sm,marginBottom:8}}>💰 How you get paid</div>
+          {[
+            "Customer pays deposit via Stripe when booking",
+            "Awaz keeps 12% as platform fee",
+            "You receive 88% transferred to your bank account",
+            "Balance paid by customer in cash after the event",
+          ].map(item=>(
+            <div key={item} style={{display:"flex",gap:8,marginBottom:5}}>
+              <span style={{color:C.gold,flexShrink:0}}>✓</span>
+              <span style={{color:C.textD,fontSize:T.sm}}>{item}</span>
             </div>
-            <Btn full v="gold" onClick={onClose}>Back to Dashboard</Btn>
+          ))}
+        </div>
+
+        <div>
+          <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:6}}>
+            Full name (account holder) <span style={{color:C.ruby}}>*</span>
           </div>
-        ):(
-          <>
-            {/* What you get */}
-            <div style={{background:C.goldS,border:`1px solid ${C.gold}33`,borderRadius:12,padding:"16px",marginBottom:16}}>
-              <div style={{fontWeight:700,color:C.gold,fontSize:T.sm,marginBottom:10}}>Stripe Express Account</div>
-              {[
-                "88% of every booking deposit paid directly to your bank",
-                "Weekly payouts every Monday",
-                "Instant notifications when money arrives",
-                "Free to set up — no monthly fees",
-              ].map(item=>(
-                <div key={item} style={{display:"flex",gap:8,alignItems:"flex-start",marginBottom:6}}>
-                  <span style={{color:C.gold,flexShrink:0,marginTop:1}}>✓</span>
-                  <span style={{color:C.textD,fontSize:T.sm}}>{item}</span>
-                </div>
-              ))}
-            </div>
+          <input
+            value={name}
+            onChange={e=>setName(e.target.value)}
+            placeholder="e.g. Ahmad Shah Rahimi"
+            style={{width:"100%",background:C.surface,border:`2px solid ${name?C.emerald:C.border}`,borderRadius:10,padding:"13px 15px",color:C.text,fontSize:T.base,outline:"none",fontFamily:"inherit",boxSizing:"border-box" as const}}
+          />
+        </div>
 
-            {/* How it works */}
-            <div style={{background:C.surface,borderRadius:10,padding:"14px",border:`1px solid ${C.border}`,marginBottom:16,fontSize:T.xs,color:C.muted,lineHeight:1.7}}>
-              <strong style={{color:C.text}}>How it works:</strong> You will be redirected to Stripe to enter your bank details securely. This takes about 5 minutes. Once done, you are ready to receive payments automatically.
-            </div>
+        <div>
+          <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:6}}>
+            IBAN <span style={{color:C.ruby}}>*</span>
+          </div>
+          <input
+            value={iban}
+            onChange={e=>setIban(e.target.value.toUpperCase())}
+            placeholder="NO12 3456 7890 123"
+            style={{width:"100%",background:C.surface,border:`2px solid ${iban.replace(/\s/g,"").length>=15?C.emerald:C.border}`,borderRadius:10,padding:"13px 15px",color:C.text,fontSize:T.base,outline:"none",fontFamily:"inherit",boxSizing:"border-box" as const,letterSpacing:"1px"}}
+          />
+          <div style={{fontSize:11,color:C.muted,marginTop:5}}>
+            Norwegian accounts start with NO · Example: NO12 3456 7890 123
+          </div>
+        </div>
 
-            {error==="edge-function-missing"?(
-              // Edge function not yet deployed — guide artist to manual Stripe signup
-              <div style={{background:C.lapisS,border:`1px solid ${C.lapis}33`,borderRadius:12,padding:"16px",marginBottom:16}}>
-                <div style={{fontWeight:700,color:C.lapis,fontSize:T.sm,marginBottom:8}}>🔧 Almost there — one setup step needed</div>
-                <div style={{color:C.textD,fontSize:T.sm,lineHeight:1.7,marginBottom:14}}>
-                  The automatic connection is being set up. In the meantime, you can connect your Stripe account directly:
-                </div>
-                <div style={{display:"flex",flexDirection:"column" as const,gap:10}}>
-                  <a href="https://dashboard.stripe.com/register" target="_blank" rel="noopener noreferrer"
-                    style={{display:"block",background:`linear-gradient(135deg,${C.stripe},#4B44CC)`,color:"#fff",borderRadius:10,padding:"13px 16px",textAlign:"center",fontWeight:800,fontSize:T.sm,textDecoration:"none"}}>
-                    1. Create a free Stripe account →
-                  </a>
-                  <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,padding:"10px 14px",fontSize:11,color:C.muted,lineHeight:1.6}}>
-                    <strong style={{color:C.text}}>After creating your account:</strong><br/>
-                    Send your Stripe account ID (starts with <code style={{background:C.card,padding:"1px 5px",borderRadius:4}}>acct_</code>) to Awaz via the <strong style={{color:C.gold}}>💬 chat in your dashboard</strong> and we will connect it within 24 hours.
-                  </div>
-                </div>
-                <button onClick={()=>setError("")} style={{background:"none",border:"none",color:C.muted,fontSize:11,cursor:"pointer",marginTop:10,fontFamily:"inherit"}}>← Try automatic connection again</button>
-              </div>
-            ):error?(
-              <div style={{background:C.rubyS,border:`1px solid ${C.ruby}33`,borderRadius:8,padding:"10px 14px",color:C.ruby,fontSize:T.sm,marginBottom:16}}>
-                ⚠ {error}
-                <button onClick={()=>setError("")} style={{display:"block",background:"none",border:"none",color:C.muted,fontSize:11,cursor:"pointer",marginTop:6,fontFamily:"inherit",padding:0}}>Try again</button>
-              </div>
-            ):null}
-
-            {error!=="edge-function-missing"&&(
-              <Btn full v="gold" sz="lg" loading={loading} onClick={startConnect}>
-                {loading ? "Connecting…" : "Connect Stripe Account →"}
-              </Btn>
-            )}
-
-            <div style={{textAlign:"center",color:C.faint,fontSize:11,marginTop:12}}>
-              Secure · Powered by Stripe · PCI-DSS compliant
-            </div>
-          </>
+        {error&&(
+          <div style={{background:C.rubyS,border:`1px solid ${C.ruby}33`,borderRadius:8,padding:"10px 14px",color:C.ruby,fontSize:T.sm}}>
+            ⚠ {error}
+          </div>
         )}
+
+        <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,padding:"10px 14px",fontSize:11,color:C.muted,lineHeight:1.7}}>
+          🔒 Your bank details are stored securely and only used to transfer your earnings.
+        </div>
+
+        <Btn full v="gold" sz="lg" loading={loading} onClick={save}>
+          {loading?"Saving…":"Save Bank Account →"}
+        </Btn>
       </div>
     </Sheet>
   );
