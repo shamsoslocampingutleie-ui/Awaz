@@ -8361,9 +8361,10 @@ function StripeConnectSheet({ artist, onConnected, onClose }) {
   const startConnect = async () => {
     setLoading(true); setError("");
     try {
-      // Call Supabase Edge Function to create Stripe Express account + onboarding link
       const SUPA_URL = import.meta.env.VITE_SUPABASE_URL;
       const SUPA_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+      if(!SUPA_URL || !SUPA_KEY) throw new Error("no-env");
 
       const res = await fetch(`${SUPA_URL}/functions/v1/stripe-connect-onboard`, {
         method: "POST",
@@ -8383,13 +8384,16 @@ function StripeConnectSheet({ artist, onConnected, onClose }) {
       const data = await res.json();
       if (!res.ok || data.error) throw new Error(data.error || "Connection failed");
 
-      // Save account ID immediately
       onConnected({ stripeConnected: false, stripeAccount: data.accountId });
-
-      // Redirect to Stripe onboarding
       window.location.href = data.url;
     } catch (e:any) {
-      setError(e.message || "Failed to connect Stripe. Please try again.");
+      const msg = e.message || "";
+      // Edge function not deployed yet — show helpful fallback
+      if(msg.includes("Failed to fetch") || msg.includes("no-env") || msg.includes("404") || msg.includes("network")) {
+        setError("edge-function-missing");
+      } else {
+        setError(msg || "Failed to connect Stripe. Please try again.");
+      }
       setLoading(false);
     }
   };
@@ -8409,7 +8413,7 @@ function StripeConnectSheet({ artist, onConnected, onClose }) {
       <div style={{padding:"16px 20px 32px"}}>
         {done?(
           <div style={{textAlign:"center",padding:"20px 0"}}>
-            
+            <div style={{fontSize:48,marginBottom:12}}>🎉</div>
             <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:700,color:C.text,marginBottom:8}}>Stripe Connected!</div>
             <div style={{color:C.textD,fontSize:T.sm,lineHeight:1.7,marginBottom:20}}>
               You will receive <strong style={{color:C.gold}}>88%</strong> of every deposit automatically. Payments arrive weekly every Monday.
@@ -8419,7 +8423,7 @@ function StripeConnectSheet({ artist, onConnected, onClose }) {
         ):(
           <>
             {/* What you get */}
-            <div style={{background:C.goldS,border:`1px solid ${C.gold}33`,borderRadius:12,padding:"16px",marginBottom:20}}>
+            <div style={{background:C.goldS,border:`1px solid ${C.gold}33`,borderRadius:12,padding:"16px",marginBottom:16}}>
               <div style={{fontWeight:700,color:C.gold,fontSize:T.sm,marginBottom:10}}>Stripe Express Account</div>
               {[
                 "88% of every booking deposit paid directly to your bank",
@@ -8435,20 +8439,43 @@ function StripeConnectSheet({ artist, onConnected, onClose }) {
             </div>
 
             {/* How it works */}
-            <div style={{background:C.surface,borderRadius:10,padding:"14px",border:`1px solid ${C.border}`,marginBottom:20,fontSize:T.xs,color:C.muted,lineHeight:1.7}}>
+            <div style={{background:C.surface,borderRadius:10,padding:"14px",border:`1px solid ${C.border}`,marginBottom:16,fontSize:T.xs,color:C.muted,lineHeight:1.7}}>
               <strong style={{color:C.text}}>How it works:</strong> You will be redirected to Stripe to enter your bank details securely. This takes about 5 minutes. Once done, you are ready to receive payments automatically.
             </div>
 
-            {error&&(
+            {error==="edge-function-missing"?(
+              // Edge function not yet deployed — guide artist to manual Stripe signup
+              <div style={{background:C.lapisS,border:`1px solid ${C.lapis}33`,borderRadius:12,padding:"16px",marginBottom:16}}>
+                <div style={{fontWeight:700,color:C.lapis,fontSize:T.sm,marginBottom:8}}>🔧 Almost there — one setup step needed</div>
+                <div style={{color:C.textD,fontSize:T.sm,lineHeight:1.7,marginBottom:14}}>
+                  The automatic connection is being set up. In the meantime, you can connect your Stripe account directly:
+                </div>
+                <div style={{display:"flex",flexDirection:"column" as const,gap:10}}>
+                  <a href="https://dashboard.stripe.com/register" target="_blank" rel="noopener noreferrer"
+                    style={{display:"block",background:`linear-gradient(135deg,${C.stripe},#4B44CC)`,color:"#fff",borderRadius:10,padding:"13px 16px",textAlign:"center",fontWeight:800,fontSize:T.sm,textDecoration:"none"}}>
+                    1. Create a free Stripe account →
+                  </a>
+                  <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,padding:"10px 14px",fontSize:11,color:C.muted,lineHeight:1.6}}>
+                    <strong style={{color:C.text}}>After creating your account:</strong><br/>
+                    Send your Stripe account ID (starts with <code style={{background:C.card,padding:"1px 5px",borderRadius:4}}>acct_</code>) to Awaz via the <strong style={{color:C.gold}}>💬 chat in your dashboard</strong> and we will connect it within 24 hours.
+                  </div>
+                </div>
+                <button onClick={()=>setError("")} style={{background:"none",border:"none",color:C.muted,fontSize:11,cursor:"pointer",marginTop:10,fontFamily:"inherit"}}>← Try automatic connection again</button>
+              </div>
+            ):error?(
               <div style={{background:C.rubyS,border:`1px solid ${C.ruby}33`,borderRadius:8,padding:"10px 14px",color:C.ruby,fontSize:T.sm,marginBottom:16}}>
                 ⚠ {error}
+                <button onClick={()=>setError("")} style={{display:"block",background:"none",border:"none",color:C.muted,fontSize:11,cursor:"pointer",marginTop:6,fontFamily:"inherit",padding:0}}>Try again</button>
               </div>
+            ):null}
+
+            {error!=="edge-function-missing"&&(
+              <Btn full v="gold" sz="lg" loading={loading} onClick={startConnect}>
+                {loading ? "Connecting…" : "Connect Stripe Account →"}
+              </Btn>
             )}
 
-            <Btn full v="gold" sz="lg" loading={loading} onClick={startConnect}>
-              {loading ? "Connecting…" : "Connect Stripe Account →"}
-            </Btn>
-            <div style={{color:C.faint,fontSize:11,textAlign:"center",marginTop:8}}>
+            <div style={{textAlign:"center",color:C.faint,fontSize:11,marginTop:12}}>
               Secure · Powered by Stripe · PCI-DSS compliant
             </div>
           </>
