@@ -7308,10 +7308,10 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
           {!artist.stripeConnected&&artist.status==="approved"&&(
             <div style={{background:"rgba(99,91,255,0.10)",border:"2px solid rgba(99,91,255,0.35)",borderRadius:12,padding:"14px 16px",marginBottom:12,fontSize:T.sm,color:C.textD,fontFamily:"'DM Sans',sans-serif",display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,flexWrap:"wrap"}}>
               <div>
-                <div style={{fontWeight:700,color:C.gold,marginBottom:3}}>💳 Add your bank account to get paid</div>
-                <div style={{fontSize:T.xs,color:C.muted}}>Enter your IBAN so Awaz can transfer your 88% after each booking</div>
+                <div style={{fontWeight:700,color:C.gold,marginBottom:3}}>💳 Connect Stripe to get paid automatically</div>
+                <div style={{fontSize:T.xs,color:C.muted}}>Stripe splits payments instantly — 88% to you, 12% to Awaz</div>
               </div>
-              <Btn v="gold" sz="sm" onClick={()=>setShowStripeConnect(true)}>Add now →</Btn>
+              <Btn v="gold" sz="sm" onClick={()=>setShowStripeConnect(true)}>Connect →</Btn>
             </div>
           )}
           {!artist.spotify&&!artist.instagram&&artist.status==="approved"&&(
@@ -8074,11 +8074,11 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
               [t('location')||"Location",        artist.location||"—"],
               [t('currency')||"Currency",        artist.currency||"EUR"],
               [t('status')||"Status",            artist.status==="approved"?`✓ ${t('approved')||"Approved"}`:`${t('pendingApproval')||"Pending Approval"}`],
-              ["Bank Account",                   artist.iban
-                ? `✓ ${artist.iban.slice(0,4)} •••• ${artist.iban.slice(-4)}`
-                : artist.stripeConnected
-                  ? `✓ ${t('connected')||"Connected"}`
-                  : "Not added yet"],
+              ["Bank / Stripe",     artist.stripeConnected
+                  ? `✓ Connected · ${artist.stripeAccount?.startsWith("acct_")?artist.stripeAccount.slice(0,12)+"…":"Active"}`
+                  : artist.iban
+                  ? `IBAN: ${(artist.iban||"").slice(0,4)} •••• ${(artist.iban||"").slice(-4)}`
+                  : "Not connected"],
             ].map(([k,v])=>(
               <div key={k} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 0",borderBottom:`1px solid ${C.border}`,fontSize:T.sm}}>
                 <span style={{color:C.muted}}>{k}</span>
@@ -8823,59 +8823,85 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
 
 // ── Stripe Connect Sheet ───────────────────────────────────────────────
 function StripeConnectSheet({ artist, onConnected, onClose }) {
-  const [iban, setIban]   = useState(artist.iban||artist.bank_iban||"");
-  const [name, setName]   = useState(artist.bankName||artist.bank_name||artist.name||"");
-  const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError]     = useState("");
+  const [done, setDone]       = useState(false);
 
-  const save = async () => {
-    const cleaned = iban.replace(/\s/g,"").toUpperCase();
-    if(cleaned.length < 15) { setError("Please enter a valid IBAN — at least 15 characters."); return; }
+  // Handle return from Stripe onboarding
+  React.useEffect(()=>{
+    const params = new URLSearchParams(window.location.search);
+    if(params.get("stripe")==="success"){
+      onConnected({ stripeConnected:true, stripeAccount:artist.stripeAccount });
+      setDone(true);
+      window.history.replaceState({},"",window.location.pathname);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[]);
+
+  const startConnect = async () => {
     setLoading(true); setError("");
     try {
+      const SUPA_URL = (import.meta as any).env?.VITE_SUPABASE_URL;
+      const SUPA_KEY = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY;
+      if(!SUPA_URL||!SUPA_KEY) throw new Error("Missing environment variables");
+
+      const res = await fetch(`${SUPA_URL}/functions/v1/stripe-connect-onboard`, {
+        method:"POST",
+        headers:{"Content-Type":"application/json","Authorization":`Bearer ${SUPA_KEY}`,"apikey":SUPA_KEY},
+        body:JSON.stringify({
+          artistId:   artist.id,
+          artistEmail:artist.email||"",
+          artistName: artist.name,
+          returnUrl:  window.location.origin+"/?stripe=success",
+        }),
+      });
+      const data = await res.json();
+      if(!res.ok||data.error) throw new Error(data.error||"Connection failed");
+
+      // Save account ID immediately
       if(HAS_SUPA){
-        const sb = await getSupabase();
-        if(sb) await sb.from("artists").update({
-          bank_iban: cleaned,
-          bank_name: name.trim(),
-          stripe_connected: true,
-        }).eq("id", artist.id);
+        const sb=await getSupabase();
+        if(sb) await sb.from("artists").update({stripe_account:data.accountId,stripe_connected:false}).eq("id",artist.id);
       }
-      onConnected({ stripeConnected: true, stripeAccount: cleaned, iban: cleaned, bankName: name.trim() });
-      setSaved(true);
+      onConnected({stripeConnected:false,stripeAccount:data.accountId});
+
+      // Redirect to Stripe onboarding
+      window.location.href = data.url;
     } catch(e:any){
-      setError("Could not save — please try again.");
+      setError(e.message||"Failed to connect. Please try again.");
+      setLoading(false);
     }
-    setLoading(false);
   };
 
-  if(saved) return(
-    <Sheet open title="Bank Account Saved ✓" onClose={onClose}>
+  if(done) return(
+    <Sheet open title="Stripe Connected ✓" onClose={onClose}>
       <div style={{padding:"32px 20px",textAlign:"center"}}>
         <div style={{fontSize:56,marginBottom:12}}>🎉</div>
         <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:700,color:C.text,marginBottom:8}}>
           You're ready to get paid!
         </div>
-        <div style={{color:C.textD,fontSize:T.sm,lineHeight:1.8,marginBottom:24}}>
-          Awaz will transfer <strong style={{color:C.gold}}>88%</strong> of every deposit directly to your bank account after each booking.
+        <div style={{color:C.textD,fontSize:T.sm,lineHeight:1.8,marginBottom:8}}>
+          <strong style={{color:C.gold}}>88%</strong> of every deposit goes directly to your bank — automatically, every Monday.
         </div>
+        <div style={{color:C.muted,fontSize:11,marginBottom:24}}>Awaz keeps 12% as platform fee</div>
         <Btn full v="gold" onClick={onClose}>Back to Dashboard</Btn>
       </div>
     </Sheet>
   );
 
   return(
-    <Sheet open title="Add Bank Account" onClose={onClose}>
+    <Sheet open title="Connect Stripe Account" onClose={onClose}>
       <div style={{padding:"16px 20px 32px",display:"flex",flexDirection:"column",gap:14}}>
 
-        <div style={{background:C.goldS,border:`1px solid ${C.gold}33`,borderRadius:12,padding:"14px 16px"}}>
-          <div style={{fontWeight:700,color:C.gold,fontSize:T.sm,marginBottom:8}}>💰 How you get paid</div>
+        {/* Benefits */}
+        <div style={{background:C.goldS,border:`1px solid ${C.gold}33`,borderRadius:12,padding:"16px"}}>
+          <div style={{fontWeight:700,color:C.gold,fontSize:T.sm,marginBottom:10}}>💰 How you get paid</div>
           {[
-            "Customer pays deposit via Stripe when booking",
-            "Awaz keeps 12% as platform fee",
-            "You receive 88% transferred to your bank account",
-            "Balance paid by customer in cash after the event",
+            "Customer pays deposit → Stripe splits it instantly",
+            "You receive 88% directly to your bank account",
+            "Awaz receives 12% automatically — no manual work",
+            "Weekly payouts every Monday",
+            "Free to set up — no monthly fees",
           ].map(item=>(
             <div key={item} style={{display:"flex",gap:8,marginBottom:5}}>
               <span style={{color:C.gold,flexShrink:0}}>✓</span>
@@ -8884,46 +8910,25 @@ function StripeConnectSheet({ artist, onConnected, onClose }) {
           ))}
         </div>
 
-        <div>
-          <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:6}}>
-            Full name (account holder) <span style={{color:C.ruby}}>*</span>
-          </div>
-          <input
-            value={name}
-            onChange={e=>setName(e.target.value)}
-            placeholder="e.g. Ahmad Shah Rahimi"
-            style={{width:"100%",background:C.surface,border:`2px solid ${name?C.emerald:C.border}`,borderRadius:10,padding:"13px 15px",color:C.text,fontSize:T.base,outline:"none",fontFamily:"inherit",boxSizing:"border-box" as const}}
-          />
-        </div>
-
-        <div>
-          <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:6}}>
-            IBAN <span style={{color:C.ruby}}>*</span>
-          </div>
-          <input
-            value={iban}
-            onChange={e=>setIban(e.target.value.toUpperCase())}
-            placeholder="NO12 3456 7890 123"
-            style={{width:"100%",background:C.surface,border:`2px solid ${iban.replace(/\s/g,"").length>=15?C.emerald:C.border}`,borderRadius:10,padding:"13px 15px",color:C.text,fontSize:T.base,outline:"none",fontFamily:"inherit",boxSizing:"border-box" as const,letterSpacing:"1px"}}
-          />
-          <div style={{fontSize:11,color:C.muted,marginTop:5}}>
-            Norwegian accounts start with NO · Example: NO12 3456 7890 123
-          </div>
+        {/* How it works */}
+        <div style={{background:C.surface,borderRadius:10,padding:"14px",border:`1px solid ${C.border}`,fontSize:T.xs,color:C.muted,lineHeight:1.7}}>
+          <strong style={{color:C.text}}>How it works:</strong> You'll be redirected to Stripe to enter your bank details securely. Takes about 5 minutes. Once done, every booking payment is split automatically — you never have to ask for your money.
         </div>
 
         {error&&(
           <div style={{background:C.rubyS,border:`1px solid ${C.ruby}33`,borderRadius:8,padding:"10px 14px",color:C.ruby,fontSize:T.sm}}>
             ⚠ {error}
+            <button onClick={()=>setError("")} style={{display:"block",background:"none",border:"none",color:C.muted,fontSize:11,cursor:"pointer",marginTop:4,fontFamily:"inherit",padding:0}}>Try again</button>
           </div>
         )}
 
-        <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,padding:"10px 14px",fontSize:11,color:C.muted,lineHeight:1.7}}>
-          🔒 Your bank details are stored securely and only used to transfer your earnings.
-        </div>
-
-        <Btn full v="gold" sz="lg" loading={loading} onClick={save}>
-          {loading?"Saving…":"Save Bank Account →"}
+        <Btn full v="gold" sz="lg" loading={loading} onClick={startConnect}>
+          {loading?"Connecting to Stripe…":"Connect Stripe Account →"}
         </Btn>
+
+        <div style={{textAlign:"center",color:C.faint,fontSize:11}}>
+          Secure · Powered by Stripe · PCI-DSS compliant
+        </div>
       </div>
     </Sheet>
   );
@@ -10601,9 +10606,21 @@ function AppInner() {
         const{data:dbUser}=await sb.from("users").select("*").eq("id",existingSession.user.id).single();
         const{data:profile}=await sb.from("profiles").select("*").eq("id",existingSession.user.id).single();
         const role=dbUser?.role||profile?.role||"customer";
-        // Always fetch artistId directly from artist_profiles
-        // artistId must match artists.id — trigger sets both to user's UUID
+        // Find artistId — try multiple strategies:
+        // 1. profile.artist_id (explicit link)
+        // 2. artists.id = user.id (same UUID — most common)
+        // 3. artists.email = user.email (fallback for older profiles)
         let artistId=profile?.artist_id||null;
+        if(!artistId && role==="artist"){
+          // Strategy 2: UUID match
+          const{data:aById}=await sb.from("artists").select("id").eq("id",existingSession.user.id).single();
+          if(aById) artistId=aById.id;
+        }
+        if(!artistId && role==="artist" && existingSession.user.email){
+          // Strategy 3: email match
+          const{data:aByEmail}=await sb.from("artists").select("id").eq("email",existingSession.user.email).single();
+          if(aByEmail) artistId=aByEmail.id;
+        }
         if(!artistId && role==="artist") artistId=existingSession.user.id;
 
         // On refresh: if artist, pre-load their profile into artists array
@@ -10774,6 +10791,14 @@ function AppInner() {
               "customer";
 
             let artistId=profile?.artist_id||null;
+            if(!artistId && role==="artist"){
+              const{data:aById}=await sb.from("artists").select("id").eq("id",supaSession.user.id).single();
+              if(aById) artistId=aById.id;
+            }
+            if(!artistId && role==="artist" && supaSession.user.email){
+              const{data:aByEmail}=await sb.from("artists").select("id").eq("email",supaSession.user.email).single();
+              if(aByEmail) artistId=aByEmail.id;
+            }
             if(!artistId && role==="artist") artistId=supaSession.user.id;
 
             // ── STEP 3: If artist, load profile + social data in parallel ──
@@ -11323,13 +11348,19 @@ function AppInner() {
             </>
           ) : (
             <>
-              
+              <div style={{fontSize:36,marginBottom:12}}>🔍</div>
               <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:22,fontWeight:700,color:C.text,marginBottom:8}}>
                 Profile Not Found
               </div>
-              <div style={{color:C.muted,fontSize:14,lineHeight:1.7,marginBottom:24}}>
-                Logged in as <strong style={{color:C.gold}}>{session.name}</strong> but your profile could not be loaded. Please sign out and try again.
+              <div style={{color:C.muted,fontSize:13,lineHeight:1.7,marginBottom:16}}>
+                Logged in as <strong style={{color:C.gold}}>{session.name}</strong>. Your account exists but the artist profile could not be matched automatically.
               </div>
+              <div style={{background:C.goldS,border:`1px solid ${C.gold}33`,borderRadius:8,padding:"10px 14px",marginBottom:20,fontSize:12,color:C.textD,lineHeight:1.7,textAlign:"left"}}>
+                This can happen if the profile was created with a different email. Try refreshing — if it keeps happening, contact <strong>support@awaz.no</strong> with your email address.
+              </div>
+              <Btn v="gold" sz="lg" onClick={()=>window.location.reload()} xs={{width:"100%",marginBottom:10}}>
+                Refresh & Try Again
+              </Btn>
             </>
           )}
           <Btn v="ghost" sz="lg" onClick={logout} xs={{width:"100%"}}>{t('signOut')}</Btn>
