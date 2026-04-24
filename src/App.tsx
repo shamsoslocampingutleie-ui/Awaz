@@ -11747,27 +11747,30 @@ function AppInner() {
       {vp.isMobile&&["home","browse","how","pricing","how","pricing"].includes(view)&&(
         <nav style={{position:"fixed",bottom:0,left:0,right:0,zIndex:100,background:`${C.surface}FA`,backdropFilter:"blur(20px)",borderTop:`1px solid ${C.border}`,display:"flex",alignItems:"stretch",paddingBottom:"env(safe-area-inset-bottom,0px)",height:`calc(56px + env(safe-area-inset-bottom,0px))`}}>
           {[
-            {id:"home",   icon:"🏠", label:t('portalHome'),    fn:()=>nav("home")},
-            {id:"browse", icon:"🎵", label:t('browseArtists'), fn:()=>nav("browse")},
-            {id:"band",   icon:"🎼", label:"Band",             fn:()=>setShowBandBooking(true)},
-            session
-              ? {id:"logout", icon:"👋", label:t('signOut'),   fn:()=>logout()}
-              : {id:"signin", icon:"🔑", label:t('signIn'),    fn:()=>setShowLogin(true)},
+            {id:"home",   icon:"🏠", label:t('portalHome'),       fn:()=>nav("home")},
+            {id:"browse", icon:"🎵", label:t('browseArtists'),    fn:()=>nav("browse")},
+            {id:"band",   icon:"🎼", label:"Band",                fn:()=>setShowBandBooking(true)},
+            ...(session ? [
+              {id:"logout", icon:"👋", label:t('signOut'),        fn:()=>logout()},
+            ] : [
+              {id:"apply",  icon:"✨", label:t('applyAsArtist'),  fn:()=>setShowApply(true)},
+              {id:"signin", icon:"🔑", label:t('signIn'),         fn:()=>setShowLogin(true)},
+            ]),
           ].map(({id,icon,label,fn})=>{
             const isActive=(id==="home"&&view==="home")||(id==="browse"&&view==="browse");
             const isSignIn=id==="signin";
+            const isApply=id==="apply";
             return(
               <button key={id} onClick={fn} style={{
                 flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
                 gap:3,border:"none",cursor:"pointer",paddingTop:8,paddingBottom:4,
                 minHeight:44,WebkitTapHighlightColor:"transparent",fontFamily:"inherit",position:"relative",
-                background:isSignIn?C.gold:"transparent",
-                color:isSignIn?C.bg:isActive?C.gold:id==="logout"?C.ruby:C.muted,
-                borderRadius:isSignIn?0:0,
+                background:isSignIn?C.gold:isApply?`${C.lapis}18`:"transparent",
+                color:isSignIn?C.bg:isApply?C.lapis:isActive?C.gold:id==="logout"?C.ruby:C.muted,
               }}>
                 {isActive&&<div style={{position:"absolute",top:0,width:24,height:2,borderRadius:1,background:C.gold}}/>}
-                <div style={{fontSize:18,lineHeight:1}}>{icon}</div>
-                <div style={{fontSize:9,fontWeight:isActive||isSignIn?700:500}}>{label}</div>
+                <div style={{fontSize:isApply?16:18,lineHeight:1}}>{icon}</div>
+                <div style={{fontSize:9,fontWeight:isActive||isSignIn||isApply?700:500,lineHeight:1.2,textAlign:"center"}}>{label}</div>
               </button>
             );
           })}
