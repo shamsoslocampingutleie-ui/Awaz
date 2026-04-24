@@ -2770,7 +2770,12 @@ const TRANSLATIONS = {
   },
 };
 
-// Module-level lang ref — updated on toggle
+// ── Slug utility — creates clean SEO URLs for artist profiles ─────────
+const slugify=(name:string)=>name
+  .toLowerCase()
+  .replace(/[^a-z0-9\s-]/g,"")   // keep letters, digits, spaces, hyphens
+  .trim()
+  .replace(/\s+/g,"-");           // spaces → hyphens
 let _lang = (() => { try { return localStorage.getItem('awaz-lang')||'en'; } catch { return 'en'; } })();
 // Translation helper — falls back to English
 const t = key => TRANSLATIONS[_lang]?.[key] ?? TRANSLATIONS.en[key] ?? key;
@@ -4457,7 +4462,7 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
   const [tab,setTab]=useState("about");
   const [showBook,setShowBook]=useState(false);
   const [showCal,setShowCal]=useState(false);
-  const [form,setForm]=useState({name:"",email:"",phone:"",event:"",notes:"",selectedInstrument:""});
+  const [form,setForm]=useState({name:"",email:"",phone:"",event:"",notes:"",selectedInstrument:"",customerCountry:""});
   const [pending,setPending]=useState(null);
   const [showStripe,setShowStripe]=useState(false);
   const [chat,setChat]=useState(null);
@@ -4816,7 +4821,32 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
                 {selDay&&!showBook&&(
                   <div style={{background:C.surface,borderRadius:8,padding:"12px 14px",marginBottom:12,border:`1px solid ${C.border}`}}>
                     <div style={{display:"flex",justifyContent:"space-between",fontSize:T.sm,marginBottom:6}}><span style={{color:C.muted}}>Date</span><span style={{color:C.text,fontWeight:600}}>{MONTHS[selMonth]} {selDay}</span></div>
-                    <div style={{display:"flex",justifyContent:"space-between",fontSize:T.sm,marginBottom:6}}><span style={{color:C.muted}}>{t('deposit2')}</span><span style={{color:C.gold,fontWeight:700}}>€{artist.deposit}</span></div>
+                    {/* Country selector */}
+                    {artist.countryPricing?.filter((r:any)=>r.active).length>0&&(
+                      <div style={{marginBottom:8}}>
+                        <div style={{fontSize:10,color:C.muted,marginBottom:4}}>🌍 Your country</div>
+                        <select value={form.customerCountry} onChange={e=>setForm(f=>({...f,customerCountry:e.target.value}))}
+                          style={{width:"100%",background:C.card,border:`1px solid ${form.customerCountry?C.gold:C.border}`,borderRadius:6,padding:"7px 10px",color:form.customerCountry?C.text:C.muted,fontSize:11,outline:"none",fontFamily:"inherit",cursor:"pointer",boxSizing:"border-box" as const}}>
+                          <option value="">Select country…</option>
+                          {artist.countryPricing.filter((r:any)=>r.active).map((row:any)=>(
+                            <option key={row.country} value={row.country}>{row.flag||"🌍"} {row.country} — {row.currency} {row.deposit} deposit</option>
+                          ))}
+                          <option value="other">🌐 Other</option>
+                        </select>
+                      </div>
+                    )}
+                    <div style={{display:"flex",justifyContent:"space-between",fontSize:T.sm,marginBottom:6}}>
+                      <span style={{color:C.muted}}>{t('deposit2')}</span>
+                      <span style={{color:C.gold,fontWeight:700}}>
+                        {(()=>{
+                          if(form.customerCountry&&form.customerCountry!=="other"&&artist.countryPricing){
+                            const row=artist.countryPricing.find((r:any)=>r.country===form.customerCountry&&r.active);
+                            if(row) return `${row.currency} ${row.deposit}`;
+                          }
+                          return `€${artist.deposit}`;
+                        })()}
+                      </span>
+                    </div>
                     <div style={{display:"flex",justifyContent:"space-between",fontSize:T.sm}}><span style={{color:C.muted}}>{t('balance')}</span><span style={{color:C.textD}}>{t('cashAfterConcert')}</span></div>
                   </div>
                 )}
@@ -4940,11 +4970,46 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
             </div>
           </div>
 
-          {/* Booking summary */}
+          {/* Booking summary + country selector */}
           <div style={{background:C.surface,borderRadius:10,padding:"12px 14px",border:`1px solid ${C.border}`}}>
+            {/* Country selector — shows when artist has per-country pricing */}
+            {artist.countryPricing?.filter((r:any)=>r.active).length>0&&(
+              <div style={{marginBottom:10}}>
+                <div style={{fontSize:11,fontWeight:700,color:C.muted,marginBottom:5}}>
+                  🌍 Your country — prices vary by location
+                </div>
+                <select
+                  value={form.customerCountry||""}
+                  onChange={e=>setForm(f=>({...f,customerCountry:e.target.value}))}
+                  style={{width:"100%",background:C.card,border:`2px solid ${form.customerCountry?C.gold:C.border}`,borderRadius:8,padding:"9px 12px",color:form.customerCountry?C.text:C.muted,fontSize:T.sm,outline:"none",fontFamily:"inherit",cursor:"pointer",boxSizing:"border-box" as const}}>
+                  <option value="">Select your country…</option>
+                  {artist.countryPricing.filter((r:any)=>r.active).map((row:any)=>{
+                    const rate=row.currency==="NOK"?0.085:row.currency==="SEK"?0.088:row.currency==="DKK"?0.134:row.currency==="GBP"?1.17:1;
+                    return<option key={row.country} value={row.country}>{row.flag||"🌍"} {row.country} — {row.currency} {Math.round(row.fullPrice||row.deposit||0)} full / {row.currency} {row.deposit} deposit</option>;
+                  })}
+                  <option value="other">🌐 Other country</option>
+                </select>
+                {form.customerCountry&&form.customerCountry!=="other"&&(()=>{
+                  const row=artist.countryPricing.find((r:any)=>r.country===form.customerCountry);
+                  return row?(
+                    <div style={{fontSize:11,color:C.gold,marginTop:5,fontWeight:600}}>
+                      ✓ Price for {row.country}: <strong>{row.currency} {row.deposit}</strong> deposit + <strong>{row.currency} {(row.fullPrice||0)-(row.deposit||0)}</strong> cash after event
+                    </div>
+                  ):null;
+                })()}
+              </div>
+            )}
             <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
               <span style={{color:C.muted,fontSize:T.sm}}>{artist.name}</span>
-              <span style={{color:C.gold,fontWeight:700,fontSize:T.md,fontFamily:"'Cormorant Garamond',serif"}}>€{artist.deposit}</span>
+              <span style={{color:C.gold,fontWeight:700,fontSize:T.md,fontFamily:"'Cormorant Garamond',serif"}}>
+                {(()=>{
+                  if(form.customerCountry&&form.customerCountry!=="other"&&artist.countryPricing){
+                    const row=artist.countryPricing.find((r:any)=>r.country===form.customerCountry&&r.active);
+                    if(row) return `${row.currency} ${row.deposit}`;
+                  }
+                  return `€${artist.deposit}`;
+                })()}
+              </span>
             </div>
             <div style={{color:C.muted,fontSize:T.xs}}>{MONTHS[selMonth]} {selDay}, {selYear}</div>
           </div>
@@ -5572,6 +5637,7 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
 
   const [chat,setChat]=useState(null);
   const [adminChatArtist,setAdminChatArtist]=useState(null);
+  const [reviewArtist,setReviewArtist]=useState<any>(null);
   const [adminChatMsg,setAdminChatMsg]=useState("");
   const [adminChats,setAdminChats]=useState({});
   const [artistFilter,setArtistFilter]=useState("all"); // all|pending|approved|suspended
@@ -5753,6 +5819,12 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
             </div>
           </div>
           <div style={{display:"flex",gap:7,flexWrap:"wrap",borderTop:`1px solid ${C.border}`,paddingTop:10}}>
+            {/* ── Review button — always visible ── */}
+            <button onClick={()=>setReviewArtist(a)}
+              style={{background:C.goldS,color:C.gold,border:`1px solid ${C.gold}44`,borderRadius:7,padding:"6px 14px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>
+              🔍 Review Profile
+            </button>
+
             {a.status==="pending"&&(
               <>
                 <button onClick={()=>onAction(a.id,"approved")} style={{background:C.emerald,color:"#fff",border:"none",borderRadius:7,padding:"6px 14px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>✓ Approve</button>
@@ -5760,7 +5832,14 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
               </>
             )}
             {a.status==="approved"&&(
-              <button onClick={()=>onAction(a.id,"suspended")} style={{background:C.rubyS,color:C.ruby,border:`1px solid ${C.ruby}44`,borderRadius:7,padding:"6px 14px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>Suspend</button>
+              <>
+                <button onClick={()=>{
+                  // Unpublish: set status back to pending so artist must fix & resubmit
+                  setReviewArtist({...a,_unpublishMode:true});
+                }} style={{background:C.rubyS,color:C.ruby,border:`1px solid ${C.ruby}44`,borderRadius:7,padding:"6px 14px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>
+                  ↩ Unpublish
+                </button>
+              </>
             )}
             {a.status==="suspended"&&(
               <button onClick={()=>onAction(a.id,"approved")} style={{background:C.emeraldS,color:C.emerald,border:`1px solid ${C.emerald}44`,borderRadius:7,padding:"6px 14px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>Reinstate</button>
@@ -5781,16 +5860,13 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
             <button onClick={()=>{setAdminChatArtist(a);setTab("chat");}} style={{background:C.surface,color:C.muted,border:`1px solid ${C.border}`,borderRadius:7,padding:"6px 14px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit",marginLeft:"auto"}}>💬 Message</button>
             <button onClick={async()=>{
               if(!confirm(`Delete "${a.name}" permanently? This cannot be undone.`)) return;
-              // Optimistic UI update — remove immediately
               setArtists(p=>p.filter(x=>x.id!==a.id));
               if(HAS_SUPA){
                 const {ok,errors} = await deleteArtistFromDB(a.id);
                 if(!ok){
-                  // Restore artist in UI and show actionable error
                   setArtists(p=>[a,...p]);
                   notify("Delete failed — run RLS SQL in Supabase (see console)","error");
                   console.error("Delete errors:",errors);
-                  console.info(`%cRUN THIS IN SUPABASE SQL EDITOR:\n\nCREATE POLICY "admin_delete_artists" ON artists FOR DELETE USING (EXISTS (SELECT 1 FROM profiles WHERE id=auth.uid() AND role='admin'));\nCREATE POLICY "admin_delete_chat_messages" ON chat_messages FOR DELETE USING (EXISTS (SELECT 1 FROM profiles WHERE id=auth.uid() AND role='admin'));\nCREATE POLICY "admin_delete_bookings" ON bookings FOR DELETE USING (EXISTS (SELECT 1 FROM profiles WHERE id=auth.uid() AND role='admin'));\nCREATE POLICY "admin_delete_reviews" ON reviews FOR DELETE USING (EXISTS (SELECT 1 FROM profiles WHERE id=auth.uid() AND role='admin'));\nCREATE POLICY "admin_delete_profiles" ON profiles FOR DELETE USING (EXISTS (SELECT 1 FROM profiles WHERE id=auth.uid() AND role='admin'));\nCREATE POLICY "admin_delete_users" ON users FOR DELETE USING (EXISTS (SELECT 1 FROM profiles WHERE id=auth.uid() AND role='admin'));\nCREATE POLICY "admin_delete_song_requests" ON song_requests FOR DELETE USING (EXISTS (SELECT 1 FROM profiles WHERE id=auth.uid() AND role='admin'));`,'color:orange;font-weight:bold','');
                 } else {
                   notify("Artist deleted","success");
                 }
@@ -6461,6 +6537,211 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
         {pageContent}
       </main>
       {chat&&<Chat booking={chat} artist={artists.find(a=>a.id===chat.artistId)} myRole="admin" onClose={()=>setChat(null)} onSend={onMsg}/>}
+      {reviewArtist&&(
+        <AdminReviewSheet
+          artist={reviewArtist}
+          onClose={()=>setReviewArtist(null)}
+          onApprove={(id)=>{onAction(id,"approved");setReviewArtist(null);notify("Artist approved and published","success");}}
+          onReject={(id,msg)=>{onAction(id,"rejected");setAdminChatArtist(reviewArtist);setTab("chat");onMsg({artistId:id,text:`❌ Your profile was rejected. Feedback: ${msg}`,from:"admin"});setReviewArtist(null);notify("Rejected — feedback sent","success");}}
+          onUnpublish={(id,msg)=>{onAction(id,"pending");setAdminChatArtist(reviewArtist);setTab("chat");onMsg({artistId:id,text:`⚠️ Your profile has been unpublished. Please make the following changes:\n\n${msg}\n\nOnce done, your profile will be reviewed again.`,from:"admin"});setReviewArtist(null);notify("Unpublished — feedback sent to artist","success");}}
+          bookings={bookings}
+        />
+      )}
+    </div>
+  );
+}
+
+
+
+function AdminReviewSheet({artist, onClose, onApprove, onReject, onUnpublish, bookings}:{
+  artist:any; onClose:()=>void;
+  onApprove:(id:string)=>void;
+  onReject:(id:string,msg:string)=>void;
+  onUnpublish:(id:string,msg:string)=>void;
+  bookings:any[];
+}){
+  const [feedback,setFeedback]=useState("");
+  const [mode,setMode]=useState<"review"|"reject"|"unpublish">("review");
+  const isUnpublishMode=artist._unpublishMode===true;
+  const bookCount=bookings.filter(b=>b.artistId===artist.id).length;
+
+  // Checklist of profile completeness
+  const checks=[
+    {label:"Profile photo",      ok:!!artist.photo},
+    {label:"Bio written",         ok:!!artist.bio&&artist.bio.length>30},
+    {label:"Genre selected",      ok:!!artist.genre},
+    {label:"Location set",        ok:!!artist.location&&artist.location!=="—"},
+    {label:"Deposit price set",   ok:(artist.deposit||0)>=50},
+    {label:"Artist type set",     ok:!!artist.artistType},
+    {label:"Bank account added",  ok:!!artist.iban||!!artist.bank_iban||artist.stripeConnected},
+    {label:"Email confirmed",     ok:!!artist.email},
+  ];
+  const score=checks.filter(c=>c.ok).length;
+
+  React.useEffect(()=>{
+    if(isUnpublishMode) setMode("unpublish");
+  },[isUnpublishMode]);
+
+  return(
+    <div style={{position:"fixed",inset:0,zIndex:500,background:"rgba(0,0,0,0.75)",backdropFilter:"blur(6px)",display:"flex",alignItems:"center",justifyContent:"center",padding:16}}>
+      <div style={{background:C.card,borderRadius:16,width:"100%",maxWidth:640,maxHeight:"90vh",overflow:"auto",border:`1px solid ${C.border}`,boxShadow:"0 32px 80px rgba(0,0,0,0.5)"}}>
+        {/* Header */}
+        <div style={{padding:"20px 24px",borderBottom:`1px solid ${C.border}`,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+          <div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:700,color:C.text}}>
+              {mode==="unpublish"?"Unpublish Artist":"Review Artist Profile"}
+            </div>
+            <div style={{color:C.muted,fontSize:T.xs,marginTop:2}}>{artist.name} · {artist.genre} · {artist.location}</div>
+          </div>
+          <button onClick={onClose} style={{background:"none",border:"none",color:C.muted,fontSize:22,cursor:"pointer",lineHeight:1}}>×</button>
+        </div>
+
+        <div style={{padding:"20px 24px",display:"flex",flexDirection:"column" as const,gap:16}}>
+
+          {/* Profile completeness score */}
+          {mode==="review"&&(
+            <>
+              <div style={{background:C.surface,borderRadius:10,padding:"14px 16px",border:`1px solid ${C.border}`}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+                  <div style={{fontWeight:700,color:C.text,fontSize:T.sm}}>Profile Completeness</div>
+                  <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:800,color:score>=6?C.emerald:score>=4?C.saffron:C.ruby,fontSize:T.lg}}>{score}/{checks.length}</div>
+                </div>
+                {/* Progress bar */}
+                <div style={{height:4,background:C.border,borderRadius:2,marginBottom:12,overflow:"hidden"}}>
+                  <div style={{height:"100%",width:`${(score/checks.length)*100}%`,background:score>=6?C.emerald:score>=4?C.saffron:C.ruby,borderRadius:2,transition:"width 0.3s"}}/>
+                </div>
+                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
+                  {checks.map(({label,ok})=>(
+                    <div key={label} style={{display:"flex",alignItems:"center",gap:6,fontSize:11}}>
+                      <span style={{color:ok?C.emerald:C.ruby,fontWeight:700,flexShrink:0}}>{ok?"✓":"✗"}</span>
+                      <span style={{color:ok?C.textD:C.muted}}>{label}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Key info */}
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+                {[
+                  ["Status",         artist.status.toUpperCase()],
+                  ["Artist type",    artist.artistType||"—"],
+                  ["Deposit",        artist.deposit?`€${artist.deposit}`:"—"],
+                  ["Currency",       artist.currency||"EUR"],
+                  ["Bookings",       String(bookCount)],
+                  ["Bank account",   artist.iban||artist.bank_iban?"✓ Added":"✗ Missing"],
+                ].map(([k,v])=>(
+                  <div key={k} style={{background:C.surface,borderRadius:8,padding:"10px 12px",border:`1px solid ${C.border}`}}>
+                    <div style={{fontSize:10,color:C.muted,marginBottom:2}}>{k}</div>
+                    <div style={{fontSize:T.sm,fontWeight:700,color:C.text}}>{v}</div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Bio preview */}
+              {artist.bio&&(
+                <div style={{background:C.surface,borderRadius:10,padding:"12px 14px",border:`1px solid ${C.border}`}}>
+                  <div style={{fontSize:10,fontWeight:700,color:C.muted,marginBottom:6,textTransform:"uppercase" as const,letterSpacing:"0.5px"}}>Bio</div>
+                  <div style={{color:C.textD,fontSize:T.sm,lineHeight:1.7}}>{artist.bio}</div>
+                </div>
+              )}
+
+              {/* Missing items auto-suggestion */}
+              {checks.filter(c=>!c.ok).length>0&&(
+                <div style={{background:C.rubyS,border:`1px solid ${C.ruby}28`,borderRadius:10,padding:"12px 14px"}}>
+                  <div style={{fontWeight:700,color:C.ruby,fontSize:T.xs,marginBottom:8}}>Missing items — suggest to artist:</div>
+                  <div style={{display:"flex",flexDirection:"column" as const,gap:4}}>
+                    {checks.filter(c=>!c.ok).map(({label})=>(
+                      <div key={label} style={{fontSize:11,color:C.muted,display:"flex",gap:6}}>
+                        <span style={{color:C.ruby}}>→</span>{label}
+                      </div>
+                    ))}
+                  </div>
+                  <button onClick={()=>{
+                    const missing=checks.filter(c=>!c.ok).map(c=>c.label).join(", ");
+                    setFeedback(`Please complete the following before your profile can be approved:\n\n${missing.split(", ").map(l=>`• ${l}`).join("\n")}`);
+                    setMode("reject");
+                  }} style={{marginTop:10,background:"none",border:`1px solid ${C.ruby}44`,borderRadius:7,padding:"5px 12px",color:C.ruby,fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>
+                    Use this as rejection feedback →
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* Feedback text area — shown for reject or unpublish modes */}
+          {(mode==="reject"||mode==="unpublish")&&(
+            <div>
+              <div style={{fontWeight:700,color:C.text,fontSize:T.sm,marginBottom:8}}>
+                {mode==="unpublish"
+                  ?"What does the artist need to change? (sent directly to them)"
+                  :"Rejection reason — sent to artist as a message"}
+              </div>
+              <textarea
+                value={feedback}
+                onChange={e=>setFeedback(e.target.value)}
+                rows={6}
+                placeholder={mode==="unpublish"
+                  ?"e.g. Please update your profile photo. The bio needs to be more detailed. Deposit price seems too low for your market."
+                  :"e.g. Your profile photo is missing. Please add a proper bio and set a deposit price before reapplying."}
+                style={{width:"100%",background:C.surface,border:`2px solid ${feedback.trim()?C.gold:C.border}`,borderRadius:10,padding:"12px 14px",color:C.text,fontSize:T.sm,outline:"none",fontFamily:"inherit",resize:"vertical",lineHeight:1.6,boxSizing:"border-box" as const}}
+              />
+              <div style={{fontSize:11,color:C.muted,marginTop:4}}>
+                This message will be sent directly to the artist via the platform chat.
+              </div>
+            </div>
+          )}
+
+          {/* Action buttons */}
+          <div style={{display:"flex",gap:10,paddingTop:4}}>
+            {mode==="review"&&!isUnpublishMode&&(
+              <>
+                <button onClick={()=>onApprove(artist.id)}
+                  style={{flex:2,background:C.emerald,color:"#fff",border:"none",borderRadius:10,padding:"13px",fontWeight:800,fontSize:T.sm,cursor:"pointer",fontFamily:"inherit"}}>
+                  ✓ Approve & Publish
+                </button>
+                <button onClick={()=>setMode("reject")}
+                  style={{flex:1,background:C.rubyS,color:C.ruby,border:`1px solid ${C.ruby}44`,borderRadius:10,padding:"13px",fontWeight:700,fontSize:T.sm,cursor:"pointer",fontFamily:"inherit"}}>
+                  ✗ Reject
+                </button>
+              </>
+            )}
+            {mode==="review"&&isUnpublishMode&&(
+              <button onClick={()=>setMode("unpublish")}
+                style={{flex:1,background:C.rubyS,color:C.ruby,border:`1px solid ${C.ruby}44`,borderRadius:10,padding:"13px",fontWeight:800,fontSize:T.sm,cursor:"pointer",fontFamily:"inherit"}}>
+                ↩ Write unpublish reason
+              </button>
+            )}
+            {mode==="reject"&&(
+              <>
+                <button onClick={()=>onReject(artist.id,feedback||"Please review our profile requirements and reapply.")}
+                  style={{flex:2,background:C.ruby,color:"#fff",border:"none",borderRadius:10,padding:"13px",fontWeight:800,fontSize:T.sm,cursor:"pointer",fontFamily:"inherit",opacity:1}}>
+                  Send Rejection & Feedback
+                </button>
+                <button onClick={()=>setMode("review")}
+                  style={{flex:1,background:C.surface,color:C.muted,border:`1px solid ${C.border}`,borderRadius:10,padding:"13px",fontWeight:600,fontSize:T.sm,cursor:"pointer",fontFamily:"inherit"}}>
+                  ← Back
+                </button>
+              </>
+            )}
+            {mode==="unpublish"&&(
+              <>
+                <button
+                  onClick={()=>{
+                    if(!feedback.trim()){alert("Please write what the artist needs to change.");return;}
+                    onUnpublish(artist.id,feedback);
+                  }}
+                  style={{flex:2,background:C.ruby,color:"#fff",border:"none",borderRadius:10,padding:"13px",fontWeight:800,fontSize:T.sm,cursor:"pointer",fontFamily:"inherit"}}>
+                  ↩ Unpublish & Send Feedback
+                </button>
+                <button onClick={()=>setMode("review")}
+                  style={{flex:1,background:C.surface,color:C.muted,border:`1px solid ${C.border}`,borderRadius:10,padding:"13px",fontWeight:600,fontSize:T.sm,cursor:"pointer",fontFamily:"inherit"}}>
+                  ← Cancel
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -6920,6 +7201,38 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
               <Btn v="ghost" sz="sm" onClick={()=>setTab("social")}>{t('addNow')}</Btn>
             </div>
           )}
+          {/* ── Your Booking Link ── always visible, top of overview ── */}
+          {(()=>{
+            const slug=slugify(artist.name);
+            const bookingUrl=`https://awazbooking.com/artist/${slug}`;
+            return(
+              <div style={{background:C.card,border:`1px solid ${C.gold}44`,borderRadius:12,padding:"16px 18px",marginBottom:14}}>
+                <div style={{fontSize:T.xs,fontWeight:700,color:C.gold,letterSpacing:"0.8px",textTransform:"uppercase" as const,marginBottom:10}}>🔗 Your Booking Link</div>
+                <div style={{background:C.surface,borderRadius:8,padding:"9px 12px",border:`1px solid ${C.border}`,display:"flex",alignItems:"center",justifyContent:"space-between",gap:8,marginBottom:10}}>
+                  <span style={{fontSize:12,color:C.gold,fontWeight:600,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const,flex:1}}>{bookingUrl}</span>
+                  <button onClick={()=>{navigator.clipboard.writeText(bookingUrl);notify("Link copied! ✓","success");}}
+                    style={{background:C.gold,color:C.bg,border:"none",borderRadius:6,padding:"5px 12px",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit",flexShrink:0}}>
+                    Copy
+                  </button>
+                </div>
+                <div style={{background:C.goldS,border:`1px solid ${C.gold}22`,borderRadius:8,padding:"10px 14px",fontSize:11,color:C.textD,lineHeight:1.7}}>
+                  <strong style={{color:C.gold}}>📢 Required:</strong> Add this link to your Instagram, TikTok, and Facebook bio. Artists who promote their booking link get <strong>3× more bookings</strong>.
+                  <div style={{marginTop:8,display:"flex",gap:6,flexWrap:"wrap" as const}}>
+                    {["📸 Instagram bio","🎵 TikTok bio","👍 Facebook page"].map(s=>(
+                      <span key={s} style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:6,padding:"3px 9px",fontSize:10,color:C.muted}}>{s}</span>
+                    ))}
+                  </div>
+                  <div style={{marginTop:8}}>
+                    <span style={{color:C.muted}}>Suggested caption: </span>
+                    <em>"Book me for your wedding or event 🎤 {bookingUrl}"</em>
+                    <button onClick={()=>{navigator.clipboard.writeText(`Book me for your wedding or event 🎤 ${bookingUrl}`);notify("Caption copied!","success");}}
+                      style={{marginLeft:8,background:"none",border:`1px solid ${C.border}`,borderRadius:4,padding:"2px 8px",fontSize:10,color:C.muted,cursor:"pointer",fontFamily:"inherit"}}>Copy</button>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+
           {/* ── Earnings breakdown — clear and transparent ── */}
           <div style={{background:`linear-gradient(135deg,${C.goldS},${C.card})`,border:`1px solid ${C.gold}33`,borderRadius:14,padding:"18px 20px",marginBottom:16}}>
             <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.gold,marginBottom:14}}>Your Earnings</div>
@@ -10744,22 +11057,39 @@ function AppInner() {
 
   // AUTH-FIX-3: nav() also moved above conditional returns so it is always
   // in scope regardless of which render path executes.
-  const nav=(v:string)=>{
+  const nav=(v:string,artist?:any)=>{
     if(v==="profile")setPrevView(view);
     window.scrollTo({top:0,behavior:"instant"});
     setView(v);setMenuOpen(false);
-    // Update URL without full reload — fixes URL stuck bug
-    const url = v==="home" ? "/" : `/?view=${v}`;
-    window.history.replaceState({view:v}, "", url);
+    // Artist profile gets clean shareable URL
+    if(v==="profile"&&artist){
+      const slug=slugify(artist.name);
+      window.history.pushState({view:"profile",artistId:artist.id},`${artist.name} · Awaz`,`/artist/${slug}`);
+    } else {
+      const url = v==="home" ? "/" : `/?view=${v}`;
+      window.history.pushState({view:v},"",url);
+    }
   };
-  // Restore view from URL on load
+  // Restore view from URL on load — handles /artist/slug, /?view=browse etc.
   React.useEffect(()=>{
     const params = new URLSearchParams(window.location.search);
     const viewParam = params.get("view");
-    if(viewParam && ["browse","how","pricing","demo","demo"].includes(viewParam)){
+    const path = window.location.pathname;
+    // Handle /artist/slug
+    if(path.startsWith("/artist/")){
+      const slug=path.replace("/artist/","").replace(/-/g," ").toLowerCase();
+      // Wait for artists to load, then find by name slug
+      const tryFind=()=>{
+        const found=artists.find(a=>slugify(a.name)===path.replace("/artist/",""));
+        if(found){setSelArtist(found);setView("profile");}
+        else if(artists.length===0)setTimeout(tryFind,300);
+      };
+      tryFind();
+    } else if(viewParam && ["browse","how","pricing"].includes(viewParam)){
       setView(viewParam);
     }
-  },[]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[artists.length]);
 
   // ── Page title updates (MUST be before early returns — React Rules of Hooks) ──
   useEffect(()=>{
@@ -11091,16 +11421,16 @@ function AppInner() {
                   {displaySource.slice(0,4).map(a=><ArtistCard key={a.id} artist={a} onClick={art=>{setSelArtist(art);setView("profile");}}/>)}
                 </div>
                 <div style={{position:"sticky",top:80}}>
-                  <AIWidget artists={displaySource} onPick={art=>{setSelArtist(art);nav("profile");}}/>
+                  <AIWidget artists={displaySource} onPick={art=>{setSelArtist(art);nav("profile",art);}}/>
                 </div>
               </div>
             ):vp.isTablet?(
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginTop:8}}>
-                {displaySource.slice(0,4).map(a=><ArtistCard key={a.id} artist={a} onClick={art=>{setSelArtist(art);nav("profile");}}/>)}
+                {displaySource.slice(0,4).map(a=><ArtistCard key={a.id} artist={a} onClick={art=>{setSelArtist(art);nav("profile",art);}}/>)}
               </div>
             ):(
               <div style={{display:"flex",flexDirection:"column",gap:10,marginTop:8}}>
-                {displaySource.slice(0,4).map(a=><ArtistCard key={a.id} artist={a} onClick={art=>{setSelArtist(art);nav("profile");}} compact/>)}
+                {displaySource.slice(0,4).map(a=><ArtistCard key={a.id} artist={a} onClick={art=>{setSelArtist(art);nav("profile",art);}} compact/>)}
               </div>
             )}
           </section>
@@ -11320,12 +11650,12 @@ function AppInner() {
             ):vp.isMobile?(
               <div style={{display:"flex",flexDirection:"column",gap:10}}>
                 {displaySource.filter(a=>a.isBoosted).map(a=>(
-                  <div key={a.id+"boost"} onClick={()=>{setSelArtist(a);nav("profile");}} style={{position:"relative",cursor:"pointer",borderRadius:12,overflow:"hidden",border:`2px solid ${C.gold}55`}}>
+                  <div key={a.id+"boost"} onClick={()=>{setSelArtist(a);nav("profile",a);}} style={{position:"relative",cursor:"pointer",borderRadius:12,overflow:"hidden",border:`2px solid ${C.gold}55`}}>
                     <div style={{position:"absolute",top:8,right:8,zIndex:2,background:`linear-gradient(135deg,${C.gold},${C.saffron})`,borderRadius:12,padding:"2px 8px",fontSize:9,fontWeight:800,color:C.bg}}>⭐ FEATURED</div>
-                    <ArtistCard artist={a} onClick={art=>{setSelArtist(art);nav("profile");}} compact/>
+                    <ArtistCard artist={a} onClick={art=>{setSelArtist(art);nav("profile",art);}} compact/>
                   </div>
                 ))}
-                {filtered.filter(a=>!a.isBoosted).map(a=><ArtistCard key={a.id} artist={a} onClick={art=>{setSelArtist(art);nav("profile");}} compact/>)}
+                {filtered.filter(a=>!a.isBoosted).map(a=><ArtistCard key={a.id} artist={a} onClick={art=>{setSelArtist(art);nav("profile",art);}} compact/>)}
               </div>
             ):(
               <div>
@@ -11338,9 +11668,9 @@ function AppInner() {
                     </div>
                     <div style={{display:"grid",gridTemplateColumns:`repeat(${vp.isTablet?2:3},1fr)`,gap:16}}>
                       {displaySource.filter(a=>a.isBoosted).map(a=>(
-                        <div key={a.id+"feat"} onClick={()=>{setSelArtist(a);nav("profile");}} style={{position:"relative",cursor:"pointer",borderRadius:14,overflow:"hidden",border:`2px solid ${C.gold}55`,boxShadow:`0 0 20px ${C.gold}18`}}>
+                        <div key={a.id+"feat"} onClick={()=>{setSelArtist(a);nav("profile",a);}} style={{position:"relative",cursor:"pointer",borderRadius:14,overflow:"hidden",border:`2px solid ${C.gold}55`,boxShadow:`0 0 20px ${C.gold}18`}}>
                           <div style={{position:"absolute",top:10,right:10,zIndex:2,background:`linear-gradient(135deg,${C.gold},${C.saffron})`,borderRadius:20,padding:"3px 10px",fontSize:10,fontWeight:800,color:C.bg,letterSpacing:"0.5px"}}>⭐ FEATURED</div>
-                          <ArtistCard artist={a} onClick={art=>{setSelArtist(art);nav("profile");}}/>
+                          <ArtistCard artist={a} onClick={art=>{setSelArtist(art);nav("profile",art);}}/>
                         </div>
                       ))}
                     </div>
@@ -11348,7 +11678,7 @@ function AppInner() {
                   </div>
                 )}
                 <div style={{display:"grid",gridTemplateColumns:`repeat(${vp.isTablet?2:3},1fr)`,gap:16}}>
-                  {filtered.filter(a=>!a.isBoosted).map(a=><ArtistCard key={a.id} artist={a} onClick={art=>{setSelArtist(art);nav("profile");}}/>)}
+                  {filtered.filter(a=>!a.isBoosted).map(a=><ArtistCard key={a.id} artist={a} onClick={art=>{setSelArtist(art);nav("profile",art);}}/>)}
                 </div>
               </div>
             )}
