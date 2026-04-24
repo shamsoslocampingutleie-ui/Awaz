@@ -4980,7 +4980,7 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
 
           {/* ── What happens after payment ── */}
           <div style={{background:C.surface,borderRadius:10,padding:"12px 14px",border:`1px solid ${C.border}`}}>
-            <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:8,textTransform:"uppercase" as const,letterSpacing:"0.5px"}}{t('applyNextSteps')}</div>
+            <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:8,textTransform:"uppercase" as const,letterSpacing:"0.5px"}}>{t('applyNextSteps')}</div>
             {[
               {icon:"💳",step:"You pay the deposit securely via Stripe"},
               {icon:"💬",step:"Chat unlocks — message the artist directly"},
@@ -12634,7 +12634,7 @@ function ApplySheet({ onSubmit, onClose }) {
             <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:700,color:C.text,marginBottom:8}}>You're in! Account created.</div>
             <div style={{color:C.muted,fontSize:T.sm,lineHeight:1.8,marginBottom:20}}>Welcome to Awaz — the platform that helps Afghan artists across Europe get booked and paid.</div>
             <div style={{background:C.surface,borderRadius:10,padding:"14px 16px",marginBottom:16,textAlign:"left",border:`1px solid ${C.border}`}}>
-              <div style={{fontSize:T.xs,fontWeight:700,color:C.gold,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:10}}{t('applyNextSteps')}</div>
+              <div style={{fontSize:T.xs,fontWeight:700,color:C.gold,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:10}}>{t('applyNextSteps')}</div>
               {[
                 ["📧",t('applyNext1')||"Check your email and confirm your account"],
                 ["🔑",t('applyNext2')||"Come back and click Sign In"],
