@@ -6358,27 +6358,20 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
       {tab==="chat"&&(
         <div>
           <SectionHeader title="Direct Chat with Artists"/>
-          <div style={{display:"grid",gridTemplateColumns:vp.isMobile?"1fr":"280px 1fr",gap:16,height:vp.isMobile?"auto":520}}>
+          <div style={{display:"grid",gridTemplateColumns:vp.isMobile?"1fr":"280px 1fr",gap:16,height:vp.isMobile?"auto":600}}>
             {/* Artist list */}
             <div style={{background:C.card,borderRadius:12,border:`1px solid ${C.border}`,overflow:"auto"}}>
-              <div style={{padding:"10px 14px",borderBottom:`1px solid ${C.border}`,fontSize:T.xs,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.8px"}}>Artists</div>
+              <div style={{padding:"10px 14px",borderBottom:`1px solid ${C.border}`,fontSize:T.xs,fontWeight:700,color:C.muted,textTransform:"uppercase" as const,letterSpacing:"0.8px"}}>Artists</div>
               {artists.map(a=>(
                 <button key={a.id} onClick={async()=>{
                   setAdminChatArtist(a);
-                  // Load existing chat messages from dedicated table
                   if(HAS_SUPA){
                     const sb=await getSupabase();
                     if(sb){
                       const{data}=await sb.from("chat_messages")
-                        .select("*")
-                        .eq("artist_id",a.id)
-                        .order("created_at",{ascending:true});
+                        .select("*").eq("artist_id",a.id).order("created_at",{ascending:true});
                       if(data?.length>0){
-                        const msgs=data.map(r=>({
-                          from:r.from_role,
-                          text:r.text,
-                          time:new Date(r.created_at).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}),
-                        }));
+                        const msgs=data.map(r=>({from:r.from_role,text:r.text,time:new Date(r.created_at).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}));
                         setAdminChats(p=>({...p,[a.id]:msgs}));
                       }
                     }
@@ -6388,82 +6381,113 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
                   padding:"12px 14px",
                   background:adminChatArtist?.id===a.id?C.goldS:"transparent",
                   border:"none",borderBottom:`1px solid ${C.border}`,
-                  cursor:"pointer",textAlign:"left",fontFamily:"inherit",
+                  cursor:"pointer",textAlign:"left" as const,fontFamily:"inherit",
                   WebkitTapHighlightColor:"transparent",
                 }}>
-                  <div style={{width:32,height:32,borderRadius:7,background:`${a.color}20`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>{a.emoji}</div>
+                  <div style={{width:34,height:34,borderRadius:8,background:`${a.color}20`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:17,flexShrink:0}}>{a.emoji}</div>
                   <div style={{flex:1,minWidth:0}}>
                     <div style={{fontWeight:600,color:C.text,fontSize:T.sm,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{a.name}</div>
-                    <div style={{color:C.muted,fontSize:T.xs}}>{a.status}</div>
+                    <div style={{color:a.status==="approved"?C.emerald:a.status==="rejected"?C.ruby:C.muted,fontSize:T.xs}}>{a.status}</div>
                   </div>
-                  {(adminChats[a.id]||[]).length>0&&<span style={{width:6,height:6,borderRadius:"50%",background:C.gold,flexShrink:0}}/>}
+                  {(adminChats[a.id]||[]).length>0&&<span style={{width:7,height:7,borderRadius:"50%",background:C.gold,flexShrink:0}}/>}
                 </button>
               ))}
             </div>
+
             {/* Chat panel */}
-            <div style={{background:C.card,borderRadius:12,border:`1px solid ${C.border}`,display:"flex",flexDirection:"column",minHeight:vp.isMobile?300:520}}>
+            <div style={{background:C.card,borderRadius:12,border:`1px solid ${C.border}`,display:"flex",flexDirection:"column" as const,minHeight:vp.isMobile?400:600,overflow:"hidden"}}>
               {adminChatArtist?(
                 <>
-                  <div style={{padding:"12px 16px",borderBottom:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:10}}>
-                    <div style={{fontSize:20}}>{adminChatArtist.emoji}</div>
+                  {/* Header */}
+                  <div style={{padding:"14px 18px",borderBottom:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:12,background:C.surface,flexShrink:0}}>
+                    <div style={{width:38,height:38,borderRadius:9,background:`${adminChatArtist.color}20`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>{adminChatArtist.emoji}</div>
                     <div style={{flex:1}}>
                       <div style={{fontWeight:700,color:C.text,fontSize:T.sm}}>{adminChatArtist.name}</div>
-                      <div style={{color:C.muted,fontSize:T.xs}}>{adminChatArtist.genre}</div>
+                      <div style={{color:C.muted,fontSize:T.xs}}>{adminChatArtist.genre} · {adminChatArtist.status}</div>
                     </div>
                     <button onClick={async()=>{
                       if(!confirm("Clear all messages with this artist?")) return;
                       setAdminChats(p=>({...p,[adminChatArtist.id]:[]}));
                       if(HAS_SUPA){
                         try{
-                          const sb = await getSupabaseAdmin() || await getSupabase();
+                          const sb=await getSupabaseAdmin()||await getSupabase();
                           if(sb){
                             const{error}=await sb.from("chat_messages").delete().eq("artist_id",adminChatArtist.id);
-                            if(error){
-                              notify("Could not delete from DB — check RLS policies","error");
-                              console.error("Chat delete error:",error.message);
-                            } else { notify("Chat cleared","success"); }
+                            if(error){notify("Could not delete — check RLS","error");}
+                            else{notify("Chat cleared","success");}
                           }
                         }catch(e:any){notify("Error: "+e.message,"error");}
-                      } else { notify("Chat cleared","success"); }
-                    }} style={{background:"rgba(168,44,56,0.08)",color:C.ruby,border:`1px solid ${C.ruby}33`,borderRadius:7,padding:"5px 10px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit",flexShrink:0}}>
+                      } else {notify("Chat cleared","success");}
+                    }} style={{background:C.rubyS,color:C.ruby,border:`1px solid ${C.ruby}33`,borderRadius:7,padding:"5px 12px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit",flexShrink:0}}>
                       Clear
                     </button>
                   </div>
-                  <div style={{flex:1,overflow:"auto",padding:"14px 16px",display:"flex",flexDirection:"column",gap:8}}>
-                    {(adminChats[adminChatArtist.id]||[]).map((msg,i)=>(
-                      <div key={i} style={{display:"flex",justifyContent:msg.from==="admin"?"flex-end":"flex-start",gap:6,alignItems:"flex-start"}}
-                        onMouseEnter={e=>{const b=e.currentTarget.querySelector(".msg-del") as HTMLElement;if(b)b.style.opacity="1";}}
-                        onMouseLeave={e=>{const b=e.currentTarget.querySelector(".msg-del") as HTMLElement;if(b)b.style.opacity="0";}}>
-                        {msg.from==="admin"&&(
-                          <button className="msg-del" onClick={()=>{
-                            setAdminChats(p=>({...p,[adminChatArtist.id]:(p[adminChatArtist.id]||[]).filter((_,j)=>j!==i)}));
-                          }} style={{background:"none",border:"none",color:C.ruby,cursor:"pointer",opacity:0,transition:"opacity 0.15s",fontSize:12,padding:"4px",flexShrink:0,marginTop:4}}>Del</button>
-                        )}
-                        <div style={{maxWidth:"75%",background:msg.from==="admin"?C.goldS:C.surface,borderRadius:10,padding:"8px 12px",border:`1px solid ${msg.from==="admin"?C.gold+"44":C.border}`}}>
-                          {msg.image&&<img src={msg.image} style={{maxWidth:"100%",maxHeight:180,borderRadius:8,marginBottom:4,display:"block"}} alt="img"/>}
-                          {msg.text&&msg.text!=="[Image]"&&<div style={{color:C.text,fontSize:T.sm,lineHeight:1.5}}>{msg.text}</div>}
-                          <div style={{color:C.muted,fontSize:10,marginTop:3,textAlign:"right"}}>{msg.time}</div>
+
+                  {/* Messages — KEY FIX: whiteSpace pre-wrap for line breaks */}
+                  <div style={{flex:1,overflow:"auto",padding:"16px",display:"flex",flexDirection:"column" as const,gap:10,minHeight:0}}>
+                    {(adminChats[adminChatArtist.id]||[]).map((msg,i)=>{
+                      const isAdmin=msg.from==="admin";
+                      return(
+                        <div key={i} style={{display:"flex",justifyContent:isAdmin?"flex-end":"flex-start",gap:6,alignItems:"flex-end"}}
+                          onMouseEnter={e=>{const b=e.currentTarget.querySelector(".msg-del") as HTMLElement;if(b)b.style.opacity="1";}}
+                          onMouseLeave={e=>{const b=e.currentTarget.querySelector(".msg-del") as HTMLElement;if(b)b.style.opacity="0";}}>
+                          {isAdmin&&(
+                            <button className="msg-del" onClick={()=>setAdminChats(p=>({...p,[adminChatArtist.id]:(p[adminChatArtist.id]||[]).filter((_,j)=>j!==i)}))}
+                              style={{background:"none",border:"none",color:C.ruby,cursor:"pointer",opacity:0,transition:"opacity 0.15s",fontSize:11,padding:"4px",flexShrink:0}}>Del</button>
+                          )}
+                          <div style={{
+                            maxWidth:"78%",
+                            background:isAdmin?C.goldS:C.surface,
+                            borderRadius:isAdmin?"14px 14px 3px 14px":"14px 14px 14px 3px",
+                            padding:"10px 14px",
+                            border:`1px solid ${isAdmin?C.gold+"44":C.border}`,
+                          }}>
+                            {msg.image&&<img src={msg.image} style={{maxWidth:"100%",maxHeight:200,borderRadius:8,marginBottom:6,display:"block"}} alt="img"/>}
+                            {msg.text&&msg.text!=="[Image]"&&(
+                              <div style={{
+                                color:C.text,
+                                fontSize:T.sm,
+                                lineHeight:1.75,
+                                // ── KEY FIX: renders \n as actual line breaks ──
+                                whiteSpace:"pre-wrap" as const,
+                                wordBreak:"break-word" as const,
+                              }}>{msg.text}</div>
+                            )}
+                            <div style={{color:C.faint,fontSize:10,marginTop:4,textAlign:isAdmin?"right":"left"}}>{isAdmin?"Awaz":adminChatArtist.name} · {msg.time}</div>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                     {!(adminChats[adminChatArtist.id]||[]).length&&(
-                      <div style={{textAlign:"center",color:C.muted,fontSize:T.sm,marginTop:60,opacity:0.7}}>Start the conversation</div>
+                      <div style={{textAlign:"center",color:C.muted,fontSize:T.sm,marginTop:"auto",marginBottom:"auto",opacity:0.6,display:"flex",flexDirection:"column" as const,alignItems:"center",gap:8}}>
+                        <div style={{fontSize:32}}>💬</div>
+                        <div>Start the conversation with {adminChatArtist.name}</div>
+                      </div>
                     )}
                   </div>
-                  <div style={{padding:"12px 16px",borderTop:`1px solid ${C.border}`,display:"flex",gap:8,alignItems:"center"}}>
-                    <label style={{cursor:"pointer",padding:"8px 10px",borderRadius:8,background:C.surface,border:`1px solid ${C.border}`,color:C.muted,fontSize:16,display:"flex",alignItems:"center",flexShrink:0}} title="Attach image">
+
+                  {/* Input — textarea for multi-line */}
+                  <div style={{padding:"12px 16px",borderTop:`1px solid ${C.border}`,display:"flex",gap:8,alignItems:"flex-end",background:C.surface,flexShrink:0}}>
+                    <label style={{cursor:"pointer",padding:"10px",borderRadius:8,background:C.card,border:`1px solid ${C.border}`,color:C.muted,fontSize:16,display:"flex",alignItems:"center",flexShrink:0}} title="Attach image">
                       <input type="file" accept="image/*" onChange={handleAdminChatImg} style={{display:"none"}}/>
+                      📎
                     </label>
-                    <input value={adminChatMsg} onChange={e=>setAdminChatMsg(e.target.value)}
-                      onKeyDown={e=>{if(e.key==="Enter"&&(adminChatMsg.trim()||adminChatImage)) sendAdminChat();}}
-                      placeholder="Type a message or attach image…"
-                      style={{flex:1,background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,padding:"10px 14px",color:C.text,fontSize:T.sm,outline:"none",fontFamily:"inherit"}}/>
-                    <button onClick={sendAdminChat} disabled={!adminChatMsg.trim()&&!adminChatImage} style={{background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:8,padding:"10px 16px",fontWeight:700,cursor:adminChatMsg.trim()?"pointer":"not-allowed",opacity:adminChatMsg.trim()?1:0.4,fontFamily:"inherit",fontSize:T.sm}}>→</button>
+                    <textarea
+                      value={adminChatMsg}
+                      onChange={e=>setAdminChatMsg(e.target.value)}
+                      onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey&&(adminChatMsg.trim()||adminChatImage)){e.preventDefault();sendAdminChat();}}}
+                      placeholder="Type a message… (Enter to send, Shift+Enter for new line)"
+                      rows={2}
+                      style={{flex:1,background:C.card,border:`1px solid ${C.border}`,borderRadius:8,padding:"10px 14px",color:C.text,fontSize:T.sm,outline:"none",fontFamily:"inherit",resize:"none",lineHeight:1.6}}/>
+                    <button onClick={sendAdminChat} disabled={!adminChatMsg.trim()&&!adminChatImage}
+                      style={{background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:8,padding:"10px 18px",fontWeight:700,cursor:adminChatMsg.trim()||adminChatImage?"pointer":"not-allowed",opacity:adminChatMsg.trim()||adminChatImage?1:0.4,fontFamily:"inherit",fontSize:T.sm,flexShrink:0,minHeight:44}}>
+                      →
+                    </button>
                   </div>
                 </>
               ):(
-                <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:10,color:C.muted}}>
-                  
+                <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column" as const,gap:12,color:C.muted}}>
+                  <div style={{fontSize:36}}>💬</div>
                   <div style={{fontSize:T.sm}}>Select an artist to message</div>
                 </div>
               )}
