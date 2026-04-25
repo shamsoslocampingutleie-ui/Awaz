@@ -3941,7 +3941,12 @@ function StripeCheckout({ booking, artist, onSuccess, onClose }) {
         headers:{"Content-Type":"application/json","Authorization":`Bearer ${SUPA_KEY}`,"apikey":SUPA_KEY},
         body:JSON.stringify({
           amount:deposit, currency:(artist.currency||"EUR").toLowerCase(),
-          type:"booking", artistStripeAccount:artist.stripeAccount||null,
+          type:"booking",
+          // Only pass stripeAccount if artist has connected to the CURRENT platform
+          // If not connected, payment goes to Awaz directly (no split)
+          artistStripeAccount: (artist.stripeConnected && artist.stripeAccount?.startsWith("acct_"))
+            ? artist.stripeAccount
+            : null,
           platformAccountId, bookingId:booking.id,
           customerEmail:booking.customerEmail||"", artistName:artist.name,
           platformFeePercent:12,
@@ -8107,20 +8112,30 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
                 <span style={{color:(v as string).startsWith("✓")?C.emerald:C.text,fontWeight:600}}>{v}</span>
               </div>
             ))}
-            {/* Add / update bank account button */}
-            {!artist.iban&&(
+            {/* Connect / disconnect Stripe */}
+            {!artist.stripeConnected&&(
               <div style={{marginTop:12}}>
                 <button onClick={()=>setShowStripeConnect(true)}
                   style={{width:"100%",background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:10,padding:"12px",fontWeight:800,fontSize:T.sm,cursor:"pointer",fontFamily:"inherit"}}>
-                  💳 Add Bank Account to Get Paid →
+                  💳 Connect Stripe — Get Paid Automatically →
                 </button>
+                <div style={{fontSize:11,color:C.muted,textAlign:"center",marginTop:6}}>
+                  Stripe splits payments: 88% to you · 12% to Awaz
+                </div>
               </div>
             )}
-            {artist.iban&&(
-              <button onClick={()=>setShowStripeConnect(true)}
-                style={{marginTop:10,background:"none",border:"none",color:C.muted,fontSize:11,cursor:"pointer",fontFamily:"inherit",padding:0}}>
-                Update bank account
-              </button>
+            {artist.stripeConnected&&(
+              <div style={{marginTop:10,display:"flex",gap:8,alignItems:"center",background:C.emeraldS,borderRadius:8,padding:"8px 12px"}}>
+                <div style={{fontSize:T.xs,color:C.emerald,flex:1}}>✓ Stripe connected · payments split automatically</div>
+                <button onClick={async()=>{
+                  if(!confirm("Disconnect Stripe? You won't receive automatic payments until reconnected.")) return;
+                  onUpdateArtist(artist.id,{stripeConnected:false,stripeAccount:null});
+                  if(HAS_SUPA){const sb=await getSupabase();if(sb)await sb.from("artists").update({stripe_connected:false,stripe_account:null}).eq("id",artist.id);}
+                  notify("Stripe disconnected","success");
+                }} style={{background:C.rubyS,color:C.ruby,border:`1px solid ${C.ruby}33`,borderRadius:6,padding:"4px 10px",fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"inherit",flexShrink:0}}>
+                  Disconnect
+                </button>
+              </div>
             )}
           </div>
 
@@ -8878,7 +8893,13 @@ function StripeConnectSheet({ artist, onConnected, onClose }) {
         }),
       });
       const data = await res.json();
-      if(!res.ok||data.error) throw new Error(data.error||"Connection failed");
+      if(!res.ok||data.error){
+        // Stripe Connect not activated on platform account
+        if(data.error?.includes("signed up for Connect")||data.error?.includes("Connect")){
+          throw new Error("connect_not_activated");
+        }
+        throw new Error(data.error||"Connection failed");
+      }
 
       // Save account ID immediately
       if(HAS_SUPA){
@@ -8890,7 +8911,12 @@ function StripeConnectSheet({ artist, onConnected, onClose }) {
       // Redirect to Stripe onboarding
       window.location.href = data.url;
     } catch(e:any){
-      setError(e.message||"Failed to connect. Please try again.");
+      const msg=e.message||"";
+      if(msg==="connect_not_activated"){
+        setError("stripe_connect_setup_needed");
+      } else {
+        setError(msg||"Failed to connect. Please try again.");
+      }
       setLoading(false);
     }
   };
@@ -8937,12 +8963,27 @@ function StripeConnectSheet({ artist, onConnected, onClose }) {
           <strong style={{color:C.text}}>How it works:</strong> You'll be redirected to Stripe to enter your bank details securely. Takes about 5 minutes. Once done, every booking payment is split automatically — you never have to ask for your money.
         </div>
 
-        {error&&(
+        {error==="stripe_connect_setup_needed"?(
+          <div style={{background:C.goldS,border:`1px solid ${C.gold}44`,borderRadius:12,padding:"16px"}}>
+            <div style={{fontWeight:700,color:C.gold,fontSize:T.sm,marginBottom:10}}>⚙️ One-time setup needed by Awaz admin</div>
+            <div style={{color:C.textD,fontSize:T.sm,lineHeight:1.8,marginBottom:12}}>
+              Stripe Connect needs to be activated on the Awaz platform account before artists can connect. This is a one-time admin step.
+            </div>
+            <a href="https://dashboard.stripe.com/connect" target="_blank" rel="noopener noreferrer"
+              style={{display:"block",background:`linear-gradient(135deg,#635BFF,#4B44CC)`,color:"#fff",borderRadius:10,padding:"12px",textAlign:"center",fontWeight:700,fontSize:T.sm,textDecoration:"none",marginBottom:8}}>
+              Activate Stripe Connect (Admin only) →
+            </a>
+            <div style={{fontSize:11,color:C.muted,lineHeight:1.6}}>
+              After activating Connect on dashboard.stripe.com/connect, come back and try again.
+            </div>
+            <button onClick={()=>setError("")} style={{marginTop:8,background:"none",border:"none",color:C.muted,fontSize:11,cursor:"pointer",fontFamily:"inherit"}}>← Try again</button>
+          </div>
+        ):error?(
           <div style={{background:C.rubyS,border:`1px solid ${C.ruby}33`,borderRadius:8,padding:"10px 14px",color:C.ruby,fontSize:T.sm}}>
             ⚠ {error}
             <button onClick={()=>setError("")} style={{display:"block",background:"none",border:"none",color:C.muted,fontSize:11,cursor:"pointer",marginTop:4,fontFamily:"inherit",padding:0}}>Try again</button>
           </div>
-        )}
+        ):null}
 
         <Btn full v="gold" sz="lg" loading={loading} onClick={startConnect}>
           {loading?"Connecting to Stripe…":"Connect Stripe Account →"}
