@@ -3860,9 +3860,58 @@ function StripeCheckout({ booking, artist, onSuccess, onClose }) {
   const [error,    setError]    = useState("");
   const [clientSecret, setClientSecret] = useState("");
   const [step,     setStep]     = useState<"init"|"pay"|"done">("init");
+  const stripeRef   = React.useRef<any>(null);
+  const elementsRef = React.useRef<any>(null);
 
-  const deposit = booking.deposit || 1000;
+  const deposit   = booking.deposit || 1000;
   const artistAmt = Math.round(deposit * 0.88);
+
+  // Load Stripe.js immediately on modal open
+  React.useEffect(()=>{
+    const key=import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+    if(!key||stripeRef.current) return;
+    const init=()=>{
+      if((window as any).Stripe){stripeRef.current=(window as any).Stripe(key);return;}
+      if(!document.getElementById("stripe-js")){
+        const s=document.createElement("script");
+        s.id="stripe-js";s.src="https://js.stripe.com/v3/";
+        s.onload=()=>{stripeRef.current=(window as any).Stripe(key);};
+        document.head.appendChild(s);
+      }
+    };
+    init();
+  },[]);
+
+  // Mount Stripe Payment Element once clientSecret is ready
+  React.useEffect(()=>{
+    if(step!=="pay"||!clientSecret) return;
+    let card:any;
+    const tryMount=async()=>{
+      // Wait up to 5s for Stripe.js to load
+      let n=0;
+      while(!stripeRef.current&&n<50){
+        await new Promise(r=>setTimeout(r,100));
+        const key=import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+        if((window as any).Stripe&&key) stripeRef.current=(window as any).Stripe(key);
+        n++;
+      }
+      if(!stripeRef.current){setError("Stripe could not load — please refresh and try again.");return;}
+      const elements=stripeRef.current.elements({
+        clientSecret,
+        appearance:{theme:"stripe",variables:{colorPrimary:"#B8934A",borderRadius:"8px"}},
+      });
+      elementsRef.current=elements;
+      // Show all available payment methods: card, Apple Pay, Google Pay, MobilePay, Vipps
+      card=elements.create("payment",{
+        wallets:{applePay:"auto",googlePay:"auto"},
+        layout:{type:"tabs",defaultCollapsed:false},
+      });
+      const el=document.getElementById("stripe-card-element");
+      if(el&&el.childElementCount===0) card.mount(el);
+    };
+    tryMount();
+    return()=>{try{card?.destroy();}catch{}};
+  },[step,clientSecret]);
 
   // Step 1: Create PaymentIntent via Supabase Edge Function
   const initPayment = async () => {
@@ -3870,8 +3919,8 @@ function StripeCheckout({ booking, artist, onSuccess, onClose }) {
     try {
       const SUPA_URL = import.meta.env.VITE_SUPABASE_URL;
       const SUPA_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+      if(!SUPA_URL||!SUPA_KEY) throw new Error("Configuration missing — contact support.");
 
-      // Read platform ID from localStorage (set in Finance tab)
       const platformAccountId = (() => {
         try{ return localStorage.getItem("awaz-stripe-platform-id")||null; }catch{ return null; }
       })();
@@ -3885,6 +3934,7 @@ function StripeCheckout({ booking, artist, onSuccess, onClose }) {
         },
         body: JSON.stringify({
           amount:              deposit,
+          currency:            (artist.currency||"EUR").toLowerCase(),
           type:                "booking",
           artistStripeAccount: artist.stripeAccount || null,
           platformAccountId:   platformAccountId,
@@ -3896,18 +3946,10 @@ function StripeCheckout({ booking, artist, onSuccess, onClose }) {
       });
 
       const data = await res.json();
-      if (!res.ok || data.error) throw new Error(data.error || "Payment failed");
+      if (!res.ok || data.error) throw new Error(data.error || "Payment setup failed — try again.");
 
       setClientSecret(data.clientSecret);
       setStep("pay");
-
-      // Load Stripe.js dynamically
-      if (!document.querySelector("#stripe-js")) {
-        const script = document.createElement("script");
-        script.id = "stripe-js";
-        script.src = "https://js.stripe.com/v3/";
-        document.head.appendChild(script);
-      }
     } catch (e:any) {
       setError(e.message);
     }
@@ -3943,16 +3985,12 @@ function StripeCheckout({ booking, artist, onSuccess, onClose }) {
   const confirmPayment = async () => {
     setLoading(true); setError("");
     try {
-      // Use the pre-mounted stripe+elements from the useEffect
-      const awaz=(window as any)._awazStripe;
-      if(!awaz?.stripe||!awaz?.elements){
+      if(!stripeRef.current||!elementsRef.current){
         throw new Error("Payment form not ready — please wait a moment and try again.");
       }
-      const {error:stripeError}=await awaz.stripe.confirmPayment({
-        elements: awaz.elements,
-        confirmParams:{
-          return_url: window.location.href,
-        },
+      const {error:stripeError}=await stripeRef.current.confirmPayment({
+        elements: elementsRef.current,
+        confirmParams:{ return_url: window.location.href },
         redirect:"if_required",
       });
       if(stripeError) throw new Error(stripeError.message);
