@@ -3962,7 +3962,15 @@ function StripeCheckout({ booking, artist, onSuccess, onClose }) {
       if(!stripeRef.current||!elementsRef.current) throw new Error("Payment form not ready.");
       const{error:stripeError}=await stripeRef.current.confirmPayment({
         elements:elementsRef.current,
-        confirmParams:{return_url:window.location.href},
+        confirmParams:{
+          return_url:window.location.href,
+          payment_method_data:{
+            billing_details:{
+              name: booking.customerName||"",
+              email:booking.customerEmail||"",
+            }
+          }
+        },
         redirect:"if_required",
       });
       if(stripeError) throw new Error(stripeError.message);
@@ -10966,21 +10974,56 @@ function AppInner() {
           const supa=bookingRows.map(b=>({
             id:b.id,artistId:b.artist_id,
             customerName:b.customer_name,customerEmail:b.customer_email,
+            customerPhone:b.customer_phone||"",
             date:b.date,eventType:b.event_type||b.event||"",
             notes:b.notes||"",deposit:b.deposit||0,
-            status:b.status||"pending",depositPaid:b.paid||false,
-            chatUnlocked:b.chat_unlocked||b.paid||false,
-            country:b.country||"NO",
+            status:b.status||"pending",
+            depositPaid:b.deposit_paid||b.paid||false,
+            chatUnlocked:b.chat_unlocked||b.deposit_paid||b.paid||false,
+            country:b.country||"",
+            selectedInstrument:b.selected_instrument||"",
+            paymentIntentId:b.payment_intent_id||"",
             messages:Array.isArray(b.messages)?b.messages:[],
+            createdAt:b.created_at||"",
           }));
           return[...local,...supa];
         });
       }
 
       setAppReady(true);
+
+      // ── Real-time: new bookings appear instantly on ALL devices ──────
+      try{
+        const sbRt=await getSupabase();
+        if(sbRt){
+          sbRt.channel("awaz-realtime-bookings")
+            .on("postgres_changes",{event:"INSERT",schema:"public",table:"bookings"},(payload:any)=>{
+              const b=payload.new;
+              if(!b) return;
+              const mapped={
+                id:b.id,artistId:b.artist_id,
+                customerName:b.customer_name,customerEmail:b.customer_email,
+                customerPhone:b.customer_phone||"",
+                date:b.date,eventType:b.event_type||"",
+                notes:b.notes||"",deposit:b.deposit||0,
+                status:b.status||"confirmed",
+                depositPaid:b.deposit_paid||b.paid||false,
+                chatUnlocked:b.chat_unlocked||b.deposit_paid||false,
+                country:b.country||"",
+                selectedInstrument:b.selected_instrument||"",
+                messages:[],createdAt:b.created_at||"",
+              };
+              setBookings(prev=>{
+                if(prev.find(x=>x.id===mapped.id)) return prev;
+                return [...prev,mapped];
+              });
+            })
+            .subscribe();
+        }
+      }catch(rtErr){ console.warn("Realtime subscription failed:",rtErr); }
       }catch(err){
         console.error("Supabase init error:",err);
-        setAppReady(true); // Always unblock the app even if Supabase fails
+        setAppReady(true);
       }
     })();
     return()=>{ try{unsub?.unsubscribe();}catch{} };
