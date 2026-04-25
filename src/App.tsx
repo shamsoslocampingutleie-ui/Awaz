@@ -4523,9 +4523,15 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
     if(!form.email||!form.email.includes("@")){setErr("Valid email is required.");return;}
     setErr("");
     const nb={id:`b${Date.now()}`,artistId:artist.id,customerName:form.name,customerEmail:form.email,
-      date:`${MONTHS[selMonth]} ${selDay}, ${selYear}`,event:form.event||"Private Event",
+      date:`${MONTHS[selMonth]} ${selDay}, ${selYear}`,
+      event:form.event||"Private Event",
+      eventType:form.event||"Private Event",
       deposit:artist.deposit,depositPaid:false,status:"pending_payment",chatUnlocked:false,messages:[],
-      selectedInstrument:form.selectedInstrument||artist.instruments?.[0]||""};
+      selectedInstrument:form.selectedInstrument||artist.instruments?.[0]||"",
+      country:form.customerCountry||"",
+      notes:form.notes||"",
+      customerPhone:form.phone||"",
+    };
     setPending(nb);setShowBook(false);setShowStripe(true);
   };
   const [showEventPlan,setShowEventPlan]=useState(false);
@@ -11154,21 +11160,40 @@ function AppInner() {
     if(HAS_SUPA){
       try{
         const sb=await getSupabase();
-        if(sb) await sb.from("bookings").insert([{
-          id:b.id,
-          artist_id:b.artistId,
-          customer_name:b.customerName,
-          customer_email:b.customerEmail,
-          date:b.date,
-          event_type:b.eventType||"",
-          notes:b.notes||"",
-          deposit:b.deposit,
-          status:b.status||"pending",
-          paid:b.paid||false,
-          country:b.country||"NO",
-          messages:b.messages||[],
-        }]);
-      }catch(e){console.warn("Supabase booking insert failed:",e);}
+        if(sb){
+          // Generate a proper UUID (Supabase expects UUID format)
+          const uuid = b.id.startsWith('b')
+            ? crypto.randomUUID()
+            : b.id;
+          const{error}=await sb.from("bookings").insert([{
+            id:           uuid,
+            artist_id:    b.artistId,
+            customer_name:b.customerName,
+            customer_email:b.customerEmail,
+            date:         b.date,
+            event_type:   b.event||b.eventType||"",
+            notes:        b.notes||"",
+            deposit:      b.deposit||0,
+            status:       b.status||"confirmed",
+            paid:         b.depositPaid||false,
+            deposit_paid: b.depositPaid||false,
+            chat_unlocked:b.chatUnlocked||false,
+            country:      b.country||"",
+            messages:     b.messages||[],
+            selected_instrument: b.selectedInstrument||"",
+            created_at:   new Date().toISOString(),
+          }]);
+          if(error){
+            console.error("❌ Booking insert failed:",error.message, error.details);
+          } else {
+            console.log("✅ Booking saved to Supabase:",uuid);
+            // Update local booking id to match DB uuid
+            setBookings(p=>p.map(bk=>bk.id===b.id?{...bk,id:uuid}:bk));
+          }
+        }
+      }catch(e:any){
+        console.error("Booking save exception:",e.message);
+      }
     }
   };
   const handleNewArtist=(a,u,autoLogin=false)=>{
