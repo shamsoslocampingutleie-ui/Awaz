@@ -4535,15 +4535,23 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
     if(!form.name){setErr("Your name is required.");return;}
     if(!form.email||!form.email.includes("@")){setErr("Valid email is required.");return;}
     setErr("");
-    const nb={id:`b${Date.now()}`,artistId:artist.id,customerName:form.name,customerEmail:form.email,
+    const nb={
+      id:`b${Date.now()}`,
+      artistId:artist.id,
+      customerName:form.name.trim(),
+      customerEmail:form.email.trim().toLowerCase(),
+      customerPhone:form.phone||"",
       date:`${MONTHS[selMonth]} ${selDay}, ${selYear}`,
       event:form.event||"Private Event",
       eventType:form.event||"Private Event",
-      deposit:artist.deposit,depositPaid:false,status:"pending_payment",chatUnlocked:false,messages:[],
+      deposit:artist.deposit,
+      depositPaid:false,
+      status:"pending_payment",
+      chatUnlocked:false,
+      messages:[],
       selectedInstrument:form.selectedInstrument||artist.instruments?.[0]||"",
       country:form.customerCountry||"",
       notes:form.notes||"",
-      customerPhone:form.phone||"",
     };
     setPending(nb);setShowBook(false);setShowStripe(true);
   };
