@@ -3891,6 +3891,7 @@ function StripeCheckout({ booking, artist, onSuccess, onClose }) {
     }
     let card:any;
     const tryMount=async()=>{
+      try{
       // Wait up to 5s for Stripe.js to load
       let n=0;
       while(!stripeRef.current&&n<50){
@@ -3911,14 +3912,25 @@ function StripeCheckout({ booking, artist, onSuccess, onClose }) {
         layout:{type:"tabs",defaultCollapsed:false},
       });
       const el=document.getElementById("stripe-card-element");
-      if(el&&el.childElementCount===0){
-        card.mount(el);
-        card.on("ready",()=>setElementReady(true));
-        // Fallback — enable button after 4s regardless (Apple Pay doesn't always fire ready)
-        setTimeout(()=>setElementReady(true), 4000);
+      if(el){
+        try{
+          // Clear any previous Stripe mount before remounting
+          el.innerHTML="";
+          card.mount(el);
+          card.on("ready",()=>setElementReady(true));
+          // Fallback — enable after 5s regardless (Apple Pay sometimes doesn't fire ready)
+          setTimeout(()=>setElementReady(true), 5000);
+        }catch(mountErr){
+          console.warn("Stripe mount error:",mountErr);
+          setElementReady(true); // enable button anyway
+        }
       } else {
-        // Already mounted — just enable button
         setElementReady(true);
+      }
+      } catch(globalErr:any){
+        console.error("Stripe mount global error:",globalErr);
+        setError("Payment could not load — please refresh and try again.");
+        setElementReady(false);
       }
     };
     tryMount();
