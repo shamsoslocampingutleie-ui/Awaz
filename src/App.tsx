@@ -113,14 +113,13 @@ async function deleteArtistFromDB(artistId: string): Promise<{ok:boolean; errors
   const sb = await getSupabaseAdmin() || await getSupabase();
   if (!sb) return { ok:true, errors:[] }; // offline/demo mode — UI already updated
   const tables: [string, string][] = [
-    ["song_requests",  "artist_id"],
-    ["chat_messages",  "artist_id"],
-    ["event_plans",    "artist_id"],
-    ["bookings",       "artist_id"],
-    ["reviews",        "artist_id"],
-    ["artists",        "id"],
-    ["profiles",       "id"],
-    ["users",          "id"],
+    ["song_requests","artist_id"],
+    ["chat_messages","artist_id"],
+    ["bookings",     "artist_id"],
+    ["reviews",      "artist_id"],
+    ["artists",      "id"],
+    ["profiles",     "id"],
+    ["users",        "id"],
   ];
   const errors: string[] = [];
   for (const [table, col] of tables) {
@@ -3720,10 +3719,6 @@ function StripePaywall({
       const successUrl = `${window.location.origin}${window.location.pathname}?boost_success=1&bookingId=${metadata.bookingId||Date.now()}`;
       const cancelUrl  = `${window.location.origin}${window.location.pathname}`;
 
-      // Pre-flight: check Stripe publishable key exists before hitting edge function
-      const stripePublishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
-      if(!stripePublishableKey) throw new Error("VITE_STRIPE_PUBLISHABLE_KEY mangler i Vercel-miljøvariabler. Legg til denne i Vercel Dashboard → Settings → Environment Variables.");
-
       const res = await fetch(`${SUPA_URL}/functions/v1/create-payment-intent-ts`, {
         method: "POST",
         headers: {"Content-Type":"application/json","Authorization":`Bearer ${SUPA_KEY}`,"apikey":SUPA_KEY},
@@ -3740,18 +3735,10 @@ function StripePaywall({
       });
 
       let data: any = {};
-      try { data = await res.json(); } catch { data = { error: `HTTP ${res.status} — edge function svarte ikke med JSON` }; }
-
-      console.log("[Stripe edge fn response]", res.status, data);
+      try { data = await res.json(); } catch { data = { error: `HTTP ${res.status}` }; }
 
       if(!res.ok || data.error) {
-        const rawMsg = data.error || data.message || `HTTP ${res.status}`;
-        // Map common edge function errors to Norwegian
-        let msg = rawMsg;
-        if(res.status===404) msg="Betalingsfunksjon ikke funnet (404). Sjekk at create-payment-intent-ts er deployet i Supabase.";
-        else if(res.status===401||res.status===403) msg="Autentiseringsfeil mot betalingstjenesten. Sjekk SUPABASE_ANON_KEY.";
-        else if(res.status===500) msg="Intern serverfeil (500). Sjekk Supabase Edge Function-logger.";
-        else if(rawMsg.includes("STRIPE_SECRET_KEY")||rawMsg.includes("stripe_secret")) msg="Stripe hemmelig nøkkel mangler i Supabase-miljøet (STRIPE_SECRET_KEY).";
+        const msg = data.error || `HTTP ${res.status}`;
         throw new Error(msg);
       }
 
@@ -3788,19 +3775,10 @@ function StripePaywall({
 
     } catch(e:any){
       const msg = e.message||"";
-      console.error("[Boost payment error]", e);
       if(msg.includes("Failed to fetch") || e.name==="AbortError") {
         setError("Nettverksfeil — sjekk internettforbindelsen og prøv igjen");
-      } else if(msg.includes("not found")||msg.includes("404")) {
-        setError("Betalingstjenesten er ikke satt opp. Kontakt support (404)");
-      } else if(msg.includes("401")||msg.includes("403")||msg.includes("Unauthorized")) {
-        setError("Autentiseringsfeil — prøv å logge ut og inn igjen");
-      } else if(msg.includes("VITE_STRIPE_PUBLISHABLE_KEY")) {
-        setError("Stripe-nøkkel mangler i miljøvariablene (VITE_STRIPE_PUBLISHABLE_KEY)");
-      } else if(msg.includes("VITE_SUPABASE")) {
-        setError("Supabase-konfigurasjon mangler. Kontakt support.");
       } else {
-        setError(msg || "Det oppstod en behandlingsfeil — prøv igjen");
+        setError(msg || "Noe gikk galt");
       }
     }
     setLoad(false);
@@ -5806,20 +5784,11 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
     try{
       const sb=await getSupabase();
       if(!sb) return;
-      const{data:inserted,error}=await sb.from("chat_messages").insert({
+      const{error}=await sb.from("chat_messages").insert({
         artist_id:adminChatArtist.id,from_role:"admin",
         text:text||(img?"[Image]":""),image_url:img||null,
-      }).select("id").single();
+      });
       if(error) console.error("Chat save error:",error.message);
-      // Patch local msg with DB id so individual delete works
-      if(inserted?.id){
-        setAdminChats(p=>{
-          const msgs=[...(p[adminChatArtist!.id]||[])];
-          const idx=msgs.length-1;
-          if(idx>=0) msgs[idx]={...msgs[idx],id:inserted.id};
-          return {...p,[adminChatArtist!.id]:msgs};
-        });
-      }
     }catch(e){console.error("Chat exception:",e);}
   };
 
@@ -6448,7 +6417,7 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
                       const{data}=await sb.from("chat_messages")
                         .select("*").eq("artist_id",a.id).order("created_at",{ascending:true});
                       if(data?.length>0){
-                        const msgs=data.map(r=>({id:r.id,from:r.from_role,text:r.text,time:new Date(r.created_at).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}));
+                        const msgs=data.map(r=>({from:r.from_role,text:r.text,time:new Date(r.created_at).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}));
                         setAdminChats(p=>({...p,[a.id]:msgs}));
                       }
                     }
@@ -6482,21 +6451,45 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
                       <div style={{fontWeight:700,color:C.text,fontSize:T.sm}}>{adminChatArtist.name}</div>
                       <div style={{color:C.muted,fontSize:T.xs}}>{adminChatArtist.genre} · {adminChatArtist.status}</div>
                     </div>
+                    {/* Tøm meldinger */}
                     <button onClick={async()=>{
-                      if(!confirm("Clear all messages with this artist?")) return;
+                      if(!confirm(`Tøm alle meldinger med ${adminChatArtist.name}?`)) return;
                       setAdminChats(p=>({...p,[adminChatArtist.id]:[]}));
                       if(HAS_SUPA){
                         try{
                           const sb=await getSupabaseAdmin()||await getSupabase();
                           if(sb){
                             const{error}=await sb.from("chat_messages").delete().eq("artist_id",adminChatArtist.id);
-                            if(error){notify("Could not delete — check RLS","error");}
-                            else{notify("Chat cleared","success");}
+                            if(error){notify("Kunne ikke tømme — sjekk RLS","error");}
+                            else{notify("Chat tømt","success");}
                           }
-                        }catch(e:any){notify("Error: "+e.message,"error");}
-                      } else {notify("Chat cleared","success");}
-                    }} style={{background:C.rubyS,color:C.ruby,border:`1px solid ${C.ruby}33`,borderRadius:7,padding:"5px 12px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit",flexShrink:0}}>
-                      Clear
+                        }catch(e:any){notify("Feil: "+e.message,"error");}
+                      } else {notify("Chat tømt","success");}
+                    }} style={{background:C.surface,color:C.muted,border:`1px solid ${C.border}`,borderRadius:7,padding:"5px 10px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit",flexShrink:0}}>
+                      Tøm
+                    </button>
+                    {/* Slett chat permanent — fjerner fra liste og DB */}
+                    <button onClick={async()=>{
+                      if(!confirm(`Slett hele chatten med ${adminChatArtist.name} permanent?
+
+Dette fjerner alle meldinger og kan ikke angres.`)) return;
+                      const deletedId = adminChatArtist.id;
+                      // 1. Fjern fra lokal state og deselect
+                      setAdminChats(p=>{const n={...p};delete n[deletedId];return n;});
+                      setAdminChatArtist(null);
+                      // 2. Slett fra DB
+                      if(HAS_SUPA){
+                        try{
+                          const sb=await getSupabaseAdmin()||await getSupabase();
+                          if(sb){
+                            const{error}=await sb.from("chat_messages").delete().eq("artist_id",deletedId);
+                            if(error){notify("DB-feil: "+error.message,"error");}
+                            else{notify(`Chat med ${adminChatArtist.name} slettet permanent ✓`,"success");}
+                          }
+                        }catch(e:any){notify("Feil: "+e.message,"error");}
+                      } else {notify("Chat slettet","success");}
+                    }} style={{background:"rgba(139,48,48,0.12)",color:C.ruby,border:`1px solid ${C.ruby}44`,borderRadius:7,padding:"5px 10px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit",flexShrink:0,display:"flex",alignItems:"center",gap:4}}>
+                      🗑 Slett
                     </button>
                   </div>
 
@@ -6508,19 +6501,10 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
                         <div key={i} style={{display:"flex",justifyContent:isAdmin?"flex-end":"flex-start",gap:6,alignItems:"flex-end"}}
                           onMouseEnter={e=>{const b=e.currentTarget.querySelector(".msg-del") as HTMLElement;if(b)b.style.opacity="1";}}
                           onMouseLeave={e=>{const b=e.currentTarget.querySelector(".msg-del") as HTMLElement;if(b)b.style.opacity="0";}}>
-                          <button className="msg-del" onClick={async()=>{
-                            const msgId=msg.id;
-                            // Remove from local state immediately
-                            setAdminChats(p=>({...p,[adminChatArtist.id]:(p[adminChatArtist.id]||[]).filter((_,j)=>j!==i)}));
-                            // Delete from DB if we have an id
-                            if(msgId&&HAS_SUPA){
-                              try{
-                                const sb=await getSupabaseAdmin()||await getSupabase();
-                                if(sb){const{error}=await sb.from("chat_messages").delete().eq("id",msgId);if(error)console.error("Del msg error:",error.message);}
-                              }catch(e){console.error("Del msg exception:",e);}
-                            }
-                          }}
-                            style={{background:"none",border:"none",color:C.ruby,cursor:"pointer",opacity:0,transition:"opacity 0.15s",fontSize:11,padding:"4px",flexShrink:0}}>Del</button>
+                          {isAdmin&&(
+                            <button className="msg-del" onClick={()=>setAdminChats(p=>({...p,[adminChatArtist.id]:(p[adminChatArtist.id]||[]).filter((_,j)=>j!==i)}))}
+                              style={{background:"none",border:"none",color:C.ruby,cursor:"pointer",opacity:0,transition:"opacity 0.15s",fontSize:11,padding:"4px",flexShrink:0}}>Del</button>
+                          )}
                           <div style={{
                             maxWidth:"78%",
                             background:isAdmin?C.goldS:C.surface,
