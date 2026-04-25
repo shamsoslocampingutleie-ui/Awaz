@@ -3885,7 +3885,10 @@ function StripeCheckout({ booking, artist, onSuccess, onClose }) {
 
   // Mount Stripe Payment Element once clientSecret is ready
   React.useEffect(()=>{
-    if(step!=="pay"||!clientSecret) return;
+    if(step!=="pay"||!clientSecret){
+      if(step==="init") setElementReady(false);
+      return;
+    }
     let card:any;
     const tryMount=async()=>{
       // Wait up to 5s for Stripe.js to load
@@ -3911,7 +3914,11 @@ function StripeCheckout({ booking, artist, onSuccess, onClose }) {
       if(el&&el.childElementCount===0){
         card.mount(el);
         card.on("ready",()=>setElementReady(true));
-        card.on("loaderstart",()=>setElementReady(false));
+        // Fallback — enable button after 4s regardless (Apple Pay doesn't always fire ready)
+        setTimeout(()=>setElementReady(true), 4000);
+      } else {
+        // Already mounted — just enable button
+        setElementReady(true);
       }
     };
     tryMount();
