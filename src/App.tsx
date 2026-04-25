@@ -110,7 +110,7 @@ async function getSupabaseAdmin() {
 // Returns { ok: boolean, errors: string[] }
 async function deleteArtistFromDB(artistId: string): Promise<{ok:boolean; errors:string[]}> {
   // Prefer service-role client (bypasses RLS), fall back to session-based client
-  const sb = await getSupabaseAdmin() || await getSupabase();
+  const sb = await getSupabase();
   if (!sb) return { ok:true, errors:[] }; // offline/demo mode — UI already updated
   const tables: [string, string][] = [
     ["song_requests","artist_id"],
@@ -6417,7 +6417,7 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
                       const{data}=await sb.from("chat_messages")
                         .select("*").eq("artist_id",a.id).order("created_at",{ascending:true});
                       if(data?.length>0){
-                        const msgs=data.map(r=>({from:r.from_role,text:r.text,time:new Date(r.created_at).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}));
+                        const msgs=data.map(r=>({id:r.id,from:r.from_role,text:r.text,time:new Date(r.created_at).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}));
                         setAdminChats(p=>({...p,[a.id]:msgs}));
                       }
                     }
@@ -6451,16 +6451,15 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
                       <div style={{fontWeight:700,color:C.text,fontSize:T.sm}}>{adminChatArtist.name}</div>
                       <div style={{color:C.muted,fontSize:T.xs}}>{adminChatArtist.genre} · {adminChatArtist.status}</div>
                     </div>
-                    {/* Tøm meldinger */}
                     <button onClick={async()=>{
                       if(!confirm(`Tøm alle meldinger med ${adminChatArtist.name}?`)) return;
                       setAdminChats(p=>({...p,[adminChatArtist.id]:[]}));
                       if(HAS_SUPA){
                         try{
-                          const sb=await getSupabaseAdmin()||await getSupabase();
+                          const sb=await getSupabase();
                           if(sb){
                             const{error}=await sb.from("chat_messages").delete().eq("artist_id",adminChatArtist.id);
-                            if(error){notify("Kunne ikke tømme — sjekk RLS","error");}
+                            if(error){notify("Feil: "+error.message,"error");}
                             else{notify("Chat tømt","success");}
                           }
                         }catch(e:any){notify("Feil: "+e.message,"error");}
@@ -6468,27 +6467,25 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
                     }} style={{background:C.surface,color:C.muted,border:`1px solid ${C.border}`,borderRadius:7,padding:"5px 10px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit",flexShrink:0}}>
                       Tøm
                     </button>
-                    {/* Slett chat permanent — fjerner fra liste og DB */}
                     <button onClick={async()=>{
                       if(!confirm(`Slett hele chatten med ${adminChatArtist.name} permanent?
 
 Dette fjerner alle meldinger og kan ikke angres.`)) return;
-                      const deletedId = adminChatArtist.id;
-                      // 1. Fjern fra lokal state og deselect
+                      const deletedId=adminChatArtist.id;
+                      const deletedName=adminChatArtist.name;
                       setAdminChats(p=>{const n={...p};delete n[deletedId];return n;});
                       setAdminChatArtist(null);
-                      // 2. Slett fra DB
                       if(HAS_SUPA){
                         try{
-                          const sb=await getSupabaseAdmin()||await getSupabase();
+                          const sb=await getSupabase();
                           if(sb){
                             const{error}=await sb.from("chat_messages").delete().eq("artist_id",deletedId);
-                            if(error){notify("DB-feil: "+error.message,"error");}
-                            else{notify(`Chat med ${adminChatArtist.name} slettet permanent ✓`,"success");}
+                            if(error){notify("Feil: "+error.message,"error");}
+                            else{notify(`Chat med ${deletedName} slettet permanent ✓`,"success");}
                           }
                         }catch(e:any){notify("Feil: "+e.message,"error");}
                       } else {notify("Chat slettet","success");}
-                    }} style={{background:"rgba(139,48,48,0.12)",color:C.ruby,border:`1px solid ${C.ruby}44`,borderRadius:7,padding:"5px 10px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit",flexShrink:0,display:"flex",alignItems:"center",gap:4}}>
+                    }} style={{background:"rgba(139,48,48,0.12)",color:C.ruby,border:`1px solid ${C.ruby}44`,borderRadius:7,padding:"5px 10px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit",flexShrink:0}}>
                       🗑 Slett
                     </button>
                   </div>
