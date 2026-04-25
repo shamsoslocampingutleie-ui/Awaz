@@ -3956,7 +3956,10 @@ function StripeCheckout({ booking, artist, onSuccess, onClose }) {
       if(!res.ok||data.error) throw new Error(data.error||"Payment setup failed.");
       setClientSecret(data.clientSecret);
       setStep("pay");
-    }catch(e:any){ setError(e.message); }
+    }catch(e:any){
+      console.error('[payment]',e);
+      setError("Payment could not be processed. Please try again or contact support@awazbooking.com");
+    }
     setLoading(false);
   };
 
@@ -3981,7 +3984,10 @@ function StripeCheckout({ booking, artist, onSuccess, onClose }) {
       if(stripeError) throw new Error(stripeError.message);
       setStep("done");
       onSuccess();
-    }catch(e:any){ setError(e.message); }
+    }catch(e:any){
+      console.error('[confirm]',e);
+      setError("Payment failed. Please try again or use a different payment method.");
+    }
     setLoading(false);
   };
 
@@ -4532,26 +4538,35 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
   const policy=POLICIES.find(p=>p.id===artist.cancellationPolicy);
 
   const doBook=()=>{
-    if(!form.name){setErr("Your name is required.");return;}
-    if(!form.email||!form.email.includes("@")){setErr("Valid email is required.");return;}
+    // Artist must be approved
+    if(artist.status!=="approved"){setErr("This artist is not currently available for booking.");return;}
+    // Name required
+    if(!form.name.trim()){setErr("Your name is required.");return;}
+    // Proper email validation
+    const emailRegex=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+    if(!form.email||!emailRegex.test(form.email.trim())){setErr("A valid email address is required.");return;}
+    // Date must be selected
+    if(!selDay||selMonth===null||!selYear){setErr("Please select a date first.");return;}
+    // Deposit must be valid
+    if(!artist.deposit||artist.deposit<1){setErr("This artist has not set up pricing yet.");return;}
     setErr("");
     const nb={
       id:`b${Date.now()}`,
       artistId:artist.id,
-      customerName:form.name.trim(),
-      customerEmail:form.email.trim().toLowerCase(),
-      customerPhone:form.phone||"",
+      customerName:form.name.trim().slice(0,100),
+      customerEmail:form.email.trim().toLowerCase().slice(0,200),
+      customerPhone:(form.phone||"").slice(0,30),
       date:`${MONTHS[selMonth]} ${selDay}, ${selYear}`,
-      event:form.event||"Private Event",
-      eventType:form.event||"Private Event",
+      event:(form.event||"Private Event").slice(0,100),
+      eventType:(form.event||"Private Event").slice(0,100),
       deposit:artist.deposit,
       depositPaid:false,
       status:"pending_payment",
       chatUnlocked:false,
       messages:[],
-      selectedInstrument:form.selectedInstrument||artist.instruments?.[0]||"",
-      country:form.customerCountry||"",
-      notes:form.notes||"",
+      selectedInstrument:(form.selectedInstrument||artist.instruments?.[0]||"").slice(0,50),
+      country:(form.customerCountry||"").slice(0,50),
+      notes:(form.notes||"").slice(0,1000),
     };
     setPending(nb);setShowBook(false);setShowStripe(true);
   };
