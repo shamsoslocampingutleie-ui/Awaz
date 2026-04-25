@@ -3914,31 +3914,48 @@ function StripeCheckout({ booking, artist, onSuccess, onClose }) {
     setLoading(false);
   };
 
-  // Step 2: Confirm payment via Stripe.js
+  // Mount Stripe card element when we reach the pay step
+  React.useEffect(()=>{
+    if(step!=="pay"||!clientSecret) return;
+    let stripe:any, elements:any, card:any;
+    const mount=async()=>{
+      const key=import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+      if(!key) return;
+      if(!(window as any).Stripe){
+        await new Promise<void>(r=>{
+          const s=document.createElement("script");
+          s.src="https://js.stripe.com/v3/";
+          s.onload=()=>r();
+          document.head.appendChild(s);
+        });
+      }
+      stripe=(window as any).Stripe(key);
+      elements=stripe.elements({clientSecret});
+      card=elements.create("payment");
+      const el=document.getElementById("stripe-card-element");
+      if(el) card.mount(el);
+      // Store on window for confirmPayment to access
+      (window as any)._awazStripe={stripe,elements};
+    };
+    mount();
+    return()=>{ if(card) try{card.destroy();}catch{} };
+  },[step,clientSecret]);
   const confirmPayment = async () => {
     setLoading(true); setError("");
     try {
-      const stripeKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
-      if (!stripeKey) throw new Error("Stripe not configured — add VITE_STRIPE_PUBLISHABLE_KEY to Vercel");
-
-      // @ts-ignore — Stripe loaded dynamically
-      const stripe = window.Stripe ? window.Stripe(stripeKey) : null;
-      if (!stripe) throw new Error("Stripe.js not loaded yet — please wait a moment and try again");
-
-      const { error: stripeError } = await stripe.confirmPayment({
-        clientSecret,
-        confirmParams: {
+      // Use the pre-mounted stripe+elements from the useEffect
+      const awaz=(window as any)._awazStripe;
+      if(!awaz?.stripe||!awaz?.elements){
+        throw new Error("Payment form not ready — please wait a moment and try again.");
+      }
+      const {error:stripeError}=await awaz.stripe.confirmPayment({
+        elements: awaz.elements,
+        confirmParams:{
           return_url: window.location.href,
-          payment_method_data: {
-            billing_details: { email: booking.customerEmail || "" },
-          },
         },
-        redirect: "if_required",
+        redirect:"if_required",
       });
-
-      if (stripeError) throw new Error(stripeError.message);
-
-      // Payment confirmed — webhook will update booking, but also update locally
+      if(stripeError) throw new Error(stripeError.message);
       setStep("done");
       onSuccess();
     } catch (e:any) {
@@ -3983,11 +4000,8 @@ function StripeCheckout({ booking, artist, onSuccess, onClose }) {
                 <span style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:800,color:C.gold,fontSize:T.lg}}>€{deposit}</span>
               </div>
             </div>
-            {/* Stripe Elements placeholder */}
-            <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:10,padding:"16px",marginBottom:16,fontSize:T.sm,color:C.muted,textAlign:"center",lineHeight:1.7}}>
-              Stripe payment form loads here.<br/>
-              Add <code style={{background:C.card,padding:"1px 6px",borderRadius:4,color:C.text}}>VITE_STRIPE_PUBLISHABLE_KEY</code> to Vercel to activate.
-            </div>
+            {/* Stripe Card Element — mounted here */}
+            <div id="stripe-card-element" style={{background:C.surface,border:`2px solid ${C.border}`,borderRadius:10,padding:"14px 16px",marginBottom:16,minHeight:44}}/>
             {error&&<div style={{background:C.rubyS,borderRadius:8,padding:"10px 12px",color:C.ruby,fontSize:T.xs,marginBottom:12}}>⚠ {error}</div>}
             <Btn full v="gold" sz="lg" loading={loading} onClick={confirmPayment}>
               Pay €{deposit} Securely
