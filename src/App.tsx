@@ -11781,16 +11781,16 @@ function AppInner() {
             {/* Occasion shortcuts — emotional triggers */}
             <div style={{display:"flex",gap:7,overflowX:"auto",paddingBottom:4,WebkitOverflowScrolling:"touch",scrollbarWidth:"none",marginBottom:10}}>
               {([
-                {k:"All",icon:"🎵",label:"All Events"},
-                {k:"Wedding",icon:"💍",label:"Wedding"},
-                {k:"Eid",icon:"🌙",label:"Eid"},
-                {k:"Birthday",icon:"🎂",label:"Birthday"},
-                {k:"Concert",icon:"🎪",label:"Concert"},
-                {k:"Corporate",icon:"🏢",label:"Corporate"},
-              ] as const).map(({k,icon,label})=>(
+                {k:"All",label:"All Events"},
+                {k:"Wedding",label:"Wedding"},
+                {k:"Eid",label:"Eid"},
+                {k:"Birthday",label:"Birthday"},
+                {k:"Concert",label:"Concert"},
+                {k:"Corporate",label:"Corporate"},
+              ] as const).map(({k,label})=>(
                 <button key={k} onClick={()=>setOccasionF(k)}
-                  style={{display:"flex",alignItems:"center",gap:5,background:occasionF===k?C.gold:C.card,color:occasionF===k?C.bg:C.muted,border:`1px solid ${occasionF===k?C.gold:C.border}`,borderRadius:20,padding:"7px 14px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit",flexShrink:0,minHeight:36,whiteSpace:"nowrap",transition:"all 0.15s"}}>
-                  <span>{icon}</span>{label}
+                  style={{background:occasionF===k?C.gold:C.card,color:occasionF===k?C.bg:C.muted,border:`1px solid ${occasionF===k?C.gold:C.border}`,borderRadius:20,padding:"7px 16px",fontSize:T.xs,fontWeight:occasionF===k?700:500,cursor:"pointer",fontFamily:"inherit",flexShrink:0,minHeight:36,whiteSpace:"nowrap",transition:"all 0.15s",letterSpacing:"0.2px"}}>
+                  {label}
                 </button>
               ))}
             </div>
@@ -12802,7 +12802,7 @@ function BandBookingSheet({artists, onClose, onBook}:{artists:any[];onClose:()=>
                 <select value={eventType} onChange={e=>setEventType(e.target.value)}
                   style={{width:"100%",background:C.card,border:`2px solid ${eventType?C.gold:C.border}`,borderRadius:10,padding:"10px 12px",color:eventType?C.text:C.muted,fontSize:T.sm,outline:"none",fontFamily:"inherit",cursor:"pointer",boxSizing:"border-box" as const}}>
                   <option value="">Choose…</option>
-                  {["Wedding 💍","Eid 🌙","Birthday 🎂","Concert 🎪","Corporate 🏢","Other"].map(t=><option key={t} value={t}>{t}</option>)}
+                  {["Wedding","Eid","Birthday","Concert","Corporate","Other"].map(t=><option key={t} value={t}>{t}</option>)}
                 </select>
               </div>
             </div>
@@ -12841,7 +12841,7 @@ function BandBookingSheet({artists, onClose, onBook}:{artists:any[];onClose:()=>
                   <select value={eventType} onChange={e=>setEventType(e.target.value)}
                     style={{width:"100%",background:C.card,border:`2px solid ${eventType?C.gold:C.border}`,borderRadius:10,padding:"10px 12px",color:eventType?C.text:C.muted,fontSize:T.sm,outline:"none",fontFamily:"inherit",cursor:"pointer",boxSizing:"border-box" as const}}>
                     <option value="">Choose…</option>
-                    {["Wedding 💍","Eid 🌙","Birthday 🎂","Concert 🎪","Corporate 🏢","Other"].map(t=><option key={t} value={t}>{t}</option>)}
+                    {["Wedding","Eid","Birthday","Concert","Corporate","Other"].map(t=><option key={t} value={t}>{t}</option>)}
                   </select>
                 </div>
               </div>
