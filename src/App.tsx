@@ -109,22 +109,29 @@ async function getSupabaseAdmin() {
 // ── Robust artist delete — tries admin client first, falls back to anon ─
 // Returns { ok: boolean, errors: string[] }
 async function deleteArtistFromDB(artistId: string): Promise<{ok:boolean; errors:string[]}> {
-  // Prefer service-role client (bypasses RLS), fall back to session-based client
+  // Always try service-role client first (bypasses RLS completely)
   const sb = await getSupabaseAdmin() || await getSupabase();
-  if (!sb) return { ok:true, errors:[] }; // offline/demo mode — UI already updated
+  if (!sb) return { ok:true, errors:[] };
   const tables: [string, string][] = [
     ["song_requests","artist_id"],
     ["chat_messages","artist_id"],
     ["bookings",     "artist_id"],
     ["reviews",      "artist_id"],
+    ["artist_social","artist_id"],
+    ["event_plans",  "booking_id"], // soft — ignore errors
     ["artists",      "id"],
     ["profiles",     "id"],
-    ["users",        "id"],
   ];
   const errors: string[] = [];
   for (const [table, col] of tables) {
-    const { error } = await sb.from(table).delete().eq(col, artistId);
-    if (error) errors.push(`${table}: ${error.message}`);
+    try {
+      const { error } = await sb.from(table).delete().eq(col, artistId);
+      if (error && !["event_plans"].includes(table)) {
+        errors.push(`${table}: ${error.message}`);
+      }
+    } catch(e:any) {
+      if (!["event_plans"].includes(table)) errors.push(`${table}: ${e.message}`);
+    }
   }
   return { ok: errors.length === 0, errors };
 }
@@ -3724,13 +3731,14 @@ function StripePaywall({
         headers: {"Content-Type":"application/json","Authorization":`Bearer ${SUPA_KEY}`,"apikey":SUPA_KEY},
         body: JSON.stringify({
           amount,
-          type:        metadata.type || "boost",
-          artistName:  metadata.artistName||"Awaz",
-          bookingId:   metadata.bookingId||`pay_${Date.now()}`,
+          type:          metadata.type || "boost",
+          artistName:    metadata.artistName||"Awaz",
+          artistId:      metadata.artistId||null,
+          bookingId:     metadata.bookingId||`pay_${Date.now()}`,
           customerEmail: metadata.email||"",
           successUrl,
           cancelUrl,
-          mode: "checkout",  // tells edge function to create Checkout Session
+          mode: "checkout",
         }),
       });
 
@@ -7050,7 +7058,7 @@ function BoostButton({ artist, onUpdateArtist, notify }) {
           emoji=""
           label="Boost Your Profile"
           description="Featured at top of browse page for 6 months. Highlighted with gold border."
-          metadata={{artistName:artist.name,bookingId:`boost_${artist.id}_${Date.now()}`,type:"boost"}}
+          metadata={{artistName:artist.name,bookingId:`boost_${artist.id}_${Date.now()}`,type:"boost",artistId:artist.id}}
           onSuccess={async(piId)=>{
             const boostUntil=new Date(Date.now()+180*24*60*60*1000).toISOString();
             onUpdateArtist(artist.id,{isBoosted:true,boostedUntil:boostUntil});
@@ -7751,7 +7759,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
                             emoji=""
                             label="Boost Your Profile"
                             description="Featured at top of browse page for 6 months. Highlighted with gold border."
-                            metadata={{artistName:artist.name,bookingId:`boost_${artist.id}_${Date.now()}`,type:"boost"}}
+                            metadata={{artistName:artist.name,bookingId:`boost_${artist.id}_${Date.now()}`,type:"boost",artistId:artist.id}}
                             onSuccess={async(piId)=>{
                               const boostUntil=new Date(Date.now()+180*24*60*60*1000).toISOString();
                               onUpdateArtist(artist.id,{isBoosted:true,boostedUntil:boostUntil});
