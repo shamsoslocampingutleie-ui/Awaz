@@ -4013,14 +4013,14 @@ function StripeCheckout({ booking, artist, onSuccess, onClose }) {
           </>
         ):(
           <>
-            {/* Stripe Payment Element — React ref, never getElementById */}
-            <div ref={containerRef} style={{background:C.surface,border:`2px solid ${elementReady?C.gold:C.border}`,borderRadius:10,padding:"4px",marginBottom:16,minHeight:120,transition:"border-color 0.3s"}}>
-              {!elementReady&&(
-                <div style={{display:"flex",alignItems:"center",justifyContent:"center",height:120,color:C.muted,fontSize:T.xs}}>
-                  Loading payment options…
-                </div>
-              )}
-            </div>
+            {/* Loading indicator — OUTSIDE Stripe container */}
+            {!elementReady&&(
+              <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:10,padding:"14px 16px",marginBottom:16,textAlign:"center",color:C.muted,fontSize:T.xs,minHeight:44,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                Loading payment options…
+              </div>
+            )}
+            {/* Stripe Payment Element — React ref, NO React children inside */}
+            <div ref={containerRef} style={{marginBottom:16,display:elementReady?"block":"none"}}/>
             {error&&<div style={{background:C.rubyS,borderRadius:8,padding:"10px 12px",color:C.ruby,fontSize:T.xs,marginBottom:12}}>⚠ {error}</div>}
             <Btn full v="gold" sz="lg" loading={loading} onClick={confirmPayment}
               xs={{opacity:elementReady?1:0.5}}>
@@ -4197,10 +4197,10 @@ function ArtistCard({ artist, onClick, compact=false }) {
   if (compact) {
     return (
       <div onClick={()=>onClick(artist)}
-        style={{display:"flex",gap:14,alignItems:"center",padding:"16px",background:C.card,borderRadius:12,cursor:"pointer",border:`1px solid ${C.border}`,WebkitTapHighlightColor:"transparent",minHeight:80,transition:"border-color 0.15s",borderLeft:`3px solid ${artist.color}44`}}>
+        style={{display:"flex",gap:14,alignItems:"center",padding:"16px",background:C.card,borderRadius:12,cursor:"pointer",border:`1px solid ${C.border}`,WebkitTapHighlightColor:"transparent",minHeight:80,transition:"border-color 0.15s",borderLeft:`3px solid ${C.gold}44`}}>
         <div style={{position:"relative",flexShrink:0}}>
-          {artist.photo?<img src={artist.photo} alt={artist.name} style={{width:54,height:54,borderRadius:10,objectFit:"cover",border:`2px solid ${artist.color}50`}}/>:
-            <div style={{width:54,height:54,borderRadius:10,background:`${artist.color}15`,border:`2px solid ${artist.color}44`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:26}}>{artist.emoji}</div>}
+          {artist.photo?<img src={artist.photo} alt={artist.name} style={{width:54,height:54,borderRadius:10,objectFit:"cover",border:`1px solid ${C.border}`}}/>:
+            <div style={{width:54,height:54,borderRadius:10,background:C.goldS,border:`1px solid ${C.border}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:26}}>{artist.emoji}</div>}
           {artist.verified&&<div style={{position:"absolute",bottom:-3,right:-3,width:16,height:16,borderRadius:"50%",background:C.emerald,border:`2px solid ${C.card}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,color:"#fff",fontWeight:800}}>✓</div>}
         </div>
         <div style={{flex:1,minWidth:0}}>
@@ -4208,7 +4208,7 @@ function ArtistCard({ artist, onClick, compact=false }) {
             <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",lineHeight:1.2}}>{artist.name}</div>
             
           </div>
-          <div style={{color:artist.color,fontSize:T.sm,fontWeight:600}}>{artist.genre}</div>
+          <div style={{color:C.gold,fontSize:T.sm,fontWeight:600}}>{artist.genre}</div>
           <div style={{display:"flex",gap:8,alignItems:"center",marginTop:4,flexWrap:"wrap" as const}}>
             <Stars rating={artist.rating} count={artist.reviews} size={12}/>
             {scarcityLabel?(
@@ -4220,7 +4220,7 @@ function ArtistCard({ artist, onClick, compact=false }) {
           {bookingCount>0&&<div style={{fontSize:10,color:C.muted,marginTop:2}}>{bookingCount} booking{bookingCount>1?"s":""} completed</div>}
         </div>
         <div style={{textAlign:"right",flexShrink:0}}>
-          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.md,fontWeight:700,color:artist.color}}>{artist.priceInfo}</div>
+          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.md,fontWeight:700,color:C.gold}}>{artist.priceInfo}</div>
           <div style={{color:C.muted,fontSize:T.xs,marginTop:2}}>€{artist.deposit} dep.</div>
         </div>
       </div>
@@ -4235,14 +4235,14 @@ function ArtistCard({ artist, onClick, compact=false }) {
       <div style={{padding:"20px"}}>
         <div style={{display:"flex",gap:13,alignItems:"flex-start",marginBottom:14}}>
           <div style={{position:"relative",flexShrink:0}}>
-            {artist.photo?<img src={artist.photo} alt={artist.name} style={{width:60,height:60,borderRadius:11,objectFit:"cover",border:`2px solid ${artist.color}50`}}/>:
-              <div style={{width:60,height:60,borderRadius:11,background:`${artist.color}15`,border:`2px solid ${artist.color}44`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:28}}>{artist.emoji}</div>}
+            {artist.photo?<img src={artist.photo} alt={artist.name} style={{width:60,height:60,borderRadius:11,objectFit:"cover",border:`1px solid ${C.border}`}}/>:
+              <div style={{width:60,height:60,borderRadius:11,background:C.goldS,border:`1px solid ${C.border}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:28}}>{artist.emoji}</div>}
             {artist.verified&&<div style={{position:"absolute",bottom:-4,right:-4,width:17,height:17,borderRadius:"50%",background:C.emerald,border:`2px solid ${C.card}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,color:"#fff",fontWeight:800}}>✓</div>}
           </div>
           <div style={{flex:1,minWidth:0}}>
             {artist.nameDari&&<div style={{fontFamily:"'Noto Naskh Arabic',serif",fontSize:T.sm,color:C.muted,textAlign:"right",marginBottom:2}}>{artist.nameDari}</div>}
             <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:700,color:C.text,lineHeight:1.1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{artist.name}</div>
-            <div style={{color:artist.color,fontSize:T.sm,fontWeight:600,marginTop:3}}>{artist.genre}</div>
+            <div style={{color:C.gold,fontSize:T.sm,fontWeight:600,marginTop:3}}>{artist.genre}</div>
             {totalFollowers&&<div style={{fontSize:T.xs,color:C.muted,marginTop:3}}>{totalFollowers}</div>}
           </div>
           <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:4,flexShrink:0}}>
@@ -4260,7 +4260,7 @@ function ArtistCard({ artist, onClick, compact=false }) {
           )}
         </div>
         <div style={{display:"flex",flexWrap:"wrap",gap:5,marginBottom:12}}>
-          {artist.tags.slice(0,3).map((tg:string)=><Badge key={tg} color={artist.color}>{tg}</Badge>)}
+          {artist.tags.slice(0,3).map((tg:string)=><Badge key={tg} color={C.muted}>{tg}</Badge>)}
           {Array.isArray(artist.bandMembers)&&artist.bandMembers.length>0&&(
             <span style={{background:C.lapisS,border:`1px solid ${C.lapis}33`,borderRadius:12,padding:"3px 9px",fontSize:10,fontWeight:700,color:C.lapis}}>🎼 {t('hasBand')}</span>
           )}
@@ -4282,7 +4282,7 @@ function ArtistCard({ artist, onClick, compact=false }) {
             {artist.verified&&<span style={{fontSize:10,color:C.emerald,fontWeight:700,display:"flex",alignItems:"center",gap:3}}>🔒 Secure booking</span>}
           </div>
           <div style={{textAlign:"right"}}>
-            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:artist.color}}>{artist.priceInfo}</div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.gold}}>{artist.priceInfo}</div>
             <div style={{fontSize:T.xs,color:C.muted,marginTop:2}}>€{artist.deposit} deposit · Stripe</div>
           </div>
         </div>
@@ -4575,13 +4575,13 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
           <div style={{display:"flex",flexDirection:vp.isMobile?"column":"row",gap:vp.isMobile?14:24,alignItems:vp.isMobile?"flex-start":"flex-end",paddingBottom:24,position:"relative"}}>
             <div style={{position:"relative",flexShrink:0}}>
               {artist.photo?<img src={artist.photo} alt={artist.name} style={{width:vp.isMobile?80:100,height:vp.isMobile?80:100,borderRadius:14,objectFit:"cover",border:`2px solid ${artist.color}66`}}/>:
-                <div style={{width:vp.isMobile?80:100,height:vp.isMobile?80:100,borderRadius:14,background:`${artist.color}20`,border:`2px solid ${artist.color}66`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:vp.isMobile?38:48}}>{artist.emoji}</div>}
+                <div style={{width:vp.isMobile?80:100,height:vp.isMobile?80:100,borderRadius:14,background:C.goldS,border:`2px solid ${C.gold}44`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:vp.isMobile?38:48}}>{artist.emoji}</div>}
               {artist.verified&&<div style={{position:"absolute",bottom:-5,right:-5,background:C.emerald,borderRadius:20,padding:"3px 8px",fontSize:10,fontWeight:700,color:"#fff",border:`2px solid ${C.bg}`}}>✓</div>}
             </div>
             <div style={{flex:1}}>
               {artist.nameDari&&<div style={{fontFamily:"'Noto Naskh Arabic',serif",fontSize:T.sm,color:C.gold,direction:"rtl",marginBottom:3}}>{artist.nameDari}</div>}
               <h1 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["3xl"],fontWeight:800,color:C.text,margin:"0 0 5px",lineHeight:1}}>{artist.name}</h1>
-              <div style={{color:artist.color,fontWeight:600,fontSize:T.sm,marginBottom:8}}>{artist.genre}</div>
+              <div style={{color:C.gold,fontWeight:600,fontSize:T.sm,marginBottom:8}}>{artist.genre}</div>
               <div style={{display:"flex",flexWrap:"wrap",gap:10,alignItems:"center"}}>
                 <span style={{color:C.muted,fontSize:T.xs}}>{artist.location}</span>
                 {artist.reviews>0&&<Stars rating={artist.rating} count={artist.reviews}/>}
@@ -4591,7 +4591,7 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
             {!vp.isMobile&&(
               <div style={{textAlign:"right",flexShrink:0}}>
                 <div style={{fontSize:T.xs,color:C.muted,marginBottom:3}}>FROM</div>
-                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:800,color:artist.color}}>{artist.priceInfo}</div>
+                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:800,color:C.gold}}>{artist.priceInfo}</div>
                 <div style={{fontSize:T.xs,color:C.muted,marginTop:3}}>€{artist.deposit} deposit · Balance cash</div>
               </div>
             )}
@@ -4600,7 +4600,7 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
           {vp.isMobile&&(
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",paddingBottom:16}}>
               <div>
-                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:800,color:artist.color}}>{artist.priceInfo}</div>
+                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:800,color:C.gold}}>{artist.priceInfo}</div>
                 <div style={{fontSize:T.xs,color:C.muted,marginTop:2}}>€{artist.deposit} deposit · Balance cash</div>
               </div>
               <div style={{display:"flex",flexDirection:"column",gap:10,width:"100%",maxWidth:280}}>
@@ -4654,7 +4654,7 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
                     fontFamily:"'DM Sans',sans-serif",
                     fontWeight:450,
                   }}>{artist.bio}</p>
-                  <div style={{display:"flex",flexWrap:"wrap",gap:7}}>{artist.tags.map((tg:string)=><Badge key={tg} color={artist.color} sm={false}>{tg}</Badge>)}</div>
+                  <div style={{display:"flex",flexWrap:"wrap",gap:7}}>{artist.tags.map((tg:string)=><Badge key={tg} color={C.muted} sm={false}>{tg}</Badge>)}</div>
                 </div>
 
                 {/* ── Band section — shown if artist has configured band members ── */}
@@ -4934,7 +4934,7 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
                 )}
                 {!showBook?(
                   <button onClick={()=>selDay&&setShowBook(true)} disabled={!selDay}
-                    style={{width:"100%",background:selDay?`linear-gradient(135deg,${artist.color},${artist.color}AA)`:C.border,color:selDay?"#fff":C.muted,border:"none",borderRadius:10,padding:14,fontSize:T.base,fontWeight:800,cursor:selDay?"pointer":"not-allowed",fontFamily:"inherit",minHeight:50,letterSpacing:"0.2px"}}>
+                    style={{width:"100%",background:selDay?`linear-gradient(135deg,${C.gold},${C.saffron})`:C.border,color:selDay?"#fff":C.muted,border:"none",borderRadius:10,padding:14,fontSize:T.base,fontWeight:800,cursor:selDay?"pointer":"not-allowed",fontFamily:"inherit",minHeight:50,letterSpacing:"0.2px"}}>
                      {selDay?`${t('bookNow')} — ${MONTHS[selMonth]} ${selDay} ✦`:t('selectDateFirst')}
                   </button>
                 ):(
@@ -5875,7 +5875,7 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
         <div style={{height:2,background:`linear-gradient(90deg,${a.color},${C.gold}44)`}}/>
         <div style={{padding:"14px 16px"}}>
           <div style={{display:"flex",gap:12,alignItems:"flex-start",marginBottom:10}}>
-            <div style={{width:48,height:48,borderRadius:10,background:`${a.color}15`,border:`2px solid ${a.color}40`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0,overflow:"hidden"}}>
+            <div style={{width:48,height:48,borderRadius:10,background:C.goldS,border:`1px solid ${C.border}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0,overflow:"hidden"}}>
               {a.photo?<img src={a.photo} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/>:a.emoji}
             </div>
             <div style={{flex:1,minWidth:0}}>
@@ -7452,7 +7452,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
           <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:vp.isMobile?16:24}}>
             <MiniCal artist={artist} editMode onToggle={(mo,yr,day)=>{onToggleDay(artist.id,mo,yr,day);setCalSaved(true);setTimeout(()=>setCalSaved(false),2000);}} bookings={bookings}/>
           </div>
-          <div style={{marginTop:12,background:artist.color+"10",border:`1px solid ${artist.color}28`,borderRadius:8,padding:"11px 13px",fontSize:T.xs,color:C.textD,lineHeight:1.6}}>
+          <div style={{marginTop:12,background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,padding:"11px 13px",fontSize:T.xs,color:C.textD,lineHeight:1.6}}>
             <strong style={{color:artist.color}}>Tip:</strong> Mark dates as available so customers can book you.
           </div>
         </div>
@@ -8444,9 +8444,9 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:700,color:C.text}}>{artist.name}</div>
                   {artist.nameDari&&<div style={{fontFamily:"'Noto Naskh Arabic',serif",fontSize:T.sm,color:C.gold,marginTop:2}}>{artist.nameDari}</div>}
-                  <div style={{color:artist.color,fontSize:T.xs,marginTop:4}}>{artist.genre}</div>
+                  <div style={{color:C.gold,fontSize:T.xs,marginTop:4}}>{artist.genre}</div>
                   <div style={{display:"flex",flexWrap:"wrap",gap:5,marginTop:8}}>
-                    {artist.tags.map(t=><Badge key={t} color={artist.color}>{t}</Badge>)}
+                    {artist.tags.map(t=><Badge key={t} color={C.muted}>{t}</Badge>)}
                   </div>
                 </div>
               </div>
