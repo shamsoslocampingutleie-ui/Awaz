@@ -85,41 +85,27 @@ async function getSupabaseReg() {
 // admin session when ApplySheet signs out the newly created artist.
 // Set to true just before signOut(), reset after event fires.
 
-// ── Service-role admin client — bypasses ALL RLS for admin delete ops ─
-// Requires VITE_SUPABASE_SERVICE_KEY in Vercel env vars.
-// SECURITY: This key is frontend-visible — only use for admin-gated ops.
-const SUPA_SERVICE_KEY = import.meta.env.VITE_SUPABASE_SERVICE_KEY || "";
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let _supabaseAdmin: any = null;
-async function getSupabaseAdmin() {
-  if (_supabaseAdmin) return _supabaseAdmin;
-  if (!SUPA_URL || !SUPA_SERVICE_KEY) return null; // falls back to normal client
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { createClient } = await import("@supabase/supabase-js") as any;
-    _supabaseAdmin = createClient(SUPA_URL, SUPA_SERVICE_KEY, {
-      auth: { persistSession:false, autoRefreshToken:false, detectSessionInUrl:false,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        lock:(_n:any,_t:any,fn:any)=>fn() },
-    });
-    return _supabaseAdmin;
-  } catch { return null; }
-}
+// ── SECURITY: Service key removed from frontend — use RLS policies instead ─
+// Admin delete operations use the regular session-based client (getSupabase()).
+// Set up RLS policies in Supabase for the admin role to allow deletes.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+async function getSupabaseAdmin() { return null; } // intentional — RLS handles access
 
 // ── Robust artist delete — tries admin client first, falls back to anon ─
 // Returns { ok: boolean, errors: string[] }
 async function deleteArtistFromDB(artistId: string): Promise<{ok:boolean; errors:string[]}> {
-  // Prefer service-role client (bypasses RLS), fall back to session-based client
+  // Use session-based client — RLS policies control admin delete access
   const sb = await getSupabase();
   if (!sb) return { ok:true, errors:[] }; // offline/demo mode — UI already updated
   const tables: [string, string][] = [
-    ["song_requests","artist_id"],
-    ["chat_messages","artist_id"],
-    ["bookings",     "artist_id"],
-    ["reviews",      "artist_id"],
-    ["artists",      "id"],
-    ["profiles",     "id"],
-    ["users",        "id"],
+    ["song_requests", "artist_id"],
+    ["chat_messages", "artist_id"],
+    ["event_plans",   "artist_id"],
+    ["bookings",      "artist_id"],
+    ["reviews",       "artist_id"],
+    ["artists",       "id"],
+    ["profiles",      "id"],
+    ["users",         "id"],
   ];
   const errors: string[] = [];
   for (const [table, col] of tables) {
@@ -3719,6 +3705,10 @@ function StripePaywall({
       const successUrl = `${window.location.origin}${window.location.pathname}?boost_success=1&bookingId=${metadata.bookingId||Date.now()}`;
       const cancelUrl  = `${window.location.origin}${window.location.pathname}`;
 
+      // Pre-flight: verify Stripe key exists before calling edge function
+      const _stripeKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+      if(!_stripeKey) throw new Error("VITE_STRIPE_PUBLISHABLE_KEY mangler i Vercel → Settings → Environment Variables");
+
       const res = await fetch(`${SUPA_URL}/functions/v1/create-payment-intent-ts`, {
         method: "POST",
         headers: {"Content-Type":"application/json","Authorization":`Bearer ${SUPA_KEY}`,"apikey":SUPA_KEY},
@@ -3735,10 +3725,16 @@ function StripePaywall({
       });
 
       let data: any = {};
-      try { data = await res.json(); } catch { data = { error: `HTTP ${res.status}` }; }
+      try { data = await res.json(); } catch { data = { error: `HTTP ${res.status} — ugyldig svar fra server` }; }
+      console.error("[Stripe]", res.status, data);
 
       if(!res.ok || data.error) {
-        const msg = data.error || `HTTP ${res.status}`;
+        const raw = data.error || data.message || `HTTP ${res.status}`;
+        let msg = raw;
+        if(res.status===404) msg="Betalingsfunksjon ikke funnet (404) — sjekk at create-payment-intent-ts er deployet i Supabase";
+        else if(res.status===401||res.status===403) msg="Autentiseringsfeil mot betalingstjenesten — sjekk SUPABASE_ANON_KEY";
+        else if(res.status===500) msg="Intern serverfeil (500) — sjekk Supabase Edge Function-logger for detaljer";
+        else if(raw.includes("STRIPE_SECRET_KEY")) msg="STRIPE_SECRET_KEY mangler i Supabase Secrets";
         throw new Error(msg);
       }
 
@@ -3775,10 +3771,14 @@ function StripePaywall({
 
     } catch(e:any){
       const msg = e.message||"";
-      if(msg.includes("Failed to fetch") || e.name==="AbortError") {
+      if(msg.includes("Failed to fetch")||e.name==="AbortError") {
         setError("Nettverksfeil — sjekk internettforbindelsen og prøv igjen");
+      } else if(msg.includes("VITE_STRIPE_PUBLISHABLE_KEY")) {
+        setError(msg);
+      } else if(msg.includes("STRIPE_SECRET_KEY")) {
+        setError(msg);
       } else {
-        setError(msg || "Noe gikk galt");
+        setError(msg || "Det oppstod en betalingsfeil — prøv igjen eller kontakt support");
       }
     }
     setLoad(false);
@@ -4352,8 +4352,13 @@ function LoginSheet({ users, open, onLogin, onClose }) {
         // We just close the modal and clear loading. The auth listener does the rest.
         const loginEmail=data.user.email?.toLowerCase()||"";
         if(ADMIN_EMAILS.includes(loginEmail)){
-          // Admin: set immediately, no DB fetch needed
+          // Admin: verify role in DB too for extra security
+          const sb2=await getSupabase();
+          const{data:adminProfile}=sb2 ? await sb2.from("profiles").select("role").eq("id",data.user.id).single() : {data:null};
+          // Allow if email matches AND (no profile yet OR profile.role=admin)
+          const confirmedAdmin = !adminProfile || adminProfile.role==="admin";
           setLoading(false);
+          if(!confirmedAdmin){ setErr("Access denied."); return; }
           onLogin({id:data.user.id,email:data.user.email,name:"Admin",role:"admin",artistId:null});
         } else {
           // Non-admin: fetch role/profile data, then call onLogin
@@ -5290,8 +5295,10 @@ const MARKETS = [
   {code:"OTHER",name:"Other",       flag:"", currency:"EUR",symbol:"€",depositMultiplier:1.0},
 ];
 
-// ── Admin emails ──────────────────────────────────────────────────────────────
-const ADMIN_EMAILS = ["admin@awaz.com"];
+// ── Admin emails — loaded from env var for security ──────────────────────────
+// Set VITE_ADMIN_EMAILS="admin@awaz.com,other@awaz.com" in Vercel env vars
+const ADMIN_EMAILS: string[] = (import.meta.env.VITE_ADMIN_EMAILS||"admin@awaz.com")
+  .split(",").map((e:string)=>e.trim().toLowerCase()).filter(Boolean);
 
 // ── Song priority tiers ───────────────────────────────────────────────────────
 const PRIORITY_TIERS = [
@@ -5784,11 +5791,19 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
     try{
       const sb=await getSupabase();
       if(!sb) return;
-      const{error}=await sb.from("chat_messages").insert({
+      const{data:inserted,error}=await sb.from("chat_messages").insert({
         artist_id:adminChatArtist.id,from_role:"admin",
         text:text||(img?"[Image]":""),image_url:img||null,
-      });
+      }).select("id").single();
       if(error) console.error("Chat save error:",error.message);
+      if(inserted?.id){
+        setAdminChats(p=>{
+          const msgs=[...(p[adminChatArtist!.id]||[])];
+          const idx=msgs.length-1;
+          if(idx>=0) msgs[idx]={...msgs[idx],id:inserted.id};
+          return {...p,[adminChatArtist!.id]:msgs};
+        });
+      }
     }catch(e){console.error("Chat exception:",e);}
   };
 
@@ -6131,7 +6146,7 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
                   const failed=rejected.filter(a=>failedIds.includes(a.id));
                   setArtists(p=>[...failed,...p]);
                   notify(`${failedIds.length} delete(s) failed — run RLS SQL in Supabase (see console)`,"error");
-                  console.info(`%cRUN THIS IN SUPABASE SQL EDITOR:\n\nCREATE POLICY "admin_delete_artists" ON artists FOR DELETE USING (EXISTS (SELECT 1 FROM profiles WHERE id=auth.uid() AND role='admin'));\nCREATE POLICY "admin_delete_chat_messages" ON chat_messages FOR DELETE USING (EXISTS (SELECT 1 FROM profiles WHERE id=auth.uid() AND role='admin'));\nCREATE POLICY "admin_delete_bookings" ON bookings FOR DELETE USING (EXISTS (SELECT 1 FROM profiles WHERE id=auth.uid() AND role='admin'));\nCREATE POLICY "admin_delete_reviews" ON reviews FOR DELETE USING (EXISTS (SELECT 1 FROM profiles WHERE id=auth.uid() AND role='admin'));\nCREATE POLICY "admin_delete_profiles" ON profiles FOR DELETE USING (EXISTS (SELECT 1 FROM profiles WHERE id=auth.uid() AND role='admin'));\nCREATE POLICY "admin_delete_users" ON users FOR DELETE USING (EXISTS (SELECT 1 FROM profiles WHERE id=auth.uid() AND role='admin'));\nCREATE POLICY "admin_delete_song_requests" ON song_requests FOR DELETE USING (EXISTS (SELECT 1 FROM profiles WHERE id=auth.uid() AND role='admin'));`,'color:orange;font-weight:bold','');
+                  console.warn('[Awaz] Admin delete failed — check RLS policies in Supabase');
                 } else {
                   notify(`${rejected.length} rejected artist(s) deleted`,"success");
                 }
@@ -6470,7 +6485,7 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
                     <button onClick={async()=>{
                       if(!confirm(`Slett hele chatten med ${adminChatArtist.name} permanent?
 
-Dette fjerner alle meldinger og kan ikke angres.`)) return;
+Alle meldinger slettes og kan ikke gjenopprettes.`)) return;
                       const deletedId=adminChatArtist.id;
                       const deletedName=adminChatArtist.name;
                       setAdminChats(p=>{const n={...p};delete n[deletedId];return n;});
@@ -6498,10 +6513,16 @@ Dette fjerner alle meldinger og kan ikke angres.`)) return;
                         <div key={i} style={{display:"flex",justifyContent:isAdmin?"flex-end":"flex-start",gap:6,alignItems:"flex-end"}}
                           onMouseEnter={e=>{const b=e.currentTarget.querySelector(".msg-del") as HTMLElement;if(b)b.style.opacity="1";}}
                           onMouseLeave={e=>{const b=e.currentTarget.querySelector(".msg-del") as HTMLElement;if(b)b.style.opacity="0";}}>
-                          {isAdmin&&(
-                            <button className="msg-del" onClick={()=>setAdminChats(p=>({...p,[adminChatArtist.id]:(p[adminChatArtist.id]||[]).filter((_,j)=>j!==i)}))}
-                              style={{background:"none",border:"none",color:C.ruby,cursor:"pointer",opacity:0,transition:"opacity 0.15s",fontSize:11,padding:"4px",flexShrink:0}}>Del</button>
-                          )}
+                          <button className="msg-del" onClick={async()=>{
+                            const msgId=msg.id;
+                            setAdminChats(p=>({...p,[adminChatArtist.id]:(p[adminChatArtist.id]||[]).filter((_,j)=>j!==i)}));
+                            if(msgId&&HAS_SUPA){
+                              try{
+                                const sb=await getSupabase();
+                                if(sb) await sb.from("chat_messages").delete().eq("id",msgId);
+                              }catch{}
+                            }
+                          }} style={{background:"none",border:"none",color:C.ruby,cursor:"pointer",opacity:0,transition:"opacity 0.15s",fontSize:11,padding:"4px",flexShrink:0}}>Del</button>
                           <div style={{
                             maxWidth:"78%",
                             background:isAdmin?C.goldS:C.surface,
