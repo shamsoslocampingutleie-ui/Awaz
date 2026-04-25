@@ -3860,6 +3860,7 @@ function StripeCheckout({ booking, artist, onSuccess, onClose }) {
   const [error,    setError]    = useState("");
   const [clientSecret, setClientSecret] = useState("");
   const [step,     setStep]     = useState<"init"|"pay"|"done">("init");
+  const [elementReady, setElementReady] = useState(false);
   const stripeRef   = React.useRef<any>(null);
   const elementsRef = React.useRef<any>(null);
 
@@ -3907,7 +3908,11 @@ function StripeCheckout({ booking, artist, onSuccess, onClose }) {
         layout:{type:"tabs",defaultCollapsed:false},
       });
       const el=document.getElementById("stripe-card-element");
-      if(el&&el.childElementCount===0) card.mount(el);
+      if(el&&el.childElementCount===0){
+        card.mount(el);
+        card.on("ready",()=>setElementReady(true));
+        card.on("loaderstart",()=>setElementReady(false));
+      }
     };
     tryMount();
     return()=>{try{card?.destroy();}catch{}};
@@ -4039,10 +4044,18 @@ function StripeCheckout({ booking, artist, onSuccess, onClose }) {
               </div>
             </div>
             {/* Stripe Card Element — mounted here */}
-            <div id="stripe-card-element" style={{background:C.surface,border:`2px solid ${C.border}`,borderRadius:10,padding:"14px 16px",marginBottom:16,minHeight:44}}/>
+            <div id="stripe-card-element" style={{background:C.surface,border:`2px solid ${C.border}`,borderRadius:10,padding:"14px 16px",marginBottom:16,minHeight:44}}>
+              {!elementReady&&(
+                <div style={{color:C.muted,fontSize:T.xs,textAlign:"center",padding:"8px 0"}}>
+                  Loading payment options…
+                </div>
+              )}
+            </div>
             {error&&<div style={{background:C.rubyS,borderRadius:8,padding:"10px 12px",color:C.ruby,fontSize:T.xs,marginBottom:12}}>⚠ {error}</div>}
-            <Btn full v="gold" sz="lg" loading={loading} onClick={confirmPayment}>
-              Pay €{deposit} Securely
+            <Btn full v="gold" sz="lg" loading={loading} onClick={confirmPayment}
+              xs={{opacity:elementReady?1:0.5,cursor:elementReady?"pointer":"not-allowed"}}
+              disabled={!elementReady||loading}>
+              {elementReady ? `Pay €${deposit} Securely` : "Loading…"}
             </Btn>
             <div style={{color:C.faint,fontSize:11,textAlign:"center",marginTop:8}}>SSL · Stripe PCI-L1 · 256-bit encryption</div>
           </div>
