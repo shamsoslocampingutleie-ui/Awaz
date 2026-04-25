@@ -109,29 +109,23 @@ async function getSupabaseAdmin() {
 // ── Robust artist delete — tries admin client first, falls back to anon ─
 // Returns { ok: boolean, errors: string[] }
 async function deleteArtistFromDB(artistId: string): Promise<{ok:boolean; errors:string[]}> {
-  // Always try service-role client first (bypasses RLS completely)
+  // Prefer service-role client (bypasses RLS), fall back to session-based client
   const sb = await getSupabaseAdmin() || await getSupabase();
-  if (!sb) return { ok:true, errors:[] };
+  if (!sb) return { ok:true, errors:[] }; // offline/demo mode — UI already updated
   const tables: [string, string][] = [
-    ["song_requests","artist_id"],
-    ["chat_messages","artist_id"],
-    ["bookings",     "artist_id"],
-    ["reviews",      "artist_id"],
-    ["artist_social","artist_id"],
-    ["event_plans",  "booking_id"], // soft — ignore errors
-    ["artists",      "id"],
-    ["profiles",     "id"],
+    ["song_requests",  "artist_id"],
+    ["chat_messages",  "artist_id"],
+    ["event_plans",    "artist_id"],
+    ["bookings",       "artist_id"],
+    ["reviews",        "artist_id"],
+    ["artists",        "id"],
+    ["profiles",       "id"],
+    ["users",          "id"],
   ];
   const errors: string[] = [];
   for (const [table, col] of tables) {
-    try {
-      const { error } = await sb.from(table).delete().eq(col, artistId);
-      if (error && !["event_plans"].includes(table)) {
-        errors.push(`${table}: ${error.message}`);
-      }
-    } catch(e:any) {
-      if (!["event_plans"].includes(table)) errors.push(`${table}: ${e.message}`);
-    }
+    const { error } = await sb.from(table).delete().eq(col, artistId);
+    if (error) errors.push(`${table}: ${error.message}`);
   }
   return { ok: errors.length === 0, errors };
 }
@@ -3726,27 +3720,38 @@ function StripePaywall({
       const successUrl = `${window.location.origin}${window.location.pathname}?boost_success=1&bookingId=${metadata.bookingId||Date.now()}`;
       const cancelUrl  = `${window.location.origin}${window.location.pathname}`;
 
+      // Pre-flight: check Stripe publishable key exists before hitting edge function
+      const stripePublishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+      if(!stripePublishableKey) throw new Error("VITE_STRIPE_PUBLISHABLE_KEY mangler i Vercel-miljøvariabler. Legg til denne i Vercel Dashboard → Settings → Environment Variables.");
+
       const res = await fetch(`${SUPA_URL}/functions/v1/create-payment-intent-ts`, {
         method: "POST",
         headers: {"Content-Type":"application/json","Authorization":`Bearer ${SUPA_KEY}`,"apikey":SUPA_KEY},
         body: JSON.stringify({
           amount,
-          type:          metadata.type || "boost",
-          artistName:    metadata.artistName||"Awaz",
-          artistId:      metadata.artistId||null,
-          bookingId:     metadata.bookingId||`pay_${Date.now()}`,
+          type:        metadata.type || "boost",
+          artistName:  metadata.artistName||"Awaz",
+          bookingId:   metadata.bookingId||`pay_${Date.now()}`,
           customerEmail: metadata.email||"",
           successUrl,
           cancelUrl,
-          mode: "checkout",
+          mode: "checkout",  // tells edge function to create Checkout Session
         }),
       });
 
       let data: any = {};
-      try { data = await res.json(); } catch { data = { error: `HTTP ${res.status}` }; }
+      try { data = await res.json(); } catch { data = { error: `HTTP ${res.status} — edge function svarte ikke med JSON` }; }
+
+      console.log("[Stripe edge fn response]", res.status, data);
 
       if(!res.ok || data.error) {
-        const msg = data.error || `HTTP ${res.status}`;
+        const rawMsg = data.error || data.message || `HTTP ${res.status}`;
+        // Map common edge function errors to Norwegian
+        let msg = rawMsg;
+        if(res.status===404) msg="Betalingsfunksjon ikke funnet (404). Sjekk at create-payment-intent-ts er deployet i Supabase.";
+        else if(res.status===401||res.status===403) msg="Autentiseringsfeil mot betalingstjenesten. Sjekk SUPABASE_ANON_KEY.";
+        else if(res.status===500) msg="Intern serverfeil (500). Sjekk Supabase Edge Function-logger.";
+        else if(rawMsg.includes("STRIPE_SECRET_KEY")||rawMsg.includes("stripe_secret")) msg="Stripe hemmelig nøkkel mangler i Supabase-miljøet (STRIPE_SECRET_KEY).";
         throw new Error(msg);
       }
 
@@ -3783,10 +3788,19 @@ function StripePaywall({
 
     } catch(e:any){
       const msg = e.message||"";
+      console.error("[Boost payment error]", e);
       if(msg.includes("Failed to fetch") || e.name==="AbortError") {
         setError("Nettverksfeil — sjekk internettforbindelsen og prøv igjen");
+      } else if(msg.includes("not found")||msg.includes("404")) {
+        setError("Betalingstjenesten er ikke satt opp. Kontakt support (404)");
+      } else if(msg.includes("401")||msg.includes("403")||msg.includes("Unauthorized")) {
+        setError("Autentiseringsfeil — prøv å logge ut og inn igjen");
+      } else if(msg.includes("VITE_STRIPE_PUBLISHABLE_KEY")) {
+        setError("Stripe-nøkkel mangler i miljøvariablene (VITE_STRIPE_PUBLISHABLE_KEY)");
+      } else if(msg.includes("VITE_SUPABASE")) {
+        setError("Supabase-konfigurasjon mangler. Kontakt support.");
       } else {
-        setError(msg || "Noe gikk galt");
+        setError(msg || "Det oppstod en behandlingsfeil — prøv igjen");
       }
     }
     setLoad(false);
@@ -5792,11 +5806,20 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
     try{
       const sb=await getSupabase();
       if(!sb) return;
-      const{error}=await sb.from("chat_messages").insert({
+      const{data:inserted,error}=await sb.from("chat_messages").insert({
         artist_id:adminChatArtist.id,from_role:"admin",
         text:text||(img?"[Image]":""),image_url:img||null,
-      });
+      }).select("id").single();
       if(error) console.error("Chat save error:",error.message);
+      // Patch local msg with DB id so individual delete works
+      if(inserted?.id){
+        setAdminChats(p=>{
+          const msgs=[...(p[adminChatArtist!.id]||[])];
+          const idx=msgs.length-1;
+          if(idx>=0) msgs[idx]={...msgs[idx],id:inserted.id};
+          return {...p,[adminChatArtist!.id]:msgs};
+        });
+      }
     }catch(e){console.error("Chat exception:",e);}
   };
 
@@ -6425,7 +6448,7 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
                       const{data}=await sb.from("chat_messages")
                         .select("*").eq("artist_id",a.id).order("created_at",{ascending:true});
                       if(data?.length>0){
-                        const msgs=data.map(r=>({from:r.from_role,text:r.text,time:new Date(r.created_at).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}));
+                        const msgs=data.map(r=>({id:r.id,from:r.from_role,text:r.text,time:new Date(r.created_at).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}));
                         setAdminChats(p=>({...p,[a.id]:msgs}));
                       }
                     }
@@ -6485,10 +6508,19 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
                         <div key={i} style={{display:"flex",justifyContent:isAdmin?"flex-end":"flex-start",gap:6,alignItems:"flex-end"}}
                           onMouseEnter={e=>{const b=e.currentTarget.querySelector(".msg-del") as HTMLElement;if(b)b.style.opacity="1";}}
                           onMouseLeave={e=>{const b=e.currentTarget.querySelector(".msg-del") as HTMLElement;if(b)b.style.opacity="0";}}>
-                          {isAdmin&&(
-                            <button className="msg-del" onClick={()=>setAdminChats(p=>({...p,[adminChatArtist.id]:(p[adminChatArtist.id]||[]).filter((_,j)=>j!==i)}))}
-                              style={{background:"none",border:"none",color:C.ruby,cursor:"pointer",opacity:0,transition:"opacity 0.15s",fontSize:11,padding:"4px",flexShrink:0}}>Del</button>
-                          )}
+                          <button className="msg-del" onClick={async()=>{
+                            const msgId=msg.id;
+                            // Remove from local state immediately
+                            setAdminChats(p=>({...p,[adminChatArtist.id]:(p[adminChatArtist.id]||[]).filter((_,j)=>j!==i)}));
+                            // Delete from DB if we have an id
+                            if(msgId&&HAS_SUPA){
+                              try{
+                                const sb=await getSupabaseAdmin()||await getSupabase();
+                                if(sb){const{error}=await sb.from("chat_messages").delete().eq("id",msgId);if(error)console.error("Del msg error:",error.message);}
+                              }catch(e){console.error("Del msg exception:",e);}
+                            }
+                          }}
+                            style={{background:"none",border:"none",color:C.ruby,cursor:"pointer",opacity:0,transition:"opacity 0.15s",fontSize:11,padding:"4px",flexShrink:0}}>Del</button>
                           <div style={{
                             maxWidth:"78%",
                             background:isAdmin?C.goldS:C.surface,
@@ -7058,7 +7090,7 @@ function BoostButton({ artist, onUpdateArtist, notify }) {
           emoji=""
           label="Boost Your Profile"
           description="Featured at top of browse page for 6 months. Highlighted with gold border."
-          metadata={{artistName:artist.name,bookingId:`boost_${artist.id}_${Date.now()}`,type:"boost",artistId:artist.id}}
+          metadata={{artistName:artist.name,bookingId:`boost_${artist.id}_${Date.now()}`,type:"boost"}}
           onSuccess={async(piId)=>{
             const boostUntil=new Date(Date.now()+180*24*60*60*1000).toISOString();
             onUpdateArtist(artist.id,{isBoosted:true,boostedUntil:boostUntil});
@@ -7759,7 +7791,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
                             emoji=""
                             label="Boost Your Profile"
                             description="Featured at top of browse page for 6 months. Highlighted with gold border."
-                            metadata={{artistName:artist.name,bookingId:`boost_${artist.id}_${Date.now()}`,type:"boost",artistId:artist.id}}
+                            metadata={{artistName:artist.name,bookingId:`boost_${artist.id}_${Date.now()}`,type:"boost"}}
                             onSuccess={async(piId)=>{
                               const boostUntil=new Date(Date.now()+180*24*60*60*1000).toISOString();
                               onUpdateArtist(artist.id,{isBoosted:true,boostedUntil:boostUntil});
