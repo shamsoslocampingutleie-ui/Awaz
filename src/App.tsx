@@ -3855,44 +3855,40 @@ function StripePaywall({
 }
 
 // ── Stripe checkout ───────────────────────────────────────────────────
+// Bulletproof: React ref for container, cardRef for instance tracking,
+// mounted flag, destroy-before-remount, no innerHTML, single useEffect.
 function StripeCheckout({ booking, artist, onSuccess, onClose }) {
-  const [loading,  setLoading]  = useState(false);
-  const [error,    setError]    = useState("");
+  const [loading,      setLoading]      = useState(false);
+  const [error,        setError]        = useState("");
   const [clientSecret, setClientSecret] = useState("");
-  const [step,     setStep]     = useState<"init"|"pay"|"done">("init");
+  const [step,         setStep]         = useState<"init"|"pay"|"done">("init");
   const [elementReady, setElementReady] = useState(false);
-  const stripeRef   = React.useRef<any>(null);
-  const elementsRef = React.useRef<any>(null);
+  const stripeRef    = React.useRef<any>(null);
+  const elementsRef  = React.useRef<any>(null);
+  const cardRef      = React.useRef<any>(null);
+  const containerRef = React.useRef<HTMLDivElement>(null);
 
   const deposit   = booking.deposit || 1000;
   const artistAmt = Math.round(deposit * 0.88);
 
-  // Load Stripe.js immediately on modal open
+  // Load Stripe.js eagerly on modal open
   React.useEffect(()=>{
-    const key=import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
-    if(!key||stripeRef.current) return;
-    const init=()=>{
-      if((window as any).Stripe){stripeRef.current=(window as any).Stripe(key);return;}
-      if(!document.getElementById("stripe-js")){
-        const s=document.createElement("script");
-        s.id="stripe-js";s.src="https://js.stripe.com/v3/";
-        s.onload=()=>{stripeRef.current=(window as any).Stripe(key);};
-        document.head.appendChild(s);
-      }
-    };
-    init();
+    const key = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+    if(!key) return;
+    if((window as any).Stripe){ stripeRef.current=(window as any).Stripe(key); return; }
+    if(document.getElementById("stripe-js")) return;
+    const sc = document.createElement("script");
+    sc.id="stripe-js"; sc.src="https://js.stripe.com/v3/";
+    sc.onload=()=>{ stripeRef.current=(window as any).Stripe(key); };
+    document.head.appendChild(sc);
   },[]);
 
-  // Mount Stripe Payment Element once clientSecret is ready
+  // Mount Payment Element — single effect, proper cleanup
   React.useEffect(()=>{
-    if(step!=="pay"||!clientSecret){
-      if(step==="init") setElementReady(false);
-      return;
-    }
-    let card:any;
-    const tryMount=async()=>{
-      try{
-      // Wait up to 5s for Stripe.js to load
+    if(step!=="pay"||!clientSecret){ if(step==="init") setElementReady(false); return; }
+    let mounted=true;
+    const doMount=async()=>{
+      // Wait for Stripe.js up to 5s
       let n=0;
       while(!stripeRef.current&&n<50){
         await new Promise(r=>setTimeout(r,100));
@@ -3900,210 +3896,138 @@ function StripeCheckout({ booking, artist, onSuccess, onClose }) {
         if((window as any).Stripe&&key) stripeRef.current=(window as any).Stripe(key);
         n++;
       }
-      if(!stripeRef.current){setError("Stripe could not load — please refresh and try again.");return;}
-      const elements=stripeRef.current.elements({
-        clientSecret,
-        appearance:{theme:"stripe",variables:{colorPrimary:"#B8934A",borderRadius:"8px"}},
-      });
-      elementsRef.current=elements;
-      // Show all available payment methods: card, Apple Pay, Google Pay, MobilePay, Vipps
-      card=elements.create("payment",{
-        wallets:{applePay:"auto",googlePay:"auto"},
-        layout:{type:"tabs",defaultCollapsed:false},
-      });
-      const el=document.getElementById("stripe-card-element");
-      if(el){
-        try{
-          // Clear any previous Stripe mount before remounting
-          el.innerHTML="";
-          card.mount(el);
-          card.on("ready",()=>setElementReady(true));
-          // Fallback — enable after 5s regardless (Apple Pay sometimes doesn't fire ready)
-          setTimeout(()=>setElementReady(true), 5000);
-        }catch(mountErr){
-          console.warn("Stripe mount error:",mountErr);
-          setElementReady(true); // enable button anyway
+      if(!mounted) return;
+      if(!stripeRef.current){ setError("Stripe could not load — please refresh."); return; }
+      try{
+        // Destroy previous instance BEFORE creating new one — never use innerHTML
+        if(cardRef.current){ try{ cardRef.current.destroy(); }catch{} cardRef.current=null; }
+        const elements=stripeRef.current.elements({
+          clientSecret,
+          appearance:{theme:"stripe",variables:{colorPrimary:"#B8934A",borderRadius:"8px",fontFamily:"inherit"}},
+        });
+        elementsRef.current=elements;
+        const card=elements.create("payment",{
+          wallets:{applePay:"auto",googlePay:"auto"},
+          layout:{type:"tabs",defaultCollapsed:false},
+        });
+        cardRef.current=card;
+        if(containerRef.current&&mounted){
+          card.mount(containerRef.current);
+          card.on("ready",()=>{ if(mounted) setElementReady(true); });
+          setTimeout(()=>{ if(mounted) setElementReady(true); },5000);
         }
-      } else {
-        setElementReady(true);
-      }
-      } catch(globalErr:any){
-        console.error("Stripe mount global error:",globalErr);
-        setError("Payment could not load — please refresh and try again.");
-        setElementReady(false);
+      }catch(err:any){
+        console.error("[awaz] Stripe mount:",err.message);
+        if(mounted){ setError("Payment form failed to load. Please refresh."); }
       }
     };
-    tryMount();
-    return()=>{try{card?.destroy();}catch{}};
+    doMount();
+    return()=>{
+      mounted=false;
+      if(cardRef.current){ try{ cardRef.current.destroy(); }catch{} cardRef.current=null; }
+      elementsRef.current=null;
+    };
   },[step,clientSecret]);
 
-  // Step 1: Create PaymentIntent via Supabase Edge Function
-  const initPayment = async () => {
+  const initPayment=async()=>{
     setLoading(true); setError("");
-    try {
-      const SUPA_URL = import.meta.env.VITE_SUPABASE_URL;
-      const SUPA_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
-      if(!SUPA_URL||!SUPA_KEY) throw new Error("Configuration missing — contact support.");
-
-      const platformAccountId = (() => {
-        try{ return localStorage.getItem("awaz-stripe-platform-id")||null; }catch{ return null; }
-      })();
-
-      const res = await fetch(`${SUPA_URL}/functions/v1/create-payment-intent-ts`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${SUPA_KEY}`,
-          "apikey": SUPA_KEY,
-        },
-        body: JSON.stringify({
-          amount:              deposit,
-          currency:            (artist.currency||"EUR").toLowerCase(),
-          type:                "booking",
-          artistStripeAccount: artist.stripeAccount || null,
-          platformAccountId:   platformAccountId,
-          bookingId:           booking.id,
-          customerEmail:       booking.customerEmail || "",
-          artistName:          artist.name,
-          platformFeePercent:  12,
+    try{
+      const SUPA_URL=import.meta.env.VITE_SUPABASE_URL;
+      const SUPA_KEY=import.meta.env.VITE_SUPABASE_ANON_KEY;
+      if(!SUPA_URL||!SUPA_KEY) throw new Error("App configuration missing.");
+      const platformAccountId=(()=>{try{return localStorage.getItem("awaz-stripe-platform-id")||null;}catch{return null;}})();
+      const res=await fetch(`${SUPA_URL}/functions/v1/create-payment-intent-ts`,{
+        method:"POST",
+        headers:{"Content-Type":"application/json","Authorization":`Bearer ${SUPA_KEY}`,"apikey":SUPA_KEY},
+        body:JSON.stringify({
+          amount:deposit, currency:(artist.currency||"EUR").toLowerCase(),
+          type:"booking", artistStripeAccount:artist.stripeAccount||null,
+          platformAccountId, bookingId:booking.id,
+          customerEmail:booking.customerEmail||"", artistName:artist.name,
+          platformFeePercent:12,
         }),
       });
-
-      const data = await res.json();
-      if (!res.ok || data.error) throw new Error(data.error || "Payment setup failed — try again.");
-
+      const data=await res.json();
+      if(!res.ok||data.error) throw new Error(data.error||"Payment setup failed.");
       setClientSecret(data.clientSecret);
       setStep("pay");
-    } catch (e:any) {
-      setError(e.message);
-    }
+    }catch(e:any){ setError(e.message); }
     setLoading(false);
   };
 
-  // Mount Stripe card element when we reach the pay step
-  React.useEffect(()=>{
-    if(step!=="pay"||!clientSecret) return;
-    let stripe:any, elements:any, card:any;
-    const mount=async()=>{
-      const key=import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
-      if(!key) return;
-      if(!(window as any).Stripe){
-        await new Promise<void>(r=>{
-          const s=document.createElement("script");
-          s.src="https://js.stripe.com/v3/";
-          s.onload=()=>r();
-          document.head.appendChild(s);
-        });
-      }
-      stripe=(window as any).Stripe(key);
-      elements=stripe.elements({clientSecret});
-      card=elements.create("payment");
-      const el=document.getElementById("stripe-card-element");
-      if(el) card.mount(el);
-      // Store on window for confirmPayment to access
-      (window as any)._awazStripe={stripe,elements};
-    };
-    mount();
-    return()=>{ if(card) try{card.destroy();}catch{} };
-  },[step,clientSecret]);
-  const confirmPayment = async () => {
+  const confirmPayment=async()=>{
+    if(!elementReady||loading) return;
     setLoading(true); setError("");
-    try {
-      if(!stripeRef.current||!elementsRef.current){
-        throw new Error("Payment form not ready — please wait a moment and try again.");
-      }
-      const {error:stripeError}=await stripeRef.current.confirmPayment({
-        elements: elementsRef.current,
-        confirmParams:{ return_url: window.location.href },
+    try{
+      if(!stripeRef.current||!elementsRef.current) throw new Error("Payment form not ready.");
+      const{error:stripeError}=await stripeRef.current.confirmPayment({
+        elements:elementsRef.current,
+        confirmParams:{return_url:window.location.href},
         redirect:"if_required",
       });
       if(stripeError) throw new Error(stripeError.message);
       setStep("done");
       onSuccess();
-    } catch (e:any) {
-      setError(e.message);
-    }
+    }catch(e:any){ setError(e.message); }
     setLoading(false);
   };
 
-  return(
-    <div style={{position:"fixed",inset:0,zIndex:900,background:"rgba(0,0,0,0.7)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}
-      onClick={e=>e.target===e.currentTarget&&onClose()}>
-      <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:16,padding:"24px",maxWidth:440,width:"100%",animation:"fade 0.2s ease"}}>
+  // ── Render ────────────────────────────────────────────────────────────
+  if(step==="done") return(
+    <div style={{position:"fixed",inset:0,zIndex:9500,background:"rgba(0,0,0,0.88)",display:"flex",alignItems:"center",justifyContent:"center",padding:16}} onClick={onClose}>
+      <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:20,width:"100%",maxWidth:420,padding:"36px 28px",textAlign:"center",boxShadow:"0 32px 80px rgba(0,0,0,0.7)"}} onClick={e=>e.stopPropagation()}>
+        <div style={{fontSize:56,marginBottom:12}}>🎉</div>
+        <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:700,color:C.text,marginBottom:8}}>Booking Confirmed!</div>
+        <div style={{color:C.textD,fontSize:T.sm,lineHeight:1.8,marginBottom:8}}>Your deposit of <strong style={{color:C.gold}}>€{deposit}</strong> has been paid. Chat is now unlocked — message {artist.name} directly.</div>
+        <div style={{color:C.muted,fontSize:11,marginBottom:24}}>Artist receives €{artistAmt} (88%) · Awaz receives €{deposit-artistAmt} (12%)</div>
+        <Btn full v="gold" sz="lg" onClick={onClose}>Continue</Btn>
+      </div>
+    </div>
+  );
 
-        {step==="done"?(
-          <div style={{textAlign:"center",padding:"20px 0"}}>
-            
-            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:700,color:C.text,marginBottom:8}}>Booking Confirmed!</div>
-            <div style={{color:C.textD,fontSize:T.sm,lineHeight:1.7,marginBottom:20}}>
-              Deposit of <strong style={{color:C.gold}}>€{deposit}</strong> secured.<br/>
-              {artist.name} has been notified and will be in touch.
+  return(
+    <div style={{position:"fixed",inset:0,zIndex:9500,background:"rgba(0,0,0,0.88)",display:"flex",alignItems:"center",justifyContent:"center",padding:16,backdropFilter:"blur(8px)"}}
+      onClick={e=>e.target===e.currentTarget&&onClose()}>
+      <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:20,width:"100%",maxWidth:420,padding:"28px 24px 32px",boxShadow:"0 32px 80px rgba(0,0,0,0.7)"}} onClick={e=>e.stopPropagation()}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
+          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text}}>Confirm Payment</div>
+          <button onClick={onClose} style={{background:C.surface,border:`1px solid ${C.border}`,color:C.muted,borderRadius:"50%",width:32,height:32,cursor:"pointer",fontSize:18,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>×</button>
+        </div>
+
+        {/* Booking summary */}
+        <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,padding:"16px",marginBottom:16}}>
+          <div style={{display:"flex",justifyContent:"space-between",marginBottom:6,fontSize:T.sm}}><span style={{color:C.muted}}>Artist</span><strong style={{color:C.text}}>{artist.name}</strong></div>
+          <div style={{display:"flex",justifyContent:"space-between",marginBottom:10,fontSize:T.sm}}><span style={{color:C.muted}}>Event</span><strong style={{color:C.text,textTransform:"capitalize"}}>{booking.eventType||"Event"}</strong></div>
+          <div style={{height:1,background:C.border,marginBottom:10}}/>
+          <div style={{display:"flex",justifyContent:"space-between"}}><span style={{fontWeight:700,color:C.text,fontSize:T.sm}}>Deposit to pay</span><span style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:800,color:C.gold,fontSize:T.lg}}>€{deposit}</span></div>
+        </div>
+
+        {step==="init"?(
+          <>
+            <div style={{background:C.goldS,border:`1px solid ${C.gold}22`,borderRadius:10,padding:"10px 14px",marginBottom:16,fontSize:11,color:C.muted,lineHeight:1.7}}>
+              Artist receives <strong style={{color:C.gold}}>€{artistAmt}</strong> (88%) · Balance paid in cash at event
             </div>
-            <Btn full v="gold" onClick={onClose}>View Booking</Btn>
-          </div>
-        ):step==="pay"?(
-          <div>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
-              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text}}>Confirm Payment</div>
-              <button onClick={onClose} style={{background:"none",border:"none",color:C.muted,cursor:"pointer",fontSize:18}}>✕</button>
-            </div>
-            <div style={{background:C.surface,borderRadius:10,padding:"14px 16px",marginBottom:20,border:`1px solid ${C.border}`}}>
-              <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
-                <span style={{color:C.muted,fontSize:T.sm}}>Artist</span>
-                <span style={{fontWeight:600,color:C.text,fontSize:T.sm}}>{artist.name}</span>
-              </div>
-              <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
-                <span style={{color:C.muted,fontSize:T.sm}}>Event</span>
-                <span style={{fontWeight:600,color:C.text,fontSize:T.sm}}>{booking.eventType||booking.event||"—"}</span>
-              </div>
-              <div style={{height:1,background:C.border,margin:"10px 0"}}/>
-              <div style={{display:"flex",justifyContent:"space-between"}}>
-                <span style={{fontWeight:700,color:C.text,fontSize:T.sm}}>Deposit to pay</span>
-                <span style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:800,color:C.gold,fontSize:T.lg}}>€{deposit}</span>
-              </div>
-            </div>
-            {/* Stripe Card Element — mounted here */}
-            <div id="stripe-card-element" style={{background:C.surface,border:`2px solid ${C.border}`,borderRadius:10,padding:"14px 16px",marginBottom:16,minHeight:44}}>
+            {error&&<div style={{background:C.rubyS,borderRadius:8,padding:"10px 12px",color:C.ruby,fontSize:T.xs,marginBottom:12}}>⚠ {error}</div>}
+            <Btn full v="gold" sz="lg" loading={loading} onClick={initPayment}>Pay €{deposit} Securely →</Btn>
+            <div style={{color:C.faint,fontSize:11,textAlign:"center",marginTop:8}}>SSL · Stripe PCI-L1 · 256-bit encryption</div>
+          </>
+        ):(
+          <>
+            {/* Stripe Payment Element — React ref, never getElementById */}
+            <div ref={containerRef} style={{background:C.surface,border:`2px solid ${elementReady?C.gold:C.border}`,borderRadius:10,padding:"4px",marginBottom:16,minHeight:120,transition:"border-color 0.3s"}}>
               {!elementReady&&(
-                <div style={{color:C.muted,fontSize:T.xs,textAlign:"center",padding:"8px 0"}}>
+                <div style={{display:"flex",alignItems:"center",justifyContent:"center",height:120,color:C.muted,fontSize:T.xs}}>
                   Loading payment options…
                 </div>
               )}
             </div>
             {error&&<div style={{background:C.rubyS,borderRadius:8,padding:"10px 12px",color:C.ruby,fontSize:T.xs,marginBottom:12}}>⚠ {error}</div>}
             <Btn full v="gold" sz="lg" loading={loading} onClick={confirmPayment}
-              xs={{opacity:elementReady?1:0.5,cursor:elementReady?"pointer":"not-allowed"}}
-              disabled={!elementReady||loading}>
-              {elementReady ? `Pay €${deposit} Securely` : "Loading…"}
+              xs={{opacity:elementReady?1:0.5}}>
+              {elementReady?`Pay €${deposit} Securely`:"Loading…"}
             </Btn>
             <div style={{color:C.faint,fontSize:11,textAlign:"center",marginTop:8}}>SSL · Stripe PCI-L1 · 256-bit encryption</div>
-          </div>
-        ):(
-          /* INIT — show booking summary and start */
-          <div>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
-              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text}}>Secure Payment</div>
-              <button onClick={onClose} style={{background:"none",border:"none",color:C.muted,cursor:"pointer",fontSize:18}}>✕</button>
-            </div>
-            <div style={{background:C.goldS,border:`1px solid ${C.gold}44`,borderRadius:12,padding:"16px",marginBottom:20}}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
-                <span style={{color:C.muted,fontSize:T.xs,textTransform:"uppercase",letterSpacing:"0.8px",fontWeight:700}}>Booking with</span>
-                <span style={{color:C.gold,fontWeight:700,fontSize:T.sm}}>{artist.name}</span>
-              </div>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                <span style={{color:C.muted,fontSize:T.xs,textTransform:"uppercase",letterSpacing:"0.8px",fontWeight:700}}>Deposit</span>
-                <span style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:800,color:C.gold,fontSize:"1.5rem"}}>€{deposit}</span>
-              </div>
-              <div style={{color:C.muted,fontSize:T.xs,marginTop:8,lineHeight:1.6}}>
-                Artist receives <strong style={{color:C.emerald}}>€{artistAmt}</strong> (88%) · Balance paid in cash at event
-              </div>
-            </div>
-            {error&&<div style={{background:C.rubyS,borderRadius:8,padding:"10px 12px",color:C.ruby,fontSize:T.xs,marginBottom:12}}>⚠ {error}</div>}
-            <Btn full v="gold" sz="lg" loading={loading} onClick={initPayment}>
-              Proceed to Payment →
-            </Btn>
-            <div style={{color:C.faint,fontSize:11,textAlign:"center",marginTop:8}}>Powered by Stripe · No card details stored on Awaz</div>
-          </div>
+          </>
         )}
       </div>
     </div>
