@@ -5085,7 +5085,7 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
       {/* Booking Request Form — offer system */}
       {showBookingRequest&&(
         <BookingRequestForm artist={artist} onClose={()=>setShowBookingRequest(false)}
-          onSubmit={(req)=>{ handleNewBookingRequest(req); }}/>/>
+          onSubmit={(req)=>{ handleNewBookingRequest(req); }}/>
       )}
 
       {/* Mobile: Calendar Sheet */}
