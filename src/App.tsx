@@ -4239,7 +4239,7 @@ function ArtistCard({ artist, onClick, compact=false }) {
           {bookingCount>0&&<div style={{fontSize:10,color:C.muted,marginTop:2}}>{bookingCount} booking{bookingCount>1?"s":""} completed</div>}
         </div>
         <div style={{textAlign:"right",flexShrink:0}}>
-          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.md,fontWeight:700,color:C.gold}}>{artist.priceInfo}</div>
+          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.md,fontWeight:700,color:C.gold}}>{"Request Booking →"}</div>
           <div style={{color:C.muted,fontSize:T.xs,marginTop:2}}>€{artist.deposit} dep.</div>
         </div>
       </div>
@@ -4301,8 +4301,8 @@ function ArtistCard({ artist, onClick, compact=false }) {
             {artist.verified&&<span style={{fontSize:10,color:C.emerald,fontWeight:700,display:"flex",alignItems:"center",gap:3}}>🔒 Secure booking</span>}
           </div>
           <div style={{textAlign:"right"}}>
-            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.gold}}>{artist.priceInfo}</div>
-            <div style={{fontSize:T.xs,color:C.muted,marginTop:2}}>€{artist.deposit} deposit · Stripe</div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.gold}}>{"Request Booking →"}</div>
+            <div style={{fontSize:T.xs,color:C.muted,marginTop:2}}>Request Booking</div>
           </div>
         </div>
       </div>
@@ -4632,23 +4632,21 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
             </div>
             {!vp.isMobile&&(
               <div style={{textAlign:"right",flexShrink:0}}>
-                <div style={{fontSize:T.xs,color:C.muted,marginBottom:3}}>FROM</div>
-                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:800,color:C.gold}}>{artist.priceInfo}</div>
-                <div style={{fontSize:T.xs,color:C.muted,marginTop:3}}>€{artist.deposit} deposit · Balance cash</div>
+                <div style={{fontSize:T.xs,color:C.muted,marginBottom:6,letterSpacing:"0.8px",textTransform:"uppercase"}}>Available for your event</div>
+                <Btn v="gold" sz="lg" onClick={()=>setShowCal(true)} xs={{marginBottom:8,display:"block"}}>Request Booking →</Btn>
+                <div style={{fontSize:11,color:C.muted,textAlign:"center"}}>Pricing shown at next step</div>
               </div>
             )}
           </div>
           {/* Mobile price + book CTA */}
           {vp.isMobile&&(
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",paddingBottom:16}}>
-              <div>
-                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:800,color:C.gold}}>{artist.priceInfo}</div>
-                <div style={{fontSize:T.xs,color:C.muted,marginTop:2}}>€{artist.deposit} deposit · Balance cash</div>
+            <div style={{padding:"0 16px 16px",display:"flex",flexDirection:"column",gap:10}}>
+              <div style={{fontSize:11,color:C.muted,letterSpacing:"0.5px"}}>Available for weddings, Eid, birthdays & concerts</div>
+              <div style={{display:"flex",gap:10}}>
+                <Btn v="gold" sz="lg" onClick={()=>setShowCal(true)} xs={{flex:1}}>Request Booking →</Btn>
+                <Btn v="ghost" sz="lg" onClick={()=>setShowSongReq(true)} xs={{flex:1}}>Request a Song</Btn>
               </div>
-              <div style={{display:"flex",flexDirection:"column",gap:10,width:"100%",maxWidth:280}}>
-                <Btn v="gold" sz="lg" onClick={()=>setShowCal(true)}>{t('bookNow')}</Btn>
-                <Btn v="ghost" sz="lg" onClick={()=>setShowSongReq(true)}>Request a Song</Btn>
-              </div>
+              <div style={{fontSize:11,color:C.faint,textAlign:"center"}}>Deposit amount shown after you select a date</div>
             </div>
           )}
         </div>
@@ -4933,12 +4931,16 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
                 <MiniCal artist={artist} selDay={selDay} selMonth={selMonth} selYear={selYear} onSelect={(d,m,y)=>{setSelDay(d);setSelMonth(m);setSelYear(y);}} bookings={bookings}/>
                 <HR color={artist.color} my={14}/>
                 {selDay&&!showBook&&(
-                  <div style={{background:C.surface,borderRadius:8,padding:"12px 14px",marginBottom:12,border:`1px solid ${C.border}`}}>
-                    <div style={{display:"flex",justifyContent:"space-between",fontSize:T.sm,marginBottom:6}}><span style={{color:C.muted}}>Date</span><span style={{color:C.text,fontWeight:600}}>{MONTHS[selMonth]} {selDay}</span></div>
+                  <div style={{background:C.surface,borderRadius:8,padding:"14px 16px",marginBottom:12,border:`1px solid ${C.gold}44`}}>
+                    <div style={{fontSize:10,color:C.muted,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:8}}>Your booking details</div>
+                    <div style={{display:"flex",justifyContent:"space-between",fontSize:T.sm,marginBottom:8}}>
+                      <span style={{color:C.muted}}>Date</span>
+                      <span style={{color:C.text,fontWeight:600}}>{MONTHS[selMonth]} {selDay}</span>
+                    </div>
                     {/* Country selector */}
                     {artist.countryPricing?.filter((r:any)=>r.active).length>0&&(
-                      <div style={{marginBottom:8}}>
-                        <div style={{fontSize:10,color:C.muted,marginBottom:4}}>🌍 Your country</div>
+                      <div style={{marginBottom:10}}>
+                        <div style={{fontSize:10,color:C.muted,marginBottom:4}}>Your country</div>
                         <select value={form.customerCountry} onChange={e=>setForm(f=>({...f,customerCountry:e.target.value}))}
                           style={{width:"100%",background:C.card,border:`1px solid ${form.customerCountry?C.gold:C.border}`,borderRadius:6,padding:"7px 10px",color:form.customerCountry?C.text:C.muted,fontSize:11,outline:"none",fontFamily:"inherit",cursor:"pointer",boxSizing:"border-box" as const}}>
                           <option value="">Select country…</option>
@@ -4949,9 +4951,10 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
                         </select>
                       </div>
                     )}
-                    <div style={{display:"flex",justifyContent:"space-between",fontSize:T.sm,marginBottom:6}}>
-                      <span style={{color:C.muted}}>{t('deposit2')}</span>
-                      <span style={{color:C.gold,fontWeight:700}}>
+                    <div style={{height:1,background:C.border,marginBottom:10}}/>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
+                      <span style={{color:C.muted,fontSize:T.sm}}>Deposit to secure date</span>
+                      <span style={{color:C.gold,fontWeight:800,fontFamily:"'Cormorant Garamond',serif",fontSize:"1.3rem"}}>
                         {(()=>{
                           if(form.customerCountry&&form.customerCountry!=="other"&&artist.countryPricing){
                             const row=artist.countryPricing.find((r:any)=>r.country===form.customerCountry&&r.active);
@@ -4961,7 +4964,22 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
                         })()}
                       </span>
                     </div>
-                    <div style={{display:"flex",justifyContent:"space-between",fontSize:T.sm}}><span style={{color:C.muted}}>{t('balance')}</span><span style={{color:C.textD}}>{t('cashAfterConcert')}</span></div>
+                    <div style={{display:"flex",justifyContent:"space-between",fontSize:T.sm,marginBottom:8}}>
+                      <span style={{color:C.muted}}>Balance</span>
+                      <span style={{color:C.textD}}>Cash to artist after event</span>
+                    </div>
+                    <div style={{display:"flex",gap:6,alignItems:"center"}}>
+                      <span style={{fontSize:10,color:C.emerald,background:C.emeraldS,padding:"3px 8px",borderRadius:20,fontWeight:600}}>✓ Refundable 72h+</span>
+                      <span style={{fontSize:10,color:C.muted}}>Secure via Stripe</span>
+                    </div>
+                  </div>
+                )}
+                {!selDay&&!showBook&&(
+                  <div style={{background:C.surface,borderRadius:8,padding:"14px 16px",marginBottom:12,border:`1px solid ${C.border}`,textAlign:"center"}}>
+                    <div style={{fontSize:13,color:C.muted,lineHeight:1.7}}>
+                      Select a date above to see<br/>
+                      <strong style={{color:C.text}}>availability and deposit amount</strong>
+                    </div>
                   </div>
                 )}
                 {/* Solo vocalist tip */}
@@ -5060,9 +5078,28 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
         <div style={{padding:"16px 20px 32px"}}>
           <MiniCal artist={artist} selDay={selDay} selMonth={selMonth} selYear={selYear} onSelect={(d,m,y)=>{setSelDay(d);setSelMonth(m);setSelYear(y);}} bookings={bookings}/>
           {selDay&&(
-            <div style={{marginTop:16,background:C.surface,borderRadius:10,padding:"12px 14px",border:`1px solid ${C.border}`,marginBottom:14}}>
-              <div style={{display:"flex",justifyContent:"space-between",marginBottom:5}}><span style={{color:C.muted,fontSize:T.sm}}>Date</span><span style={{color:C.text,fontWeight:600,fontSize:T.sm}}>{MONTHS[selMonth]} {selDay}</span></div>
-              <div style={{display:"flex",justifyContent:"space-between"}}><span style={{color:C.muted,fontSize:T.sm}}>{t('deposit2')}</span><span style={{color:C.gold,fontWeight:700,fontSize:T.md,fontFamily:"'Cormorant Garamond',serif"}}>€{artist.deposit}</span></div>
+            <div style={{marginTop:16,background:C.surface,borderRadius:10,padding:"14px 16px",border:`1px solid ${C.gold}44`,marginBottom:14}}>
+              <div style={{display:"flex",justifyContent:"space-between",marginBottom:8}}>
+                <span style={{color:C.muted,fontSize:T.sm}}>Selected date</span>
+                <span style={{color:C.text,fontWeight:600,fontSize:T.sm}}>{MONTHS[selMonth]} {selDay}</span>
+              </div>
+              <div style={{height:1,background:C.border,marginBottom:8}}/>
+              <div style={{fontSize:11,color:C.muted,marginBottom:6,letterSpacing:"0.3px"}}>DEPOSIT TO SECURE YOUR DATE</div>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                <div>
+                  <span style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:800,color:C.gold,fontSize:"1.4rem"}}>€{artist.deposit}</span>
+                  <div style={{fontSize:10,color:C.muted,marginTop:2}}>Balance paid to artist after event</div>
+                </div>
+                <div style={{fontSize:11,color:C.emerald,background:C.emeraldS,padding:"4px 10px",borderRadius:20,fontWeight:600}}>✓ Refundable 72h+</div>
+              </div>
+            </div>
+          )}
+          {!selDay&&(
+            <div style={{marginTop:16,background:C.surface,borderRadius:10,padding:"14px 16px",border:`1px solid ${C.border}`,marginBottom:14,textAlign:"center"}}>
+              <div style={{fontSize:13,color:C.muted,lineHeight:1.6}}>
+                Select a date above to see<br/>
+                <strong style={{color:C.text}}>deposit amount and availability</strong>
+              </div>
             </div>
           )}
           <Btn full sz="lg" disabled={!selDay} onClick={()=>{if(selDay){setShowCal(false);setShowBook(true);}}} style={{marginTop:8}}>
