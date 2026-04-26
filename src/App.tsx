@@ -4530,6 +4530,7 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
   const [tab,setTab]=useState("about");
   const [showBook,setShowBook]=useState(false);
   const [showCal,setShowCal]=useState(false);
+  const [showBookingRequest,setShowBookingRequest]=useState(false);
   const [form,setForm]=useState({name:"",email:"",phone:"",event:"",notes:"",selectedInstrument:"",customerCountry:""});
   const [pending,setPending]=useState(null);
   const [showStripe,setShowStripe]=useState(false);
@@ -4633,8 +4634,8 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
             {!vp.isMobile&&(
               <div style={{textAlign:"right",flexShrink:0}}>
                 <div style={{fontSize:T.xs,color:C.muted,marginBottom:6,letterSpacing:"0.8px",textTransform:"uppercase"}}>Available for your event</div>
-                <Btn v="gold" sz="lg" onClick={()=>setShowCal(true)} xs={{marginBottom:8,display:"block"}}>Request Booking →</Btn>
-                <div style={{fontSize:11,color:C.muted,textAlign:"center"}}>Pricing shown at next step</div>
+                <Btn v="gold" sz="lg" onClick={()=>setShowBookingRequest(true)} xs={{marginBottom:8,display:"block"}}>Request Booking →</Btn>
+                <div style={{fontSize:11,color:C.muted,textAlign:"center"}}>No payment now · Artist responds within 48h</div>
               </div>
             )}
           </div>
@@ -4643,7 +4644,7 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
             <div style={{padding:"0 16px 16px",display:"flex",flexDirection:"column",gap:10}}>
               <div style={{fontSize:11,color:C.muted,letterSpacing:"0.5px"}}>Available for weddings, Eid, birthdays & concerts</div>
               <div style={{display:"flex",gap:10}}>
-                <Btn v="gold" sz="lg" onClick={()=>setShowCal(true)} xs={{flex:1}}>Request Booking →</Btn>
+                <Btn v="gold" sz="lg" onClick={()=>setShowBookingRequest(true)} xs={{flex:1}}>Request Booking →</Btn>
                 <Btn v="ghost" sz="lg" onClick={()=>setShowSongReq(true)} xs={{flex:1}}>Request a Song</Btn>
               </div>
               <div style={{fontSize:11,color:C.faint,textAlign:"center"}}>Deposit amount shown after you select a date</div>
@@ -5072,6 +5073,12 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
           </div>
         )}
       </div>
+
+      {/* Booking Request Form — offer system */}
+      {showBookingRequest&&(
+        <BookingRequestForm artist={artist} onClose={()=>setShowBookingRequest(false)}
+          onSubmit={(req)=>{ console.log('[awaz] New booking request:', req.id); }}/>
+      )}
 
       {/* Mobile: Calendar Sheet */}
       <Sheet open={showCal} onClose={()=>setShowCal(false)} title={t('selectDate')}>
@@ -9856,7 +9863,7 @@ function DemoPage({onBook, onApply, vp}:{onBook:()=>void;onApply:()=>void;vp:any
               </div>
               {/* Mini nav */}
               <div style={{display:"flex",gap:4,overflowX:"auto",marginBottom:16,scrollbarWidth:"none"}}>
-                {["overview","bookings","calendar","earnings"].map(tab=>(
+                {["overview","bookings","requests","calendar","earnings"].map(tab=>(
                   <button key={tab} onClick={()=>setDemoTab(tab)}
                     style={{background:demoTab===tab?C.goldS:"transparent",color:demoTab===tab?C.gold:C.muted,border:`1px solid ${demoTab===tab?C.gold+"44":C.border}`,borderRadius:8,padding:"8px 14px",cursor:"pointer",fontFamily:"inherit",fontSize:12,fontWeight:600,whiteSpace:"nowrap",textTransform:"capitalize"}}>
                     {tab}
@@ -9950,6 +9957,10 @@ function DemoPage({onBook, onApply, vp}:{onBook:()=>void;onApply:()=>void;vp:any
                     <span style={{color:C.ruby}}>■ Booked</span>
                   </div>
                 </div>
+              )}
+
+              {demoTab==="requests"&&(
+                <ArtistOfferPanel requests={[]} artist={artist} onAction={async()=>{}}/>
               )}
 
               {demoTab==="earnings"&&(
@@ -10358,6 +10369,209 @@ function CountryPricingTab({ artist, onUpdateArtist, vp }) {
 }
 
 // ── Admin Inquiry Panel ────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════
+// AWAZ OFFER & COUNTER-OFFER SYSTEM
+// ══════════════════════════════════════════════════════════════════
+
+const BUDGET_RANGES=[
+  {label:"Under €500",min:0,max:500},
+  {label:"€500 – 1,000",min:500,max:1000},
+  {label:"€1,000 – 2,500",min:1000,max:2500},
+  {label:"€2,500 – 5,000",min:2500,max:5000},
+  {label:"€5,000 – 10,000",min:5000,max:10000},
+  {label:"€10,000+",min:10000,max:999999},
+  {label:"Open to proposals",min:0,max:999999},
+];
+const DECLINE_REASONS=["Not available on this date","Budget is too low","Event type doesn't match my style","Location too far","Already have a booking that day","Other"];
+const PHONE_RE=/(\+?\d[\d\s\-]{7,})/;
+const EMAIL_RE2=/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/g;
+const sanitizeMsg=(t:string)=>t.replace(PHONE_RE,"[contact info removed]").replace(EMAIL_RE2,"[email removed]").slice(0,500);
+
+function BookingRequestForm({artist,onSubmit,onClose}:{artist:any;onSubmit:(r:any)=>void;onClose:()=>void}){
+  const [f,setF]=useState({customerName:"",customerEmail:"",eventDate:"",eventType:"",location:"",budgetRange:"",guestCount:"",notes:""});
+  const [err,setErr]=useState("");const [sent,setSent]=useState(false);
+  const submit=async()=>{
+    if(!f.customerName.trim()){setErr("Your name is required");return;}
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(f.customerEmail)){setErr("Valid email required");return;}
+    if(!f.eventDate){setErr("Please select an event date");return;}
+    if(!f.eventType){setErr("Please select an event type");return;}
+    if(!f.location.trim()){setErr("Please enter your event location");return;}
+    if(!f.budgetRange){setErr("Please select a budget range");return;}
+    setErr("");
+    const budget=BUDGET_RANGES.find(b=>b.label===f.budgetRange);
+    const req={id:crypto.randomUUID(),customerName:f.customerName.trim().slice(0,100),customerEmail:f.customerEmail.trim().toLowerCase(),artistId:artist.id,eventDate:f.eventDate,eventType:f.eventType,location:f.location.trim().slice(0,200),budgetRange:f.budgetRange,budgetMin:budget?.min||0,budgetMax:budget?.max||999999,guestCount:f.guestCount,notes:sanitizeMsg(f.notes),status:"pending",artistOffer:null,counterRound:0,declineReason:null,depositPaid:false,createdAt:Date.now(),expiresAt:Date.now()+48*60*60*1000};
+    if(HAS_SUPA){const sb=await getSupabase();if(sb){await sb.from("booking_requests").insert([{id:req.id,customer_name:req.customerName,customer_email:req.customerEmail,artist_id:req.artistId,event_date:req.eventDate,event_type:req.eventType,location:req.location,budget_range:req.budgetRange,budget_min:req.budgetMin,budget_max:req.budgetMax,guest_count:req.guestCount,notes:req.notes,status:"pending",expires_at:new Date(req.expiresAt).toISOString()}]);await sb.functions.invoke("send-email",{body:{type:"new_booking",toEmail:artist.email||artist.contact_email||"",toName:artist.name,fromName:req.customerName,eventType:req.eventType,bookingDate:req.eventDate,message:`Budget: ${req.budgetRange} · Location: ${req.location}`}});}}
+    onSubmit(req);setSent(true);
+  };
+  if(sent) return(
+    <Sheet open onClose={onClose} title="Request Sent!">
+      <div style={{padding:"32px 24px",textAlign:"center"}}>
+        <div style={{fontSize:56,marginBottom:16,color:C.gold}}>✦</div>
+        <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:700,color:C.text,marginBottom:10}}>Request sent to {artist.name}</div>
+        <div style={{color:C.muted,fontSize:T.sm,lineHeight:1.8,marginBottom:24}}>
+          {artist.name} has <strong style={{color:C.text}}>48 hours</strong> to respond with a price offer.<br/>
+          You'll receive an email at <strong style={{color:C.gold}}>{f.customerEmail}</strong> when they reply.
+        </div>
+        <div style={{background:C.goldS,border:`1px solid ${C.gold}44`,borderRadius:10,padding:"12px 16px",marginBottom:24,fontSize:T.xs,color:C.muted,lineHeight:1.7,textAlign:"left"}}>
+          🔒 Your contact info stays private until booking is confirmed. All negotiation happens securely on Awaz.
+        </div>
+        <Btn v="gold" onClick={onClose} xs={{width:"100%"}}>Done</Btn>
+      </div>
+    </Sheet>
+  );
+  return(
+    <Sheet open onClose={onClose} title={`Request ${artist.name}`} maxH="96vh">
+      <div style={{padding:"16px 20px 40px",display:"flex",flexDirection:"column",gap:14}}>
+        <div style={{background:C.goldS,border:`1px solid ${C.gold}33`,borderRadius:10,padding:"11px 14px",fontSize:11,color:C.muted,lineHeight:1.7}}>
+          ✦ No payment now · Artist responds within 48h · You accept or negotiate the price · Only pay when you agree
+        </div>
+        <Inp label="Your full name *" value={f.customerName} onChange={e=>setF(p=>({...p,customerName:e.target.value}))} placeholder="e.g. Fatima Noor"/>
+        <Inp label="Email address *" value={f.customerEmail} onChange={e=>setF(p=>({...p,customerEmail:e.target.value}))} placeholder="you@email.com" type="email"/>
+        <Inp label="Event date *" value={f.eventDate} onChange={e=>setF(p=>({...p,eventDate:e.target.value}))} type="date"/>
+        <div>
+          <label style={{fontSize:T.xs,fontWeight:700,color:C.muted,display:"block",marginBottom:6}}>Event type *</label>
+          <select value={f.eventType} onChange={e=>setF(p=>({...p,eventType:e.target.value}))} style={{width:"100%",background:C.surface,border:`2px solid ${f.eventType?C.gold:C.border}`,borderRadius:10,padding:"13px 14px",color:f.eventType?C.text:C.muted,fontSize:T.sm,outline:"none",fontFamily:"inherit",boxSizing:"border-box" as const}}>
+            <option value="">Select event type…</option>
+            {["Wedding","Engagement Party","Eid Celebration","Nowruz","Birthday","Concert","Corporate Event","Private Party","Other"].map(e=><option key={e} value={e}>{e}</option>)}
+          </select>
+        </div>
+        <Inp label="Event location *" value={f.location} onChange={e=>setF(p=>({...p,location:e.target.value}))} placeholder="e.g. Oslo, Norway"/>
+        <div>
+          <label style={{fontSize:T.xs,fontWeight:700,color:C.muted,display:"block",marginBottom:6}}>Your budget range *</label>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+            {BUDGET_RANGES.map(b=>(
+              <button key={b.label} onClick={()=>setF(p=>({...p,budgetRange:b.label}))}
+                style={{background:f.budgetRange===b.label?`${C.gold}20`:C.surface,border:`2px solid ${f.budgetRange===b.label?C.gold:C.border}`,borderRadius:8,padding:"10px 12px",fontSize:12,fontWeight:f.budgetRange===b.label?700:400,color:f.budgetRange===b.label?C.gold:C.muted,cursor:"pointer",fontFamily:"inherit",textAlign:"left" as const}}>
+                {b.label}
+              </button>
+            ))}
+          </div>
+          <div style={{fontSize:11,color:C.muted,marginTop:6}}>Your exact budget is private — only the range is shared with the artist</div>
+        </div>
+        <div>
+          <label style={{fontSize:T.xs,fontWeight:700,color:C.muted,display:"block",marginBottom:6}}>Estimated guest count</label>
+          <select value={f.guestCount} onChange={e=>setF(p=>({...p,guestCount:e.target.value}))} style={{width:"100%",background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,padding:"11px 14px",color:C.text,fontSize:T.sm,outline:"none",fontFamily:"inherit",boxSizing:"border-box" as const}}>
+            <option value="">Select…</option>
+            {["Under 20","20–50","50–100","100–200","200–500","500+"].map(g=><option key={g} value={g}>{g}</option>)}
+          </select>
+        </div>
+        <div>
+          <label style={{fontSize:T.xs,fontWeight:700,color:C.muted,display:"block",marginBottom:6}}>Additional notes <span style={{fontWeight:400}}>(optional)</span></label>
+          <textarea value={f.notes} onChange={e=>setF(p=>({...p,notes:sanitizeMsg(e.target.value)}))} placeholder={"Any special requirements, song preferences…\n\nNote: Contact details are automatically removed."} rows={3} maxLength={500} style={{width:"100%",background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,padding:"11px 14px",color:C.text,fontSize:T.sm,outline:"none",fontFamily:"inherit",resize:"none",boxSizing:"border-box" as const,lineHeight:1.6}}/>
+          <div style={{fontSize:10,color:C.faint,textAlign:"right"}}>{f.notes.length}/500</div>
+        </div>
+        {err&&<div style={{background:C.rubyS,border:`1px solid ${C.ruby}33`,borderRadius:8,padding:"10px 14px",color:C.ruby,fontSize:T.xs}}>⚠ {err}</div>}
+        <Btn full v="gold" sz="lg" onClick={submit}>Send Request to {artist.name} →</Btn>
+        <div style={{fontSize:11,color:C.faint,textAlign:"center"}}>No payment required now · Artist responds within 48 hours</div>
+      </div>
+    </Sheet>
+  );
+}
+
+function ArtistOfferPanel({requests,artist,onAction}:{requests:any[];artist:any;onAction:(id:string,update:any)=>void}){
+  const [sel,setSel]=useState<any>(null);const [offerAmt,setOfferAmt]=useState("");const [declineReason,setDeclineReason]=useState("");const [confirmAction,setConfirmAction]=useState<string|null>(null);const [err,setErr]=useState("");const vp=useViewport();
+  const myReqs=requests.filter(r=>r.artistId===artist?.id||r.artist_id===artist?.id);
+  const pending=myReqs.filter(r=>r.status==="pending"||r.status==="counter_offered");
+  const active=myReqs.filter(r=>r.status==="offered"||r.status==="accepted");
+  const history=myReqs.filter(r=>["declined","expired","booked"].includes(r.status));
+  const SC:Record<string,string>={pending:C.saffron,offered:C.lapis,counter_offered:C.gold,accepted:C.emerald,declined:C.ruby,expired:C.muted,booked:C.emerald};
+  const SL:Record<string,string>={pending:"Awaiting your response",offered:"Offer sent",counter_offered:"Customer counter-offered",accepted:"Price agreed ✓",declined:"Declined",expired:"Expired",booked:"Booked ✓"};
+  const doOffer=async()=>{const amt=parseInt(offerAmt);if(!amt||amt<50){setErr("Enter a valid amount (min €50)");return;}await onAction(sel.id,{status:"offered",artistOffer:amt,counterRound:(sel.counterRound||0)+1});setOfferAmt("");setSel(null);setConfirmAction(null);};
+  const doDecline=async()=>{if(!declineReason){setErr("Please select a reason");return;}await onAction(sel.id,{status:"declined",declineReason});setDeclineReason("");setSel(null);setConfirmAction(null);};
+  const doAccept=async()=>{await onAction(sel.id,{status:"accepted",artistOffer:sel.budgetMax||sel.budget_max});setSel(null);};
+  const ReqCard=({req}:{req:any})=>{
+    const h=Math.max(0,(new Date(req.expiresAt||req.expires_at).getTime()-Date.now())/(1000*60*60));
+    return(<div onClick={()=>{setSel(req);setErr("");setOfferAmt("");setDeclineReason("");setConfirmAction(null);}} style={{background:C.card,border:`1px solid ${req.status==="counter_offered"?C.gold:req.status==="pending"&&h<12?C.ruby:C.border}`,borderRadius:12,padding:"14px 16px",cursor:"pointer",marginBottom:10}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
+        <div><div style={{fontWeight:700,color:C.text,fontSize:T.sm}}>{req.customerName||req.customer_name}</div><div style={{color:C.muted,fontSize:11,marginTop:2}}>{req.eventType||req.event_type} · {req.eventDate||req.event_date}</div></div>
+        <span style={{background:`${SC[req.status]}20`,color:SC[req.status],fontSize:10,fontWeight:700,padding:"3px 10px",borderRadius:20,whiteSpace:"nowrap"}}>{SL[req.status]}</span>
+      </div>
+      <div style={{display:"flex",gap:8,flexWrap:"wrap" as const}}>
+        <span style={{background:C.surface,borderRadius:6,padding:"3px 8px",fontSize:11,color:C.muted}}>Budget: {req.budgetRange||req.budget_range}</span>
+        <span style={{background:C.surface,borderRadius:6,padding:"3px 8px",fontSize:11,color:C.muted}}>{req.location}</span>
+        {req.status==="pending"&&h<12&&h>0&&<span style={{background:`${C.ruby}20`,borderRadius:6,padding:"3px 8px",fontSize:11,color:C.ruby}}>{Math.round(h)}h left</span>}
+      </div>
+    </div>);
+  };
+  if(sel) return(
+    <div style={{padding:vp.isMobile?"16px":"24px 32px",maxWidth:680}}>
+      <button onClick={()=>setSel(null)} style={{background:"none",border:"none",color:C.muted,cursor:"pointer",fontFamily:"inherit",fontSize:T.sm,marginBottom:20,display:"flex",alignItems:"center",gap:6}}>← Back</button>
+      <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden",marginBottom:16}}>
+        <div style={{height:3,background:`linear-gradient(90deg,${C.gold},${SC[sel.status]})`}}/>
+        <div style={{padding:20}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:16,flexWrap:"wrap",gap:10}}>
+            <div><div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:700,color:C.text}}>{sel.eventType||sel.event_type}</div><div style={{color:C.muted,fontSize:T.sm,marginTop:3}}>{sel.eventDate||sel.event_date} · {sel.location}</div></div>
+            <span style={{background:`${SC[sel.status]}20`,color:SC[sel.status],padding:"5px 12px",borderRadius:20,fontSize:T.xs,fontWeight:700}}>{SL[sel.status]}</span>
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
+            {[["Customer",sel.customerName||sel.customer_name],["Date",sel.eventDate||sel.event_date],["Location",sel.location],["Guests",sel.guestCount||sel.guest_count||"—"],["Budget",sel.budgetRange||sel.budget_range],["Round",`${sel.counterRound||sel.counter_round||0}/2`]].map(([k,v])=>(
+              <div key={k as string} style={{background:C.surface,borderRadius:8,padding:"10px 12px",border:`1px solid ${C.border}`}}>
+                <div style={{fontSize:10,color:C.muted,fontWeight:700,letterSpacing:"0.6px",textTransform:"uppercase",marginBottom:4}}>{k}</div>
+                <div style={{fontSize:T.sm,color:(k as string)==="Budget"?C.gold:C.text,fontWeight:(k as string)==="Budget"?700:500}}>{v as string}</div>
+              </div>
+            ))}
+          </div>
+          {(sel.notes)&&<div style={{background:C.surface,borderRadius:8,padding:"12px 14px",border:`1px solid ${C.border}`,marginBottom:12}}><div style={{fontSize:10,color:C.muted,fontWeight:700,letterSpacing:"0.6px",textTransform:"uppercase",marginBottom:6}}>Customer notes</div><div style={{fontSize:T.sm,color:C.textD,lineHeight:1.8}}>{sel.notes}</div></div>}
+          {sel.artistOffer&&<div style={{background:C.goldS,border:`1px solid ${C.gold}44`,borderRadius:8,padding:"12px 14px"}}><div style={{fontSize:10,color:C.muted,fontWeight:700,letterSpacing:"0.6px",textTransform:"uppercase",marginBottom:4}}>Your offer</div><div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.6rem",fontWeight:800,color:C.gold}}>€{sel.artistOffer}</div><div style={{fontSize:11,color:C.muted,marginTop:2}}>You receive €{Math.round(sel.artistOffer*0.88)} (88%) · Awaz €{Math.round(sel.artistOffer*0.12)} (12%)</div></div>}
+        </div>
+      </div>
+      {(sel.status==="pending"||sel.status==="counter_offered")&&(
+        <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:20}}>
+          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.gold,marginBottom:16}}>Respond to this request</div>
+          {confirmAction==="decline"?(
+            <div style={{display:"flex",flexDirection:"column",gap:10}}>
+              <div style={{fontSize:T.sm,fontWeight:700,color:C.text,marginBottom:4}}>Select decline reason:</div>
+              {DECLINE_REASONS.map(r=><button key={r} onClick={()=>setDeclineReason(r)} style={{background:declineReason===r?`${C.ruby}20`:C.surface,border:`2px solid ${declineReason===r?C.ruby:C.border}`,borderRadius:8,padding:"10px 14px",color:declineReason===r?C.ruby:C.muted,cursor:"pointer",fontFamily:"inherit",fontSize:T.sm,textAlign:"left" as const}}>{r}</button>)}
+              {err&&<div style={{color:C.ruby,fontSize:T.xs}}>⚠ {err}</div>}
+              <div style={{display:"flex",gap:10,marginTop:4}}>
+                <Btn v="ghost" onClick={()=>{setConfirmAction(null);setDeclineReason("");setErr("");}}>Cancel</Btn>
+                <Btn v="ruby" onClick={doDecline}>Confirm Decline</Btn>
+              </div>
+            </div>
+          ):confirmAction==="offer"?(
+            <div style={{display:"flex",flexDirection:"column",gap:12}}>
+              <div>
+                <label style={{fontSize:T.xs,fontWeight:700,color:C.muted,display:"block",marginBottom:6}}>Your price offer (EUR){(sel.counterRound||0)>=2&&<span style={{color:C.ruby}}> · Final round</span>}</label>
+                <div style={{position:"relative"}}>
+                  <span style={{position:"absolute",left:14,top:"50%",transform:"translateY(-50%)",color:C.muted,fontWeight:700}}>€</span>
+                  <input type="number" value={offerAmt} onChange={e=>setOfferAmt(e.target.value)} min={50} step={50} placeholder="Enter amount…" style={{width:"100%",background:C.surface,border:`2px solid ${offerAmt?C.gold:C.border}`,borderRadius:10,padding:"13px 14px 13px 30px",color:C.text,fontSize:T.lg,outline:"none",fontFamily:"inherit",boxSizing:"border-box" as const,fontWeight:700}}/>
+                </div>
+                {offerAmt&&parseInt(offerAmt)>0&&<div style={{fontSize:11,color:C.muted,marginTop:6}}>You'll receive: <strong style={{color:C.gold}}>€{Math.round(parseInt(offerAmt)*0.88)}</strong> · Awaz: €{Math.round(parseInt(offerAmt)*0.12)}</div>}
+                <div style={{fontSize:11,color:C.muted,marginTop:4}}>Customer budget: {sel.budgetRange||sel.budget_range}</div>
+              </div>
+              {err&&<div style={{background:C.rubyS,borderRadius:8,padding:"8px 12px",color:C.ruby,fontSize:T.xs}}>⚠ {err}</div>}
+              <div style={{display:"flex",gap:10}}>
+                <Btn v="ghost" onClick={()=>{setConfirmAction(null);setErr("");}}>Cancel</Btn>
+                <Btn v="gold" onClick={doOffer}>Send Offer →</Btn>
+              </div>
+            </div>
+          ):(
+            <div style={{display:"flex",flexDirection:"column",gap:10}}>
+              <Btn full v="gold" sz="lg" onClick={()=>setConfirmAction("offer")}>Send a Price Offer →</Btn>
+              {!(sel.counterRound>0)&&<Btn full v="emerald" sz="lg" onClick={doAccept}>Accept Customer Budget ({sel.budgetRange||sel.budget_range})</Btn>}
+              <Btn full v="ghost" onClick={()=>setConfirmAction("decline")}>Decline this Request</Btn>
+              <div style={{fontSize:11,color:C.faint,textAlign:"center"}}>{(sel.counterRound||0)>=2?"Final round — you cannot counter again after this":1-(sel.counterRound||0)+" counter-offer round remaining"}</div>
+            </div>
+          )}
+        </div>
+      )}
+      {sel.status==="accepted"&&<div style={{background:C.emeraldS,border:`1px solid ${C.emerald}44`,borderRadius:12,padding:20}}><div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.emerald,marginBottom:8}}>Price agreed!</div><div style={{color:C.textD,fontSize:T.sm}}>Agreed amount: <strong style={{color:C.gold}}>€{sel.artistOffer}</strong><br/>Waiting for customer to pay deposit to confirm.</div></div>}
+    </div>
+  );
+  return(
+    <div style={{padding:vp.isMobile?"16px":"24px 32px"}}>
+      <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:700,color:C.gold,marginBottom:4}}>Booking Requests</div>
+      <div style={{color:C.muted,fontSize:T.sm,marginBottom:20}}>Respond within 48 hours — unanswered requests expire automatically</div>
+      {pending.length>0&&<div style={{marginBottom:24}}><div style={{fontSize:T.xs,fontWeight:700,color:C.muted,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:10}}>Needs response ({pending.length})</div>{pending.map(r=><ReqCard key={r.id} req={r}/>)}</div>}
+      {active.length>0&&<div style={{marginBottom:24}}><div style={{fontSize:T.xs,fontWeight:700,color:C.muted,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:10}}>Active offers ({active.length})</div>{active.map(r=><ReqCard key={r.id} req={r}/>)}</div>}
+      {pending.length===0&&active.length===0&&<div style={{textAlign:"center",padding:"48px 24px",background:C.card,borderRadius:12,border:`1px solid ${C.border}`}}><div style={{fontSize:40,marginBottom:12,color:C.gold}}>✦</div><div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text,marginBottom:6}}>No pending requests</div><div style={{color:C.muted,fontSize:T.sm}}>New booking requests appear here. Share your profile to get bookings.</div></div>}
+      {history.length>0&&<div><div style={{fontSize:T.xs,fontWeight:700,color:C.muted,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:10}}>History</div>{history.map(r=><ReqCard key={r.id} req={r}/>)}</div>}
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════
+
 function InquiryPanel({ inquiries, artists, onUpdateInquiry, vp }) {
   const [sel,setSel]=useState(null);
   const [replyText,setReplyText]=useState("");
