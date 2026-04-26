@@ -85,25 +85,41 @@ async function getSupabaseReg() {
 // admin session when ApplySheet signs out the newly created artist.
 // Set to true just before signOut(), reset after event fires.
 
-// ── SECURITY: Service key removed — never expose in browser ──────────
-// Use RLS policies in Supabase (see admin_rls_policies.sql) instead.
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-async function getSupabaseAdmin() { return null; }
+// ── Service-role admin client — bypasses ALL RLS for admin delete ops ─
+// Requires VITE_SUPABASE_SERVICE_KEY in Vercel env vars.
+// SECURITY: This key is frontend-visible — only use for admin-gated ops.
+const SUPA_SERVICE_KEY = import.meta.env.VITE_SUPABASE_SERVICE_KEY || "";
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let _supabaseAdmin: any = null;
+async function getSupabaseAdmin() {
+  if (_supabaseAdmin) return _supabaseAdmin;
+  if (!SUPA_URL || !SUPA_SERVICE_KEY) return null; // falls back to normal client
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { createClient } = await import("@supabase/supabase-js") as any;
+    _supabaseAdmin = createClient(SUPA_URL, SUPA_SERVICE_KEY, {
+      auth: { persistSession:false, autoRefreshToken:false, detectSessionInUrl:false,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        lock:(_n:any,_t:any,fn:any)=>fn() },
+    });
+    return _supabaseAdmin;
+  } catch { return null; }
+}
 
 // ── Robust artist delete — tries admin client first, falls back to anon ─
 // Returns { ok: boolean, errors: string[] }
 async function deleteArtistFromDB(artistId: string): Promise<{ok:boolean; errors:string[]}> {
-  const sb = await getSupabase();
+  // Prefer service-role client (bypasses RLS), fall back to session-based client
+  const sb = await getSupabaseAdmin() || await getSupabase();
   if (!sb) return { ok:true, errors:[] }; // offline/demo mode — UI already updated
   const tables: [string, string][] = [
-    ["song_requests", "artist_id"],
-    ["chat_messages", "artist_id"],
-    ["event_plans",   "artist_id"],
-    ["bookings",      "artist_id"],
-    ["reviews",       "artist_id"],
-    ["artists",       "id"],
-    ["profiles",      "id"],
-    ["users",         "id"],
+    ["song_requests","artist_id"],
+    ["chat_messages","artist_id"],
+    ["bookings",     "artist_id"],
+    ["reviews",      "artist_id"],
+    ["artists",      "id"],
+    ["profiles",     "id"],
+    ["users",        "id"],
   ];
   const errors: string[] = [];
   for (const [table, col] of tables) {
@@ -3703,9 +3719,6 @@ function StripePaywall({
       const successUrl = `${window.location.origin}${window.location.pathname}?boost_success=1&bookingId=${metadata.bookingId||Date.now()}`;
       const cancelUrl  = `${window.location.origin}${window.location.pathname}`;
 
-      const _stripeKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
-      if(!_stripeKey) throw new Error("VITE_STRIPE_PUBLISHABLE_KEY mangler i Vercel → Settings → Environment Variables");
-
       const res = await fetch(`${SUPA_URL}/functions/v1/create-payment-intent-ts`, {
         method: "POST",
         headers: {"Content-Type":"application/json","Authorization":`Bearer ${SUPA_KEY}`,"apikey":SUPA_KEY},
@@ -3722,15 +3735,10 @@ function StripePaywall({
       });
 
       let data: any = {};
-      try { data = await res.json(); } catch { data = { error: `HTTP ${res.status} — ugyldig svar fra server` }; }
+      try { data = await res.json(); } catch { data = { error: `HTTP ${res.status}` }; }
 
       if(!res.ok || data.error) {
-        const raw = data.error || data.message || `HTTP ${res.status}`;
-        let msg = raw;
-        if(res.status===404) msg="Betalingsfunksjon ikke funnet (404) — deploy create-payment-intent-ts i Supabase";
-        else if(res.status===401||res.status===403) msg="Autentiseringsfeil — sjekk SUPABASE_ANON_KEY";
-        else if(res.status===500) msg="Serverfeil (500) — sjekk Supabase Edge Function-logger";
-        else if(raw.includes("STRIPE_SECRET_KEY")) msg="STRIPE_SECRET_KEY mangler i Supabase Secrets";
+        const msg = data.error || `HTTP ${res.status}`;
         throw new Error(msg);
       }
 
@@ -3767,10 +3775,10 @@ function StripePaywall({
 
     } catch(e:any){
       const msg = e.message||"";
-      if(msg.includes("Failed to fetch")||e.name==="AbortError") {
+      if(msg.includes("Failed to fetch") || e.name==="AbortError") {
         setError("Nettverksfeil — sjekk internettforbindelsen og prøv igjen");
       } else {
-        setError(msg || "Det oppstod en betalingsfeil — prøv igjen eller kontakt support@awaz.no");
+        setError(msg || "Noe gikk galt");
       }
     }
     setLoad(false);
@@ -5282,9 +5290,8 @@ const MARKETS = [
   {code:"OTHER",name:"Other",       flag:"", currency:"EUR",symbol:"€",depositMultiplier:1.0},
 ];
 
-// ── Admin emails — set VITE_ADMIN_EMAILS in Vercel env vars ─────────────────
-const ADMIN_EMAILS: string[] = (import.meta.env.VITE_ADMIN_EMAILS||"admin@awaz.com")
-  .split(",").map((e:string)=>e.trim().toLowerCase()).filter(Boolean);
+// ── Admin emails ──────────────────────────────────────────────────────────────
+const ADMIN_EMAILS = ["admin@awaz.com"];
 
 // ── Song priority tiers ───────────────────────────────────────────────────────
 const PRIORITY_TIERS = [
@@ -5747,16 +5754,6 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
   const [reviewArtist,setReviewArtist]=useState<any>(null);
   const [adminChatMsg,setAdminChatMsg]=useState("");
   const [adminChats,setAdminChats]=useState({});
-  const [hiddenChatArtistIds,setHiddenChatArtistIds]=useState<string[]>(
-    ()=>{ try{return JSON.parse(localStorage.getItem("awaz-hidden-chats")||"[]");}catch{return [];} }
-  );
-  const hideFromChat=(id:string)=>{
-    setHiddenChatArtistIds(p=>{
-      const next=[...p.filter(x=>x!==id),id];
-      try{localStorage.setItem("awaz-hidden-chats",JSON.stringify(next));}catch{}
-      return next;
-    });
-  };
   const [artistFilter,setArtistFilter]=useState("all"); // all|pending|approved|suspended
   const [searchQ,setSearchQ]=useState("");
 
@@ -5787,19 +5784,11 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
     try{
       const sb=await getSupabase();
       if(!sb) return;
-      const{data:inserted,error}=await sb.from("chat_messages").insert({
+      const{error}=await sb.from("chat_messages").insert({
         artist_id:adminChatArtist.id,from_role:"admin",
         text:text||(img?"[Image]":""),image_url:img||null,
-      }).select("id").single();
+      });
       if(error) console.error("Chat save error:",error.message);
-      if(inserted?.id){
-        setAdminChats(p=>{
-          const msgs=[...(p[adminChatArtist!.id]||[])];
-          const idx=msgs.length-1;
-          if(idx>=0) msgs[idx]={...msgs[idx],id:inserted.id};
-          return {...p,[adminChatArtist!.id]:msgs};
-        });
-      }
     }catch(e){console.error("Chat exception:",e);}
   };
 
@@ -6142,7 +6131,7 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
                   const failed=rejected.filter(a=>failedIds.includes(a.id));
                   setArtists(p=>[...failed,...p]);
                   notify(`${failedIds.length} delete(s) failed — run RLS SQL in Supabase (see console)`,"error");
-                  console.warn('[Awaz] Admin delete failed — set up RLS policies in Supabase');
+                  console.info(`%cRUN THIS IN SUPABASE SQL EDITOR:\n\nCREATE POLICY "admin_delete_artists" ON artists FOR DELETE USING (EXISTS (SELECT 1 FROM profiles WHERE id=auth.uid() AND role='admin'));\nCREATE POLICY "admin_delete_chat_messages" ON chat_messages FOR DELETE USING (EXISTS (SELECT 1 FROM profiles WHERE id=auth.uid() AND role='admin'));\nCREATE POLICY "admin_delete_bookings" ON bookings FOR DELETE USING (EXISTS (SELECT 1 FROM profiles WHERE id=auth.uid() AND role='admin'));\nCREATE POLICY "admin_delete_reviews" ON reviews FOR DELETE USING (EXISTS (SELECT 1 FROM profiles WHERE id=auth.uid() AND role='admin'));\nCREATE POLICY "admin_delete_profiles" ON profiles FOR DELETE USING (EXISTS (SELECT 1 FROM profiles WHERE id=auth.uid() AND role='admin'));\nCREATE POLICY "admin_delete_users" ON users FOR DELETE USING (EXISTS (SELECT 1 FROM profiles WHERE id=auth.uid() AND role='admin'));\nCREATE POLICY "admin_delete_song_requests" ON song_requests FOR DELETE USING (EXISTS (SELECT 1 FROM profiles WHERE id=auth.uid() AND role='admin'));`,'color:orange;font-weight:bold','');
                 } else {
                   notify(`${rejected.length} rejected artist(s) deleted`,"success");
                 }
@@ -6419,7 +6408,7 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
             {/* Artist list */}
             <div style={{background:C.card,borderRadius:12,border:`1px solid ${C.border}`,overflow:"auto"}}>
               <div style={{padding:"10px 14px",borderBottom:`1px solid ${C.border}`,fontSize:T.xs,fontWeight:700,color:C.muted,textTransform:"uppercase" as const,letterSpacing:"0.8px"}}>Artists</div>
-              {artists.filter(a=>!hiddenChatArtistIds.includes(a.id)).map(a=>(
+              {artists.map(a=>(
                 <button key={a.id} onClick={async()=>{
                   setAdminChatArtist(a);
                   if(HAS_SUPA){
@@ -6428,7 +6417,7 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
                       const{data}=await sb.from("chat_messages")
                         .select("*").eq("artist_id",a.id).order("created_at",{ascending:true});
                       if(data?.length>0){
-                        const msgs=data.map(r=>({id:r.id,from:r.from_role,text:r.text,time:new Date(r.created_at).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}));
+                        const msgs=data.map(r=>({from:r.from_role,text:r.text,time:new Date(r.created_at).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}));
                         setAdminChats(p=>({...p,[a.id]:msgs}));
                       }
                     }
@@ -6463,42 +6452,20 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
                       <div style={{color:C.muted,fontSize:T.xs}}>{adminChatArtist.genre} · {adminChatArtist.status}</div>
                     </div>
                     <button onClick={async()=>{
-                      if(!confirm(`Tøm alle meldinger med ${adminChatArtist.name}?`)) return;
+                      if(!confirm("Clear all messages with this artist?")) return;
                       setAdminChats(p=>({...p,[adminChatArtist.id]:[]}));
                       if(HAS_SUPA){
                         try{
-                          const sb=await getSupabase();
+                          const sb=await getSupabaseAdmin()||await getSupabase();
                           if(sb){
                             const{error}=await sb.from("chat_messages").delete().eq("artist_id",adminChatArtist.id);
-                            if(error){notify("Feil: "+error.message,"error");}
-                            else{notify("Chat tømt","success");}
+                            if(error){notify("Could not delete — check RLS","error");}
+                            else{notify("Chat cleared","success");}
                           }
-                        }catch(e:any){notify("Feil: "+e.message,"error");}
-                      } else {notify("Chat tømt","success");}
-                    }} style={{background:C.surface,color:C.muted,border:`1px solid ${C.border}`,borderRadius:7,padding:"5px 10px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit",flexShrink:0}}>
-                      Tøm
-                    </button>
-                    <button onClick={async()=>{
-                      if(!confirm(`Slett hele chatten med ${adminChatArtist.name} permanent?
-
-Artisten forsvinner fra chatlisten og alle meldinger slettes.`)) return;
-                      const deletedId=adminChatArtist.id;
-                      const deletedName=adminChatArtist.name;
-                      setAdminChats(p=>{const n={...p};delete n[deletedId];return n;});
-                      setAdminChatArtist(null);
-                      hideFromChat(deletedId);
-                      if(HAS_SUPA){
-                        try{
-                          const sb=await getSupabase();
-                          if(sb){
-                            const{error}=await sb.from("chat_messages").delete().eq("artist_id",deletedId);
-                            if(error){notify("Feil: "+error.message,"error");}
-                            else{notify(`Chat med ${deletedName} slettet permanent ✓`,"success");}
-                          }
-                        }catch(e:any){notify("Feil: "+e.message,"error");}
-                      } else {notify("Chat slettet","success");}
-                    }} style={{background:"rgba(139,48,48,0.12)",color:C.ruby,border:`1px solid ${C.ruby}44`,borderRadius:7,padding:"5px 10px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit",flexShrink:0}}>
-                      🗑 Slett
+                        }catch(e:any){notify("Error: "+e.message,"error");}
+                      } else {notify("Chat cleared","success");}
+                    }} style={{background:C.rubyS,color:C.ruby,border:`1px solid ${C.ruby}33`,borderRadius:7,padding:"5px 12px",fontSize:T.xs,fontWeight:700,cursor:"pointer",fontFamily:"inherit",flexShrink:0}}>
+                      Clear
                     </button>
                   </div>
 
@@ -6510,13 +6477,10 @@ Artisten forsvinner fra chatlisten og alle meldinger slettes.`)) return;
                         <div key={i} style={{display:"flex",justifyContent:isAdmin?"flex-end":"flex-start",gap:6,alignItems:"flex-end"}}
                           onMouseEnter={e=>{const b=e.currentTarget.querySelector(".msg-del") as HTMLElement;if(b)b.style.opacity="1";}}
                           onMouseLeave={e=>{const b=e.currentTarget.querySelector(".msg-del") as HTMLElement;if(b)b.style.opacity="0";}}>
-                          <button className="msg-del" onClick={async()=>{
-                            const msgId=msg.id;
-                            setAdminChats(p=>({...p,[adminChatArtist.id]:(p[adminChatArtist.id]||[]).filter((_,j)=>j!==i)}));
-                            if(msgId&&HAS_SUPA){
-                              try{const sb=await getSupabase();if(sb)await sb.from("chat_messages").delete().eq("id",msgId);}catch{}
-                            }
-                          }} style={{background:"none",border:"none",color:C.ruby,cursor:"pointer",opacity:0,transition:"opacity 0.15s",fontSize:11,padding:"4px",flexShrink:0}}>Del</button>
+                          {isAdmin&&(
+                            <button className="msg-del" onClick={()=>setAdminChats(p=>({...p,[adminChatArtist.id]:(p[adminChatArtist.id]||[]).filter((_,j)=>j!==i)}))}
+                              style={{background:"none",border:"none",color:C.ruby,cursor:"pointer",opacity:0,transition:"opacity 0.15s",fontSize:11,padding:"4px",flexShrink:0}}>Del</button>
+                          )}
                           <div style={{
                             maxWidth:"78%",
                             background:isAdmin?C.goldS:C.surface,
@@ -8041,7 +8005,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
                             <span style={{fontSize:20}}>{roleIcons[m.role]||"🎵"}</span>
                             <div>
                               <div style={{fontWeight:700,color:C.text,fontSize:T.sm}}>{m.name||m.role}</div>
-                              <div style={{fontSize:11,color:C.muted}}>{m.role} · €{m.price} depositum</div>
+                              <div style={{fontSize:11,color:C.muted}}>{m.role} · €{m.price}/session</div>
                             </div>
                           </div>
                           <button onClick={()=>setBandMembers(p=>p.filter((_,j)=>j!==i))}
@@ -8075,7 +8039,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
                       </select>
                     </div>
                     <div>
-                      <div style={{fontSize:T.xs,color:C.muted,marginBottom:4,fontWeight:600}}>Depositum (€)</div>
+                      <div style={{fontSize:T.xs,color:C.muted,marginBottom:4,fontWeight:600}}>Price (€/session)</div>
                       <input type="number" min={50} max={500} value={newMember.price}
                         onChange={e=>setNewMember(p=>({...p,price:parseInt(e.target.value)||50}))}
                         style={{width:"100%",background:C.card,border:`1px solid ${C.border}`,borderRadius:8,padding:"10px 12px",color:C.text,fontSize:T.xs,fontFamily:"inherit",outline:"none",boxSizing:"border-box" as const}}/>
@@ -11358,21 +11322,7 @@ function AppInner() {
       setShowApply(false);
     }
   };
-  const handleMsg=(bidOrObj:any,m?:any)=>{
-    // AdminDash calls onMsg({artistId,text,from}) — write to chat_messages table
-    if(bidOrObj&&typeof bidOrObj==="object"&&bidOrObj.artistId&&!m){
-      const{artistId,text,from="admin"}=bidOrObj;
-      if(HAS_SUPA){
-        getSupabase().then(sb=>{
-          if(sb) sb.from("chat_messages").insert({artist_id:artistId,from_role:from,text}).then(({error})=>{
-            if(error) console.error("Admin chat msg error:",error.message);
-          });
-        });
-      }
-      return;
-    }
-    // ArtistPortal / Chat calls onMsg(bookingId, messageObj)
-    const bid=bidOrObj;
+  const handleMsg=(bid,m)=>{
     notify('New message received','message');
     setBookings(p=>p.map(b=>{
       if(b.id!==bid)return b;
@@ -11394,6 +11344,23 @@ function AppInner() {
 
   // AUTH-FIX-3: nav() also moved above conditional returns so it is always
   // in scope regardless of which render path executes.
+  // Clean URL for every view
+  const VIEW_URLS:Record<string,string>={
+    home:"/",browse:"/browse",how:"/how-it-works",
+    pricing:"/pricing",band:"/book-a-band",demo:"/demo",
+    portal:"/dashboard",admin:"/admin",
+  };
+  const VIEW_TITLES:Record<string,string>={
+    home:"Awaz — Book Afghan Artists",
+    browse:"Browse Artists · Awaz",
+    how:"How It Works · Awaz",
+    pricing:"Pricing · Awaz",
+    band:"Book a Band · Awaz",
+    portal:"Artist Dashboard · Awaz",
+    admin:"Admin · Awaz",
+    demo:"Demo · Awaz",
+  };
+
   const nav=(v:string,artist?:any)=>{
     if(v==="profile")setPrevView(view);
     window.scrollTo({top:0,behavior:"instant"});
@@ -11401,41 +11368,51 @@ function AppInner() {
     if(v==="profile"&&artist){
       const slug=slugify(artist.name);
       window.history.pushState({view:"profile",artistId:artist.id},`${artist.name} · Awaz`,`/artist/${slug}`);
-      document.title=`${artist.name} · ${artist.genre} · Book on Awaz`;
-      // Update meta description for social sharing
+      document.title=`${artist.name} · ${artist.genre||"Artist"} · Awaz`;
       let meta=document.querySelector('meta[name="description"]');
       if(!meta){meta=document.createElement("meta");(meta as HTMLMetaElement).name="description";document.head.appendChild(meta);}
       (meta as HTMLMetaElement).content=`Book ${artist.name} for your wedding, Eid or event. ${artist.genre} artist based in ${artist.location}. Secure booking via Awaz.`;
     } else {
-      const url = v==="home" ? "/" : `/?view=${v}`;
-      window.history.replaceState({view:v},"",url);
-      document.title="Awaz — Book Afghan Artists";
+      const url=VIEW_URLS[v]||`/?view=${v}`;
+      window.history.pushState({view:v},"",url);
+      document.title=VIEW_TITLES[v]||"Awaz — Afghan Artist Booking";
     }
   };
   // ── URL routing — runs once on mount ──────────────────────────────
   React.useEffect(()=>{
+    const URL_TO_VIEW:Record<string,string>={
+      "/":"home","/browse":"browse","/how-it-works":"how",
+      "/pricing":"pricing","/book-a-band":"band",
+      "/dashboard":"portal","/admin":"admin","/demo":"demo",
+    };
+
     const restore=()=>{
       const params = new URLSearchParams(window.location.search);
       const viewParam = params.get("view");
-      const path = window.location.pathname;
+      const path = window.location.pathname.split("?")[0];
 
       if(path.startsWith("/artist/")){
-        const slug=path.replace("/artist/","").split("?")[0];
+        const slug=path.replace("/artist/","");
         const tryFind=()=>{
           const found=artists.find(a=>slugify(a.name)===slug&&(a.status==="approved"||a.verified));
           if(found){setSelArtist(found);setView("profile");document.title=`${found.name} · Awaz`;}
           else if(artists.length===0)setTimeout(tryFind,400);
-          else setView("browse"); // artist not found — go to browse
+          else setView("browse");
         };
         tryFind();
-      } else if(viewParam&&["browse","how","pricing"].includes(viewParam)){
+      } else if(URL_TO_VIEW[path]){
+        setView(URL_TO_VIEW[path]);
+      } else if(viewParam&&["browse","how","pricing","band","portal","admin"].includes(viewParam)){
         setView(viewParam);
       }
     };
     restore();
 
-    // Handle browser back/forward buttons
-    const onPop=()=>restore();
+    // Handle browser back/forward
+    const onPop=(e:PopStateEvent)=>{
+      if(e.state?.view) setView(e.state.view);
+      else restore();
+    };
     window.addEventListener("popstate",onPop);
     return()=>window.removeEventListener("popstate",onPop);
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -13353,6 +13330,15 @@ function ApplySheet({ onSubmit, onClose }) {
   return(
     <Sheet open onClose={onClose} title={done?t('applyWelcome')||"Welcome to Awaz!":step===1?t('applyStep1Title')||"Join Awaz — Step 1 of 2":t('applyStep2Title')||"Almost done — Step 2 of 2"} maxH="96vh">
       <div style={{padding:"16px 20px 32px"}}>
+
+        {/* ← Tilbake-knapp — vises på steg 1 og 2, ikke etter ferdig */}
+        {!done&&(
+          <button onClick={step===1?onClose:()=>{setStep(1);setErr("");}}
+            style={{display:"flex",alignItems:"center",gap:6,background:"none",border:"none",color:C.muted,fontSize:T.sm,cursor:"pointer",fontFamily:"inherit",padding:"0 0 16px 0",fontWeight:500}}>
+            <span style={{fontSize:18,lineHeight:1}}>←</span>
+            <span>{step===1?"Back":"Back to step 1"}</span>
+          </button>
+        )}
         {done?(
           <div style={{textAlign:"center",padding:"20px 0"}}>
             
