@@ -4634,7 +4634,15 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
             {!vp.isMobile&&(
               <div style={{textAlign:"right",flexShrink:0}}>
                 <div style={{fontSize:T.xs,color:C.muted,marginBottom:6,letterSpacing:"0.8px",textTransform:"uppercase"}}>Available for your event</div>
-                <Btn v="gold" sz="lg" onClick={()=>setShowBookingRequest(true)} xs={{marginBottom:8,display:"block"}}>Request Booking →</Btn>
+                <Btn v="gold" sz="lg"
+                  onClick={()=>{
+                    if(!artist.countryPricing?.some((r:any)=>r.active)){
+                      alert("This artist has not set up their country pricing yet. Please check back soon.");
+                      return;
+                    }
+                    setShowBookingRequest(true);
+                  }}
+                  xs={{marginBottom:8,display:"block"}}>Request Booking →</Btn>
                 <div style={{fontSize:11,color:C.muted,textAlign:"center"}}>No payment now · Artist responds within 48h</div>
               </div>
             )}
@@ -5077,7 +5085,7 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
       {/* Booking Request Form — offer system */}
       {showBookingRequest&&(
         <BookingRequestForm artist={artist} onClose={()=>setShowBookingRequest(false)}
-          onSubmit={(req)=>{ console.log('[awaz] New booking request:', req.id); }}/>
+          onSubmit={(req)=>{ handleNewBookingRequest(req); }}/>/>
       )}
 
       {/* Mobile: Calendar Sheet */}
@@ -5782,7 +5790,7 @@ function StripePlatformBanner({ notify }: { notify: (msg:string, type?:string)=>
   );
 }
 
-function AdminDash({ artists, setArtists, bookings, setBookings, users, inquiries, onAction, onLogout, onMsg, onUpdateInquiry, theme, onToggleTheme }) {
+function AdminDash({ artists, setArtists, bookings, setBookings, users, inquiries, bookingRequests=[], onAction, onLogout, onMsg, onUpdateInquiry, onBookingRequestAction, theme, onToggleTheme }) {
   // Sync module-level _theme so C proxy uses correct palette on every render
   if(theme) _theme = theme;
   const vp=useViewport();
@@ -5913,9 +5921,11 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
     setRefreshing(false);
   };
 
+  const pendingRequests = bookingRequests.filter(r=>r.status==="pending").length;
   const navItems=[
     {id:"overview",    label:"Overview"},
     {id:"artists",     label:"Artists",  badge:pendingArtists},
+    {id:"requests",    label:"Booking Requests", badge:pendingRequests},
     {id:"bookings",    label:"Bookings"},
     {id:"eventplans",  label:"Event Plans"},
     {id:"inquiries",   label:"Inquiries", badge:newInquiries},
@@ -6199,6 +6209,44 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
           {filteredArtists.length===0?(
             <div style={{textAlign:"center",padding:"32px",background:C.card,borderRadius:12,border:`1px solid ${C.border}`,color:C.muted}}>No artists match filters</div>
           ):filteredArtists.map(a=><ArtistRow key={a.id} a={a}/>)}
+        </div>
+      )}
+
+      {/* ── BOOKING REQUESTS ── */}
+      {tab==="requests"&&(
+        <div>
+          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.gold,marginBottom:6}}>Booking Request Monitor</div>
+          <div style={{color:C.muted,fontSize:T.sm,marginBottom:20}}>All offer/counter-offer negotiations across the platform</div>
+          {bookingRequests.filter(r=>{const h=(new Date(r.expiresAt||r.expires_at||0).getTime()-Date.now())/(1000*60*60);return r.status==="pending"&&h<12&&h>0;}).length>0&&(
+            <div style={{background:`${C.ruby}15`,border:`1px solid ${C.ruby}44`,borderRadius:10,padding:"12px 16px",marginBottom:16,display:"flex",gap:10,alignItems:"center"}}>
+              <span style={{color:C.ruby}}>⚠</span>
+              <div style={{fontSize:T.sm,color:C.ruby}}><strong>{bookingRequests.filter(r=>r.status==="pending").length} request(s)</strong> pending artist response</div>
+            </div>
+          )}
+          <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:20}}>
+            {[["Total",bookingRequests.length,C.gold],["Pending",bookingRequests.filter(r=>r.status==="pending").length,C.saffron],["Offered",bookingRequests.filter(r=>r.status==="offered").length,C.lapis],["Agreed",bookingRequests.filter(r=>r.status==="accepted").length,C.emerald]].map(([label,val,color])=>(
+              <div key={label as string} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:10,padding:"12px 14px"}}>
+                <div style={{fontSize:T.xs,color:C.muted,marginBottom:4}}>{label}</div>
+                <div style={{fontSize:"1.4rem",fontWeight:800,color:color as string}}>{val}</div>
+              </div>
+            ))}
+          </div>
+          <div style={{display:"flex",flexDirection:"column",gap:8}}>
+            {bookingRequests.length===0?(
+              <div style={{textAlign:"center",padding:"40px",background:C.card,borderRadius:12,border:`1px solid ${C.border}`,color:C.muted}}>No booking requests yet</div>
+            ):bookingRequests.map(req=>{
+              const a=artists.find(x=>x.id===(req.artistId||req.artist_id));
+              const SC:Record<string,string>={pending:C.saffron,offered:C.lapis,counter_offered:C.gold,accepted:C.emerald,declined:C.ruby,expired:C.muted,booked:C.emerald};
+              return(
+                <div key={req.id} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:10,padding:"14px 16px",display:"grid",gridTemplateColumns:"1fr 1fr auto auto",gap:12,alignItems:"center"}}>
+                  <div><div style={{fontWeight:600,color:C.text,fontSize:T.sm}}>{req.customerName||req.customer_name}</div><div style={{color:C.muted,fontSize:11,marginTop:2}}>{req.eventType||req.event_type} · {req.eventDate||req.event_date}</div></div>
+                  <div><div style={{fontSize:T.sm,color:C.text}}>{a?.name||"Unknown artist"}</div><div style={{fontSize:11,color:C.muted,marginTop:2}}>Budget: {req.budgetRange||req.budget_range}</div>{(req.artistOffer||req.artist_offer)&&<div style={{fontSize:11,color:C.gold,marginTop:1}}>Offer: €{req.artistOffer||req.artist_offer}</div>}</div>
+                  <div style={{textAlign:"right" as const}}><div style={{fontSize:10,color:C.muted}}>Round {req.counterRound||req.counter_round||0}/2</div></div>
+                  <span style={{background:`${SC[req.status]||C.muted}20`,color:SC[req.status]||C.muted,fontSize:10,fontWeight:700,padding:"3px 10px",borderRadius:20,whiteSpace:"nowrap"}}>{req.status}</span>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
 
@@ -7109,7 +7157,7 @@ function BoostButton({ artist, onUpdateArtist, notify }) {
   );
 }
 
-function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, onMsg, onUpdateArtist, theme, onToggleTheme }) {
+function ArtistPortal({ user, artist, bookings, bookingRequests=[], onBookingRequestAction, session, onLogout, onToggleDay, onMsg, onUpdateArtist, theme, onToggleTheme }) {
   // Sync module-level _theme so C proxy uses correct palette on every render
   if(theme) _theme = theme;
   const vp=useViewport();
@@ -7182,14 +7230,14 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
 
   const myB=bookings.filter(b=>b.artistId===artist.id);
   const depositsIn=myB.filter(b=>b.depositPaid).reduce((s,b)=>s+Math.round(b.deposit*0.88),0);
-
   const pendingCount=myB.filter(b=>b.status==="pending_payment"||b.status==="pending").length;
-
   const songRequestCount = songRequests.filter(r=>r.status==="pending").length;
+  const bookingReqCount = (window as any).__awazBookingReqs?.filter((r:any)=>r.artistId===artist.id&&r.status==="pending").length||0;
   const navItems=[
     {id:"overview",  label:"Overview"},
+    {id:"bookreqs",  label:"Requests",  badge:bookingReqCount},
     {id:"bookings",  label:"Bookings",  badge:pendingCount},
-    {id:"songreqs",  label:"Requests",  badge:songRequestCount},
+    {id:"songreqs",  label:"Song Reqs", badge:songRequestCount},
     {id:"calendar",  label:"Calendar"},
     {id:"messages",  label:"Messages"},
     {id:"band",      label:t('myBandTitle')},
@@ -7356,10 +7404,30 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
           <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:4}}>
             Hey, {artist.name.split(" ")[0]}
           </div>
+          {/* REQUIRED: Country pricing missing → customers cannot book */}
+          {!artist.countryPricing?.some((r:any)=>r.active)&&artist.status==="approved"&&(
+            <div onClick={()=>setTab("pricing")} style={{display:"flex",alignItems:"center",gap:12,background:`${C.ruby}10`,border:`2px solid ${C.ruby}44`,borderRadius:12,padding:"14px 16px",marginBottom:16,cursor:"pointer"}}>
+              <span style={{fontSize:24,flexShrink:0}}>🚫</span>
+              <div style={{flex:1}}>
+                <div style={{fontWeight:700,color:C.ruby,fontSize:T.sm}}>Country pricing required — customers cannot book you yet</div>
+                <div style={{color:C.muted,fontSize:T.xs,marginTop:2}}>Set your prices per country → customers will be guided automatically without seeing exact prices. Tap to set up →</div>
+              </div>
+            </div>
+          )}
+
+          {/* Booking requests pending */}
+          {bookingReqCount>0&&(
+            <div onClick={()=>setTab("bookreqs")} style={{display:"flex",alignItems:"center",gap:12,background:`${C.gold}10`,border:`1px solid ${C.gold}44`,borderRadius:12,padding:"14px 16px",marginBottom:12,cursor:"pointer"}}>
+              <span style={{fontSize:24,flexShrink:0}}>📨</span>
+              <div style={{flex:1}}>
+                <div style={{fontWeight:700,color:C.gold,fontSize:T.sm}}>{bookingReqCount} booking request{bookingReqCount>1?"s":""} waiting for your response</div>
+                <div style={{color:C.muted,fontSize:T.xs,marginTop:2}}>Respond within 48 hours before they expire →</div>
+              </div>
+            </div>
+          )}
           {/* Notification banner for pending bookings */}
           {pendingCount>0&&(
             <div onClick={()=>setTab("bookings")} style={{display:"flex",alignItems:"center",gap:12,background:"rgba(168,44,56,0.08)",border:"1px solid rgba(168,44,56,0.3)",borderRadius:12,padding:"14px 16px",marginBottom:16,cursor:"pointer"}}>
-              
               <div style={{flex:1}}>
                 <div style={{fontWeight:700,color:C.ruby,fontSize:T.sm}}>{pendingCount} new booking{pendingCount>1?"s":""} awaiting your response</div>
                 <div style={{color:C.muted,fontSize:T.xs,marginTop:2}}>Tap to review →</div>
@@ -7542,6 +7610,14 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
             <strong style={{color:artist.color}}>Tip:</strong> Mark dates as available so customers can book you.
           </div>
         </div>
+      )}
+
+      {tab==="bookreqs"&&(
+        <ArtistOfferPanel
+          requests={bookingRequests.filter((r:any)=>r.artistId===artist.id)}
+          artist={artist}
+          onAction={onBookingRequestAction||async()=>{}}
+        />
       )}
 
       {tab==="bookings"&&(
@@ -9960,7 +10036,7 @@ function DemoPage({onBook, onApply, vp}:{onBook:()=>void;onApply:()=>void;vp:any
               )}
 
               {demoTab==="requests"&&(
-                <ArtistOfferPanel requests={[]} artist={artist} onAction={async()=>{}}/>
+                <ArtistOfferPanel requests={bookingRequests} artist={artist} onAction={handleBookingRequestAction}/>
               )}
 
               {demoTab==="earnings"&&(
@@ -10141,7 +10217,7 @@ function InquiryWidget({ artists, onSubmit }) {
         right:vp.isMobile?"16px":"32px",
         zIndex:150,
       }}>
-        <button id="awaz-inquiry-widget" onClick={()=>{setOpen(true);reset();}} style={{display:"none"}}
+        <button id="awaz-inquiry-widget" onClick={()=>{setOpen(true);reset();}}
           style={{
             display:"flex",alignItems:"center",gap:9,
             background:`linear-gradient(135deg,${C.gold},${C.saffron})`,
@@ -10293,9 +10369,29 @@ function CountryPricingTab({ artist, onUpdateArtist, vp }) {
       <div>
         <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:4}}>{t('marketPricing')}</div>
         <div style={{fontSize:T.sm,color:C.muted,lineHeight:1.7}}>
-          All prices are in EUR (€). Toggle countries where you are available to perform. You keep 88% of every deposit.
+          Set your price per country. Customers will be guided to the right budget range automatically — without seeing your exact price. You keep 88% of every deposit.
         </div>
       </div>
+
+      {/* Required warning */}
+      {active.length===0&&(
+        <div style={{background:`${C.ruby}12`,border:`2px solid ${C.ruby}44`,borderRadius:12,padding:"16px",display:"flex",gap:12,alignItems:"flex-start"}}>
+          <span style={{color:C.ruby,fontSize:20,flexShrink:0}}>⚠</span>
+          <div>
+            <div style={{fontWeight:700,color:C.ruby,marginBottom:4,fontSize:T.sm}}>Country pricing is required</div>
+            <div style={{fontSize:T.xs,color:C.muted,lineHeight:1.7}}>
+              Customers cannot submit a booking request until you have set prices for at least one country. This protects you from requests that don't match your market rates.
+            </div>
+          </div>
+        </div>
+      )}
+
+      {active.length>0&&(
+        <div style={{background:C.emeraldS,border:`1px solid ${C.emerald}44`,borderRadius:10,padding:"12px 16px",display:"flex",alignItems:"center",gap:10}}>
+          <span style={{color:C.emerald,fontSize:16}}>✓</span>
+          <div style={{fontSize:T.sm,color:C.emerald}}>Active in <strong>{active.length} country/countries</strong> — customers are guided to the right budget automatically</div>
+        </div>
+      )}
 
       {/* Active markets */}
       {active.length>0&&(
@@ -10387,14 +10483,39 @@ const PHONE_RE=/(\+?\d[\d\s\-]{7,})/;
 const EMAIL_RE2=/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/g;
 const sanitizeMsg=(t:string)=>t.replace(PHONE_RE,"[contact info removed]").replace(EMAIL_RE2,"[email removed]").slice(0,500);
 
+// Auto-select budget range closest to artist's country price (invisible to customer)
+function getAutobudgetRange(artist:any, countryCode:string):string {
+  if(!artist?.countryPricing) return "";
+  // Find artist's price for this country
+  const row = artist.countryPricing.find((r:any)=>
+    (r.code===countryCode || r.country===countryCode) && r.active
+  );
+  if(!row) return "";
+  const deposit = Number(row.deposit||row.price||artist.deposit||0);
+  if(!deposit) return "";
+  // Map deposit to total event price (deposit is ~20-30% of total)
+  // Find the budget range that best matches
+  for(let i=BUDGET_RANGES.length-1;i>=0;i--){
+    if(deposit>=BUDGET_RANGES[i].min) return BUDGET_RANGES[i].label;
+  }
+  return BUDGET_RANGES[0].label;
+}
+
 function BookingRequestForm({artist,onSubmit,onClose}:{artist:any;onSubmit:(r:any)=>void;onClose:()=>void}){
-  const [f,setF]=useState({customerName:"",customerEmail:"",eventDate:"",eventType:"",location:"",budgetRange:"",guestCount:"",notes:""});
+  const [f,setF]=useState({customerName:"",customerEmail:"",eventDate:"",eventType:"",location:"",budgetRange:"",guestCount:"",notes:"",country:""});
   const [err,setErr]=useState("");const [sent,setSent]=useState(false);
+
+  // Auto-set budget when country changes — invisible to customer
+  const handleCountryChange=(countryCode:string)=>{
+    const autoRange=getAutobudgetRange(artist,countryCode);
+    setF(p=>({...p,location:p.location||MARKETS.find(m=>m.code===countryCode)?.name||"",country:countryCode,budgetRange:autoRange||p.budgetRange}));
+  };
   const submit=async()=>{
     if(!f.customerName.trim()){setErr("Your name is required");return;}
     if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(f.customerEmail)){setErr("Valid email required");return;}
     if(!f.eventDate){setErr("Please select an event date");return;}
     if(!f.eventType){setErr("Please select an event type");return;}
+    if(!f.country){setErr("Please select your country");return;}
     if(!f.location.trim()){setErr("Please enter your event location");return;}
     if(!f.budgetRange){setErr("Please select a budget range");return;}
     setErr("");
@@ -10435,16 +10556,38 @@ function BookingRequestForm({artist,onSubmit,onClose}:{artist:any;onSubmit:(r:an
             {["Wedding","Engagement Party","Eid Celebration","Nowruz","Birthday","Concert","Corporate Event","Private Party","Other"].map(e=><option key={e} value={e}>{e}</option>)}
           </select>
         </div>
+
+        {/* Country selector — drives auto-budget, shown to customer */}
+        <div>
+          <label style={{fontSize:T.xs,fontWeight:700,color:C.muted,display:"block",marginBottom:6}}>Your country *</label>
+          <select value={f.country} onChange={e=>handleCountryChange(e.target.value)}
+            style={{width:"100%",background:C.surface,border:`2px solid ${f.country?C.gold:C.border}`,borderRadius:10,padding:"13px 14px",color:f.country?C.text:C.muted,fontSize:T.sm,outline:"none",fontFamily:"inherit",boxSizing:"border-box" as const}}>
+            <option value="">Select your country…</option>
+            {MARKETS.filter(m=>m.code!=="OTHER").map(m=><option key={m.code} value={m.code}>{m.flag} {m.name}</option>)}
+            <option value="OTHER">🌍 Other</option>
+          </select>
+        </div>
+
         <Inp label="Event location *" value={f.location} onChange={e=>setF(p=>({...p,location:e.target.value}))} placeholder="e.g. Oslo, Norway"/>
         <div>
-          <label style={{fontSize:T.xs,fontWeight:700,color:C.muted,display:"block",marginBottom:6}}>Your budget range *</label>
+          <label style={{fontSize:T.xs,fontWeight:700,color:C.muted,display:"block",marginBottom:4}}>Your budget range *</label>
+          {f.country&&f.budgetRange&&(
+            <div style={{fontSize:11,color:C.gold,marginBottom:8,display:"flex",alignItems:"center",gap:6}}>
+              <span style={{width:6,height:6,borderRadius:"50%",background:C.gold,display:"inline-block"}}/>
+              Suggested based on your location — feel free to adjust
+            </div>
+          )}
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-            {BUDGET_RANGES.map(b=>(
-              <button key={b.label} onClick={()=>setF(p=>({...p,budgetRange:b.label}))}
-                style={{background:f.budgetRange===b.label?`${C.gold}20`:C.surface,border:`2px solid ${f.budgetRange===b.label?C.gold:C.border}`,borderRadius:8,padding:"10px 12px",fontSize:12,fontWeight:f.budgetRange===b.label?700:400,color:f.budgetRange===b.label?C.gold:C.muted,cursor:"pointer",fontFamily:"inherit",textAlign:"left" as const}}>
-                {b.label}
-              </button>
-            ))}
+            {BUDGET_RANGES.map(b=>{
+              const isAuto=f.country&&getAutobudgetRange(artist,f.country)===b.label;
+              return(
+                <button key={b.label} onClick={()=>setF(p=>({...p,budgetRange:b.label}))}
+                  style={{background:f.budgetRange===b.label?`${C.gold}20`:C.surface,border:`2px solid ${f.budgetRange===b.label?C.gold:isAuto&&!f.budgetRange?`${C.gold}66`:C.border}`,borderRadius:8,padding:"10px 12px",fontSize:12,fontWeight:f.budgetRange===b.label?700:400,color:f.budgetRange===b.label?C.gold:C.muted,cursor:"pointer",fontFamily:"inherit",textAlign:"left" as const,position:"relative" as const}}>
+                  {b.label}
+                  {isAuto&&!f.budgetRange&&<span style={{position:"absolute",top:4,right:4,width:6,height:6,borderRadius:"50%",background:C.gold,opacity:0.6}}/>}
+                </button>
+              );
+            })}
           </div>
           <div style={{fontSize:11,color:C.muted,marginTop:6}}>Your exact budget is private — only the range is shared with the artist</div>
         </div>
@@ -10848,8 +10991,33 @@ function AppInner() {
   const [artists,setArtists]=useState<any[]>([]);
   const [bookings,setBookings]=useState<any[]>([]);
   const [inquiries,setInquiries]=useState<any[]>([]);
+  const [bookingRequests,setBookingRequests]=useState<any[]>([]);
   const handleNewInquiry=inq=>{setInquiries(p=>[inq,...p]);notify(`New inquiry from ${inq.name||'a visitor'}!`,'inquiry'); sendBrowserNotif('New Inquiry — Awaz',`${inq.name||'Someone'} sent a private inquiry`);};
   const handleUpdateInquiry=(id,updates)=>setInquiries(p=>p.map(i=>i.id===id?{...i,...updates}:i));
+  const handleNewBookingRequest=(req:any)=>{
+    setBookingRequests(p=>[req,...p]);
+    notify(`New booking request from ${req.customerName}!`,'booking');
+  };
+  const handleBookingRequestAction=async(id:string,updates:any)=>{
+    setBookingRequests(p=>p.map(r=>r.id===id?{...r,...updates}:r));
+    if(HAS_SUPA){
+      const sb=await getSupabase();
+      if(sb){
+        const dbUpdate:any={status:updates.status,last_action_at:new Date().toISOString()};
+        if(updates.artistOffer!==undefined) dbUpdate.artist_offer=updates.artistOffer;
+        if(updates.counterRound!==undefined) dbUpdate.counter_round=updates.counterRound;
+        if(updates.declineReason!==undefined) dbUpdate.decline_reason=updates.declineReason;
+        await sb.from("booking_requests").update(dbUpdate).eq("id",id);
+        // Notify customer by email
+        const req=bookingRequests.find(r=>r.id===id);
+        if(req){
+          const emailType=updates.status==="offered"?"new_message":updates.status==="accepted"?"booking_confirmed":"new_message";
+          const msg=updates.status==="offered"?`${selArtist?.name||"The artist"} has sent you a price offer of €${updates.artistOffer} for your event on ${req.eventDate||req.event_date}. Log in to accept or negotiate.`:updates.status==="accepted"?`Great news! Your booking request has been accepted.`:updates.status==="declined"?`Unfortunately the artist is not available. Reason: ${updates.declineReason}`:"Your booking request has been updated.";
+          await sb.functions.invoke("send-email",{body:{type:emailType,toEmail:req.customerEmail||req.customer_email,toName:req.customerName||req.customer_name,fromName:selArtist?.name||"Awaz",message:msg,bookingDate:req.eventDate||req.event_date}});
+        }
+      }
+    }
+  };
   const [session,setSession]=useState(null);
   const [appReady,setAppReady]=useState(!HAS_SUPA); // true immediately if no Supabase
   const [view,setView]=useState("home");
@@ -10900,11 +11068,34 @@ function AppInner() {
           });
           // Admin: load all data then set ready
           try{
-            const[artistRes,inquiryRes,bookingRes]=await Promise.all([
+            const[artistRes,inquiryRes,bookingRes,reqRes]=await Promise.all([
               sb.from("artists").select("*"),
               sb.from("inquiries").select("*").order("created_at",{ascending:false}),
               sb.from("bookings").select("*").neq("status","admin_chat"),
+              sb.from("booking_requests").select("*").order("created_at",{ascending:false}),
             ]);
+            if(reqRes.data?.length>0) setBookingRequests(reqRes.data.map((r:any)=>({
+              id:r.id,customerName:r.customer_name,customerEmail:r.customer_email,
+              artistId:r.artist_id,eventDate:r.event_date,eventType:r.event_type,
+              location:r.location,budgetRange:r.budget_range,budgetMin:r.budget_min||0,
+              budgetMax:r.budget_max||999999,guestCount:r.guest_count||"",notes:r.notes||"",
+              status:r.status||"pending",artistOffer:r.artist_offer||null,
+              counterRound:r.counter_round||0,declineReason:r.decline_reason||null,
+              depositPaid:r.deposit_paid||false,
+              createdAt:new Date(r.created_at).getTime(),
+              expiresAt:new Date(r.expires_at).getTime(),
+            })));
+
+            // Admin realtime: new requests appear instantly
+            sb.channel("admin-booking-requests")
+              .on("postgres_changes",{event:"*",schema:"public",table:"booking_requests"},(payload:any)=>{
+                const r=payload.new;
+                if(!r) return;
+                const mapped={id:r.id,customerName:r.customer_name,customerEmail:r.customer_email,artistId:r.artist_id,eventDate:r.event_date,eventType:r.event_type,location:r.location,budgetRange:r.budget_range,budgetMin:r.budget_min||0,budgetMax:r.budget_max||999999,guestCount:r.guest_count||"",notes:r.notes||"",status:r.status||"pending",artistOffer:r.artist_offer||null,counterRound:r.counter_round||0,declineReason:r.decline_reason||null,depositPaid:r.deposit_paid||false,createdAt:new Date(r.created_at).getTime(),expiresAt:new Date(r.expires_at||0).getTime()};
+                if(payload.eventType==="INSERT") setBookingRequests(p=>[mapped,...p]);
+                else if(payload.eventType==="UPDATE") setBookingRequests(p=>p.map(x=>x.id===r.id?mapped:x));
+              })
+              .subscribe();
             if(artistRes.data?.length>0) setArtists(artistRes.data.map((a:any)=>({
               id:a.id,name:a.name,nameDari:a.name_dari||"",genre:a.genre||"",location:a.location||"",
               rating:a.rating||0,reviews:a.reviews||0,priceInfo:a.price_info||"On request",
@@ -11032,6 +11223,46 @@ function AppInner() {
           role,
           artistId,
         });
+
+        // Load booking requests for this artist
+        if(role==="artist"&&artistId){
+          try{
+            const{data:reqs}=await sb.from("booking_requests")
+              .select("*")
+              .eq("artist_id",artistId)
+              .order("created_at",{ascending:false});
+            if(reqs?.length>0) setBookingRequests(reqs.map((r:any)=>({
+              id:r.id,customerName:r.customer_name,customerEmail:r.customer_email,
+              artistId:r.artist_id,eventDate:r.event_date,eventType:r.event_type,
+              location:r.location,budgetRange:r.budget_range,budgetMin:r.budget_min||0,
+              budgetMax:r.budget_max||999999,guestCount:r.guest_count||"",notes:r.notes||"",
+              status:r.status||"pending",artistOffer:r.artist_offer||null,
+              counterRound:r.counter_round||0,declineReason:r.decline_reason||null,
+              depositPaid:r.deposit_paid||false,
+              createdAt:new Date(r.created_at).getTime(),
+              expiresAt:new Date(r.expires_at).getTime(),
+            })));
+            // Realtime: new requests appear instantly
+            sb.channel("artist-requests-"+artistId)
+              .on("postgres_changes",{event:"INSERT",schema:"public",table:"booking_requests",filter:`artist_id=eq.${artistId}`},(payload:any)=>{
+                const r=payload.new;
+                setBookingRequests(p=>[{
+                  id:r.id,customerName:r.customer_name,customerEmail:r.customer_email,
+                  artistId:r.artist_id,eventDate:r.event_date,eventType:r.event_type,
+                  location:r.location,budgetRange:r.budget_range,
+                  budgetMin:r.budget_min||0,budgetMax:r.budget_max||999999,
+                  guestCount:r.guest_count||"",notes:r.notes||"",
+                  status:r.status||"pending",artistOffer:null,counterRound:0,
+                  declineReason:null,depositPaid:false,
+                  createdAt:new Date(r.created_at).getTime(),
+                  expiresAt:new Date(r.expires_at||Date.now()+172800000).getTime(),
+                },...p]);
+                notify(`New booking request from ${r.customer_name}!`,"booking");
+                sendBrowserNotif("New Booking Request — Awaz",`${r.customer_name} wants to book you for ${r.event_type}`);
+              })
+              .subscribe();
+          }catch(e){console.warn("Booking requests load error:",e);}
+        }
         } // end else (non-admin)
       }
 
@@ -11689,11 +11920,11 @@ function AppInner() {
       <div style={{width:40,height:40,border:`3px solid ${C.border}`,borderTopColor:C.gold,borderRadius:"50%",animation:"spin 0.8s linear infinite"}}/>
     </div>
   );
-  if(session?.role==="admin") return <AdminDash key={lang+theme} theme={theme} onToggleTheme={toggleTheme} artists={artists} setArtists={setArtists} bookings={bookings} setBookings={setBookings} users={users} inquiries={inquiries} onAction={handleArtistAction} onLogout={logout} onMsg={handleMsg} onUpdateInquiry={handleUpdateInquiry}/>;
+  if(session?.role==="admin") return <AdminDash key={lang+theme} theme={theme} onToggleTheme={toggleTheme} artists={artists} setArtists={setArtists} bookings={bookings} setBookings={setBookings} users={users} inquiries={inquiries} bookingRequests={bookingRequests} onAction={handleArtistAction} onLogout={logout} onMsg={handleMsg} onUpdateInquiry={handleUpdateInquiry} onBookingRequestAction={handleBookingRequestAction}/>;
   if(session?.role==="artist"){
     const myA=artists.find(a=>a.id===session.artistId);
     // Only show dashboard if artist is approved by admin
-    if(myA && myA.status==="approved") return <ArtistPortal key={lang+theme} theme={theme} onToggleTheme={toggleTheme} user={session} artist={myA} bookings={bookings} onLogout={logout} session={session} onToggleDay={handleToggle} onMsg={handleMsg} onUpdateArtist={handleUpdateArtist}/>;
+    if(myA && myA.status==="approved") return <ArtistPortal key={lang+theme} theme={theme} onToggleTheme={toggleTheme} user={session} artist={myA} bookings={bookings} bookingRequests={bookingRequests} onBookingRequestAction={handleBookingRequestAction} onLogout={logout} session={session} onToggleDay={handleToggle} onMsg={handleMsg} onUpdateArtist={handleUpdateArtist}/>;
     // Wait for hydration — avoid race condition on page refresh
     if(!appReady) return(
       <div style={{minHeight:"100vh",background:C.bg,display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:16,fontFamily:"'DM Sans',sans-serif"}}>
