@@ -12688,14 +12688,13 @@ function AppInner() {
 
               {/* Left — copy */}
               <div style={{marginBottom:vp.isMobile?0:0}}>
-                <div style={{display:"inline-flex",alignItems:"center",gap:8,borderRadius:20,padding:"5px 14px",marginBottom:12,
-                  background:"linear-gradient(90deg,#009A44,#000,#BE0000)",
-                }}>
-                  <span style={{fontFamily:"'Noto Naskh Arabic',serif",fontSize:16,color:"#C8A84A"}}>آواز</span>
-                  <span style={{fontSize:11,fontWeight:700,color:"#fff",letterSpacing:"1px",textTransform:"uppercase" as const}}>Band Booking</span>
+                {/* Afghan flag badge — only the logo uses flag colors */}
+                <div style={{display:"inline-flex",alignItems:"center",gap:8,borderRadius:20,padding:"5px 14px",marginBottom:12,background:C.goldS,border:`1px solid ${C.gold}44`}}>
+                  <span style={{fontFamily:"'Noto Naskh Arabic',serif",fontSize:16,color:C.gold}}>آواز</span>
+                  <span style={{fontSize:11,fontWeight:700,color:C.gold,letterSpacing:"1px",textTransform:"uppercase" as const}}>Band Booking</span>
                 </div>
                 <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:vp.isMobile?T.xl:T["3xl"],fontWeight:800,color:C.text,lineHeight:1.1,marginBottom:10}}>
-                  Book et afghansk <span style={{color:"#C8A84A"}}>ensemble</span>
+                  Book et afghansk <span style={{color:C.gold}}>ensemble</span>
                 </div>
                 {!vp.isMobile&&(
                   <div style={{color:C.muted,fontSize:T.sm,lineHeight:1.8,marginBottom:20,maxWidth:440}}>
@@ -12706,12 +12705,12 @@ function AppInner() {
                 {/* Two options */}
                 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:16}}>
                   {[
-                    {label:"Alternativ A",desc:"Artistens eget band",sub:"Artisten bestemmer sammensetningen og antall musikere",icon:"🎼",color:"#C8A84A"},
-                    {label:"Alternativ B",desc:"Bygg ditt eget",sub:"Velg musikere enkeltvis fra verifiserte artister på plattformen",icon:"🎛️",color:"#009A44"},
-                  ].map(({label,desc,sub,icon,color})=>(
-                    <div key={label} style={{background:C.card,border:`1px solid ${color}33`,borderRadius:10,padding:"10px 12px"}}>
+                    {label:"Alternativ A",desc:"Artistens eget band",sub:"Artisten bestemmer sammensetningen og antall musikere",icon:"🎼"},
+                    {label:"Alternativ B",desc:"Bygg ditt eget",sub:"Velg musikere enkeltvis fra verifiserte artister på plattformen",icon:"🎛️"},
+                  ].map(({label,desc,sub,icon})=>(
+                    <div key={label} style={{background:C.card,border:`1px solid ${C.gold}22`,borderRadius:10,padding:"10px 12px"}}>
                       <span style={{fontSize:16}}>{icon}</span>
-                      <div style={{fontWeight:700,color,fontSize:T.xs,marginTop:4}}>{label} — {desc}</div>
+                      <div style={{fontWeight:700,color:C.gold,fontSize:T.xs,marginTop:4}}>{label} — {desc}</div>
                       <div style={{fontSize:10,color:C.muted,marginTop:2,lineHeight:1.4}}>{sub}</div>
                     </div>
                   ))}
@@ -12719,44 +12718,44 @@ function AppInner() {
 
                 <button onClick={()=>setShowBandBooking(true)} style={{
                   display:"flex",alignItems:"center",gap:10,
-                  background:"linear-gradient(135deg,#009A44,#007A3D)",
-                  color:"#fff",border:"none",borderRadius:12,
+                  background:`linear-gradient(135deg,${C.gold},${C.saffron})`,
+                  color:C.bg,border:"none",borderRadius:12,
                   padding:vp.isMobile?"14px 20px":"16px 28px",cursor:"pointer",
                   fontFamily:"inherit",fontWeight:800,fontSize:vp.isMobile?14:16,
-                  boxShadow:"0 8px 32px rgba(0,154,68,0.3)",
+                  boxShadow:`0 8px 32px ${C.gold}44`,
                   width:vp.isMobile?"100%":"auto",
                   justifyContent:"center",
                 }}>
                   <span style={{fontSize:18}}>🎼</span>
                   Book et band nå →
                 </button>
-                <div style={{fontSize:11,color:C.muted,marginTop:8,textAlign:vp.isMobile?"center":"left"}}>Depositum betales via Stripe · Gratis å sende forespørsel</div>
+                <div style={{fontSize:11,color:C.muted,marginTop:8,textAlign:vp.isMobile?"center":"left"}}>Gratis å sende forespørsel · Betal kun ved enighet</div>
               </div>
 
               {/* Right — how it works card */}
               {!vp.isMobile&&(
                 <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:20,overflow:"hidden",boxShadow:`0 24px 80px rgba(0,0,0,0.12)`}}>
-                  <div style={{height:4,background:"linear-gradient(90deg,#009A44,#000,#BE0000)"}}/>
+                  <div style={{height:4,background:`linear-gradient(90deg,${C.gold},${C.saffron},transparent)`}}/>
                   <div style={{padding:"24px 20px"}}>
                     <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:14}}>
-                      <span style={{fontFamily:"'Noto Naskh Arabic',serif",fontSize:22,color:"#C8A84A"}}>آواز</span>
+                      <span style={{fontFamily:"'Noto Naskh Arabic',serif",fontSize:22,color:C.gold}}>آواز</span>
                       <div>
-                        <div style={{fontSize:11,fontWeight:700,color:"#C8A84A",letterSpacing:"1px",textTransform:"uppercase" as const}}>AWAZ</div>
+                        <div style={{fontSize:11,fontWeight:700,color:C.gold,letterSpacing:"1px",textTransform:"uppercase" as const}}>AWAZ</div>
                         <div style={{fontSize:10,color:C.muted}}>Afghansk musikk booking</div>
                       </div>
                     </div>
                     <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:700,color:C.text,marginBottom:16}}>Slik fungerer bandbooking</div>
 
                     {[
-                      {icon:"🎤",label:"Alternativ A — Artistens eget band",desc:"Book en vokalist som har satt opp sitt eget faste band. Artisten bestemmer hvem som er med.",color:"#C8A84A"},
-                      {icon:"🎛️",label:"Alternativ B — Bygg ditt eget",desc:"Velg enkeltmusikere fra plattformen — kun de som er tilgjengelige på din dato.",color:"#009A44"},
-                      {icon:"💳",label:"Depositum via Stripe",desc:"Kunden betaler depositum for å bekrefte bookingen. Trygt og sikkert.",color:C.text},
-                      {icon:"💵",label:"Saldo etter arrangementet",desc:"Restbeløpet betales kontant direkte til artistene på kvelden.",color:C.text},
-                    ].map(({icon,label,desc,color})=>(
+                      {icon:"🎤",label:"Alternativ A — Artistens eget band",desc:"Book en vokalist som har satt opp sitt eget faste band. Artisten bestemmer hvem som er med."},
+                      {icon:"🎛️",label:"Alternativ B — Bygg ditt eget",desc:"Velg enkeltmusikere fra plattformen — kun de som er tilgjengelige på din dato."},
+                      {icon:"💳",label:"Depositum via Stripe",desc:"Kunden betaler depositum for å bekrefte bookingen. Trygt og sikkert."},
+                      {icon:"💵",label:"Saldo etter arrangementet",desc:"Restbeløpet betales kontant direkte til artistene på kvelden."},
+                    ].map(({icon,label,desc})=>(
                       <div key={label} style={{display:"flex",gap:12,padding:"10px 0",borderBottom:`1px solid ${C.border}`}}>
                         <span style={{fontSize:18,flexShrink:0,marginTop:2}}>{icon}</span>
                         <div>
-                          <div style={{fontWeight:700,color,fontSize:T.xs,marginBottom:2}}>{label}</div>
+                          <div style={{fontWeight:700,color:C.gold,fontSize:T.xs,marginBottom:2}}>{label}</div>
                           <div style={{fontSize:11,color:C.muted,lineHeight:1.5}}>{desc}</div>
                         </div>
                       </div>
@@ -12764,8 +12763,8 @@ function AppInner() {
 
                     <button onClick={()=>setShowBandBooking(true)} style={{
                       width:"100%",marginTop:16,
-                      background:"linear-gradient(135deg,#009A44,#007A3D)",
-                      color:"#fff",border:"none",borderRadius:12,padding:"14px",
+                      background:`linear-gradient(135deg,${C.gold},${C.saffron})`,
+                      color:C.bg,border:"none",borderRadius:12,padding:"14px",
                       fontWeight:800,fontSize:15,cursor:"pointer",fontFamily:"inherit",
                     }}>
                       🎼 Start bandbooking →
