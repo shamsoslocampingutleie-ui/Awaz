@@ -2783,7 +2783,7 @@ const TRANSLATIONS = {
 
 // ── Email notification helper ─────────────────────────────────────────
 async function sendEmailNotification(payload:{
-  type:"new_booking"|"new_message"|"booking_confirmed"|"artist_approved"|"artist_rejected";
+  type:"new_booking"|"new_message"|"booking_confirmed"|"offer_sent"|"offer_accepted"|"new_chat_message"|"booking_reminder"|"artist_approved"|"artist_rejected";
   toEmail?:string; toName?:string; fromName?:string; message?:string;
   artistName?:string; bookingDate?:string; depositAmount?:number;
   currency?:string; eventType?:string; feedbackText?:string;
@@ -4633,7 +4633,7 @@ function BookingRequestForm({ artist, onClose, onSubmit, session, onLoginRequest
         {step===1&&(<div style={{display:"flex",flexDirection:"column",gap:14}}>
           <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text,marginBottom:4}}>Om arrangementet ditt</div>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}><Inp label="Fullt navn *" placeholder="Fornavn Etternavn" value={form.name} onChange={e=>setF("name",e.target.value)}/><Inp label="E-post *" type="email" placeholder="deg@epost.no" value={form.email} onChange={e=>setF("email",e.target.value)}/></div>
-          <div><div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:6}}>Dato * <span style={{color:C.faint,fontWeight:400}}>(minst 7 dager frem)</span></div><input type="date" value={form.eventDate} onChange={e=>setF("eventDate",e.target.value)} min={new Date(Date.now()+7*24*60*60*1000).toISOString().split("T")[0]} style={{width:"100%",background:C.card,border:`2px solid ${form.eventDate?C.emerald:C.border}`,borderRadius:10,padding:"12px 14px",color:C.text,fontSize:T.sm,outline:"none",fontFamily:"inherit",boxSizing:"border-box" as const}}/></div>
+          <div><div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:6}}>Dato * <span style={{color:C.faint,fontWeight:400}}>(minst 7 dager frem)</span></div><input type="date" value={form.eventDate} onChange={e=>setF("eventDate",e.target.value)} min={new Date(Date.now()+7*24*60*60*1000).toISOString().split("T")[0]} style={{width:"100%",background:C.card,border:`2px solid ${form.eventDate?C.emerald:C.border}`,borderRadius:10,padding:"12px 14px",color:C.text,fontSize:T.sm,outline:"none",fontFamily:"inherit",boxSizing:"border-box" as const}}/>{form.eventDate&&(()=>{const d=new Date(form.eventDate);const mk=`${d.getFullYear()}-${d.getMonth()}`;const day=d.getDate();const isAvail=(artist.available?.[mk]||[]).includes(day);const isBlocked=(artist.blocked?.[mk]||[]).includes(day);if(isBlocked)return<div style={{marginTop:6,fontSize:11,color:C.ruby,fontWeight:600}}>⚠ Artisten er opptatt denne datoen — velg en annen</div>;if(isAvail)return<div style={{marginTop:6,fontSize:11,color:C.emerald,fontWeight:600}}>✓ Artisten har markert denne datoen som ledig</div>;return<div style={{marginTop:6,fontSize:11,color:C.muted}}>Datoen er ikke bekreftet — artisten avklarer ved svar</div>;})()}</div>
           <div><div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:8}}>Type arrangement *</div><div style={{display:"flex",flexWrap:"wrap" as const,gap:6}}>{EVENT_TYPES.map(et=>(<button key={et} onClick={()=>setF("eventType",et)} style={{background:form.eventType===et?C.goldS:"transparent",color:form.eventType===et?C.gold:C.muted,border:`1px solid ${form.eventType===et?C.gold+"66":C.border}`,borderRadius:20,padding:"6px 14px",cursor:"pointer",fontFamily:"inherit",fontSize:T.xs,fontWeight:600,textTransform:"capitalize" as const}}>{et}</button>))}</div></div>
           <div><div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:6}}>Land *</div>{artist.countryPricing?.filter((r:any)=>r.active).length>0?(<div style={{display:"flex",flexWrap:"wrap" as const,gap:6}}>{artist.countryPricing.filter((r:any)=>r.active).map((row:any)=>{const m=MARKETS.find(m=>m.code===row.code);const isSel=form.countryCode===row.code;return m?(<button key={row.code} onClick={()=>setForm(p=>({...p,countryCode:row.code,country:m.name}))} style={{background:isSel?C.goldS:C.surface,border:`2px solid ${isSel?C.gold:C.border}`,borderRadius:10,padding:"9px 14px",cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:7}}><span style={{fontSize:18}}>{m.flag}</span><span style={{fontSize:T.xs,fontWeight:isSel?700:500,color:isSel?C.gold:C.text}}>{m.name}</span>{isSel&&<span style={{color:C.gold,fontSize:12}}>✓</span>}</button>):null;})}</div>):(<Inp label="" placeholder="Land" value={form.country} onChange={e=>setF("country",e.target.value)}/>)}</div>
           <Inp label="By / sted" placeholder="Oslo, Bergen, Berlin…" value={form.city} onChange={e=>setF("city",e.target.value)}/>
@@ -4670,7 +4670,7 @@ function BookingRequestForm({ artist, onClose, onSubmit, session, onLoginRequest
 }
 
 // ── Artist Profile Page ───────────────────────────────────────────────
-function ProfilePage({ artist, bookings, session, onBack, onBookingCreated, onLoginRequest }) {
+function ProfilePage({ artist, artists=[], bookings, session, onBack, onBookingCreated, onLoginRequest }) {
   const vp=useViewport();
   const [selDay,setSelDay]=useState(null),[selMonth,setSelMonth]=useState(null),[selYear,setSelYear]=useState(null);
   const [tab,setTab]=useState("about");
@@ -5069,6 +5069,22 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated, onLo
             </div>
             {/* Social proof below booking card */}
             <SocialBar artist={artist}/>
+            {/* Similar artists */}
+            {artists.filter((a:any)=>a.id!==artist.id&&a.status==="approved"&&(a.genre===artist.genre||a.tags?.some((t:string)=>artist.tags?.includes(t)))).slice(0,3).length>0&&(
+              <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:16}}>
+                <div style={{fontSize:10,color:C.muted,fontWeight:700,textTransform:"uppercase" as const,letterSpacing:"0.8px",marginBottom:12}}>Lignende artister</div>
+                {artists.filter((a:any)=>a.id!==artist.id&&a.status==="approved"&&(a.genre===artist.genre||a.tags?.some((t:string)=>artist.tags?.includes(t)))).slice(0,3).map((a:any)=>(
+                  <div key={a.id} onClick={()=>onBack&&setTimeout(()=>{},0)} style={{display:"flex",gap:10,alignItems:"center",padding:"8px 0",borderBottom:`1px solid ${C.border}`,cursor:"pointer",lastChild:{borderBottom:"none"}}}>
+                    <div style={{width:36,height:36,borderRadius:8,background:C.goldS,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>{a.emoji}</div>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{fontWeight:600,color:C.text,fontSize:T.xs,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{a.name}</div>
+                      <div style={{color:C.muted,fontSize:10}}>{a.genre}</div>
+                    </div>
+                    <div style={{fontSize:10,color:C.gold,fontWeight:700}}>→</div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -10242,38 +10258,40 @@ function CustomerPortal({session, artists, onLogout, theme, onToggleTheme}:{sess
   const [loading,setLoading]=useState(true);
   const [counterAmt,setCounterAmt]=useState("");
   const [counterErr,setCounterErr]=useState("");
-  const [tab,setTab]=useState("requests");
-  const [chatMsg,setChatMsg]=useState("");
   const [chatMsgs,setChatMsgs]=useState<any[]>([]);
+  const [chatInput,setChatInput]=useState("");
+  const chatBottomRef=React.useRef<any>(null);
 
-  // Load customer's requests
   useEffect(()=>{
     if(!HAS_SUPA){setLoading(false);return;}
     getSupabase().then(async sb=>{
       if(!sb){setLoading(false);return;}
       const{data}=await sb.from("booking_requests")
-        .select("*")
-        .or(`customer_email.eq.${session.email},customer_id.eq.${session.id}`)
+        .select("*").or(`customer_email.eq.${session.email},customer_id.eq.${session.id}`)
         .order("created_at",{ascending:false});
       if(data) setRequests(data);
       setLoading(false);
     });
   },[session.id,session.email]);
 
-  // Realtime: watch for offer updates from artist
+  // Realtime: offers + status updates
   useEffect(()=>{
     if(!HAS_SUPA) return;
     let ch:any=null;
     getSupabase().then(sb=>{
       if(!sb) return;
-      ch=sb.channel(`customer_reqs_${session.id}`)
+      ch=sb.channel(`cust_reqs_${session.id}`)
         .on("postgres_changes",{event:"UPDATE",schema:"public",table:"booking_requests"},(payload:any)=>{
           const r=payload.new;
           if(r.customer_email===session.email||r.customer_id===session.id){
             setRequests(p=>p.map(x=>x.id===r.id?r:x));
             if(sel?.id===r.id) setSel(r);
+            const aName=artists.find((a:any)=>a.id===r.artist_id)?.name||"Artisten";
             if(r.status==="offered"){
-              notify(`${artists.find((a:any)=>a.id===r.artist_id)?.name||"Artisten"} har sendt deg et tilbud!`,"message");
+              notify(`${aName} har sendt deg et tilbud! Svar nå ✨`,"message");
+              sendBrowserNotif("Nytt tilbud — Awaz",`${aName}: €${r.artist_offer} depositum`);
+            } else if(r.status==="declined"){
+              notify(`${aName} har avslått forespørselen.`,"message");
             }
           }
         }).subscribe();
@@ -10281,258 +10299,286 @@ function CustomerPortal({session, artists, onLogout, theme, onToggleTheme}:{sess
     return()=>{if(ch) ch.unsubscribe();};
   },[session.id,session.email,sel?.id]);
 
-  // Load chat messages for selected request
+  // Chat load + realtime
   useEffect(()=>{
     if(!sel||!HAS_SUPA) return;
+    let ch:any=null;
     getSupabase().then(async sb=>{
       if(!sb) return;
-      const{data}=await sb.from("booking_messages")
-        .select("*").eq("request_id",sel.id).order("created_at",{ascending:true});
+      const{data}=await sb.from("booking_messages").select("*").eq("request_id",sel.id).order("created_at",{ascending:true});
       if(data) setChatMsgs(data);
+      ch=sb.channel(`bm_cust_${sel.id}`)
+        .on("postgres_changes",{event:"INSERT",schema:"public",table:"booking_messages",filter:`request_id=eq.${sel.id}`},(payload:any)=>{
+          setChatMsgs(p=>{if(p.find(m=>m.id===payload.new.id)) return p; return [...p,payload.new];});
+          if(payload.new.from_role==="artist"){
+            notify(`Ny melding fra ${payload.new.sender_name||"artisten"}!`,"message");
+            sendBrowserNotif("Ny melding — Awaz",payload.new.text?.slice(0,60)||"");
+          }
+        }).subscribe();
     });
+    return()=>{if(ch) ch.unsubscribe();};
   },[sel?.id]);
 
+  useEffect(()=>{if(chatBottomRef.current) chatBottomRef.current.scrollIntoView({behavior:"smooth"});},[chatMsgs]);
+
   const sendMsg=async()=>{
-    if(!chatMsg.trim()||!sel) return;
-    const msg={id:crypto.randomUUID(),request_id:sel.id,from_role:"customer",
-      sender_name:session.name||session.email,text:chatMsg.trim(),created_at:new Date().toISOString()};
-    setChatMsgs(p=>[...p,msg]);
-    setChatMsg("");
+    if(!chatInput.trim()||!sel) return;
+    const msg={id:crypto.randomUUID(),request_id:sel.id,from_role:"customer",sender_name:session.name||session.email,text:chatInput.trim(),created_at:new Date().toISOString()};
+    setChatMsgs(p=>[...p,msg]); setChatInput("");
     if(HAS_SUPA){
-      const sb=await getSupabase();
-      if(sb) await sb.from("booking_messages").insert([msg]);
+      const sb=await getSupabase(); if(!sb) return;
+      await sb.from("booking_messages").insert([msg]);
+      const a=artists.find((x:any)=>x.id===sel.artist_id);
+      if(a?.email) sendEmailNotification({type:"new_chat_message",toEmail:a.email,toName:a.name,fromName:session.name||session.email,message:msg.text,artistName:a.name});
     }
   };
 
   const acceptOffer=async()=>{
     if(!sel) return;
     const updated={...sel,status:"accepted"};
-    setRequests(p=>p.map(r=>r.id===sel.id?updated:r));
-    setSel(updated);
+    setRequests(p=>p.map(r=>r.id===sel.id?updated:r)); setSel(updated);
     if(HAS_SUPA){
-      const sb=await getSupabase();
-      if(sb) await sb.from("booking_requests").update({status:"accepted"}).eq("id",sel.id);
+      const sb=await getSupabase(); if(!sb) return;
+      await sb.from("booking_requests").update({status:"accepted"}).eq("id",sel.id);
+      const confMsg={id:crypto.randomUUID(),request_id:sel.id,from_role:"customer",sender_name:session.name||"Kunde",text:`Jeg aksepterer tilbudet!\n\n💳 Depositum: €${sel.artist_offer}\n${(sel.artist_balance||0)>0?"💵 Saldo etter konsert: €"+sel.artist_balance+"\n":""}Gleder meg til arrangementet! 🎵`,created_at:new Date().toISOString()};
+      await sb.from("booking_messages").insert([confMsg]);
+      setChatMsgs(p=>[...p,confMsg]);
+      const a=artists.find((x:any)=>x.id===sel.artist_id);
+      if(a?.email) sendEmailNotification({type:"offer_accepted",toEmail:a.email,toName:a.name,fromName:session.name||session.email,artistName:a.name,depositAmount:sel.artist_offer,bookingDate:sel.event_date,eventType:sel.event_type});
+      sendEmailNotification({type:"booking_confirmed",toEmail:session.email,toName:session.name||session.email,fromName:a?.name||"",artistName:a?.name||"",depositAmount:sel.artist_offer,bookingDate:sel.event_date,eventType:sel.event_type});
     }
-    notify("Tilbud akseptert!","success");
+    notify("Booking akseptert! Bekreftelse sendes på e-post.","success");
   };
 
   const sendCounter=async()=>{
     const amt=parseInt(counterAmt);
-    if(!amt||amt<50){setCounterErr("Skriv inn et gyldig beløp");return;}
+    if(!amt||amt<50){setCounterErr("Skriv inn gyldig beløp");return;}
     const updated={...sel,status:"counter_offered",customer_counter:amt};
-    setRequests(p=>p.map(r=>r.id===sel.id?updated:r));
-    setSel(updated);
-    setCounterAmt("");setCounterErr("");
+    setRequests(p=>p.map(r=>r.id===sel.id?updated:r)); setSel(updated);
     if(HAS_SUPA){
-      const sb=await getSupabase();
-      if(sb) await sb.from("booking_requests").update({status:"counter_offered",customer_counter:amt}).eq("id",sel.id);
+      const sb=await getSupabase(); if(!sb) return;
+      await sb.from("booking_requests").update({status:"counter_offered",customer_counter:amt}).eq("id",sel.id);
+      const cMsg={id:crypto.randomUUID(),request_id:sel.id,from_role:"customer",sender_name:session.name||"Kunde",text:`Jeg sender et motbud: €${amt} depositum. Håper vi finner en løsning! 🙏`,created_at:new Date().toISOString()};
+      await sb.from("booking_messages").insert([cMsg]); setChatMsgs(p=>[...p,cMsg]);
     }
+    setCounterAmt("");setCounterErr("");
     notify("Motbud sendt!","success");
   };
 
-  const SC:Record<string,string>={
-    request_received:C.saffron,offered:C.lapis,accepted:C.emerald,
-    counter_offered:C.gold,declined:C.ruby,expired:C.muted
-  };
-  const SL:Record<string,string>={
-    request_received:"Venter på svar",offered:"Tilbud mottatt ✨",accepted:"Akseptert ✓",
-    counter_offered:"Motbud sendt",declined:"Avslått",expired:"Utløpt"
-  };
-
-  const artist=(r:any)=>artists.find((a:any)=>a.id===r.artist_id);
+  const SC:Record<string,string>={request_received:C.saffron,pending:C.saffron,offered:C.lapis,accepted:C.emerald,counter_offered:C.gold,declined:C.ruby,expired:C.muted};
+  const SL:Record<string,string>={request_received:"Venter på svar",pending:"Venter på svar",offered:"Tilbud mottatt ✨",accepted:"Booking bekreftet ✓",counter_offered:"Motbud sendt",declined:"Avslått",expired:"Utløpt"};
+  const aOf=(r:any)=>artists.find((a:any)=>a.id===r.artist_id);
 
   if(sel) return(
     <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'DM Sans',sans-serif"}}>
-      <div style={{maxWidth:680,margin:"0 auto",padding:vp.isMobile?"16px":"32px 24px"}}>
-        <button onClick={()=>{setSel(null);setChatMsgs([]);}} style={{background:"none",border:"none",color:C.muted,cursor:"pointer",fontFamily:"inherit",fontSize:T.sm,marginBottom:20,display:"flex",alignItems:"center",gap:6}}>← Mine forespørsler</button>
+      <div style={{background:C.card,borderBottom:`1px solid ${C.border}`,padding:"12px 20px",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky" as const,top:0,zIndex:50}}>
+        <button onClick={()=>{setSel(null);setChatMsgs([]);}} style={{background:"none",border:"none",color:C.muted,cursor:"pointer",fontFamily:"inherit",fontSize:T.sm,display:"flex",alignItems:"center",gap:6}}>← Mine bookinger</button>
+        <span style={{background:`${SC[sel.status]||C.muted}20`,color:SC[sel.status]||C.muted,padding:"4px 12px",borderRadius:20,fontSize:10,fontWeight:700}}>{SL[sel.status]||sel.status}</span>
+      </div>
+      <div style={{maxWidth:680,margin:"0 auto",padding:vp.isMobile?"16px":"24px"}}>
 
-        {/* Artist + status */}
-        <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,overflow:"hidden",marginBottom:16}}>
-          <div style={{height:3,background:`linear-gradient(90deg,${C.gold},${SC[sel.status]||C.gold})`}}/>
-          <div style={{padding:"18px 20px"}}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:10,marginBottom:14}}>
-              <div>
-                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:700,color:C.text}}>{artist(sel)?.name||"Artist"}</div>
-                <div style={{color:C.muted,fontSize:T.xs,marginTop:2}}>{sel.event_type} · {sel.event_date}</div>
-              </div>
-              <span style={{background:`${SC[sel.status]||C.muted}20`,color:SC[sel.status]||C.muted,padding:"5px 14px",borderRadius:20,fontSize:T.xs,fontWeight:700}}>{SL[sel.status]||sel.status}</span>
-            </div>
+        {/* Artist info */}
+        <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:"16px 18px",marginBottom:14,display:"flex",gap:14,alignItems:"center"}}>
+          <div style={{width:52,height:52,borderRadius:12,background:C.goldS,display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,flexShrink:0}}>{aOf(sel)?.emoji||"🎵"}</div>
+          <div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:700,color:C.text}}>{aOf(sel)?.name||"Artist"}</div>
+            <div style={{color:C.muted,fontSize:T.xs,marginTop:2}}>{sel.event_type} · {sel.event_date}</div>
+          </div>
+        </div>
 
-            {/* Timeline */}
-            <div style={{display:"flex",gap:0,marginBottom:16,overflowX:"auto"}}>
-              {[["Sendt","request_received"],["Tilbud","offered"],["Akseptert","accepted"]].map(([label,st],i,arr)=>{
-                const steps=["request_received","offered","counter_offered","accepted","declined"];
-                const curIdx=steps.indexOf(sel.status);
-                const thisIdx=steps.indexOf(st);
-                const done=curIdx>=thisIdx;
-                return(
-                  <div key={label} style={{display:"flex",alignItems:"center",flex:1,minWidth:60}}>
-                    <div style={{display:"flex",flexDirection:"column",alignItems:"center",flex:1}}>
-                      <div style={{width:28,height:28,borderRadius:"50%",background:done?C.gold:C.surface,border:`2px solid ${done?C.gold:C.border}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,color:done?"#000":C.muted,fontWeight:700,marginBottom:4}}>
-                        {done?"✓":(i+1)}
-                      </div>
-                      <div style={{fontSize:10,color:done?C.gold:C.muted,fontWeight:done?700:400,textAlign:"center"}}>{label}</div>
-                    </div>
-                    {i<arr.length-1&&<div style={{flex:1,height:2,background:done&&curIdx>thisIdx?C.gold:C.border,maxWidth:40}}/>}
+        {/* Timeline */}
+        <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:"16px 18px",marginBottom:14}}>
+          <div style={{fontSize:10,color:C.muted,fontWeight:700,textTransform:"uppercase" as const,marginBottom:12}}>Status</div>
+          <div style={{display:"flex",alignItems:"center",gap:0}}>
+            {[["Sendt","request_received"],["Tilbud","offered"],["Akseptert","accepted"]].map(([label,st],i,arr)=>{
+              const order=["request_received","pending","offered","counter_offered","accepted","declined"];
+              const cur=order.indexOf(sel.status); const tgt=order.indexOf(st);
+              const done=sel.status==="accepted"?i<=2:cur>=tgt;
+              return(
+                <React.Fragment key={label}>
+                  <div style={{display:"flex",flexDirection:"column" as const,alignItems:"center",minWidth:60}}>
+                    <div style={{width:30,height:30,borderRadius:"50%",background:done?C.gold:C.surface,border:`2px solid ${done?C.gold:C.border}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,color:done?"#000":C.muted,fontWeight:700,marginBottom:4}}>{done?"✓":(i+1)}</div>
+                    <div style={{fontSize:10,color:done?C.gold:C.muted,fontWeight:done?700:400,textAlign:"center" as const,whiteSpace:"nowrap" as const}}>{label}</div>
                   </div>
-                );
-              })}
-            </div>
-
-            {/* Details */}
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-              {[["Sted",`${sel.event_location_city||""}${sel.event_location_country?", "+sel.event_location_country:""}`||"—"],["Gjester",sel.guest_count||"—"],["Type",sel.event_type||"—"],["Sendt",new Date(sel.created_at).toLocaleDateString("nb-NO")]].map(([k,v])=>(
-                <div key={k as string} style={{background:C.surface,borderRadius:8,padding:"9px 11px"}}>
-                  <div style={{fontSize:10,color:C.muted,fontWeight:700,textTransform:"uppercase",marginBottom:2}}>{k}</div>
-                  <div style={{fontSize:T.xs,color:C.text}}>{v as string}</div>
-                </div>
-              ))}
-            </div>
+                  {i<arr.length-1&&<div style={{flex:1,height:2,background:done&&cur>tgt?C.gold:C.border,margin:"0 4px",marginBottom:16}}/>}
+                </React.Fragment>
+              );
+            })}
           </div>
         </div>
 
         {/* Offer card */}
         {sel.status==="offered"&&(
-          <div style={{background:C.card,border:`2px solid ${C.gold}55`,borderRadius:14,padding:20,marginBottom:16}}>
+          <div style={{background:C.card,border:`2px solid ${C.gold}55`,borderRadius:14,padding:18,marginBottom:14}}>
             <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.gold,marginBottom:14}}>✨ Du har mottatt et tilbud</div>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
-              <div style={{background:C.goldS,borderRadius:10,padding:"14px 16px",textAlign:"center"}}>
-                <div style={{fontSize:10,color:C.muted,fontWeight:700,textTransform:"uppercase",marginBottom:4}}>Depositum (betales nå)</div>
-                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.8rem",fontWeight:800,color:C.gold}}>€{sel.artist_offer}</div>
-                <div style={{fontSize:11,color:C.muted,marginTop:4}}>Via Stripe — trygg betaling</div>
+            <div style={{display:"grid",gridTemplateColumns:(sel.artist_balance||0)>0?"1fr 1fr":"1fr",gap:10,marginBottom:16}}>
+              <div style={{background:C.goldS,borderRadius:10,padding:"14px 16px",textAlign:"center" as const}}>
+                <div style={{fontSize:10,color:C.muted,fontWeight:700,textTransform:"uppercase" as const,marginBottom:4}}>Depositum — betales nå</div>
+                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.9rem",fontWeight:800,color:C.gold}}>€{sel.artist_offer}</div>
+                <div style={{fontSize:11,color:C.muted,marginTop:4}}>Sikker betaling via Stripe</div>
               </div>
-              {sel.artist_balance>0&&(
-                <div style={{background:`${C.emerald}10`,border:`1px solid ${C.emerald}33`,borderRadius:10,padding:"14px 16px",textAlign:"center"}}>
-                  <div style={{fontSize:10,color:C.muted,fontWeight:700,textTransform:"uppercase",marginBottom:4}}>Saldo (etter konsert)</div>
-                  <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.8rem",fontWeight:800,color:C.emerald}}>€{sel.artist_balance}</div>
+              {(sel.artist_balance||0)>0&&(
+                <div style={{background:`${C.emerald}10`,border:`1px solid ${C.emerald}33`,borderRadius:10,padding:"14px 16px",textAlign:"center" as const}}>
+                  <div style={{fontSize:10,color:C.muted,fontWeight:700,textTransform:"uppercase" as const,marginBottom:4}}>Saldo — etter konsert</div>
+                  <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.9rem",fontWeight:800,color:C.emerald}}>€{sel.artist_balance}</div>
                   <div style={{fontSize:11,color:C.muted,marginTop:4}}>Kontant til artisten</div>
                 </div>
               )}
             </div>
-            <div style={{display:"flex",flexDirection:"column",gap:8}}>
+            <div style={{display:"flex",flexDirection:"column" as const,gap:8}}>
               <button onClick={acceptOffer} style={{width:"100%",background:`linear-gradient(135deg,${C.emerald},#16a34a)`,color:"#fff",border:"none",borderRadius:10,padding:"14px",fontWeight:800,fontSize:T.base,cursor:"pointer",fontFamily:"inherit"}}>
-                ✓ Aksepter tilbudet
+                ✓ Aksepter og bekreft booking
               </button>
-              <div style={{display:"flex",gap:8,alignItems:"center"}}>
-                <div style={{flex:1,height:1,background:C.border}}/>
-                <span style={{color:C.muted,fontSize:11}}>eller gi motbud</span>
-                <div style={{flex:1,height:1,background:C.border}}/>
-              </div>
+              <div style={{display:"flex",gap:8,alignItems:"center"}}><div style={{flex:1,height:1,background:C.border}}/><span style={{color:C.muted,fontSize:11,whiteSpace:"nowrap" as const}}>eller send motbud</span><div style={{flex:1,height:1,background:C.border}}/></div>
               <div style={{display:"flex",gap:8}}>
-                <div style={{position:"relative",flex:1}}>
-                  <span style={{position:"absolute",left:12,top:"50%",transform:"translateY(-50%)",color:C.muted}}>€</span>
-                  <input type="number" value={counterAmt} onChange={e=>setCounterAmt(e.target.value)}
-                    placeholder="Ditt motbud" min={50}
-                    style={{width:"100%",background:C.surface,border:`2px solid ${counterAmt?C.gold:C.border}`,borderRadius:8,padding:"11px 12px 11px 28px",color:C.text,fontSize:T.sm,outline:"none",fontFamily:"inherit",boxSizing:"border-box" as const}}/>
+                <div style={{position:"relative" as const,flex:1}}>
+                  <span style={{position:"absolute" as const,left:12,top:"50%",transform:"translateY(-50%)",color:C.muted}}>€</span>
+                  <input type="number" value={counterAmt} onChange={e=>setCounterAmt(e.target.value)} placeholder="Ditt motbud" min={50} style={{width:"100%",background:C.surface,border:`2px solid ${counterAmt?C.gold:C.border}`,borderRadius:8,padding:"11px 12px 11px 28px",color:C.text,fontSize:T.sm,outline:"none",fontFamily:"inherit",boxSizing:"border-box" as const}}/>
                 </div>
-                <button onClick={sendCounter} style={{background:C.goldS,color:C.gold,border:`1px solid ${C.gold}44`,borderRadius:8,padding:"0 16px",fontWeight:700,fontSize:T.xs,cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap"}}>Send motbud</button>
+                <button onClick={sendCounter} style={{background:C.goldS,color:C.gold,border:`1px solid ${C.gold}44`,borderRadius:8,padding:"0 16px",fontWeight:700,fontSize:T.xs,cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap" as const}}>Send motbud</button>
               </div>
               {counterErr&&<div style={{color:C.ruby,fontSize:T.xs}}>⚠ {counterErr}</div>}
             </div>
           </div>
         )}
 
+        {/* Accepted: confirmation + payment instructions */}
         {sel.status==="accepted"&&(
-          <div style={{background:C.emeraldS,border:`1px solid ${C.emerald}44`,borderRadius:12,padding:16,marginBottom:16}}>
-            <div style={{fontWeight:700,color:C.emerald,fontSize:T.sm,marginBottom:4}}>✓ Booking bekreftet</div>
-            <div style={{color:C.muted,fontSize:T.xs,lineHeight:1.6}}>
-              Depositum €{sel.artist_offer} via Stripe · {sel.artist_balance>0?`Saldo €${sel.artist_balance} kontant etter konsert`:""}
+          <div style={{background:`linear-gradient(135deg,${C.emerald}12,${C.card})`,border:`2px solid ${C.emerald}44`,borderRadius:14,padding:18,marginBottom:14}}>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.emerald,marginBottom:12}}>🎉 Booking bekreftet!</div>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>
+              <div style={{background:C.goldS,borderRadius:10,padding:"12px 14px",textAlign:"center" as const}}>
+                <div style={{fontSize:10,color:C.muted,fontWeight:700,textTransform:"uppercase" as const,marginBottom:4}}>Depositum (Stripe)</div>
+                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.6rem",fontWeight:800,color:C.gold}}>€{sel.artist_offer}</div>
+              </div>
+              {(sel.artist_balance||0)>0&&(
+                <div style={{background:`${C.emerald}10`,borderRadius:10,padding:"12px 14px",textAlign:"center" as const}}>
+                  <div style={{fontSize:10,color:C.muted,fontWeight:700,textTransform:"uppercase" as const,marginBottom:4}}>Saldo kontant</div>
+                  <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.6rem",fontWeight:800,color:C.emerald}}>€{sel.artist_balance}</div>
+                </div>
+              )}
+            </div>
+            <div style={{background:C.surface,borderRadius:8,padding:"12px 14px",fontSize:T.xs,color:C.muted,lineHeight:1.7}}>
+              📧 <strong style={{color:C.text}}>Bekreftelse er sendt til {session.email}</strong><br/>
+              📅 Dato: <strong style={{color:C.text}}>{sel.event_date}</strong><br/>
+              💳 Artisten sender deg Stripe-betalingslenke for depositum. Sjekk chattevinduet nedenfor.
             </div>
           </div>
         )}
 
         {sel.status==="declined"&&(
-          <div style={{background:`${C.ruby}10`,border:`1px solid ${C.ruby}33`,borderRadius:12,padding:16,marginBottom:16}}>
+          <div style={{background:`${C.ruby}10`,border:`1px solid ${C.ruby}33`,borderRadius:12,padding:16,marginBottom:14}}>
             <div style={{fontWeight:700,color:C.ruby,fontSize:T.sm,marginBottom:4}}>Forespørsel avslått</div>
-            {sel.decline_reason&&<div style={{color:C.muted,fontSize:T.xs}}>Grunn: {sel.decline_reason}</div>}
+            {sel.decline_reason&&<div style={{color:C.muted,fontSize:T.xs,marginTop:4}}>Grunn: {sel.decline_reason}</div>}
+            <div style={{color:C.muted,fontSize:T.xs,marginTop:6,lineHeight:1.6}}>Du kan sende forespørsel til en annen artist.</div>
           </div>
         )}
 
-        {/* Chat — available when offer sent or accepted */}
-        {["offered","accepted","counter_offered"].includes(sel.status)&&(
-          <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,overflow:"hidden"}}>
-            <div style={{padding:"14px 18px",borderBottom:`1px solid ${C.border}`,fontWeight:700,color:C.text,fontSize:T.sm}}>
-              💬 Meldinger med {artist(sel)?.name||"artisten"}
-            </div>
-            <div style={{padding:"14px 18px",minHeight:120,maxHeight:280,overflowY:"auto"}}>
-              {chatMsgs.length===0?(
-                <div style={{color:C.muted,fontSize:T.xs,textAlign:"center",padding:"24px 0"}}>Ingen meldinger ennå. Start samtalen!</div>
-              ):chatMsgs.map(m=>(
-                <div key={m.id} style={{marginBottom:10,display:"flex",flexDirection:"column",alignItems:m.from_role==="customer"?"flex-end":"flex-start"}}>
-                  <div style={{maxWidth:"75%",background:m.from_role==="customer"?C.goldS:C.surface,border:`1px solid ${m.from_role==="customer"?C.gold+"44":C.border}`,borderRadius:10,padding:"9px 13px",fontSize:T.xs,color:C.text,lineHeight:1.6}}>
-                    {m.text}
-                  </div>
-                  <div style={{fontSize:9,color:C.faint,marginTop:3}}>{m.from_role==="customer"?"Deg":artist(sel)?.name} · {new Date(m.created_at).toLocaleTimeString("nb-NO",{hour:"2-digit",minute:"2-digit"})}</div>
-                </div>
-              ))}
-            </div>
-            <div style={{padding:"12px 18px",borderTop:`1px solid ${C.border}`,display:"flex",gap:8}}>
-              <input value={chatMsg} onChange={e=>setChatMsg(e.target.value)}
-                onKeyDown={e=>e.key==="Enter"&&!e.shiftKey&&sendMsg()}
-                placeholder="Skriv en melding…"
-                style={{flex:1,background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,padding:"10px 14px",color:C.text,fontSize:T.sm,outline:"none",fontFamily:"inherit"}}/>
-              <button onClick={sendMsg} style={{background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:8,padding:"0 18px",fontWeight:800,cursor:"pointer",fontFamily:"inherit",fontSize:T.sm}}>→</button>
-            </div>
+        {/* Request details */}
+        <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:"14px 16px",marginBottom:14}}>
+          <div style={{fontSize:10,color:C.muted,fontWeight:700,textTransform:"uppercase" as const,marginBottom:10}}>Forespørselsdetaljer</div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+            {[["Dato",sel.event_date],["Type",sel.event_type],["Sted",sel.event_location_city||"—"],["Gjester",sel.guest_count||"—"]].map(([k,v])=>(
+              <div key={k as string} style={{background:C.surface,borderRadius:8,padding:"8px 10px"}}>
+                <div style={{fontSize:9,color:C.muted,fontWeight:700,textTransform:"uppercase" as const,marginBottom:2}}>{k}</div>
+                <div style={{fontSize:T.xs,color:C.text}}>{v as string||"—"}</div>
+              </div>
+            ))}
           </div>
-        )}
+        </div>
+
+        {/* Chat — available from request sent onwards */}
+        <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden"}}>
+          <div style={{padding:"12px 16px",borderBottom:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:10}}>
+            <span style={{fontSize:16}}>💬</span>
+            <span style={{fontWeight:700,color:C.text,fontSize:T.sm}}>Meldinger med {aOf(sel)?.name||"artisten"}</span>
+          </div>
+          <div style={{padding:"14px 16px",minHeight:100,maxHeight:300,overflowY:"auto" as const}}>
+            {chatMsgs.length===0?(
+              <div style={{color:C.muted,fontSize:T.xs,textAlign:"center" as const,padding:"24px 0"}}>Ingen meldinger ennå. Du kan stille spørsmål til artisten her.</div>
+            ):chatMsgs.map(m=>(
+              <div key={m.id} style={{marginBottom:10,display:"flex",flexDirection:"column" as const,alignItems:m.from_role==="customer"?"flex-end":"flex-start"}}>
+                <div style={{maxWidth:"78%",background:m.from_role==="customer"?`linear-gradient(135deg,${C.gold}22,${C.goldS})`:C.surface,border:`1px solid ${m.from_role==="customer"?C.gold+"44":C.border}`,borderRadius:10,padding:"9px 13px",fontSize:T.xs,color:C.text,lineHeight:1.65,whiteSpace:"pre-wrap" as const}}>
+                  {m.text}
+                </div>
+                <div style={{fontSize:9,color:C.faint,marginTop:3}}>
+                  {m.from_role==="customer"?"Deg":aOf(sel)?.name} · {new Date(m.created_at).toLocaleTimeString("nb-NO",{hour:"2-digit",minute:"2-digit"})}
+                </div>
+              </div>
+            ))}
+            <div ref={chatBottomRef}/>
+          </div>
+          <div style={{padding:"10px 14px",borderTop:`1px solid ${C.border}`,display:"flex",gap:8}}>
+            <input value={chatInput} onChange={e=>setChatInput(e.target.value)}
+              onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMsg();}}}
+              placeholder="Skriv en melding…"
+              style={{flex:1,background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,padding:"10px 14px",color:C.text,fontSize:T.sm,outline:"none",fontFamily:"inherit"}}/>
+            <button onClick={sendMsg} style={{background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:8,padding:"0 18px",fontWeight:800,cursor:"pointer",fontFamily:"inherit",fontSize:T.sm}}>→</button>
+          </div>
+        </div>
       </div>
     </div>
   );
 
+  // ── List view ──
+  const newOffers=requests.filter(r=>r.status==="offered").length;
   return(
     <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'DM Sans',sans-serif"}}>
-      {/* Header */}
-      <div style={{background:C.card,borderBottom:`1px solid ${C.border}`,padding:"14px 20px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+      <div style={{background:C.card,borderBottom:`1px solid ${C.border}`,padding:"14px 20px",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky" as const,top:0,zIndex:50}}>
         <div style={{fontFamily:"'Noto Naskh Arabic',serif",fontSize:22,color:C.gold}}>آواز</div>
         <div style={{display:"flex",alignItems:"center",gap:12}}>
-          <span style={{color:C.muted,fontSize:T.xs}}>{session.name||session.email}</span>
+          <span style={{color:C.muted,fontSize:T.xs,maxWidth:140,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{session.name||session.email}</span>
           <button onClick={onLogout} style={{background:"none",border:`1px solid ${C.border}`,borderRadius:8,padding:"6px 14px",color:C.muted,cursor:"pointer",fontFamily:"inherit",fontSize:T.xs}}>Logg ut</button>
         </div>
       </div>
-
       <div style={{maxWidth:700,margin:"0 auto",padding:vp.isMobile?"16px":"32px 24px"}}>
         <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:4}}>Mine bookinger</div>
-        <div style={{color:C.muted,fontSize:T.sm,marginBottom:24}}>Følg statusen på dine forespørsler og svar på tilbud fra artistene.</div>
+        <div style={{color:C.muted,fontSize:T.sm,marginBottom:20}}>Følg statusen på dine forespørsler og svar på tilbud.</div>
+
+        {newOffers>0&&(
+          <div style={{background:`${C.lapis}12`,border:`1px solid ${C.lapis}44`,borderRadius:10,padding:"12px 16px",marginBottom:16,display:"flex",alignItems:"center",gap:10}}>
+            <span style={{fontSize:20}}>✨</span>
+            <div>
+              <div style={{fontWeight:700,color:C.lapis,fontSize:T.sm}}>Du har {newOffers} ubesvart{newOffers>1?"e":""} tilbud!</div>
+              <div style={{color:C.muted,fontSize:T.xs}}>Klikk for å se og svare på tilbudet</div>
+            </div>
+          </div>
+        )}
 
         {loading?(
-          <div style={{textAlign:"center",padding:"48px 0"}}>
+          <div style={{textAlign:"center" as const,padding:"48px 0"}}>
             <div style={{width:36,height:36,border:`3px solid ${C.border}`,borderTopColor:C.gold,borderRadius:"50%",animation:"spin 0.8s linear infinite",margin:"0 auto"}}/>
           </div>
         ):requests.length===0?(
-          <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,padding:"48px 24px",textAlign:"center"}}>
+          <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,padding:"48px 24px",textAlign:"center" as const}}>
             <div style={{fontSize:48,marginBottom:12}}>✦</div>
             <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,color:C.text,marginBottom:8}}>Ingen forespørsler ennå</div>
-            <div style={{color:C.muted,fontSize:T.sm,lineHeight:1.7}}>
-              Gå til <strong style={{color:C.gold}}>Bla gjennom artister</strong> og send din første bookingforespørsel.
-            </div>
+            <div style={{color:C.muted,fontSize:T.sm,lineHeight:1.7}}>Finn en artist du vil booke og send din første forespørsel — det er gratis.</div>
           </div>
         ):(
-          <div style={{display:"flex",flexDirection:"column",gap:12}}>
-            {/* New offer badge */}
-            {requests.some(r=>r.status==="offered")&&(
-              <div style={{background:`${C.lapis}12`,border:`1px solid ${C.lapis}44`,borderRadius:10,padding:"10px 16px",display:"flex",alignItems:"center",gap:10}}>
-                <span style={{fontSize:18}}>✨</span>
-                <span style={{fontSize:T.xs,color:C.lapis,fontWeight:700}}>Du har {requests.filter(r=>r.status==="offered").length} ubesvart tilbud — klikk for å svare</span>
-              </div>
-            )}
+          <div style={{display:"flex",flexDirection:"column" as const,gap:10}}>
             {requests.map(r=>{
-              const a=artist(r);
+              const a=aOf(r);
+              const isOffer=r.status==="offered";
               return(
-                <div key={r.id} onClick={()=>setSel(r)}
-                  style={{background:C.card,border:`2px solid ${r.status==="offered"?C.gold+"66":C.border}`,borderRadius:12,padding:"16px 18px",cursor:"pointer",transition:"border-color 0.15s"}}>
-                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10,flexWrap:"wrap",gap:8}}>
-                    <div>
-                      <div style={{fontWeight:700,color:C.text,fontSize:T.sm}}>{a?.name||"Artist"}</div>
-                      <div style={{color:C.muted,fontSize:T.xs,marginTop:2}}>{r.event_type} · {r.event_date}</div>
+                <div key={r.id} onClick={()=>{setSel(r);setChatMsgs([]);}}
+                  style={{background:C.card,border:`2px solid ${isOffer?C.gold+"66":r.status==="accepted"?C.emerald+"44":C.border}`,borderRadius:12,padding:"16px 18px",cursor:"pointer",transition:"border-color 0.15s"}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10,flexWrap:"wrap" as const,gap:8}}>
+                    <div style={{display:"flex",gap:12,alignItems:"center"}}>
+                      <div style={{width:38,height:38,borderRadius:8,background:C.goldS,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>{a?.emoji||"🎵"}</div>
+                      <div>
+                        <div style={{fontWeight:700,color:C.text,fontSize:T.sm}}>{a?.name||"Artist"}</div>
+                        <div style={{color:C.muted,fontSize:T.xs,marginTop:1}}>{r.event_type} · {r.event_date}</div>
+                      </div>
                     </div>
-                    <span style={{background:`${SC[r.status]||C.muted}20`,color:SC[r.status]||C.muted,padding:"4px 12px",borderRadius:20,fontSize:10,fontWeight:700}}>{SL[r.status]||r.status}</span>
+                    <span style={{background:`${SC[r.status]||C.muted}20`,color:SC[r.status]||C.muted,padding:"4px 12px",borderRadius:20,fontSize:10,fontWeight:700,whiteSpace:"nowrap" as const}}>{SL[r.status]||r.status}</span>
                   </div>
-                  {r.status==="offered"&&r.artist_offer&&(
-                    <div style={{background:C.goldS,borderRadius:8,padding:"8px 12px",fontSize:T.xs,color:C.gold,fontWeight:700}}>
-                      Tilbud: €{r.artist_offer} depositum{r.artist_balance>0?` + €${r.artist_balance} etter konsert`:""}
+                  {isOffer&&r.artist_offer&&(
+                    <div style={{background:C.goldS,borderRadius:8,padding:"8px 12px",fontSize:T.xs,color:C.gold,fontWeight:700,marginBottom:6}}>
+                      Tilbud: €{r.artist_offer} depositum{(r.artist_balance||0)>0?` + €${r.artist_balance} etter konsert`:""}
                     </div>
                   )}
-                  <div style={{color:C.faint,fontSize:10,marginTop:8}}>{new Date(r.created_at).toLocaleDateString("nb-NO",{day:"numeric",month:"long",year:"numeric"})}</div>
+                  <div style={{color:C.faint,fontSize:10}}>{new Date(r.created_at).toLocaleDateString("nb-NO",{day:"numeric",month:"long",year:"numeric"})}</div>
                 </div>
               );
             })}
@@ -10542,6 +10588,8 @@ function CustomerPortal({session, artists, onLogout, theme, onToggleTheme}:{sess
     </div>
   );
 }
+
+
 
 function InquiryWidget({ artists, onSubmit }) {
   const [open,setOpen]=useState(false);
@@ -10851,36 +10899,80 @@ function ArtistOfferPanel({requests,artist,onAction}:{requests:any[];artist:any;
   const [declineReason,setDeclineReason]=useState("");
   const [confirmAction,setConfirmAction]=useState<string|null>(null);
   const [err,setErr]=useState("");
+  const [chatMsgs,setChatMsgs]=useState<any[]>([]);
+  const [chatInput,setChatInput]=useState("");
+  const [chatLoading,setChatLoading]=useState(false);
+  const {show:notify}=useNotif();
   const vp=useViewport();
+  const chatBottomRef=React.useRef<any>(null);
 
   const myReqs=requests.filter(r=>r.artistId===artist?.id||r.artist_id===artist?.id);
-  // Include all statuses that need a response
   const pending=myReqs.filter(r=>["pending","request_received","counter_offered"].includes(r.status));
   const active=myReqs.filter(r=>["offered","accepted"].includes(r.status));
   const history=myReqs.filter(r=>["declined","expired","booked"].includes(r.status));
 
-  const SC:Record<string,string>={
-    request_received:C.saffron,pending:C.saffron,offered:C.lapis,
-    counter_offered:C.gold,accepted:C.emerald,declined:C.ruby,expired:C.muted,booked:C.emerald
-  };
-  const SL:Record<string,string>={
-    request_received:"Ny forespørsel",pending:"Ny forespørsel",offered:"Tilbud sendt",
-    counter_offered:"Kunde motbyr",accepted:"Pris avtalt ✓",declined:"Avslått",expired:"Utløpt",booked:"Booket ✓"
+  const SC:Record<string,string>={request_received:C.saffron,pending:C.saffron,offered:C.lapis,counter_offered:C.gold,accepted:C.emerald,declined:C.ruby,expired:C.muted,booked:C.emerald};
+  const SL:Record<string,string>={request_received:"Ny forespørsel",pending:"Ny forespørsel",offered:"Tilbud sendt",counter_offered:"Kunde motbyr",accepted:"Pris avtalt ✓",declined:"Avslått",expired:"Utløpt",booked:"Booket ✓"};
+
+  // Load + realtime for chat messages
+  React.useEffect(()=>{
+    if(!sel||!HAS_SUPA) return;
+    setChatLoading(true);
+    let ch:any=null;
+    getSupabase().then(async sb=>{
+      if(!sb){setChatLoading(false);return;}
+      const{data}=await sb.from("booking_messages").select("*").eq("request_id",sel.id).order("created_at",{ascending:true});
+      if(data) setChatMsgs(data);
+      setChatLoading(false);
+      // Realtime subscription
+      ch=sb.channel(`bm_artist_${sel.id}`)
+        .on("postgres_changes",{event:"INSERT",schema:"public",table:"booking_messages",filter:`request_id=eq.${sel.id}`},(payload:any)=>{
+          setChatMsgs(p=>{
+            if(p.find(m=>m.id===payload.new.id)) return p;
+            return [...p,payload.new];
+          });
+          if(payload.new.from_role==="customer"){
+            notify(`Ny melding fra ${payload.new.sender_name||"kunden"}!`,"message");
+            sendBrowserNotif("Ny melding — Awaz",payload.new.text?.slice(0,60)||"");
+          }
+        }).subscribe();
+    });
+    return()=>{if(ch) ch.unsubscribe();};
+  },[sel?.id]);
+
+  // Scroll chat to bottom
+  React.useEffect(()=>{
+    if(chatBottomRef.current) chatBottomRef.current.scrollIntoView({behavior:"smooth"});
+  },[chatMsgs]);
+
+  const sendChat=async()=>{
+    if(!chatInput.trim()||!sel) return;
+    const msg={id:crypto.randomUUID(),request_id:sel.id,from_role:"artist",sender_name:artist.name,text:chatInput.trim(),created_at:new Date().toISOString()};
+    setChatMsgs(p=>[...p,msg]);
+    setChatInput("");
+    if(HAS_SUPA){
+      const sb=await getSupabase();
+      if(sb){
+        await sb.from("booking_messages").insert([msg]);
+        // Notify customer
+        sendEmailNotification({type:"new_chat_message",toEmail:sel.customer_email||sel.customerEmail,toName:sel.customer_name||sel.customerName,fromName:artist.name,message:msg.text,artistName:artist.name});
+      }
+    }
   };
 
   const doOffer=async()=>{
     const dep=parseInt(depositAmt);
     const bal=parseInt(balanceAmt)||0;
     if(!dep||dep<50){setErr("Depositum må være minst €50");return;}
-    const awazFee=Math.round(dep*0.12);
-    const artistGets=dep-awazFee;
-    await onAction(sel.id,{
-      status:"offered",
-      artistOffer:dep,
-      artistBalance:bal,
-      counterRound:(sel.counterRound||0)+1,
-    });
-    setDepositAmt("");setBalanceAmt("");setSel(null);setConfirmAction(null);
+    await onAction(sel.id,{status:"offered",artistOffer:dep,artistBalance:bal,counterRound:(sel.counterRound||0)+1});
+    // Notify customer by email
+    sendEmailNotification({type:"offer_sent",toEmail:sel.customer_email||sel.customerEmail,toName:sel.customer_name||sel.customerName,fromName:artist.name,artistName:artist.name,depositAmount:dep,bookingDate:sel.event_date||sel.eventDate,eventType:sel.event_type||sel.eventType});
+    // Send auto-message in chat
+    const autoMsg={id:crypto.randomUUID(),request_id:sel.id,from_role:"artist",sender_name:artist.name,text:`Hei! Jeg har sendt deg et pristilbud:\n\n💳 Depositum: €${dep}\n${bal>0?`💵 Saldo etter konsert: €${bal}\n`:""}Gleder meg til å høre fra deg!`,created_at:new Date().toISOString()};
+    setChatMsgs(p=>[...p,autoMsg]);
+    if(HAS_SUPA){const sb=await getSupabase();if(sb) await sb.from("booking_messages").insert([autoMsg]);}
+    setDepositAmt("");setBalanceAmt("");setConfirmAction(null);
+    setSel((p:any)=>({...p,status:"offered",artistOffer:dep,artistBalance:bal}));
   };
 
   const doDecline=async()=>{
@@ -10889,15 +10981,22 @@ function ArtistOfferPanel({requests,artist,onAction}:{requests:any[];artist:any;
     setDeclineReason("");setSel(null);setConfirmAction(null);
   };
 
+  const qualityBadge=(req:any)=>{
+    const s=req.quality_score||req.qualityScore||50;
+    const f=req.flagged||s<30;
+    if(f) return{label:"⚠ Lav",bg:`${C.ruby}15`,color:C.ruby};
+    if(s>=70) return{label:"★ Seriøs",bg:C.emeraldS,color:C.emerald};
+    return{label:"OK",bg:C.surface,color:C.muted};
+  };
+
   const ReqCard=({req}:{req:any})=>{
     const h=Math.max(0,(new Date(req.expiresAt||req.expires_at||Date.now()+48*3600000).getTime()-Date.now())/(1000*60*60));
     const isNew=req.status==="request_received"||req.status==="pending";
-    const score=req.quality_score||req.qualityScore||50;
-    const flagged=req.flagged||score<30;
-    const qualityBadge=flagged?{label:"⚠ Lav kvalitet",bg:`${C.ruby}15`,color:C.ruby}:score>=70?{label:"★ Seriøs",bg:C.emeraldS,color:C.emerald}:{label:"OK",bg:C.surface,color:C.muted};
+    const qb=qualityBadge(req);
+    const unread=0; // could count unread msgs per req if needed
     return(
-      <div onClick={()=>{setSel(req);setErr("");setDepositAmt("");setBalanceAmt("");setDeclineReason("");setConfirmAction(null);}}
-        style={{background:C.card,border:`2px solid ${flagged?C.ruby+"33":isNew?C.gold+"66":C.border}`,borderRadius:12,padding:"14px 16px",cursor:"pointer",marginBottom:10,opacity:flagged?0.85:1}}>
+      <div onClick={()=>{setSel(req);setErr("");setDepositAmt("");setBalanceAmt("");setDeclineReason("");setConfirmAction(null);setChatMsgs([]);}}
+        style={{background:C.card,border:`2px solid ${qb.color===C.ruby?""+C.ruby+"33":isNew?C.gold+"66":C.border}`,borderRadius:12,padding:"14px 16px",cursor:"pointer",marginBottom:10,opacity:qb.color===C.ruby?0.85:1}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
           <div>
             <div style={{fontWeight:700,color:C.text,fontSize:T.sm}}>{req.customerName||req.customer_name}</div>
@@ -10905,71 +11004,95 @@ function ArtistOfferPanel({requests,artist,onAction}:{requests:any[];artist:any;
           </div>
           <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:4}}>
             <span style={{background:`${SC[req.status]||C.muted}20`,color:SC[req.status]||C.muted,fontSize:10,fontWeight:700,padding:"3px 10px",borderRadius:20,whiteSpace:"nowrap"}}>{SL[req.status]||req.status}</span>
-            <span style={{background:qualityBadge.bg,color:qualityBadge.color,fontSize:9,fontWeight:700,padding:"2px 8px",borderRadius:20}}>{qualityBadge.label}</span>
+            <span style={{background:qb.bg,color:qb.color,fontSize:9,fontWeight:700,padding:"2px 8px",borderRadius:20}}>{qb.label}</span>
           </div>
         </div>
         <div style={{display:"flex",gap:8,flexWrap:"wrap" as const}}>
-          {req.location&&<span style={{background:C.surface,borderRadius:6,padding:"3px 8px",fontSize:11,color:C.muted}}>📍 {req.location}</span>}
+          {(req.location||req.event_location_city)&&<span style={{background:C.surface,borderRadius:6,padding:"3px 8px",fontSize:11,color:C.muted}}>📍 {req.location||req.event_location_city}</span>}
           {isNew&&h>0&&h<48&&<span style={{background:`${C.ruby}20`,borderRadius:6,padding:"3px 8px",fontSize:11,color:C.ruby}}>{Math.round(h)}t igjen</span>}
-          {flagged&&<span style={{background:`${C.ruby}15`,borderRadius:6,padding:"3px 8px",fontSize:10,color:C.ruby}}>Automatisk flagget — vurder nøye</span>}
         </div>
       </div>
     );
   };
 
   if(sel) return(
-    <div style={{padding:vp.isMobile?"16px":"24px 32px",maxWidth:680}}>
-      <button onClick={()=>setSel(null)} style={{background:"none",border:"none",color:C.muted,cursor:"pointer",fontFamily:"inherit",fontSize:T.sm,marginBottom:20,display:"flex",alignItems:"center",gap:6}}>← Tilbake</button>
+    <div style={{padding:vp.isMobile?"0":"0 0 0 0",maxWidth:720}}>
+      <button onClick={()=>{setSel(null);setChatMsgs([]);}} style={{background:"none",border:"none",color:C.muted,cursor:"pointer",fontFamily:"inherit",fontSize:T.sm,marginBottom:16,display:"flex",alignItems:"center",gap:6,padding:"4px 0"}}>← Alle forespørsler</button>
 
       {/* Flagged warning */}
-      {(sel.flagged||((sel.quality_score||sel.qualityScore||50)<30))&&(
-        <div style={{background:`${C.ruby}12`,border:`1px solid ${C.ruby}44`,borderRadius:10,padding:"12px 16px",marginBottom:16,display:"flex",gap:10,alignItems:"flex-start"}}>
+      {(sel.flagged||(sel.quality_score||sel.qualityScore||50)<30)&&(
+        <div style={{background:`${C.ruby}12`,border:`1px solid ${C.ruby}44`,borderRadius:10,padding:"12px 16px",marginBottom:14,display:"flex",gap:10,alignItems:"flex-start"}}>
           <span style={{fontSize:18,flexShrink:0}}>⚠️</span>
-          <div>
-            <div style={{fontWeight:700,color:C.ruby,fontSize:T.xs,marginBottom:3}}>Automatisk flagget som lav kvalitet</div>
-            <div style={{color:C.muted,fontSize:11,lineHeight:1.6}}>Denne forespørselen fikk lav kvalitetsscore. Vurder nøye før du svarer. Du kan avslå uten grunn eller rapportere misbruk til admin.</div>
-          </div>
+          <div><div style={{fontWeight:700,color:C.ruby,fontSize:T.xs,marginBottom:3}}>Automatisk flagget som lav kvalitet</div>
+          <div style={{color:C.muted,fontSize:11,lineHeight:1.6}}>Vurder nøye. Du kan avslå uten grunn eller rapportere til admin.</div></div>
         </div>
       )}
 
-      {/* Request details card */}
-      <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden",marginBottom:16}}>
+      {/* Request details */}
+      <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden",marginBottom:14}}>
         <div style={{height:3,background:`linear-gradient(90deg,${C.gold},${SC[sel.status]||C.gold})`}}/>
-        <div style={{padding:20}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:16,flexWrap:"wrap",gap:10}}>
+        <div style={{padding:18}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:14,flexWrap:"wrap",gap:10}}>
             <div>
               <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:700,color:C.text}}>{sel.eventType||sel.event_type}</div>
-              <div style={{color:C.muted,fontSize:T.sm,marginTop:3}}>{sel.eventDate||sel.event_date} · {sel.location}</div>
+              <div style={{color:C.muted,fontSize:T.sm,marginTop:3}}>{sel.eventDate||sel.event_date} · {sel.location||sel.event_location_city||"—"}</div>
             </div>
             <span style={{background:`${SC[sel.status]||C.muted}20`,color:SC[sel.status]||C.muted,padding:"5px 12px",borderRadius:20,fontSize:T.xs,fontWeight:700}}>{SL[sel.status]||sel.status}</span>
           </div>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
-            {[["Kunde",sel.customerName||sel.customer_name],["E-post",sel.customerEmail||sel.customer_email],["Dato",sel.eventDate||sel.event_date],["Sted",sel.location||"—"],["Gjester",sel.guestCount||sel.guest_count||"—"],["Type booking",sel.bookingType||"—"]].map(([k,v])=>(
-              <div key={k as string} style={{background:C.surface,borderRadius:8,padding:"10px 12px",border:`1px solid ${C.border}`}}>
-                <div style={{fontSize:10,color:C.muted,fontWeight:700,letterSpacing:"0.6px",textTransform:"uppercase",marginBottom:4}}>{k}</div>
-                <div style={{fontSize:T.sm,color:C.text,fontWeight:500,wordBreak:"break-all"}}>{v as string||"—"}</div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:sel.notes?12:0}}>
+            {[["Kunde",sel.customerName||sel.customer_name],["E-post",sel.customerEmail||sel.customer_email],["Dato",sel.eventDate||sel.event_date],["Sted",(sel.location||`${sel.event_location_city||""}${sel.event_location_country?", "+sel.event_location_country:""}`.trim())||"—"],["Gjester",(sel.guestCount||sel.guest_count)||"—"],["Bookingtype",sel.bookingType||sel.booking_type||"—"]].map(([k,v])=>(
+              <div key={k as string} style={{background:C.surface,borderRadius:8,padding:"9px 12px"}}>
+                <div style={{fontSize:10,color:C.muted,fontWeight:700,letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:3}}>{k}</div>
+                <div style={{fontSize:T.sm,color:C.text,wordBreak:"break-all"}}>{v as string||"—"}</div>
               </div>
             ))}
           </div>
-          {sel.notes&&<div style={{background:C.surface,borderRadius:8,padding:"12px 14px",border:`1px solid ${C.border}`,marginBottom:12}}>
-            <div style={{fontSize:10,color:C.muted,fontWeight:700,letterSpacing:"0.6px",textTransform:"uppercase",marginBottom:6}}>Notat fra kunde</div>
+          {sel.notes&&<div style={{background:C.surface,borderRadius:8,padding:"10px 12px",border:`1px solid ${C.border}`}}>
+            <div style={{fontSize:10,color:C.muted,fontWeight:700,textTransform:"uppercase",marginBottom:4}}>Notat fra kunde</div>
             <div style={{fontSize:T.sm,color:C.textD,lineHeight:1.8}}>{sel.notes}</div>
-          </div>}
-          {/* Show previous offer */}
-          {sel.artistOffer&&<div style={{background:C.goldS,border:`1px solid ${C.gold}44`,borderRadius:8,padding:"12px 14px"}}>
-            <div style={{fontSize:10,color:C.muted,fontWeight:700,letterSpacing:"0.6px",textTransform:"uppercase",marginBottom:8}}>Ditt tilbud</div>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-              <div><div style={{fontSize:10,color:C.muted,marginBottom:2}}>Depositum (nå)</div><div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:800,color:C.gold}}>€{sel.artistOffer}</div><div style={{fontSize:10,color:C.muted}}>Du får €{Math.round(sel.artistOffer*0.88)} · Awaz €{Math.round(sel.artistOffer*0.12)}</div></div>
-              {sel.artistBalance>0&&<div><div style={{fontSize:10,color:C.muted,marginBottom:2}}>Saldo etter konsert</div><div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:800,color:C.text}}>€{sel.artistBalance}</div><div style={{fontSize:10,color:C.emerald}}>100% til deg — kontant</div></div>}
-            </div>
           </div>}
         </div>
       </div>
 
-      {/* Action panel */}
-      {(["pending","request_received","counter_offered"].includes(sel.status))&&(
-        <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:20}}>
-          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.gold,marginBottom:16}}>Svar på forespørselen</div>
+      {/* Accepted: confirmation card */}
+      {sel.status==="accepted"&&(
+        <div style={{background:`linear-gradient(135deg,${C.emerald}12,${C.card})`,border:`2px solid ${C.emerald}55`,borderRadius:12,padding:18,marginBottom:14}}>
+          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.emerald,marginBottom:12}}>✓ Booking bekreftet!</div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>
+            <div style={{background:C.goldS,borderRadius:10,padding:"12px 14px",textAlign:"center"}}>
+              <div style={{fontSize:10,color:C.muted,fontWeight:700,textTransform:"uppercase",marginBottom:4}}>Depositum (Stripe)</div>
+              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.6rem",fontWeight:800,color:C.gold}}>€{sel.artistOffer||sel.artist_offer}</div>
+              <div style={{fontSize:10,color:C.muted,marginTop:3}}>Du mottar €{Math.round((sel.artistOffer||sel.artist_offer||0)*0.88)} (88%)</div>
+            </div>
+            {(sel.artistBalance||sel.artist_balance)>0&&(
+              <div style={{background:`${C.emerald}10`,border:`1px solid ${C.emerald}33`,borderRadius:10,padding:"12px 14px",textAlign:"center"}}>
+                <div style={{fontSize:10,color:C.muted,fontWeight:700,textTransform:"uppercase",marginBottom:4}}>Saldo (kontant)</div>
+                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.6rem",fontWeight:800,color:C.emerald}}>€{sel.artistBalance||sel.artist_balance}</div>
+                <div style={{fontSize:10,color:C.muted,marginTop:3}}>100% til deg etter konsert</div>
+              </div>
+            )}
+          </div>
+          <div style={{background:C.surface,borderRadius:8,padding:"10px 14px",fontSize:T.xs,color:C.muted,lineHeight:1.7}}>
+            📋 <strong style={{color:C.text}}>Neste steg:</strong> Kunden betaler depositum via Stripe. Du mottar bekreftelse på e-post. Hold av datoen <strong style={{color:C.gold}}>{sel.eventDate||sel.event_date}</strong>.
+          </div>
+        </div>
+      )}
+
+      {/* Active offer summary */}
+      {sel.status==="offered"&&(sel.artistOffer||sel.artist_offer)&&(
+        <div style={{background:C.goldS,border:`1px solid ${C.gold}44`,borderRadius:10,padding:"12px 16px",marginBottom:14}}>
+          <div style={{fontSize:10,color:C.muted,fontWeight:700,textTransform:"uppercase",marginBottom:8}}>Ditt aktive tilbud</div>
+          <div style={{display:"flex",gap:16,flexWrap:"wrap" as const}}>
+            <div><div style={{fontSize:10,color:C.muted}}>Depositum</div><div style={{fontWeight:800,color:C.gold,fontSize:T.lg}}>€{sel.artistOffer||sel.artist_offer}</div></div>
+            {(sel.artistBalance||sel.artist_balance)>0&&<div><div style={{fontSize:10,color:C.muted}}>Saldo kontant</div><div style={{fontWeight:800,color:C.emerald,fontSize:T.lg}}>€{sel.artistBalance||sel.artist_balance}</div></div>}
+          </div>
+        </div>
+      )}
+
+      {/* Action panel — only for pending/counter_offered */}
+      {["pending","request_received","counter_offered"].includes(sel.status)&&(
+        <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:18,marginBottom:14}}>
+          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.gold,marginBottom:14}}>Svar på forespørselen</div>
           {confirmAction==="decline"?(
             <div style={{display:"flex",flexDirection:"column",gap:10}}>
               <div style={{fontSize:T.sm,fontWeight:700,color:C.text,marginBottom:4}}>Velg grunn for avslag:</div>
@@ -10982,58 +11105,35 @@ function ArtistOfferPanel({requests,artist,onAction}:{requests:any[];artist:any;
             </div>
           ):confirmAction==="offer"?(
             <div style={{display:"flex",flexDirection:"column",gap:14}}>
-
-              {/* Deposit field */}
               <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:10,padding:"14px 16px"}}>
                 <label style={{fontSize:T.xs,fontWeight:700,color:C.gold,display:"block",marginBottom:8}}>💳 Depositum — betales nå via Stripe</label>
                 <div style={{position:"relative"}}>
                   <span style={{position:"absolute",left:14,top:"50%",transform:"translateY(-50%)",color:C.muted,fontWeight:700}}>€</span>
-                  <input type="number" value={depositAmt} onChange={e=>setDepositAmt(e.target.value)} min={50} step={50}
-                    placeholder="F.eks. 1500"
-                    style={{width:"100%",background:C.card,border:`2px solid ${depositAmt?C.gold:C.border}`,borderRadius:8,padding:"12px 14px 12px 30px",color:C.text,fontSize:T.lg,outline:"none",fontFamily:"inherit",boxSizing:"border-box" as const,fontWeight:700}}/>
+                  <input type="number" value={depositAmt} onChange={e=>setDepositAmt(e.target.value)} min={50} step={50} placeholder="F.eks. 1500" style={{width:"100%",background:C.card,border:`2px solid ${depositAmt?C.gold:C.border}`,borderRadius:8,padding:"12px 14px 12px 30px",color:C.text,fontSize:T.lg,outline:"none",fontFamily:"inherit",boxSizing:"border-box" as const,fontWeight:700}}/>
                 </div>
                 {depositAmt&&parseInt(depositAmt)>0&&(
                   <div style={{marginTop:8,background:C.goldS,borderRadius:7,padding:"8px 12px",fontSize:12}}>
-                    <div style={{display:"flex",justifyContent:"space-between"}}>
-                      <span style={{color:C.muted}}>Du mottar (88%)</span>
-                      <strong style={{color:C.gold}}>€{Math.round(parseInt(depositAmt)*0.88)}</strong>
-                    </div>
-                    <div style={{display:"flex",justifyContent:"space-between",marginTop:3}}>
-                      <span style={{color:C.muted}}>Awaz plattformgebyr (12%)</span>
-                      <span style={{color:C.muted}}>€{Math.round(parseInt(depositAmt)*0.12)}</span>
-                    </div>
+                    <div style={{display:"flex",justifyContent:"space-between"}}><span style={{color:C.muted}}>Du mottar (88%)</span><strong style={{color:C.gold}}>€{Math.round(parseInt(depositAmt)*0.88)}</strong></div>
+                    <div style={{display:"flex",justifyContent:"space-between",marginTop:3}}><span style={{color:C.muted}}>Awaz plattformgebyr (12%)</span><span style={{color:C.muted}}>€{Math.round(parseInt(depositAmt)*0.12)}</span></div>
                   </div>
                 )}
               </div>
-
-              {/* Balance field */}
               <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:10,padding:"14px 16px"}}>
                 <label style={{fontSize:T.xs,fontWeight:700,color:C.emerald,display:"block",marginBottom:8}}>💵 Saldo etter konsert — betales kontant til deg</label>
                 <div style={{position:"relative"}}>
                   <span style={{position:"absolute",left:14,top:"50%",transform:"translateY(-50%)",color:C.muted,fontWeight:700}}>€</span>
-                  <input type="number" value={balanceAmt} onChange={e=>setBalanceAmt(e.target.value)} min={0} step={50}
-                    placeholder="F.eks. 1000 (valgfritt)"
-                    style={{width:"100%",background:C.card,border:`2px solid ${balanceAmt?C.emerald:C.border}`,borderRadius:8,padding:"12px 14px 12px 30px",color:C.text,fontSize:T.lg,outline:"none",fontFamily:"inherit",boxSizing:"border-box" as const,fontWeight:700}}/>
+                  <input type="number" value={balanceAmt} onChange={e=>setBalanceAmt(e.target.value)} min={0} step={50} placeholder="F.eks. 1000 (valgfritt)" style={{width:"100%",background:C.card,border:`2px solid ${balanceAmt?C.emerald:C.border}`,borderRadius:8,padding:"12px 14px 12px 30px",color:C.text,fontSize:T.lg,outline:"none",fontFamily:"inherit",boxSizing:"border-box" as const,fontWeight:700}}/>
                 </div>
-                {balanceAmt&&parseInt(balanceAmt)>0&&(
-                  <div style={{marginTop:8,background:`${C.emerald}12`,borderRadius:7,padding:"8px 12px",fontSize:12,color:C.emerald}}>
-                    100% til deg · Awaz tar ikke noe av saldoen
-                  </div>
-                )}
+                {balanceAmt&&parseInt(balanceAmt)>0&&<div style={{marginTop:6,fontSize:11,color:C.emerald}}>100% til deg — Awaz tar ingenting av saldoen</div>}
               </div>
-
-              {/* Total summary */}
               {depositAmt&&parseInt(depositAmt)>0&&(
-                <div style={{background:C.card,border:`1px solid ${C.gold}44`,borderRadius:10,padding:"12px 16px"}}>
-                  <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:8,textTransform:"uppercase",letterSpacing:"0.5px"}}>Oppsummering</div>
-                  <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
-                    <span style={{color:C.muted,fontSize:T.sm}}>Total til deg</span>
-                    <strong style={{color:C.gold,fontSize:T.sm}}>€{Math.round(parseInt(depositAmt)*0.88)+(parseInt(balanceAmt)||0)}</strong>
-                  </div>
-                  <div style={{fontSize:11,color:C.faint}}>€{Math.round(parseInt(depositAmt)*0.88)} depositum + €{parseInt(balanceAmt)||0} kontant etter konsert</div>
+                <div style={{background:C.card,border:`1px solid ${C.gold}33`,borderRadius:10,padding:"12px 16px"}}>
+                  <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:6,textTransform:"uppercase" as const}}>Oppsummering til deg</div>
+                  <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}><span style={{color:C.muted,fontSize:T.sm}}>Depositum (88%)</span><strong style={{color:C.gold}}>€{Math.round(parseInt(depositAmt)*0.88)}</strong></div>
+                  <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}><span style={{color:C.muted,fontSize:T.sm}}>Saldo kontant</span><strong style={{color:C.emerald}}>€{parseInt(balanceAmt)||0}</strong></div>
+                  <div style={{display:"flex",justifyContent:"space-between",borderTop:`1px solid ${C.border}`,paddingTop:8,marginTop:4}}><span style={{fontWeight:700,color:C.text,fontSize:T.sm}}>Totalt til deg</span><strong style={{color:C.gold,fontSize:T.md}}>€{Math.round(parseInt(depositAmt)*0.88)+(parseInt(balanceAmt)||0)}</strong></div>
                 </div>
               )}
-
               {err&&<div style={{background:C.rubyS,borderRadius:8,padding:"8px 12px",color:C.ruby,fontSize:T.xs}}>⚠ {err}</div>}
               <div style={{display:"flex",gap:10}}>
                 <Btn v="ghost" onClick={()=>{setConfirmAction(null);setErr("");}}>Avbryt</Btn>
@@ -11044,51 +11144,63 @@ function ArtistOfferPanel({requests,artist,onAction}:{requests:any[];artist:any;
             <div style={{display:"flex",flexDirection:"column",gap:10}}>
               <Btn full v="gold" sz="lg" onClick={()=>setConfirmAction("offer")}>Send pristilbud →</Btn>
               <Btn full v="ghost" onClick={()=>setConfirmAction("decline")}>Avslå forespørsel</Btn>
-              <button onClick={async()=>{
-                if(!HAS_SUPA) return;
-                const sb=await getSupabase();
-                if(sb){
-                  await sb.from("booking_requests").update({flagged:true,flag_reason:"artist_reported"}).eq("id",sel.id);
-                  setSel((p:any)=>({...p,flagged:true}));
-                  setErr("");
-                  notify("Rapportert til admin — takk for tilbakemeldingen","success");
-                }
-              }} style={{background:"none",border:"none",color:C.faint,cursor:"pointer",fontSize:10,fontFamily:"inherit",textDecoration:"underline",padding:"4px 0"}}>
-                Rapporter misbruk til admin
-              </button>
+              <button onClick={async()=>{if(!HAS_SUPA) return;const sb=await getSupabase();if(sb){await sb.from("booking_requests").update({flagged:true,flag_reason:"artist_reported"}).eq("id",sel.id);setSel((p:any)=>({...p,flagged:true}));notify("Rapportert til admin","success");}}} style={{background:"none",border:"none",color:C.faint,cursor:"pointer",fontSize:10,fontFamily:"inherit",textDecoration:"underline",padding:"4px 0"}}>Rapporter misbruk til admin</button>
             </div>
           )}
         </div>
       )}
-      {sel.status==="accepted"&&(
-        <div style={{background:C.emeraldS,border:`1px solid ${C.emerald}44`,borderRadius:12,padding:20}}>
-          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.emerald,marginBottom:8}}>Pris avtalt!</div>
-          <div style={{color:C.textD,fontSize:T.sm,lineHeight:1.7}}>
-            Depositum: <strong style={{color:C.gold}}>€{sel.artistOffer}</strong> · Du mottar €{Math.round((sel.artistOffer||0)*0.88)}<br/>
-            {sel.artistBalance>0&&<>Saldo kontant etter konsert: <strong style={{color:C.emerald}}>€{sel.artistBalance}</strong><br/></>}
-            Venter på at kunden betaler depositum for å bekrefte.
+
+      {/* ── CHAT — bidirectional, available from offer sent onwards ── */}
+      {["offered","accepted","counter_offered","request_received","pending"].includes(sel.status)&&(
+        <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden"}}>
+          <div style={{padding:"12px 16px",borderBottom:`1px solid ${C.border}`,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+            <div style={{fontWeight:700,color:C.text,fontSize:T.sm}}>💬 Chat med {sel.customerName||sel.customer_name}</div>
+            {chatMsgs.length>0&&<span style={{fontSize:10,color:C.muted}}>{chatMsgs.length} meldinger</span>}
+          </div>
+          <div style={{padding:"14px 16px",minHeight:100,maxHeight:280,overflowY:"auto" as const}}>
+            {chatLoading?(
+              <div style={{textAlign:"center",padding:"20px 0",color:C.muted,fontSize:T.xs}}>Laster meldinger…</div>
+            ):chatMsgs.length===0?(
+              <div style={{textAlign:"center",padding:"20px 0",color:C.muted,fontSize:T.xs}}>Ingen meldinger ennå. Start samtalen med kunden.</div>
+            ):chatMsgs.map(m=>(
+              <div key={m.id} style={{marginBottom:10,display:"flex",flexDirection:"column",alignItems:m.from_role==="artist"?"flex-end":"flex-start"}}>
+                <div style={{maxWidth:"78%",background:m.from_role==="artist"?`linear-gradient(135deg,${C.gold}22,${C.goldS})`:C.surface,border:`1px solid ${m.from_role==="artist"?C.gold+"44":C.border}`,borderRadius:10,padding:"9px 13px",fontSize:T.xs,color:C.text,lineHeight:1.65,whiteSpace:"pre-wrap" as const}}>
+                  {m.text}
+                </div>
+                <div style={{fontSize:9,color:C.faint,marginTop:3}}>{m.from_role==="artist"?"Deg":sel.customerName||sel.customer_name} · {new Date(m.created_at).toLocaleTimeString("nb-NO",{hour:"2-digit",minute:"2-digit"})}</div>
+              </div>
+            ))}
+            <div ref={chatBottomRef}/>
+          </div>
+          <div style={{padding:"10px 14px",borderTop:`1px solid ${C.border}`,display:"flex",gap:8}}>
+            <input value={chatInput} onChange={e=>setChatInput(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendChat();}}}
+              placeholder="Skriv melding til kunden…"
+              style={{flex:1,background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,padding:"10px 14px",color:C.text,fontSize:T.sm,outline:"none",fontFamily:"inherit"}}/>
+            <button onClick={sendChat} style={{background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:8,padding:"0 18px",fontWeight:800,cursor:"pointer",fontFamily:"inherit",fontSize:T.sm}}>→</button>
           </div>
         </div>
       )}
     </div>
   );
+
   return(
     <div style={{padding:vp.isMobile?"16px":"24px 32px"}}>
       <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:700,color:C.gold,marginBottom:4}}>Bookingforespørsler</div>
       <div style={{color:C.muted,fontSize:T.sm,marginBottom:20}}>Svar innen 48 timer — ubesvarte forespørsler utløper automatisk</div>
       {pending.length>0&&<div style={{marginBottom:24}}><div style={{fontSize:T.xs,fontWeight:700,color:C.muted,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:10}}>Trenger svar ({pending.length})</div>{pending.map(r=><ReqCard key={r.id} req={r}/>)}</div>}
-      {active.length>0&&<div style={{marginBottom:24}}><div style={{fontSize:T.xs,fontWeight:700,color:C.muted,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:10}}>Aktive tilbud ({active.length})</div>{active.map(r=><ReqCard key={r.id} req={r}/>)}</div>}
+      {active.length>0&&<div style={{marginBottom:24}}><div style={{fontSize:T.xs,fontWeight:700,color:C.muted,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:10}}>Aktive ({active.length})</div>{active.map(r=><ReqCard key={r.id} req={r}/>)}</div>}
       {pending.length===0&&active.length===0&&(
         <div style={{textAlign:"center",padding:"48px 24px",background:C.card,borderRadius:12,border:`1px solid ${C.border}`}}>
           <div style={{fontSize:40,marginBottom:12,color:C.gold}}>✦</div>
           <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text,marginBottom:6}}>Ingen forespørsler ennå</div>
-          <div style={{color:C.muted,fontSize:T.sm}}>Nye bookingforespørsler fra kunder vises her.</div>
+          <div style={{color:C.muted,fontSize:T.sm}}>Nye bookingforespørsler fra kunder vises her i sanntid.</div>
         </div>
       )}
       {history.length>0&&<div style={{marginTop:8}}><div style={{fontSize:T.xs,fontWeight:700,color:C.muted,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:10}}>Historikk</div>{history.map(r=><ReqCard key={r.id} req={r}/>)}</div>}
     </div>
   );
 }
+
 
 // ══════════════════════════════════════════════════════════════════
 
@@ -12811,7 +12923,7 @@ function AppInner() {
       {/* ── PROFILE ── */}
       {view==="profile"&&selArtist&&(
         <div style={{paddingTop:vp.isMobile?56:62}}>
-          <ProfilePage artist={selArtist} bookings={bookings} session={session} onBack={()=>nav(prevView||"browse")} onBookingCreated={handleNewBooking} onLoginRequest={(mode,prefill)=>{setLoginPrefill({mode,email:prefill});setShowLogin(true);}}/>
+          <ProfilePage artist={selArtist} artists={artists} bookings={bookings} session={session} onBack={()=>nav(prevView||"browse")} onBookingCreated={handleNewBooking} onLoginRequest={(mode,prefill)=>{setLoginPrefill({mode,email:prefill});setShowLogin(true);}}/>
         </div>
       )}
 
