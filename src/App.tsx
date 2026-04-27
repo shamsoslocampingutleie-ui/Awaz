@@ -4537,13 +4537,6 @@ function BookingRequestForm({ artist, onClose, onSubmit }) {
   const [err,setErr]=useState("");
 
   const EVENT_TYPES=["wedding","eid","private","corporate","birthday","cultural","other"];
-  const BUDGET_RANGES=[
-    {v:"under_500",l:"Under €500"},
-    {v:"500_1000",l:"€500 – 1,000"},
-    {v:"1000_2000",l:"€1,000 – 2,000"},
-    {v:"2000_5000",l:"€2,000 – 5,000"},
-    {v:"5000_plus",l:"€5,000+"},
-  ];
   const COUNTRIES=[
     {code:"NO",name:"Norway",flag:"🇳🇴"},
     {code:"SE",name:"Sweden",flag:"🇸🇪"},
@@ -4561,7 +4554,7 @@ function BookingRequestForm({ artist, onClose, onSubmit }) {
   const setF=(k:string,v:string)=>setForm(p=>({...p,[k]:v}));
 
   const submitRequest=async()=>{
-    if(!form.name.trim()||!form.email.trim()||!form.eventDate||!form.budgetRange){
+    if(!form.name.trim()||!form.email.trim()||!form.eventDate){
       setErr("Please fill in all required fields.");return;
     }
     const emailOk=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(form.email.trim());
@@ -4725,22 +4718,7 @@ function BookingRequestForm({ artist, onClose, onSubmit }) {
 
         {step===2&&(
           <div style={{display:"flex",flexDirection:"column",gap:14}}>
-            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text,marginBottom:4}}>Budget & details</div>
-
-            {/* Budget range */}
-            <div>
-              <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:8}}>Your budget range *</div>
-              <div style={{display:"flex",flexDirection:"column" as const,gap:6}}>
-                {BUDGET_RANGES.map(({v,l})=>(
-                  <button key={v} onClick={()=>setF("budgetRange",v)}
-                    style={{background:form.budgetRange===v?C.goldS:C.surface,border:`2px solid ${form.budgetRange===v?C.gold:C.border}`,borderRadius:10,padding:"11px 14px",cursor:"pointer",fontFamily:"inherit",textAlign:"left" as const,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-                    <span style={{fontSize:T.sm,fontWeight:600,color:form.budgetRange===v?C.gold:C.text}}>{l}</span>
-                    {form.budgetRange===v&&<span style={{color:C.gold,fontSize:14}}>✓</span>}
-                  </button>
-                ))}
-              </div>
-              <div style={{fontSize:10,color:C.muted,marginTop:6,lineHeight:1.5}}>💡 This is shared with the artist to help them send you the right offer. You are not committing to pay this.</div>
-            </div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text,marginBottom:4}}>More details</div>
 
             {/* Guest count */}
             <Inp label="Number of guests (optional)" type="number" placeholder="e.g. 100" value={form.guestCount} onChange={e=>setF("guestCount",e.target.value)}/>
@@ -4757,8 +4735,8 @@ function BookingRequestForm({ artist, onClose, onSubmit }) {
 
             <div style={{display:"flex",gap:10}}>
               <button onClick={()=>setStep(1)} style={{background:C.surface,color:C.muted,border:`1px solid ${C.border}`,borderRadius:10,padding:"12px 16px",fontWeight:600,fontSize:T.sm,cursor:"pointer",fontFamily:"inherit",flex:"0 0 auto"}}>← Back</button>
-              <button onClick={submitRequest} disabled={!form.budgetRange||saving}
-                style={{flex:1,background:!form.budgetRange||saving?C.border:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:!form.budgetRange||saving?C.muted:C.bg,border:"none",borderRadius:10,padding:14,fontWeight:800,fontSize:T.base,cursor:!form.budgetRange||saving?"not-allowed":"pointer",fontFamily:"inherit"}}>
+              <button onClick={submitRequest} disabled={saving}
+                style={{flex:1,background:saving?C.border:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:saving?C.muted:C.bg,border:"none",borderRadius:10,padding:14,fontWeight:800,fontSize:T.base,cursor:saving?"not-allowed":"pointer",fontFamily:"inherit"}}>
                 {saving?"Sending…":"Send Request →"}
               </button>
             </div>
@@ -5224,42 +5202,26 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
             {artist.countryPricing?.filter((r:any)=>r.active).length>0&&(
               <div style={{marginBottom:10}}>
                 <div style={{fontSize:11,fontWeight:700,color:C.muted,marginBottom:5}}>
-                  🌍 Your country — prices vary by location
+                  🌍 Your country
                 </div>
                 <select
                   value={form.customerCountry||""}
                   onChange={e=>setForm(f=>({...f,customerCountry:e.target.value}))}
                   style={{width:"100%",background:C.card,border:`2px solid ${form.customerCountry?C.gold:C.border}`,borderRadius:8,padding:"9px 12px",color:form.customerCountry?C.text:C.muted,fontSize:T.sm,outline:"none",fontFamily:"inherit",cursor:"pointer",boxSizing:"border-box" as const}}>
                   <option value="">Select your country…</option>
-                  {artist.countryPricing.filter((r:any)=>r.active).map((row:any)=>{
-                    const rate=row.currency==="NOK"?0.085:row.currency==="SEK"?0.088:row.currency==="DKK"?0.134:row.currency==="GBP"?1.17:1;
-                    return<option key={row.country} value={row.country}>{row.flag||"🌍"} {row.country} — {row.currency} {Math.round(row.fullPrice||row.deposit||0)} full / {row.currency} {row.deposit} deposit</option>;
-                  })}
+                  {artist.countryPricing.filter((r:any)=>r.active).map((row:any)=>(
+                    <option key={row.country} value={row.country}>{row.flag||"🌍"} {row.country}</option>
+                  ))}
                   <option value="other">🌐 Other country</option>
                 </select>
-                {form.customerCountry&&form.customerCountry!=="other"&&(()=>{
-                  const row=artist.countryPricing.find((r:any)=>r.country===form.customerCountry);
-                  return row?(
-                    <div style={{fontSize:11,color:C.gold,marginTop:5,fontWeight:600}}>
-                      ✓ Price for {row.country}: <strong>{row.currency} {row.deposit}</strong> deposit + <strong>{row.currency} {(row.fullPrice||0)-(row.deposit||0)}</strong> cash after event
-                    </div>
-                  ):null;
-                })()}
               </div>
             )}
             <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
               <span style={{color:C.muted,fontSize:T.sm}}>{artist.name}</span>
               <span style={{color:C.gold,fontWeight:700,fontSize:T.md,fontFamily:"'Cormorant Garamond',serif"}}>
-                {(()=>{
-                  if(form.customerCountry&&form.customerCountry!=="other"&&artist.countryPricing){
-                    const row=artist.countryPricing.find((r:any)=>r.country===form.customerCountry&&r.active);
-                    if(row) return `${row.currency} ${row.deposit}`;
-                  }
-                  return `€${artist.deposit}`;
-                })()}
+                {MONTHS[selMonth]} {selDay}, {selYear}
               </span>
             </div>
-            <div style={{color:C.muted,fontSize:T.xs}}>{MONTHS[selMonth]} {selDay}, {selYear}</div>
           </div>
 
           {/* ── Solo vocalist tip — shown when booking a vocalist without a band ── */}
