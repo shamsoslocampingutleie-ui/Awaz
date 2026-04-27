@@ -4239,8 +4239,7 @@ function ArtistCard({ artist, onClick, compact=false }) {
           {bookingCount>0&&<div style={{fontSize:10,color:C.muted,marginTop:2}}>{bookingCount} booking{bookingCount>1?"s":""} completed</div>}
         </div>
         <div style={{textAlign:"right",flexShrink:0}}>
-          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.md,fontWeight:700,color:C.gold}}>{"Request Booking →"}</div>
-          <div style={{color:C.muted,fontSize:T.xs,marginTop:2}}>€{artist.deposit} dep.</div>
+          <div style={{background:`${C.gold}18`,border:`1px solid ${C.gold}44`,borderRadius:20,padding:"6px 14px",fontSize:T.xs,fontWeight:700,color:C.gold}}>Request →</div>
         </div>
       </div>
     );
@@ -4301,8 +4300,8 @@ function ArtistCard({ artist, onClick, compact=false }) {
             {artist.verified&&<span style={{fontSize:10,color:C.emerald,fontWeight:700,display:"flex",alignItems:"center",gap:3}}>🔒 Secure booking</span>}
           </div>
           <div style={{textAlign:"right"}}>
-            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.gold}}>{"Request Booking →"}</div>
-            <div style={{fontSize:T.xs,color:C.muted,marginTop:2}}>Request Booking</div>
+            <div style={{background:`${C.gold}18`,border:`1px solid ${C.gold}44`,borderRadius:20,padding:"7px 16px",fontSize:T.xs,fontWeight:700,color:C.gold}}>Request Booking →</div>
+            <div style={{fontSize:10,color:C.muted,marginTop:4}}>No payment now · 48h response</div>
           </div>
         </div>
       </div>
@@ -4523,6 +4522,257 @@ function LoginSheet({ users, open, onLogin, onClose }) {
   );
 }
 
+// ── Booking Request Form (Marketplace offer system) ───────────────────
+function BookingRequestForm({ artist, onClose, onSubmit }) {
+  const vp=useViewport();
+  const [step,setStep]=useState(1); // 1=event details, 2=budget+notes, 3=sent
+  const [form,setForm]=useState({
+    name:"", email:"", phone:"",
+    eventDate:"", eventType:"wedding",
+    city:"", country:"", countryCode:"NO",
+    guestCount:"", bookingType:"solo",
+    budgetRange:"", notes:"",
+  });
+  const [saving,setSaving]=useState(false);
+  const [err,setErr]=useState("");
+
+  const EVENT_TYPES=["wedding","eid","private","corporate","birthday","cultural","other"];
+  const BUDGET_RANGES=[
+    {v:"under_500",l:"Under €500"},
+    {v:"500_1000",l:"€500 – 1,000"},
+    {v:"1000_2000",l:"€1,000 – 2,000"},
+    {v:"2000_5000",l:"€2,000 – 5,000"},
+    {v:"5000_plus",l:"€5,000+"},
+  ];
+  const COUNTRIES=[
+    {code:"NO",name:"Norway",flag:"🇳🇴"},
+    {code:"SE",name:"Sweden",flag:"🇸🇪"},
+    {code:"DE",name:"Germany",flag:"🇩🇪"},
+    {code:"GB",name:"United Kingdom",flag:"🇬🇧"},
+    {code:"FR",name:"France",flag:"🇫🇷"},
+    {code:"DK",name:"Denmark",flag:"🇩🇰"},
+    {code:"NL",name:"Netherlands",flag:"🇳🇱"},
+    {code:"AT",name:"Austria",flag:"🇦🇹"},
+    {code:"CH",name:"Switzerland",flag:"🇨🇭"},
+    {code:"US",name:"United States",flag:"🇺🇸"},
+    {code:"OTHER",name:"Other",flag:"🌍"},
+  ];
+
+  const setF=(k:string,v:string)=>setForm(p=>({...p,[k]:v}));
+
+  const submitRequest=async()=>{
+    if(!form.name.trim()||!form.email.trim()||!form.eventDate||!form.budgetRange){
+      setErr("Please fill in all required fields.");return;
+    }
+    const emailOk=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(form.email.trim());
+    if(!emailOk){setErr("Please enter a valid email address.");return;}
+    setSaving(true);setErr("");
+    const req={
+      id:`req_${Date.now()}`,
+      artist_id:artist.id,
+      customer_name:form.name.trim(),
+      customer_email:form.email.trim().toLowerCase(),
+      event_date:form.eventDate,
+      event_type:form.eventType,
+      event_location_city:form.city.trim(),
+      event_location_country:form.country,
+      event_location_country_code:form.countryCode,
+      guest_count:form.guestCount?parseInt(form.guestCount):null,
+      booking_type:form.bookingType,
+      customer_budget_range:form.budgetRange,
+      notes:form.notes.trim(),
+      status:"request_received",
+      created_at:new Date().toISOString(),
+    };
+    if(HAS_SUPA){
+      try{
+        const sb=await getSupabase();
+        if(sb){
+          const{data,error}=await sb.from("booking_requests").insert([req]).select().single();
+          if(error){console.error("Request insert:",error.message);}
+          else{
+            // Notify artist via email
+            sendEmailNotification({
+              type:"new_booking",
+              toEmail:artist.email,
+              toName:artist.name,
+              fromName:form.name.trim(),
+              artistName:artist.name,
+              bookingDate:form.eventDate,
+              eventType:form.eventType,
+            });
+          }
+        }
+      }catch(e){console.warn("Request save failed:",e);}
+    }
+    setSaving(false);
+    onSubmit?.(req);
+    setStep(3);
+  };
+
+  if(step===3) return(
+    <div style={{position:"fixed",inset:0,zIndex:900,background:"rgba(0,0,0,0.82)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}} onClick={onClose}>
+      <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:20,padding:"40px 32px",maxWidth:400,width:"100%",textAlign:"center"}} onClick={e=>e.stopPropagation()}>
+        <div style={{fontSize:52,marginBottom:12}}>✦</div>
+        <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:700,color:C.text,marginBottom:8}}>Request Sent!</div>
+        <div style={{color:C.textD,fontSize:T.sm,lineHeight:1.8,marginBottom:20}}>
+          <strong style={{color:C.gold}}>{artist.name}</strong> will review your request and respond within <strong style={{color:C.text}}>48 hours</strong>.<br/>
+          You'll receive an offer by email with the pricing.
+        </div>
+        <div style={{background:C.surface,borderRadius:10,padding:"12px 16px",marginBottom:20,fontSize:T.xs,color:C.muted,lineHeight:1.7,border:`1px solid ${C.border}`}}>
+          📧 Check <strong style={{color:C.text}}>{form.email}</strong> for updates.<br/>
+          No payment is required until you agree on a price.
+        </div>
+        <button onClick={onClose} style={{width:"100%",background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:10,padding:14,fontWeight:800,fontSize:T.base,cursor:"pointer",fontFamily:"inherit"}}>
+          Done
+        </button>
+      </div>
+    </div>
+  );
+
+  return(
+    <Sheet open onClose={onClose} title="Request Booking">
+      <div style={{padding:"16px 20px 32px"}}>
+
+        {/* Artist mini header */}
+        <div style={{display:"flex",alignItems:"center",gap:12,padding:"12px 0 16px",borderBottom:`1px solid ${C.border}`,marginBottom:16}}>
+          {artist.photo
+            ?<img src={artist.photo} alt={artist.name} style={{width:44,height:44,borderRadius:10,objectFit:"cover"}}/>
+            :<div style={{width:44,height:44,borderRadius:10,background:C.goldS,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20}}>{artist.emoji}</div>}
+          <div>
+            <div style={{fontWeight:700,color:C.text,fontSize:T.sm}}>{artist.name}</div>
+            <div style={{color:C.muted,fontSize:T.xs}}>{artist.genre} · {artist.location}</div>
+          </div>
+          <div style={{marginLeft:"auto",fontSize:10,color:C.muted,background:C.surface,borderRadius:20,padding:"4px 10px",border:`1px solid ${C.border}`}}>Free to request</div>
+        </div>
+
+        {/* Step indicator */}
+        <div style={{display:"flex",gap:8,marginBottom:20}}>
+          {[1,2].map(s=>(
+            <div key={s} style={{flex:1,height:3,borderRadius:2,background:s<=step?C.gold:C.border,transition:"background 0.3s"}}/>
+          ))}
+        </div>
+
+        {err&&<div style={{background:C.rubyS,border:`1px solid ${C.ruby}28`,borderRadius:8,padding:"10px 13px",color:C.ruby,fontSize:T.xs,marginBottom:12}}>⚠ {err}</div>}
+
+        {step===1&&(
+          <div style={{display:"flex",flexDirection:"column",gap:14}}>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text,marginBottom:4}}>Your event details</div>
+
+            {/* Name + Email */}
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+              <Inp label="Your name *" placeholder="First Last" value={form.name} onChange={e=>setF("name",e.target.value)}/>
+              <Inp label="Email *" type="email" placeholder="you@email.com" value={form.email} onChange={e=>setF("email",e.target.value)}/>
+            </div>
+
+            {/* Event date */}
+            <div>
+              <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:6}}>Event date *</div>
+              <input type="date" value={form.eventDate} onChange={e=>setF("eventDate",e.target.value)}
+                min={new Date().toISOString().split("T")[0]}
+                style={{width:"100%",background:C.card,border:`2px solid ${form.eventDate?C.emerald:C.border}`,borderRadius:10,padding:"12px 14px",color:C.text,fontSize:T.sm,outline:"none",fontFamily:"inherit",boxSizing:"border-box" as const}}/>
+            </div>
+
+            {/* Event type */}
+            <div>
+              <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:8}}>Event type *</div>
+              <div style={{display:"flex",flexWrap:"wrap" as const,gap:6}}>
+                {EVENT_TYPES.map(et=>(
+                  <button key={et} onClick={()=>setF("eventType",et)}
+                    style={{background:form.eventType===et?C.goldS:"transparent",color:form.eventType===et?C.gold:C.muted,border:`1px solid ${form.eventType===et?C.gold+"66":C.border}`,borderRadius:20,padding:"6px 14px",cursor:"pointer",fontFamily:"inherit",fontSize:T.xs,fontWeight:600,textTransform:"capitalize" as const}}>
+                    {et}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Location */}
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+              <Inp label="City" placeholder="Oslo, Berlin…" value={form.city} onChange={e=>setF("city",e.target.value)}/>
+              <div>
+                <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:6}}>Country</div>
+                <select value={form.countryCode} onChange={e=>{
+                  const c=COUNTRIES.find(c=>c.code===e.target.value);
+                  setForm(p=>({...p,countryCode:e.target.value,country:c?.name||""}));
+                }} style={{width:"100%",background:C.card,border:`2px solid ${C.border}`,borderRadius:10,padding:"12px 14px",color:C.text,fontSize:T.sm,outline:"none",fontFamily:"inherit",boxSizing:"border-box" as const}}>
+                  {COUNTRIES.map(c=><option key={c.code} value={c.code}>{c.flag} {c.name}</option>)}
+                </select>
+              </div>
+            </div>
+
+            {/* Booking type */}
+            <div>
+              <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:8}}>Booking type</div>
+              <div style={{display:"flex",gap:10}}>
+                {[{v:"solo",l:"Solo vocalist",sub:"Singer only"},{v:"band",l:"With full band",sub:"Singer + musicians"}].map(({v,l,sub})=>(
+                  <button key={v} onClick={()=>setF("bookingType",v)}
+                    style={{flex:1,background:form.bookingType===v?C.goldS:C.surface,border:`2px solid ${form.bookingType===v?C.gold:C.border}`,borderRadius:10,padding:"10px 12px",cursor:"pointer",fontFamily:"inherit",textAlign:"left" as const}}>
+                    <div style={{fontSize:T.xs,fontWeight:700,color:form.bookingType===v?C.gold:C.text}}>{l}</div>
+                    <div style={{fontSize:10,color:C.muted,marginTop:2}}>{sub}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <button onClick={()=>{
+              if(!form.name.trim()||!form.email.trim()||!form.eventDate){setErr("Name, email and date are required.");return;}
+              setErr("");setStep(2);
+            }} style={{width:"100%",background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:10,padding:14,fontWeight:800,fontSize:T.base,cursor:"pointer",fontFamily:"inherit",marginTop:4}}>
+              Next →
+            </button>
+          </div>
+        )}
+
+        {step===2&&(
+          <div style={{display:"flex",flexDirection:"column",gap:14}}>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text,marginBottom:4}}>Budget & details</div>
+
+            {/* Budget range */}
+            <div>
+              <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:8}}>Your budget range *</div>
+              <div style={{display:"flex",flexDirection:"column" as const,gap:6}}>
+                {BUDGET_RANGES.map(({v,l})=>(
+                  <button key={v} onClick={()=>setF("budgetRange",v)}
+                    style={{background:form.budgetRange===v?C.goldS:C.surface,border:`2px solid ${form.budgetRange===v?C.gold:C.border}`,borderRadius:10,padding:"11px 14px",cursor:"pointer",fontFamily:"inherit",textAlign:"left" as const,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                    <span style={{fontSize:T.sm,fontWeight:600,color:form.budgetRange===v?C.gold:C.text}}>{l}</span>
+                    {form.budgetRange===v&&<span style={{color:C.gold,fontSize:14}}>✓</span>}
+                  </button>
+                ))}
+              </div>
+              <div style={{fontSize:10,color:C.muted,marginTop:6,lineHeight:1.5}}>💡 This is shared with the artist to help them send you the right offer. You are not committing to pay this.</div>
+            </div>
+
+            {/* Guest count */}
+            <Inp label="Number of guests (optional)" type="number" placeholder="e.g. 100" value={form.guestCount} onChange={e=>setF("guestCount",e.target.value)}/>
+
+            {/* Notes */}
+            <div>
+              <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:6}}>Notes to artist (optional)</div>
+              <textarea value={form.notes} onChange={e=>setF("notes",e.target.value)}
+                placeholder="Song preferences, event details, special requests…&#10;(Do not include phone numbers or social handles)"
+                rows={3}
+                style={{width:"100%",background:C.card,border:`2px solid ${C.border}`,borderRadius:10,padding:"12px 14px",color:C.text,fontSize:T.sm,fontFamily:"inherit",outline:"none",resize:"vertical" as const,lineHeight:1.6,boxSizing:"border-box" as const}}/>
+              <div style={{fontSize:10,color:C.faint,marginTop:4}}>Contact details are removed automatically — all communication happens on Awaz.</div>
+            </div>
+
+            <div style={{display:"flex",gap:10}}>
+              <button onClick={()=>setStep(1)} style={{background:C.surface,color:C.muted,border:`1px solid ${C.border}`,borderRadius:10,padding:"12px 16px",fontWeight:600,fontSize:T.sm,cursor:"pointer",fontFamily:"inherit",flex:"0 0 auto"}}>← Back</button>
+              <button onClick={submitRequest} disabled={!form.budgetRange||saving}
+                style={{flex:1,background:!form.budgetRange||saving?C.border:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:!form.budgetRange||saving?C.muted:C.bg,border:"none",borderRadius:10,padding:14,fontWeight:800,fontSize:T.base,cursor:!form.budgetRange||saving?"not-allowed":"pointer",fontFamily:"inherit"}}>
+                {saving?"Sending…":"Send Request →"}
+              </button>
+            </div>
+
+            <div style={{fontSize:10,color:C.faint,textAlign:"center",lineHeight:1.6}}>
+              🔒 Free to request · No payment until you accept an offer · Artist responds within 48h
+            </div>
+          </div>
+        )}
+      </div>
+    </Sheet>
+  );
+}
+
 // ── Artist Profile Page ───────────────────────────────────────────────
 function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
   const vp=useViewport();
@@ -4634,15 +4884,7 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
             {!vp.isMobile&&(
               <div style={{textAlign:"right",flexShrink:0}}>
                 <div style={{fontSize:T.xs,color:C.muted,marginBottom:6,letterSpacing:"0.8px",textTransform:"uppercase"}}>Available for your event</div>
-                <Btn v="gold" sz="lg"
-                  onClick={()=>{
-                    if(!artist.countryPricing?.some((r:any)=>r.active)){
-                      alert("This artist has not set up their country pricing yet. Please check back soon.");
-                      return;
-                    }
-                    setShowBookingRequest(true);
-                  }}
-                  xs={{marginBottom:8,display:"block"}}>Request Booking →</Btn>
+                <Btn v="gold" sz="lg" onClick={()=>setShowBookingRequest(true)} xs={{marginBottom:8,display:"block"}}>Request Booking →</Btn>
                 <div style={{fontSize:11,color:C.muted,textAlign:"center"}}>No payment now · Artist responds within 48h</div>
               </div>
             )}
@@ -4790,7 +5032,7 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
                   )}
 
                   <div style={{display:"grid",gridTemplateColumns:vp.isMobile?"1fr":"1fr 1fr",gap:12}}>
-                    {[["",`€${artist.deposit} deposit via Stripe`,"Secured payment · Paid at booking"],["","Chat unlocks immediately","Direct messaging after payment"],["💵","Balance in cash","To artist after the concert"],["📋",`${policy?.label} policy`,policy?.desc||""]].map(([icon,k,v])=>(
+                    {[["","Deposit via Stripe","Paid only after you accept an offer"],["","Chat unlocks immediately","Direct messaging after payment"],["💵","Balance in cash","To artist after the concert"],["📋",`${policy?.label} policy`,policy?.desc||""]].map(([icon,k,v])=>(
                       <div key={k} style={{background:C.surface,borderRadius:8,padding:"12px 14px",border:`1px solid ${C.border}`,borderLeft:`3px solid ${artist.color}35`}}>
                         <div style={{fontSize:18,marginBottom:6}}>{icon}</div>
                         <div style={{color:C.text,fontWeight:700,fontSize:T.xs,marginBottom:3}}>{k}</div>
@@ -4819,36 +5061,7 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
                   </div>
                 )}
 
-                {/* Market pricing — if artist has set country prices */}
-                {artist.countryPricing?.filter((r:any)=>r.active).length>0&&(
-                  <div style={{background:C.card,borderRadius:12,padding:vp.isMobile?20:28,border:`1px solid ${C.border}`}}>
-                    <div style={{fontFamily:"'Cormorant Garamond',serif",color:C.gold,fontSize:T.xl,fontWeight:700,marginBottom:6,letterSpacing:"-0.3px"}}>{t('pricingByCountry')}</div>
-                    <div style={{color:C.muted,fontSize:T.xs,marginBottom:14}}>{t('pricesLocal')}</div>
-                    <div style={{display:"flex",flexDirection:"column",gap:7}}>
-                      {artist.countryPricing.filter(r=>r.active).map(row=>{
-                        const m=MARKETS.find(m=>m.code===row.code);
-                        if(!m) return null;
-                        const eurP=row.price?Math.round(row.price*m.toEur):null;
-                        const eurD=row.deposit?Math.round(row.deposit*m.toEur):null;
-                        return(
-                          <div key={row.code} style={{display:"flex",alignItems:"center",gap:12,padding:"11px 14px",background:C.surface,borderRadius:8,border:`1px solid ${C.border}`}}>
-                            <span style={{fontSize:20,flexShrink:0}}>{m.flag}</span>
-                            <div style={{flex:1,minWidth:0}}>
-                              <div style={{fontWeight:700,fontSize:T.sm,color:C.text}}>{m.name}</div>
-                              <div style={{fontSize:T.xs,color:C.muted,marginTop:1}}>{m.currency !== "EUR" ? `${m.sym}${row.deposit?.toLocaleString()} deposit` : `€${row.deposit?.toLocaleString()} deposit`}</div>
-                            </div>
-                            <div style={{textAlign:"right",flexShrink:0}}>
-                              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:800,color:artist.color}}>
-                                {m.sym}{row.price?.toLocaleString()}
-                              </div>
-                              {m.currency!=="EUR"&&eurP&&<div style={{fontSize:T.xs,color:C.muted}}>≈ €{eurP.toLocaleString()}</div>}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
+                {/* Country pricing hidden — pricing is private in offer system */}
               </div>
             )}
             {tab==="instruments"&&(
@@ -4874,14 +5087,14 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
                     );
                   })}
                 </div>
-                {/* CTA: if multiple instruments, nudge customer to book */}
-                {artist.instruments?.length>1&&selDay&&(
+                {/* CTA: nudge customer to request booking */}
+                {artist.instruments?.length>0&&(
                   <div style={{background:`${C.lapis}0F`,border:`1px solid ${C.lapis}33`,borderRadius:10,padding:"12px 14px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,flexWrap:"wrap" as const}}>
                     <div style={{fontSize:T.xs,color:C.muted,lineHeight:1.5}}>
-                      You've selected <strong style={{color:C.text}}>{MONTHS[selMonth]} {selDay}</strong>. Choose your preferred instrument when booking.
+                      Interested in booking {artist.name.split(" ")[0]}? Send a free request.
                     </div>
-                    <button onClick={()=>setShowBook(true)} style={{background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:"#fff",border:"none",borderRadius:8,padding:"8px 16px",fontSize:T.xs,fontWeight:800,cursor:"pointer",fontFamily:"inherit",flexShrink:0,whiteSpace:"nowrap" as const}}>
-                      Book &amp; Choose →
+                    <button onClick={()=>setShowBookingRequest(true)} style={{background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:"#fff",border:"none",borderRadius:8,padding:"8px 16px",fontSize:T.xs,fontWeight:800,cursor:"pointer",fontFamily:"inherit",flexShrink:0,whiteSpace:"nowrap" as const}}>
+                      Request Booking →
                     </button>
                   </div>
                 )}
@@ -4905,7 +5118,7 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
             {tab==="policy"&&(
               <div style={{background:C.card,borderRadius:12,padding:vp.isMobile?20:28,border:`1px solid ${C.border}`}}>
                 <div style={{fontFamily:"'Cormorant Garamond',serif",color:C.gold,fontSize:T.xl,fontWeight:700,marginBottom:16,letterSpacing:"-0.3px"}}>Booking Terms — {policy?.label}</div>
-                {[["Deposit",`€${artist.deposit} via Stripe — secured payment`],["Balance","Paid directly to artist after performance"],["Cancellation Policy",policy?.desc||"Full refund 72h+ before · No refund after"]].map(([k,v])=>(
+                {[["Deposit","Paid via Stripe after both parties agree on a price"],["Balance","Paid directly to artist after performance"],["Cancellation Policy",policy?.desc||"Full refund 72h+ before · No refund after"]].map(([k,v])=>(
                   <div key={k} style={{marginBottom:18,paddingBottom:18,borderBottom:`1px solid ${C.border}`}}>
                     <div style={{color:C.text,fontWeight:700,fontSize:T.md,marginBottom:5,fontFamily:"'DM Sans',sans-serif"}}>{k}</div>
                     <div style={{color:C.textD,fontSize:T.base,lineHeight:1.75,fontFamily:"'DM Sans',sans-serif"}}>{v}</div>
@@ -4923,7 +5136,7 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
               <div style={{height:2,background:`linear-gradient(90deg,${artist.color}88,${C.gold}88,${artist.color}88)`}}/>
               <div style={{padding:20}}>
                 {/* ── Social proof: viewing now ── */}
-                {(artist.totalBookings||0)>0&&!showBook&&(
+                {(artist.totalBookings||0)>0&&(
                   <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12,background:C.surface,borderRadius:8,padding:"7px 12px",border:`1px solid ${C.border}`}}>
                     <div style={{display:"flex",gap:3}}>
                       {[C.ruby,C.gold,C.lapis].map(c=>(
@@ -4936,144 +5149,29 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
                   </div>
                 )}
 
-                <div style={{fontFamily:"'Cormorant Garamond',serif",color:C.gold,fontSize:T.lg,fontWeight:700,marginBottom:14}}>{t('selectDate2')}</div>
-                <MiniCal artist={artist} selDay={selDay} selMonth={selMonth} selYear={selYear} onSelect={(d,m,y)=>{setSelDay(d);setSelMonth(m);setSelYear(y);}} bookings={bookings}/>
-                <HR color={artist.color} my={14}/>
-                {selDay&&!showBook&&(
-                  <div style={{background:C.surface,borderRadius:8,padding:"14px 16px",marginBottom:12,border:`1px solid ${C.gold}44`}}>
-                    <div style={{fontSize:10,color:C.muted,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:8}}>Your booking details</div>
-                    <div style={{display:"flex",justifyContent:"space-between",fontSize:T.sm,marginBottom:8}}>
-                      <span style={{color:C.muted}}>Date</span>
-                      <span style={{color:C.text,fontWeight:600}}>{MONTHS[selMonth]} {selDay}</span>
-                    </div>
-                    {/* Country selector */}
-                    {artist.countryPricing?.filter((r:any)=>r.active).length>0&&(
-                      <div style={{marginBottom:10}}>
-                        <div style={{fontSize:10,color:C.muted,marginBottom:4}}>Your country</div>
-                        <select value={form.customerCountry} onChange={e=>setForm(f=>({...f,customerCountry:e.target.value}))}
-                          style={{width:"100%",background:C.card,border:`1px solid ${form.customerCountry?C.gold:C.border}`,borderRadius:6,padding:"7px 10px",color:form.customerCountry?C.text:C.muted,fontSize:11,outline:"none",fontFamily:"inherit",cursor:"pointer",boxSizing:"border-box" as const}}>
-                          <option value="">Select country…</option>
-                          {artist.countryPricing.filter((r:any)=>r.active).map((row:any)=>(
-                            <option key={row.country} value={row.country}>{row.flag||"🌍"} {row.country} — {row.currency} {row.deposit} deposit</option>
-                          ))}
-                          <option value="other">🌐 Other</option>
-                        </select>
-                      </div>
-                    )}
-                    <div style={{height:1,background:C.border,marginBottom:10}}/>
-                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
-                      <span style={{color:C.muted,fontSize:T.sm}}>Deposit to secure date</span>
-                      <span style={{color:C.gold,fontWeight:800,fontFamily:"'Cormorant Garamond',serif",fontSize:"1.3rem"}}>
-                        {(()=>{
-                          if(form.customerCountry&&form.customerCountry!=="other"&&artist.countryPricing){
-                            const row=artist.countryPricing.find((r:any)=>r.country===form.customerCountry&&r.active);
-                            if(row) return `${row.currency} ${row.deposit}`;
-                          }
-                          return `€${artist.deposit}`;
-                        })()}
-                      </span>
-                    </div>
-                    <div style={{display:"flex",justifyContent:"space-between",fontSize:T.sm,marginBottom:8}}>
-                      <span style={{color:C.muted}}>Balance</span>
-                      <span style={{color:C.textD}}>Cash to artist after event</span>
-                    </div>
-                    <div style={{display:"flex",gap:6,alignItems:"center"}}>
-                      <span style={{fontSize:10,color:C.emerald,background:C.emeraldS,padding:"3px 8px",borderRadius:20,fontWeight:600}}>✓ Refundable 72h+</span>
-                      <span style={{fontSize:10,color:C.muted}}>Secure via Stripe</span>
-                    </div>
-                  </div>
-                )}
-                {!selDay&&!showBook&&(
-                  <div style={{background:C.surface,borderRadius:8,padding:"14px 16px",marginBottom:12,border:`1px solid ${C.border}`,textAlign:"center"}}>
-                    <div style={{fontSize:13,color:C.muted,lineHeight:1.7}}>
-                      Select a date above to see<br/>
-                      <strong style={{color:C.text}}>availability and deposit amount</strong>
-                    </div>
-                  </div>
-                )}
-                {/* Solo vocalist tip */}
-                {selDay&&!showBook&&(artist.artistType==="vocalist"||artist.artist_type==="vocalist")&&(
-                  <div style={{background:C.goldS,border:`1px solid ${C.gold}44`,borderRadius:8,padding:"9px 12px",marginBottom:12,display:"flex",gap:7,alignItems:"flex-start"}}>
-                    <span style={{fontSize:13,flexShrink:0}}>💡</span>
-                    <div style={{fontSize:11,color:C.muted,lineHeight:1.5}}>
-                      {t('soloSidebarNote')}{" "}
-                      Need tabla or keyboard? Use <strong style={{color:C.lapis}}>🎼 Book a Band</strong>.
-                    </div>
-                  </div>
-                )}
-                {!showBook?(
-                  <button onClick={()=>selDay&&setShowBook(true)} disabled={!selDay}
-                    style={{width:"100%",background:selDay?`linear-gradient(135deg,${C.gold},${C.saffron})`:C.border,color:selDay?"#fff":C.muted,border:"none",borderRadius:10,padding:14,fontSize:T.base,fontWeight:800,cursor:selDay?"pointer":"not-allowed",fontFamily:"inherit",minHeight:50,letterSpacing:"0.2px"}}>
-                     {selDay?`${t('bookNow')} — ${MONTHS[selMonth]} ${selDay} ✦`:t('selectDateFirst')}
-                  </button>
-                ):(
-                  <div style={{display:"flex",flexDirection:"column",gap:10}}>
-                    {/* Progress steps */}
-                    <div style={{display:"flex",alignItems:"center",gap:0,marginBottom:4}}>
-                      {[{n:1,l:"Date"},{n:2,l:"Details"},{n:3,l:"Pay"}].map(({n,l},i)=>(
-                        <React.Fragment key={n}>
-                          <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:3,flex:1}}>
-                            <div style={{width:24,height:24,borderRadius:"50%",background:n<=2?C.gold:C.surface,border:`2px solid ${n<=2?C.gold:C.border}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:800,color:n<=2?C.bg:C.muted}}>{n<=1?"✓":n}</div>
-                            <div style={{fontSize:9,color:n===2?C.gold:C.muted,fontWeight:n===2?700:400}}>{l}</div>
-                          </div>
-                          {i<2&&<div style={{height:2,flex:1,background:n<2?C.gold:C.border,marginBottom:14}}/>}
-                        </React.Fragment>
-                      ))}
-                    </div>
-                    {/* Trust badge */}
-                    <div style={{background:`${C.emerald}10`,border:`1px solid ${C.emerald}33`,borderRadius:8,padding:"8px 12px",display:"flex",alignItems:"center",gap:8}}>
-                      <span style={{fontSize:14}}>🔒</span>
-                      <span style={{fontSize:11,color:C.emerald,fontWeight:700}}>Safe &amp; Secure · Stripe encrypted</span>
-                    </div>
-                    <button onClick={()=>{setShowBook(false);setErr("");}} style={{background:"none",border:"none",color:C.muted,cursor:"pointer",fontSize:T.sm,fontFamily:"inherit",textAlign:"left",minHeight:36}}>← Change date</button>
-                    {err&&<div style={{background:C.rubyS,border:`1px solid ${C.ruby}28`,borderRadius:7,padding:"10px 12px",color:C.ruby,fontSize:T.sm}}>⚠ {err}</div>}
+                <div style={{fontFamily:"'Cormorant Garamond',serif",color:C.gold,fontSize:T.lg,fontWeight:700,marginBottom:6}}>Book {artist.name.split(" ")[0]}</div>
+                <div style={{color:C.muted,fontSize:T.xs,marginBottom:14,lineHeight:1.6}}>Send a free booking request — no payment until both parties agree on a price.</div>
 
-                    {/* Instrument selector — multi-instrument artists */}
-                    {artist.instruments?.length>1&&(
+                {/* Steps */}
+                <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:16}}>
+                  {[["1","Send request","Event date + budget range"],["2","Get an offer","Artist responds within 48h"],["3","Pay deposit","Only when you agree on price"]].map(([n,title,sub])=>(
+                    <div key={n} style={{display:"flex",gap:10,alignItems:"flex-start"}}>
+                      <div style={{width:22,height:22,borderRadius:"50%",background:C.goldS,border:`1px solid ${C.gold}44`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:800,color:C.gold,flexShrink:0,marginTop:1}}>{n}</div>
                       <div>
-                        <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:6}}>Which instrument? <span style={{color:C.ruby}}>*</span></div>
-                        <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
-                          {(artist.instruments as string[]).map((inst:string)=>{
-                            const icons:Record<string,string>={Tabla:"🥁",Rubab:"🪕",Drums:"🎶",Keyboard:"🎹",Guitar:"🎸",Harmonium:"🎵"};
-                            const sel=form.selectedInstrument===inst;
-                            return(
-                              <button key={inst} onClick={()=>setForm(f=>({...f,selectedInstrument:inst}))}
-                                style={{display:"flex",alignItems:"center",gap:5,background:sel?`${C.lapis}22`:C.surface,border:`2px solid ${sel?C.lapis:C.border}`,borderRadius:20,padding:"5px 12px",cursor:"pointer",fontFamily:"inherit",fontSize:T.xs,fontWeight:700,color:sel?C.lapis:C.muted,transition:"all 0.15s"}}>
-                                <span>{icons[inst]||"🎵"}</span>{inst}{sel&&<span style={{color:C.lapis}}>✓</span>}
-                              </button>
-                            );
-                          })}
-                        </div>
+                        <div style={{fontSize:T.xs,fontWeight:700,color:C.text}}>{title}</div>
+                        <div style={{fontSize:10,color:C.muted}}>{sub}</div>
                       </div>
-                    )}
-
-                    <Inp label={t('yourName')+' *'} placeholder={t('yourName')} value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))}/>
-                    <Inp label="Email *" type="email" placeholder="you@email.com" value={form.email} onChange={e=>setForm(f=>({...f,email:e.target.value}))}/>
-                    <Inp label={t('eventType')} placeholder={t('eventPlaceholder')} value={form.event} onChange={e=>setForm(f=>({...f,event:e.target.value}))}/>
-                    <Inp label={t('notes')} placeholder={t('notesPlaceholder')} value={form.notes} onChange={e=>setForm(f=>({...f,notes:e.target.value}))} rows={2}/>
-                    <button onClick={doBook} disabled={!form.name||!form.email}
-                      style={{width:"100%",background:"linear-gradient(135deg,#635BFF,#7B72FF)",color:"#fff",border:"none",borderRadius:10,padding:14,fontSize:T.base,fontWeight:800,cursor:"pointer",opacity:!form.name||!form.email?0.5:1,fontFamily:"inherit",minHeight:50,letterSpacing:"0.2px"}}>
-                      Pay €{artist.deposit} via Stripe →
-                    </button>
-
-                    {/* What happens next */}
-                    <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,padding:"10px 12px"}}>
-                      <div style={{fontSize:10,fontWeight:700,color:C.muted,textTransform:"uppercase" as const,letterSpacing:"0.5px",marginBottom:7}}>{t('applyNextSteps')}</div>
-                      {[
-                        ["💳",t('pricingDepositDesc')||"Deposit charged via Stripe"],
-                        ["💬",t('chatUnlocked')||"Chat unlocks immediately"],
-                        ["🎵",t('artistPerforms')||"Artist performs at your event"],
-                        ["💵",t('pricingAfterDesc')||"Balance paid cash after event"],
-                      ].map(([ico,txt])=>(
-                        <div key={txt as string} style={{display:"flex",gap:7,alignItems:"flex-start",marginBottom:4}}>
-                          <span style={{fontSize:12,flexShrink:0}}>{ico}</span>
-                          <span style={{fontSize:10,color:C.muted,lineHeight:1.5}}>{txt}</span>
-                        </div>
-                      ))}
                     </div>
-                    <div style={{textAlign:"center",color:C.muted,fontSize:10}}>🔒 Your card details are never stored on our servers</div>
-                  </div>
-                )}
+                  ))}
+                </div>
+
+                <button onClick={()=>setShowBookingRequest(true)}
+                  style={{width:"100%",background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:10,padding:"14px",fontSize:T.base,fontWeight:800,cursor:"pointer",fontFamily:"inherit",minHeight:50,letterSpacing:"0.2px",marginBottom:8}}>
+                  Request Booking →
+                </button>
+                <div style={{fontSize:10,color:C.faint,textAlign:"center",lineHeight:1.6}}>
+                  Free to request · No credit card now · Artist responds within 48h
+                </div>
               </div>
             </div>
             {/* Social proof below booking card */}
@@ -5085,11 +5183,11 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
       {/* Booking Request Form — offer system */}
       {showBookingRequest&&(
         <BookingRequestForm artist={artist} onClose={()=>setShowBookingRequest(false)}
-          onSubmit={(req)=>{ handleNewBookingRequest(req); }}/>
+          onSubmit={(req)=>{ console.log('[awaz] New booking request:', req.id); }}/>
       )}
 
-      {/* Mobile: Calendar Sheet */}
-      <Sheet open={showCal} onClose={()=>setShowCal(false)} title={t('selectDate')}>
+      {/* Mobile: Calendar Sheet — now shows request button */}
+      <Sheet open={showCal} onClose={()=>setShowCal(false)} title="Select a Date">
         <div style={{padding:"16px 20px 32px"}}>
           <MiniCal artist={artist} selDay={selDay} selMonth={selMonth} selYear={selYear} onSelect={(d,m,y)=>{setSelDay(d);setSelMonth(m);setSelYear(y);}} bookings={bookings}/>
           {selDay&&(
@@ -5098,27 +5196,11 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
                 <span style={{color:C.muted,fontSize:T.sm}}>Selected date</span>
                 <span style={{color:C.text,fontWeight:600,fontSize:T.sm}}>{MONTHS[selMonth]} {selDay}</span>
               </div>
-              <div style={{height:1,background:C.border,marginBottom:8}}/>
-              <div style={{fontSize:11,color:C.muted,marginBottom:6,letterSpacing:"0.3px"}}>DEPOSIT TO SECURE YOUR DATE</div>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                <div>
-                  <span style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:800,color:C.gold,fontSize:"1.4rem"}}>€{artist.deposit}</span>
-                  <div style={{fontSize:10,color:C.muted,marginTop:2}}>Balance paid to artist after event</div>
-                </div>
-                <div style={{fontSize:11,color:C.emerald,background:C.emeraldS,padding:"4px 10px",borderRadius:20,fontWeight:600}}>✓ Refundable 72h+</div>
-              </div>
+              <div style={{fontSize:11,color:C.muted,lineHeight:1.6}}>Send a booking request for this date — no payment until you agree on a price.</div>
             </div>
           )}
-          {!selDay&&(
-            <div style={{marginTop:16,background:C.surface,borderRadius:10,padding:"14px 16px",border:`1px solid ${C.border}`,marginBottom:14,textAlign:"center"}}>
-              <div style={{fontSize:13,color:C.muted,lineHeight:1.6}}>
-                Select a date above to see<br/>
-                <strong style={{color:C.text}}>deposit amount and availability</strong>
-              </div>
-            </div>
-          )}
-          <Btn full sz="lg" disabled={!selDay} onClick={()=>{if(selDay){setShowCal(false);setShowBook(true);}}} style={{marginTop:8}}>
-             {selDay?`${t('continueWith')} ${MONTHS[selMonth]} ${selDay}`:t('selectDateFirst')}
+          <Btn full sz="lg" disabled={!selDay} onClick={()=>{if(selDay){setShowCal(false);setShowBookingRequest(true);}}}>
+             {selDay?`Request Booking — ${MONTHS[selMonth]} ${selDay}`:t('selectDateFirst')}
           </Btn>
         </div>
       </Sheet>
@@ -5790,7 +5872,7 @@ function StripePlatformBanner({ notify }: { notify: (msg:string, type?:string)=>
   );
 }
 
-function AdminDash({ artists, setArtists, bookings, setBookings, users, inquiries, bookingRequests=[], onAction, onLogout, onMsg, onUpdateInquiry, onBookingRequestAction, theme, onToggleTheme }) {
+function AdminDash({ artists, setArtists, bookings, setBookings, users, inquiries, onAction, onLogout, onMsg, onUpdateInquiry, theme, onToggleTheme }) {
   // Sync module-level _theme so C proxy uses correct palette on every render
   if(theme) _theme = theme;
   const vp=useViewport();
@@ -5921,11 +6003,9 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
     setRefreshing(false);
   };
 
-  const pendingRequests = bookingRequests.filter(r=>r.status==="pending").length;
   const navItems=[
     {id:"overview",    label:"Overview"},
     {id:"artists",     label:"Artists",  badge:pendingArtists},
-    {id:"requests",    label:"Booking Requests", badge:pendingRequests},
     {id:"bookings",    label:"Bookings"},
     {id:"eventplans",  label:"Event Plans"},
     {id:"inquiries",   label:"Inquiries", badge:newInquiries},
@@ -6209,44 +6289,6 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
           {filteredArtists.length===0?(
             <div style={{textAlign:"center",padding:"32px",background:C.card,borderRadius:12,border:`1px solid ${C.border}`,color:C.muted}}>No artists match filters</div>
           ):filteredArtists.map(a=><ArtistRow key={a.id} a={a}/>)}
-        </div>
-      )}
-
-      {/* ── BOOKING REQUESTS ── */}
-      {tab==="requests"&&(
-        <div>
-          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.gold,marginBottom:6}}>Booking Request Monitor</div>
-          <div style={{color:C.muted,fontSize:T.sm,marginBottom:20}}>All offer/counter-offer negotiations across the platform</div>
-          {bookingRequests.filter(r=>{const h=(new Date(r.expiresAt||r.expires_at||0).getTime()-Date.now())/(1000*60*60);return r.status==="pending"&&h<12&&h>0;}).length>0&&(
-            <div style={{background:`${C.ruby}15`,border:`1px solid ${C.ruby}44`,borderRadius:10,padding:"12px 16px",marginBottom:16,display:"flex",gap:10,alignItems:"center"}}>
-              <span style={{color:C.ruby}}>⚠</span>
-              <div style={{fontSize:T.sm,color:C.ruby}}><strong>{bookingRequests.filter(r=>r.status==="pending").length} request(s)</strong> pending artist response</div>
-            </div>
-          )}
-          <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:20}}>
-            {[["Total",bookingRequests.length,C.gold],["Pending",bookingRequests.filter(r=>r.status==="pending").length,C.saffron],["Offered",bookingRequests.filter(r=>r.status==="offered").length,C.lapis],["Agreed",bookingRequests.filter(r=>r.status==="accepted").length,C.emerald]].map(([label,val,color])=>(
-              <div key={label as string} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:10,padding:"12px 14px"}}>
-                <div style={{fontSize:T.xs,color:C.muted,marginBottom:4}}>{label}</div>
-                <div style={{fontSize:"1.4rem",fontWeight:800,color:color as string}}>{val}</div>
-              </div>
-            ))}
-          </div>
-          <div style={{display:"flex",flexDirection:"column",gap:8}}>
-            {bookingRequests.length===0?(
-              <div style={{textAlign:"center",padding:"40px",background:C.card,borderRadius:12,border:`1px solid ${C.border}`,color:C.muted}}>No booking requests yet</div>
-            ):bookingRequests.map(req=>{
-              const a=artists.find(x=>x.id===(req.artistId||req.artist_id));
-              const SC:Record<string,string>={pending:C.saffron,offered:C.lapis,counter_offered:C.gold,accepted:C.emerald,declined:C.ruby,expired:C.muted,booked:C.emerald};
-              return(
-                <div key={req.id} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:10,padding:"14px 16px",display:"grid",gridTemplateColumns:"1fr 1fr auto auto",gap:12,alignItems:"center"}}>
-                  <div><div style={{fontWeight:600,color:C.text,fontSize:T.sm}}>{req.customerName||req.customer_name}</div><div style={{color:C.muted,fontSize:11,marginTop:2}}>{req.eventType||req.event_type} · {req.eventDate||req.event_date}</div></div>
-                  <div><div style={{fontSize:T.sm,color:C.text}}>{a?.name||"Unknown artist"}</div><div style={{fontSize:11,color:C.muted,marginTop:2}}>Budget: {req.budgetRange||req.budget_range}</div>{(req.artistOffer||req.artist_offer)&&<div style={{fontSize:11,color:C.gold,marginTop:1}}>Offer: €{req.artistOffer||req.artist_offer}</div>}</div>
-                  <div style={{textAlign:"right" as const}}><div style={{fontSize:10,color:C.muted}}>Round {req.counterRound||req.counter_round||0}/2</div></div>
-                  <span style={{background:`${SC[req.status]||C.muted}20`,color:SC[req.status]||C.muted,fontSize:10,fontWeight:700,padding:"3px 10px",borderRadius:20,whiteSpace:"nowrap"}}>{req.status}</span>
-                </div>
-              );
-            })}
-          </div>
         </div>
       )}
 
@@ -7157,7 +7199,7 @@ function BoostButton({ artist, onUpdateArtist, notify }) {
   );
 }
 
-function ArtistPortal({ user, artist, bookings, bookingRequests=[], onBookingRequestAction, session, onLogout, onToggleDay, onMsg, onUpdateArtist, theme, onToggleTheme }) {
+function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, onMsg, onUpdateArtist, theme, onToggleTheme }) {
   // Sync module-level _theme so C proxy uses correct palette on every render
   if(theme) _theme = theme;
   const vp=useViewport();
@@ -7230,14 +7272,14 @@ function ArtistPortal({ user, artist, bookings, bookingRequests=[], onBookingReq
 
   const myB=bookings.filter(b=>b.artistId===artist.id);
   const depositsIn=myB.filter(b=>b.depositPaid).reduce((s,b)=>s+Math.round(b.deposit*0.88),0);
+
   const pendingCount=myB.filter(b=>b.status==="pending_payment"||b.status==="pending").length;
+
   const songRequestCount = songRequests.filter(r=>r.status==="pending").length;
-  const bookingReqCount = (window as any).__awazBookingReqs?.filter((r:any)=>r.artistId===artist.id&&r.status==="pending").length||0;
   const navItems=[
     {id:"overview",  label:"Overview"},
-    {id:"bookreqs",  label:"Requests",  badge:bookingReqCount},
     {id:"bookings",  label:"Bookings",  badge:pendingCount},
-    {id:"songreqs",  label:"Song Reqs", badge:songRequestCount},
+    {id:"songreqs",  label:"Requests",  badge:songRequestCount},
     {id:"calendar",  label:"Calendar"},
     {id:"messages",  label:"Messages"},
     {id:"band",      label:t('myBandTitle')},
@@ -7404,30 +7446,10 @@ function ArtistPortal({ user, artist, bookings, bookingRequests=[], onBookingReq
           <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:4}}>
             Hey, {artist.name.split(" ")[0]}
           </div>
-          {/* REQUIRED: Country pricing missing → customers cannot book */}
-          {!artist.countryPricing?.some((r:any)=>r.active)&&artist.status==="approved"&&(
-            <div onClick={()=>setTab("pricing")} style={{display:"flex",alignItems:"center",gap:12,background:`${C.ruby}10`,border:`2px solid ${C.ruby}44`,borderRadius:12,padding:"14px 16px",marginBottom:16,cursor:"pointer"}}>
-              <span style={{fontSize:24,flexShrink:0}}>🚫</span>
-              <div style={{flex:1}}>
-                <div style={{fontWeight:700,color:C.ruby,fontSize:T.sm}}>Country pricing required — customers cannot book you yet</div>
-                <div style={{color:C.muted,fontSize:T.xs,marginTop:2}}>Set your prices per country → customers will be guided automatically without seeing exact prices. Tap to set up →</div>
-              </div>
-            </div>
-          )}
-
-          {/* Booking requests pending */}
-          {bookingReqCount>0&&(
-            <div onClick={()=>setTab("bookreqs")} style={{display:"flex",alignItems:"center",gap:12,background:`${C.gold}10`,border:`1px solid ${C.gold}44`,borderRadius:12,padding:"14px 16px",marginBottom:12,cursor:"pointer"}}>
-              <span style={{fontSize:24,flexShrink:0}}>📨</span>
-              <div style={{flex:1}}>
-                <div style={{fontWeight:700,color:C.gold,fontSize:T.sm}}>{bookingReqCount} booking request{bookingReqCount>1?"s":""} waiting for your response</div>
-                <div style={{color:C.muted,fontSize:T.xs,marginTop:2}}>Respond within 48 hours before they expire →</div>
-              </div>
-            </div>
-          )}
           {/* Notification banner for pending bookings */}
           {pendingCount>0&&(
             <div onClick={()=>setTab("bookings")} style={{display:"flex",alignItems:"center",gap:12,background:"rgba(168,44,56,0.08)",border:"1px solid rgba(168,44,56,0.3)",borderRadius:12,padding:"14px 16px",marginBottom:16,cursor:"pointer"}}>
+              
               <div style={{flex:1}}>
                 <div style={{fontWeight:700,color:C.ruby,fontSize:T.sm}}>{pendingCount} new booking{pendingCount>1?"s":""} awaiting your response</div>
                 <div style={{color:C.muted,fontSize:T.xs,marginTop:2}}>Tap to review →</div>
@@ -7610,14 +7632,6 @@ function ArtistPortal({ user, artist, bookings, bookingRequests=[], onBookingReq
             <strong style={{color:artist.color}}>Tip:</strong> Mark dates as available so customers can book you.
           </div>
         </div>
-      )}
-
-      {tab==="bookreqs"&&(
-        <ArtistOfferPanel
-          requests={bookingRequests.filter((r:any)=>r.artistId===artist.id)}
-          artist={artist}
-          onAction={onBookingRequestAction||async()=>{}}
-        />
       )}
 
       {tab==="bookings"&&(
@@ -10036,7 +10050,7 @@ function DemoPage({onBook, onApply, vp}:{onBook:()=>void;onApply:()=>void;vp:any
               )}
 
               {demoTab==="requests"&&(
-                <ArtistOfferPanel requests={bookingRequests} artist={artist} onAction={handleBookingRequestAction}/>
+                <ArtistOfferPanel requests={[]} artist={artist} onAction={async()=>{}}/>
               )}
 
               {demoTab==="earnings"&&(
@@ -10217,7 +10231,7 @@ function InquiryWidget({ artists, onSubmit }) {
         right:vp.isMobile?"16px":"32px",
         zIndex:150,
       }}>
-        <button id="awaz-inquiry-widget" onClick={()=>{setOpen(true);reset();}}
+        <button id="awaz-inquiry-widget" onClick={()=>{setOpen(true);reset();}} style={{display:"none"}}
           style={{
             display:"flex",alignItems:"center",gap:9,
             background:`linear-gradient(135deg,${C.gold},${C.saffron})`,
@@ -10369,29 +10383,9 @@ function CountryPricingTab({ artist, onUpdateArtist, vp }) {
       <div>
         <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:4}}>{t('marketPricing')}</div>
         <div style={{fontSize:T.sm,color:C.muted,lineHeight:1.7}}>
-          Set your price per country. Customers will be guided to the right budget range automatically — without seeing your exact price. You keep 88% of every deposit.
+          All prices are in EUR (€). Toggle countries where you are available to perform. You keep 88% of every deposit.
         </div>
       </div>
-
-      {/* Required warning */}
-      {active.length===0&&(
-        <div style={{background:`${C.ruby}12`,border:`2px solid ${C.ruby}44`,borderRadius:12,padding:"16px",display:"flex",gap:12,alignItems:"flex-start"}}>
-          <span style={{color:C.ruby,fontSize:20,flexShrink:0}}>⚠</span>
-          <div>
-            <div style={{fontWeight:700,color:C.ruby,marginBottom:4,fontSize:T.sm}}>Country pricing is required</div>
-            <div style={{fontSize:T.xs,color:C.muted,lineHeight:1.7}}>
-              Customers cannot submit a booking request until you have set prices for at least one country. This protects you from requests that don't match your market rates.
-            </div>
-          </div>
-        </div>
-      )}
-
-      {active.length>0&&(
-        <div style={{background:C.emeraldS,border:`1px solid ${C.emerald}44`,borderRadius:10,padding:"12px 16px",display:"flex",alignItems:"center",gap:10}}>
-          <span style={{color:C.emerald,fontSize:16}}>✓</span>
-          <div style={{fontSize:T.sm,color:C.emerald}}>Active in <strong>{active.length} country/countries</strong> — customers are guided to the right budget automatically</div>
-        </div>
-      )}
 
       {/* Active markets */}
       {active.length>0&&(
@@ -10483,39 +10477,14 @@ const PHONE_RE=/(\+?\d[\d\s\-]{7,})/;
 const EMAIL_RE2=/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/g;
 const sanitizeMsg=(t:string)=>t.replace(PHONE_RE,"[contact info removed]").replace(EMAIL_RE2,"[email removed]").slice(0,500);
 
-// Auto-select budget range closest to artist's country price (invisible to customer)
-function getAutobudgetRange(artist:any, countryCode:string):string {
-  if(!artist?.countryPricing) return "";
-  // Find artist's price for this country
-  const row = artist.countryPricing.find((r:any)=>
-    (r.code===countryCode || r.country===countryCode) && r.active
-  );
-  if(!row) return "";
-  const deposit = Number(row.deposit||row.price||artist.deposit||0);
-  if(!deposit) return "";
-  // Map deposit to total event price (deposit is ~20-30% of total)
-  // Find the budget range that best matches
-  for(let i=BUDGET_RANGES.length-1;i>=0;i--){
-    if(deposit>=BUDGET_RANGES[i].min) return BUDGET_RANGES[i].label;
-  }
-  return BUDGET_RANGES[0].label;
-}
-
 function BookingRequestForm({artist,onSubmit,onClose}:{artist:any;onSubmit:(r:any)=>void;onClose:()=>void}){
-  const [f,setF]=useState({customerName:"",customerEmail:"",eventDate:"",eventType:"",location:"",budgetRange:"",guestCount:"",notes:"",country:""});
+  const [f,setF]=useState({customerName:"",customerEmail:"",eventDate:"",eventType:"",location:"",budgetRange:"",guestCount:"",notes:""});
   const [err,setErr]=useState("");const [sent,setSent]=useState(false);
-
-  // Auto-set budget when country changes — invisible to customer
-  const handleCountryChange=(countryCode:string)=>{
-    const autoRange=getAutobudgetRange(artist,countryCode);
-    setF(p=>({...p,location:p.location||MARKETS.find(m=>m.code===countryCode)?.name||"",country:countryCode,budgetRange:autoRange||p.budgetRange}));
-  };
   const submit=async()=>{
     if(!f.customerName.trim()){setErr("Your name is required");return;}
     if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(f.customerEmail)){setErr("Valid email required");return;}
     if(!f.eventDate){setErr("Please select an event date");return;}
     if(!f.eventType){setErr("Please select an event type");return;}
-    if(!f.country){setErr("Please select your country");return;}
     if(!f.location.trim()){setErr("Please enter your event location");return;}
     if(!f.budgetRange){setErr("Please select a budget range");return;}
     setErr("");
@@ -10556,38 +10525,16 @@ function BookingRequestForm({artist,onSubmit,onClose}:{artist:any;onSubmit:(r:an
             {["Wedding","Engagement Party","Eid Celebration","Nowruz","Birthday","Concert","Corporate Event","Private Party","Other"].map(e=><option key={e} value={e}>{e}</option>)}
           </select>
         </div>
-
-        {/* Country selector — drives auto-budget, shown to customer */}
-        <div>
-          <label style={{fontSize:T.xs,fontWeight:700,color:C.muted,display:"block",marginBottom:6}}>Your country *</label>
-          <select value={f.country} onChange={e=>handleCountryChange(e.target.value)}
-            style={{width:"100%",background:C.surface,border:`2px solid ${f.country?C.gold:C.border}`,borderRadius:10,padding:"13px 14px",color:f.country?C.text:C.muted,fontSize:T.sm,outline:"none",fontFamily:"inherit",boxSizing:"border-box" as const}}>
-            <option value="">Select your country…</option>
-            {MARKETS.filter(m=>m.code!=="OTHER").map(m=><option key={m.code} value={m.code}>{m.flag} {m.name}</option>)}
-            <option value="OTHER">🌍 Other</option>
-          </select>
-        </div>
-
         <Inp label="Event location *" value={f.location} onChange={e=>setF(p=>({...p,location:e.target.value}))} placeholder="e.g. Oslo, Norway"/>
         <div>
-          <label style={{fontSize:T.xs,fontWeight:700,color:C.muted,display:"block",marginBottom:4}}>Your budget range *</label>
-          {f.country&&f.budgetRange&&(
-            <div style={{fontSize:11,color:C.gold,marginBottom:8,display:"flex",alignItems:"center",gap:6}}>
-              <span style={{width:6,height:6,borderRadius:"50%",background:C.gold,display:"inline-block"}}/>
-              Suggested based on your location — feel free to adjust
-            </div>
-          )}
+          <label style={{fontSize:T.xs,fontWeight:700,color:C.muted,display:"block",marginBottom:6}}>Your budget range *</label>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-            {BUDGET_RANGES.map(b=>{
-              const isAuto=f.country&&getAutobudgetRange(artist,f.country)===b.label;
-              return(
-                <button key={b.label} onClick={()=>setF(p=>({...p,budgetRange:b.label}))}
-                  style={{background:f.budgetRange===b.label?`${C.gold}20`:C.surface,border:`2px solid ${f.budgetRange===b.label?C.gold:isAuto&&!f.budgetRange?`${C.gold}66`:C.border}`,borderRadius:8,padding:"10px 12px",fontSize:12,fontWeight:f.budgetRange===b.label?700:400,color:f.budgetRange===b.label?C.gold:C.muted,cursor:"pointer",fontFamily:"inherit",textAlign:"left" as const,position:"relative" as const}}>
-                  {b.label}
-                  {isAuto&&!f.budgetRange&&<span style={{position:"absolute",top:4,right:4,width:6,height:6,borderRadius:"50%",background:C.gold,opacity:0.6}}/>}
-                </button>
-              );
-            })}
+            {BUDGET_RANGES.map(b=>(
+              <button key={b.label} onClick={()=>setF(p=>({...p,budgetRange:b.label}))}
+                style={{background:f.budgetRange===b.label?`${C.gold}20`:C.surface,border:`2px solid ${f.budgetRange===b.label?C.gold:C.border}`,borderRadius:8,padding:"10px 12px",fontSize:12,fontWeight:f.budgetRange===b.label?700:400,color:f.budgetRange===b.label?C.gold:C.muted,cursor:"pointer",fontFamily:"inherit",textAlign:"left" as const}}>
+                {b.label}
+              </button>
+            ))}
           </div>
           <div style={{fontSize:11,color:C.muted,marginTop:6}}>Your exact budget is private — only the range is shared with the artist</div>
         </div>
@@ -10991,33 +10938,8 @@ function AppInner() {
   const [artists,setArtists]=useState<any[]>([]);
   const [bookings,setBookings]=useState<any[]>([]);
   const [inquiries,setInquiries]=useState<any[]>([]);
-  const [bookingRequests,setBookingRequests]=useState<any[]>([]);
   const handleNewInquiry=inq=>{setInquiries(p=>[inq,...p]);notify(`New inquiry from ${inq.name||'a visitor'}!`,'inquiry'); sendBrowserNotif('New Inquiry — Awaz',`${inq.name||'Someone'} sent a private inquiry`);};
   const handleUpdateInquiry=(id,updates)=>setInquiries(p=>p.map(i=>i.id===id?{...i,...updates}:i));
-  const handleNewBookingRequest=(req:any)=>{
-    setBookingRequests(p=>[req,...p]);
-    notify(`New booking request from ${req.customerName}!`,'booking');
-  };
-  const handleBookingRequestAction=async(id:string,updates:any)=>{
-    setBookingRequests(p=>p.map(r=>r.id===id?{...r,...updates}:r));
-    if(HAS_SUPA){
-      const sb=await getSupabase();
-      if(sb){
-        const dbUpdate:any={status:updates.status,last_action_at:new Date().toISOString()};
-        if(updates.artistOffer!==undefined) dbUpdate.artist_offer=updates.artistOffer;
-        if(updates.counterRound!==undefined) dbUpdate.counter_round=updates.counterRound;
-        if(updates.declineReason!==undefined) dbUpdate.decline_reason=updates.declineReason;
-        await sb.from("booking_requests").update(dbUpdate).eq("id",id);
-        // Notify customer by email
-        const req=bookingRequests.find(r=>r.id===id);
-        if(req){
-          const emailType=updates.status==="offered"?"new_message":updates.status==="accepted"?"booking_confirmed":"new_message";
-          const msg=updates.status==="offered"?`${selArtist?.name||"The artist"} has sent you a price offer of €${updates.artistOffer} for your event on ${req.eventDate||req.event_date}. Log in to accept or negotiate.`:updates.status==="accepted"?`Great news! Your booking request has been accepted.`:updates.status==="declined"?`Unfortunately the artist is not available. Reason: ${updates.declineReason}`:"Your booking request has been updated.";
-          await sb.functions.invoke("send-email",{body:{type:emailType,toEmail:req.customerEmail||req.customer_email,toName:req.customerName||req.customer_name,fromName:selArtist?.name||"Awaz",message:msg,bookingDate:req.eventDate||req.event_date}});
-        }
-      }
-    }
-  };
   const [session,setSession]=useState(null);
   const [appReady,setAppReady]=useState(!HAS_SUPA); // true immediately if no Supabase
   const [view,setView]=useState("home");
@@ -11068,34 +10990,11 @@ function AppInner() {
           });
           // Admin: load all data then set ready
           try{
-            const[artistRes,inquiryRes,bookingRes,reqRes]=await Promise.all([
+            const[artistRes,inquiryRes,bookingRes]=await Promise.all([
               sb.from("artists").select("*"),
               sb.from("inquiries").select("*").order("created_at",{ascending:false}),
               sb.from("bookings").select("*").neq("status","admin_chat"),
-              sb.from("booking_requests").select("*").order("created_at",{ascending:false}),
             ]);
-            if(reqRes.data?.length>0) setBookingRequests(reqRes.data.map((r:any)=>({
-              id:r.id,customerName:r.customer_name,customerEmail:r.customer_email,
-              artistId:r.artist_id,eventDate:r.event_date,eventType:r.event_type,
-              location:r.location,budgetRange:r.budget_range,budgetMin:r.budget_min||0,
-              budgetMax:r.budget_max||999999,guestCount:r.guest_count||"",notes:r.notes||"",
-              status:r.status||"pending",artistOffer:r.artist_offer||null,
-              counterRound:r.counter_round||0,declineReason:r.decline_reason||null,
-              depositPaid:r.deposit_paid||false,
-              createdAt:new Date(r.created_at).getTime(),
-              expiresAt:new Date(r.expires_at).getTime(),
-            })));
-
-            // Admin realtime: new requests appear instantly
-            sb.channel("admin-booking-requests")
-              .on("postgres_changes",{event:"*",schema:"public",table:"booking_requests"},(payload:any)=>{
-                const r=payload.new;
-                if(!r) return;
-                const mapped={id:r.id,customerName:r.customer_name,customerEmail:r.customer_email,artistId:r.artist_id,eventDate:r.event_date,eventType:r.event_type,location:r.location,budgetRange:r.budget_range,budgetMin:r.budget_min||0,budgetMax:r.budget_max||999999,guestCount:r.guest_count||"",notes:r.notes||"",status:r.status||"pending",artistOffer:r.artist_offer||null,counterRound:r.counter_round||0,declineReason:r.decline_reason||null,depositPaid:r.deposit_paid||false,createdAt:new Date(r.created_at).getTime(),expiresAt:new Date(r.expires_at||0).getTime()};
-                if(payload.eventType==="INSERT") setBookingRequests(p=>[mapped,...p]);
-                else if(payload.eventType==="UPDATE") setBookingRequests(p=>p.map(x=>x.id===r.id?mapped:x));
-              })
-              .subscribe();
             if(artistRes.data?.length>0) setArtists(artistRes.data.map((a:any)=>({
               id:a.id,name:a.name,nameDari:a.name_dari||"",genre:a.genre||"",location:a.location||"",
               rating:a.rating||0,reviews:a.reviews||0,priceInfo:a.price_info||"On request",
@@ -11223,46 +11122,6 @@ function AppInner() {
           role,
           artistId,
         });
-
-        // Load booking requests for this artist
-        if(role==="artist"&&artistId){
-          try{
-            const{data:reqs}=await sb.from("booking_requests")
-              .select("*")
-              .eq("artist_id",artistId)
-              .order("created_at",{ascending:false});
-            if(reqs?.length>0) setBookingRequests(reqs.map((r:any)=>({
-              id:r.id,customerName:r.customer_name,customerEmail:r.customer_email,
-              artistId:r.artist_id,eventDate:r.event_date,eventType:r.event_type,
-              location:r.location,budgetRange:r.budget_range,budgetMin:r.budget_min||0,
-              budgetMax:r.budget_max||999999,guestCount:r.guest_count||"",notes:r.notes||"",
-              status:r.status||"pending",artistOffer:r.artist_offer||null,
-              counterRound:r.counter_round||0,declineReason:r.decline_reason||null,
-              depositPaid:r.deposit_paid||false,
-              createdAt:new Date(r.created_at).getTime(),
-              expiresAt:new Date(r.expires_at).getTime(),
-            })));
-            // Realtime: new requests appear instantly
-            sb.channel("artist-requests-"+artistId)
-              .on("postgres_changes",{event:"INSERT",schema:"public",table:"booking_requests",filter:`artist_id=eq.${artistId}`},(payload:any)=>{
-                const r=payload.new;
-                setBookingRequests(p=>[{
-                  id:r.id,customerName:r.customer_name,customerEmail:r.customer_email,
-                  artistId:r.artist_id,eventDate:r.event_date,eventType:r.event_type,
-                  location:r.location,budgetRange:r.budget_range,
-                  budgetMin:r.budget_min||0,budgetMax:r.budget_max||999999,
-                  guestCount:r.guest_count||"",notes:r.notes||"",
-                  status:r.status||"pending",artistOffer:null,counterRound:0,
-                  declineReason:null,depositPaid:false,
-                  createdAt:new Date(r.created_at).getTime(),
-                  expiresAt:new Date(r.expires_at||Date.now()+172800000).getTime(),
-                },...p]);
-                notify(`New booking request from ${r.customer_name}!`,"booking");
-                sendBrowserNotif("New Booking Request — Awaz",`${r.customer_name} wants to book you for ${r.event_type}`);
-              })
-              .subscribe();
-          }catch(e){console.warn("Booking requests load error:",e);}
-        }
         } // end else (non-admin)
       }
 
@@ -11920,11 +11779,11 @@ function AppInner() {
       <div style={{width:40,height:40,border:`3px solid ${C.border}`,borderTopColor:C.gold,borderRadius:"50%",animation:"spin 0.8s linear infinite"}}/>
     </div>
   );
-  if(session?.role==="admin") return <AdminDash key={lang+theme} theme={theme} onToggleTheme={toggleTheme} artists={artists} setArtists={setArtists} bookings={bookings} setBookings={setBookings} users={users} inquiries={inquiries} bookingRequests={bookingRequests} onAction={handleArtistAction} onLogout={logout} onMsg={handleMsg} onUpdateInquiry={handleUpdateInquiry} onBookingRequestAction={handleBookingRequestAction}/>;
+  if(session?.role==="admin") return <AdminDash key={lang+theme} theme={theme} onToggleTheme={toggleTheme} artists={artists} setArtists={setArtists} bookings={bookings} setBookings={setBookings} users={users} inquiries={inquiries} onAction={handleArtistAction} onLogout={logout} onMsg={handleMsg} onUpdateInquiry={handleUpdateInquiry}/>;
   if(session?.role==="artist"){
     const myA=artists.find(a=>a.id===session.artistId);
     // Only show dashboard if artist is approved by admin
-    if(myA && myA.status==="approved") return <ArtistPortal key={lang+theme} theme={theme} onToggleTheme={toggleTheme} user={session} artist={myA} bookings={bookings} bookingRequests={bookingRequests} onBookingRequestAction={handleBookingRequestAction} onLogout={logout} session={session} onToggleDay={handleToggle} onMsg={handleMsg} onUpdateArtist={handleUpdateArtist}/>;
+    if(myA && myA.status==="approved") return <ArtistPortal key={lang+theme} theme={theme} onToggleTheme={toggleTheme} user={session} artist={myA} bookings={bookings} onLogout={logout} session={session} onToggleDay={handleToggle} onMsg={handleMsg} onUpdateArtist={handleUpdateArtist}/>;
     // Wait for hydration — avoid race condition on page refresh
     if(!appReady) return(
       <div style={{minHeight:"100vh",background:C.bg,display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:16,fontFamily:"'DM Sans',sans-serif"}}>
