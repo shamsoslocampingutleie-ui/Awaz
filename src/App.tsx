@@ -691,6 +691,14 @@ const TRANSLATIONS = {
     bandTotalDeposit:"Total deposit",
     bandMusicianCount:"musicians",
     bandSecureNote:"Deposit paid securely via Stripe · Balance paid cash to artists after the event · No booking without successful payment",
+    bandSendRequest:"Send band request →",
+    bandHowItWorks:"How band booking works",
+    bandFreeToSend:"Free to send · Pay only when agreed",
+    bandIntroDesc:"Book a complete Afghan ensemble for your event — the artist sets up their own band, or build your own with musicians from the platform.",
+    bandOptionADesc:"Book a vocalist who has set up their own permanent band. The artist decides who's in it.",
+    bandOptionBDesc:"Choose individual musicians from the platform — only those available on your date.",
+    bandDepositDesc:"The customer pays a deposit to confirm the booking. Safe and secure.",
+    bandBalanceDesc:"The remaining balance is paid in cash directly to the artists on the evening.",
     bandPayBtn:"Pay via Stripe →",
     bandConfirmTitle:"Confirm Your Band",
     bandReadyTitle:"Ready-made Band",
@@ -1103,6 +1111,14 @@ const TRANSLATIONS = {
     bandTotalDeposit:"Totalt depositum",
     bandMusicianCount:"musikere",
     bandSecureNote:"Depositum betales sikkert via Stripe · Restbeløp betales kontant til artistene etter arrangementet · Ingen bestilling uten vellykket betaling",
+    bandSendRequest:"Send bandforespørsel →",
+    bandHowItWorks:"Slik fungerer bandbooking",
+    bandFreeToSend:"Gratis å sende · Betal kun ved enighet",
+    bandIntroDesc:"Book et komplett afghansk band til ditt arrangement — artisten setter opp sitt eget band, eller bygg ditt eget med musikere fra plattformen.",
+    bandOptionADesc:"Book en vokalist som har satt opp sitt eget faste band. Artisten bestemmer hvem som er med.",
+    bandOptionBDesc:"Velg enkeltmusikere fra plattformen — kun de som er tilgjengelige på din dato.",
+    bandDepositDesc:"Kunden betaler depositum for å bekrefte bookingen. Trygt og sikkert.",
+    bandBalanceDesc:"Restbeløpet betales kontant direkte til artistene på kvelden.",
     bandPayBtn:"Betal via Stripe →",
     bandConfirmTitle:"Bekreft bandet ditt",
     bandReadyTitle:"Ferdig sammensatt band",
@@ -1512,6 +1528,14 @@ const TRANSLATIONS = {
     bandTotalDeposit:"Gesamtanzahlung",
     bandMusicianCount:"Musiker",
     bandSecureNote:"Anzahlung sicher via Stripe · Restbetrag bar an Künstler nach Veranstaltung · Keine Buchung ohne erfolgreiche Zahlung",
+    bandSendRequest:"Bandanfrage senden →",
+    bandHowItWorks:"So funktioniert die Bandbuchung",
+    bandFreeToSend:"Kostenlos senden · Zahlung nur bei Einigung",
+    bandIntroDesc:"Buchen Sie ein komplettes afghanisches Ensemble — der Künstler stellt seine eigene Band zusammen, oder erstellen Sie Ihre eigene mit Musikern der Plattform.",
+    bandOptionADesc:"Buchen Sie einen Sänger, der seine eigene feste Band aufgestellt hat. Der Künstler entscheidet, wer dabei ist.",
+    bandOptionBDesc:"Wählen Sie einzelne Musiker von der Plattform — nur diejenigen, die an Ihrem Datum verfügbar sind.",
+    bandDepositDesc:"Der Kunde zahlt eine Anzahlung zur Bestätigung. Sicher und zuverlässig.",
+    bandBalanceDesc:"Der Restbetrag wird nach der Veranstaltung direkt bar an die Künstler gezahlt.",
     bandPayBtn:"Bezahlen via Stripe →",
     bandConfirmTitle:"Band bestätigen",
     bandReadyTitle:"Fertige Band",
@@ -1921,6 +1945,14 @@ const TRANSLATIONS = {
     bandTotalDeposit:"Acompte total",
     bandMusicianCount:"musiciens",
     bandSecureNote:"Acompte payé via Stripe · Solde payé en espèces aux artistes après l'événement · Aucune réservation sans paiement réussi",
+    bandSendRequest:"Envoyer une demande →",
+    bandHowItWorks:"Comment ça fonctionne",
+    bandFreeToSend:"Gratuit à envoyer · Paiement uniquement en cas d'accord",
+    bandIntroDesc:"Réservez un ensemble afghan complet — l'artiste forme son propre groupe ou créez le vôtre avec des musiciens de la plateforme.",
+    bandOptionADesc:"Réservez un chanteur qui a formé son propre groupe permanent. L'artiste décide de la composition.",
+    bandOptionBDesc:"Choisissez des musiciens individuels sur la plateforme — uniquement ceux disponibles à votre date.",
+    bandDepositDesc:"Le client paie un acompte pour confirmer la réservation. Sûr et sécurisé.",
+    bandBalanceDesc:"Le solde restant est payé en espèces directement aux artistes le soir même.",
     bandPayBtn:"Payer via Stripe →",
     bandConfirmTitle:"Confirmer votre groupe",
     bandReadyTitle:"Groupe prêt",
@@ -2331,6 +2363,14 @@ const TRANSLATIONS = {
     bandTotalDeposit:"کل پیش‌پرداخت",
     bandMusicianCount:"موزیسین",
     bandSecureNote:"پیش‌پرداخت از طریق Stripe · مانده به صورت نقدی به هنرمندان پس از رویداد · بدون پرداخت موفق هیچ رزروی انجام نمی‌شود",
+    bandSendRequest:"ارسال درخواست گروه →",
+    bandHowItWorks:"چگونه رزرو گروه کار می‌کند",
+    bandFreeToSend:"ارسال رایگان · پرداخت فقط در صورت توافق",
+    bandIntroDesc:"یک انسامبل کامل افغانی رزرو کنید — هنرمند گروه خود را تنظیم می‌کند یا گروه خود را با موسیقاران پلتفرم بسازید.",
+    bandOptionADesc:"یک خواننده با گروه ثابت خود رزرو کنید. هنرمند تصمیم می‌گیرد چه کسی در گروه باشد.",
+    bandOptionBDesc:"نوازندگان جداگانه از پلتفرم انتخاب کنید — فقط کسانی که در تاریخ شما در دسترس هستند.",
+    bandDepositDesc:"مشتری پیش‌پرداخت می‌دهد تا رزرو تأیید شود. ایمن و مطمئن.",
+    bandBalanceDesc:"مبلغ باقیمانده پس از مراسم به صورت نقدی مستقیم به هنرمندان پرداخت می‌شود.",
     bandPayBtn:"پرداخت از طریق Stripe →",
     bandConfirmTitle:"تأیید گروه شما",
     bandReadyTitle:"گروه آماده",
@@ -2741,6 +2781,14 @@ const TRANSLATIONS = {
     bandTotalDeposit:"ټول پیش پیسه",
     bandMusicianCount:"موسیقاران",
     bandSecureNote:"د Stripe له لارې خوندي پیش پیسه · پاتې برخه د پیښې وروسته نغده هنرمندانو ته · د بریالي ورکونې پرته هیڅ بک نشته",
+    bandSendRequest:"د ډلې غوښتنه وليږئ →",
+    bandHowItWorks:"د ډلې بک کول څنګه کار کوي",
+    bandFreeToSend:"د لیږلو لپاره وړیا · یوازې د موافقت سره ورکونه",
+    bandIntroDesc:"بشپړ افغاني انسامبل بک کړئ — هنرمند خپله ډله تنظیموي یا له پلیټفارم موسیقارانو سره خپله ډله جوړه کړئ.",
+    bandOptionADesc:"هغه سندریز بک کړئ چې خپله ډله یې تنظیم کړې. هنرمند پریکړه کوي چا شامل وي.",
+    bandOptionBDesc:"له پلیټفارم نه انفرادي موسیقاران وټاکئ — یوازې هغه چې ستاسو نیټه کې شتون لري.",
+    bandDepositDesc:"پیرودونکی د بک تأیید لپاره پیش پیسه ورکوي. خوندي او مطمئن.",
+    bandBalanceDesc:"پاتې مبلغ د مراسمو وروسته مستقیم نغده هنرمندانو ته ورکول کیږي.",
     bandPayBtn:"د Stripe له لارې ورکونه →",
     bandConfirmTitle:"خپله ډله تأیید کړئ",
     bandReadyTitle:"چمتو ډله",
@@ -12698,20 +12746,20 @@ function AppInner() {
                 </div>
                 {!vp.isMobile&&(
                   <div style={{color:C.muted,fontSize:T.sm,lineHeight:1.8,marginBottom:20,maxWidth:440}}>
-                    Book et komplett afghansk band til ditt arrangement — artisten setter opp sitt eget band, eller bygg ditt eget med musikere fra plattformen.
+                    {t('bandIntroDesc')||"Book et komplett afghansk band til ditt arrangement — artisten setter opp sitt eget band, eller bygg ditt eget med musikere fra plattformen."}
                   </div>
                 )}
 
                 {/* Two options */}
                 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:16}}>
                   {[
-                    {label:"Alternativ A",desc:"Artistens eget band",sub:"Artisten bestemmer sammensetningen og antall musikere",icon:"🎼"},
-                    {label:"Alternativ B",desc:"Bygg ditt eget",sub:"Velg musikere enkeltvis fra verifiserte artister på plattformen",icon:"🎛️"},
-                  ].map(({label,desc,sub,icon})=>(
+                    {label:`${t('bandOptionAHeading')||"Alternativ A"}`,desc:t('bandCompleteAs')||"Artisten bestemmer sammensetningen",icon:"🎼"},
+                    {label:`${t('bandBuildOwn')||"Alternativ B"}`,desc:t('bandPickDesc')||"Velg enkeltmusikere fra plattformen",icon:"🎛️"},
+                  ].map(({label,desc,icon})=>(
                     <div key={label} style={{background:C.card,border:`1px solid ${C.gold}22`,borderRadius:10,padding:"10px 12px"}}>
                       <span style={{fontSize:16}}>{icon}</span>
-                      <div style={{fontWeight:700,color:C.gold,fontSize:T.xs,marginTop:4}}>{label} — {desc}</div>
-                      <div style={{fontSize:10,color:C.muted,marginTop:2,lineHeight:1.4}}>{sub}</div>
+                      <div style={{fontWeight:700,color:C.gold,fontSize:T.xs,marginTop:4}}>{label}</div>
+                      <div style={{fontSize:10,color:C.muted,marginTop:2,lineHeight:1.4}}>{desc}</div>
                     </div>
                   ))}
                 </div>
@@ -12727,9 +12775,9 @@ function AppInner() {
                   justifyContent:"center",
                 }}>
                   <span style={{fontSize:18}}>🎼</span>
-                  Book et band nå →
+                  {t('bandSendRequest')||"Send forespørsel →"}
                 </button>
-                <div style={{fontSize:11,color:C.muted,marginTop:8,textAlign:vp.isMobile?"center":"left"}}>Gratis å sende forespørsel · Betal kun ved enighet</div>
+                <div style={{fontSize:11,color:C.muted,marginTop:8,textAlign:vp.isMobile?"center":"left"}}>{t('bandFreeToSend')||"Gratis å sende forespørsel · Betal kun ved enighet"}</div>
               </div>
 
               {/* Right — how it works card */}
@@ -12744,13 +12792,13 @@ function AppInner() {
                         <div style={{fontSize:10,color:C.muted}}>Afghansk musikk booking</div>
                       </div>
                     </div>
-                    <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:700,color:C.text,marginBottom:16}}>Slik fungerer bandbooking</div>
+                    <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:700,color:C.text,marginBottom:16}}>{t('bandHowItWorks')}</div>
 
                     {[
-                      {icon:"🎤",label:"Alternativ A — Artistens eget band",desc:"Book en vokalist som har satt opp sitt eget faste band. Artisten bestemmer hvem som er med."},
-                      {icon:"🎛️",label:"Alternativ B — Bygg ditt eget",desc:"Velg enkeltmusikere fra plattformen — kun de som er tilgjengelige på din dato."},
-                      {icon:"💳",label:"Depositum via Stripe",desc:"Kunden betaler depositum for å bekrefte bookingen. Trygt og sikkert."},
-                      {icon:"💵",label:"Saldo etter arrangementet",desc:"Restbeløpet betales kontant direkte til artistene på kvelden."},
+                      {icon:"🎤",label:`${t('bandOptionAHeading')||"Alternativ A"}`,desc:t('bandOptionADesc')},
+                      {icon:"🎛️",label:`${t('bandBuildOwn')||"Alternativ B"}`,desc:t('bandOptionBDesc')},
+                      {icon:"💳",label:t('pricingDepositLabel')||"Depositum",desc:t('bandDepositDesc')},
+                      {icon:"💵",label:t('pricingAfterLabel')||"Saldo",desc:t('bandBalanceDesc')},
                     ].map(({icon,label,desc})=>(
                       <div key={label} style={{display:"flex",gap:12,padding:"10px 0",borderBottom:`1px solid ${C.border}`}}>
                         <span style={{fontSize:18,flexShrink:0,marginTop:2}}>{icon}</span>
@@ -12767,7 +12815,7 @@ function AppInner() {
                       color:C.bg,border:"none",borderRadius:12,padding:"14px",
                       fontWeight:800,fontSize:15,cursor:"pointer",fontFamily:"inherit",
                     }}>
-                      🎼 Start bandbooking →
+                      🎼 {t('bandSendRequest')||"Send forespørsel →"}
                     </button>
                   </div>
                 </div>
