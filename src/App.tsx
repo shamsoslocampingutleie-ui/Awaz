@@ -5074,7 +5074,7 @@ function ProfilePage({ artist, artists=[], bookings, session, onBack, onBookingC
               <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:16}}>
                 <div style={{fontSize:10,color:C.muted,fontWeight:700,textTransform:"uppercase" as const,letterSpacing:"0.8px",marginBottom:12}}>Lignende artister</div>
                 {artists.filter((a:any)=>a.id!==artist.id&&a.status==="approved"&&(a.genre===artist.genre||a.tags?.some((t:string)=>artist.tags?.includes(t)))).slice(0,3).map((a:any)=>(
-                  <div key={a.id} onClick={()=>onBack&&setTimeout(()=>{},0)} style={{display:"flex",gap:10,alignItems:"center",padding:"8px 0",borderBottom:`1px solid ${C.border}`,cursor:"pointer",lastChild:{borderBottom:"none"}}}>
+                  <div key={a.id} onClick={()=>onBack&&setTimeout(()=>{},0)} style={{display:"flex",gap:10,alignItems:"center",padding:"8px 0",borderBottom:`1px solid ${C.border}`,cursor:"pointer"}}>
                     <div style={{width:36,height:36,borderRadius:8,background:C.goldS,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>{a.emoji}</div>
                     <div style={{flex:1,minWidth:0}}>
                       <div style={{fontWeight:600,color:C.text,fontSize:T.xs,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{a.name}</div>
@@ -10640,7 +10640,7 @@ function InquiryWidget({ artists, onSubmit }) {
         right:vp.isMobile?"16px":"32px",
         zIndex:150,
       }}>
-        <button id="awaz-inquiry-widget" onClick={()=>{setOpen(true);reset();}} style={{display:"none"}}
+        <button id="awaz-inquiry-widget" onClick={()=>{setOpen(true);reset();}}
           style={{
             display:"flex",alignItems:"center",gap:9,
             background:`linear-gradient(135deg,${C.gold},${C.saffron})`,
@@ -12341,6 +12341,7 @@ function AppInner() {
   );
   if(session?.role==="admin") return <AdminDash key={lang+theme} theme={theme} onToggleTheme={toggleTheme} artists={artists} setArtists={setArtists} bookings={bookings} setBookings={setBookings} users={users} inquiries={inquiries} bookingRequests={adminBookingRequests} setBookingRequests={setAdminBookingRequests} onAction={handleArtistAction} onLogout={logout} onMsg={handleMsg} onUpdateInquiry={handleUpdateInquiry}/>;
   if(session?.role==="customer") return <CustomerPortal session={session} artists={artists} onLogout={logout} theme={theme} onToggleTheme={toggleTheme}/>;
+  if(session?.role==="artist"){
     const myA=artists.find(a=>a.id===session.artistId);
     // Only show dashboard if artist is approved by admin
     if(myA && myA.status==="approved") return <ArtistPortal key={lang+theme} theme={theme} onToggleTheme={toggleTheme} user={session} artist={myA} bookings={bookings} onLogout={logout} session={session} onToggleDay={handleToggle} onMsg={handleMsg} onUpdateArtist={handleUpdateArtist}/>;
