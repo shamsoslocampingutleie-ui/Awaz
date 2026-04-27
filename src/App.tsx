@@ -11491,6 +11491,7 @@ function AppInner() {
   const [loginPrefill,setLoginPrefill]=useState<{mode:string;email:string}|null>(null);
   const [showApply,setShowApply]=useState(false);
   const [showBandBooking,setShowBandBooking]=useState(false);
+  const [showBandSent,setShowBandSent]=useState(false);
   const [showContact,setShowContact]=useState(false);
   const [showSongReq,setShowSongReq]=useState(false);
   const [search,setSearch]=useState("");
@@ -12687,28 +12688,30 @@ function AppInner() {
 
               {/* Left — copy */}
               <div style={{marginBottom:vp.isMobile?0:0}}>
-                <div style={{display:"inline-flex",alignItems:"center",gap:6,background:C.goldS,border:`1px solid ${C.gold}33`,borderRadius:20,padding:"4px 12px",marginBottom:10}}>
-                  <span style={{fontSize:13}}>🎼</span>
-                  <span style={{fontSize:11,fontWeight:700,color:C.lapis,letterSpacing:"1px",textTransform:"uppercase" as const}}>Band Booking</span>
+                <div style={{display:"inline-flex",alignItems:"center",gap:8,borderRadius:20,padding:"5px 14px",marginBottom:12,
+                  background:"linear-gradient(90deg,#009A44,#000,#BE0000)",
+                }}>
+                  <span style={{fontFamily:"'Noto Naskh Arabic',serif",fontSize:16,color:"#C8A84A"}}>آواز</span>
+                  <span style={{fontSize:11,fontWeight:700,color:"#fff",letterSpacing:"1px",textTransform:"uppercase" as const}}>Band Booking</span>
                 </div>
                 <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:vp.isMobile?T.xl:T["3xl"],fontWeight:800,color:C.text,lineHeight:1.1,marginBottom:10}}>
-                  Book a full Afghan <span style={{color:C.lapis}}>ensemble</span>
+                  Book et afghansk <span style={{color:"#C8A84A"}}>ensemble</span>
                 </div>
                 {!vp.isMobile&&(
                   <div style={{color:C.muted,fontSize:T.sm,lineHeight:1.8,marginBottom:20,maxWidth:440}}>
-                    Book an artist's own band — they decide who's in it and how many. Or pick your own musicians from verified artists on the platform.
+                    Book et komplett afghansk band til ditt arrangement — artisten setter opp sitt eget band, eller bygg ditt eget med musikere fra plattformen.
                   </div>
                 )}
 
                 {/* Two options */}
                 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:16}}>
                   {[
-                    {label:"Option A",desc:t('bandOptionAHeading')||"Artist's own band",sub:t('bandCompleteAs')||"Artist sets the group",icon:"🎼",color:C.gold},
-                    {label:t('bandBuildOwn'),desc:t('bandPickMusicians'),sub:t('bandPickDesc'),icon:"🎛️",color:C.gold},
+                    {label:"Alternativ A",desc:"Artistens eget band",sub:"Artisten bestemmer sammensetningen og antall musikere",icon:"🎼",color:"#C8A84A"},
+                    {label:"Alternativ B",desc:"Bygg ditt eget",sub:"Velg musikere enkeltvis fra verifiserte artister på plattformen",icon:"🎛️",color:"#009A44"},
                   ].map(({label,desc,sub,icon,color})=>(
                     <div key={label} style={{background:C.card,border:`1px solid ${color}33`,borderRadius:10,padding:"10px 12px"}}>
                       <span style={{fontSize:16}}>{icon}</span>
-                      <div style={{fontWeight:700,color:color,fontSize:T.xs,marginTop:4}}>{label} — {desc}</div>
+                      <div style={{fontWeight:700,color,fontSize:T.xs,marginTop:4}}>{label} — {desc}</div>
                       <div style={{fontSize:10,color:C.muted,marginTop:2,lineHeight:1.4}}>{sub}</div>
                     </div>
                   ))}
@@ -12716,38 +12719,44 @@ function AppInner() {
 
                 <button onClick={()=>setShowBandBooking(true)} style={{
                   display:"flex",alignItems:"center",gap:10,
-                  background:`linear-gradient(135deg,${C.gold},${C.saffron})`,
-                  color:C.bg,border:"none",borderRadius:12,
+                  background:"linear-gradient(135deg,#009A44,#007A3D)",
+                  color:"#fff",border:"none",borderRadius:12,
                   padding:vp.isMobile?"14px 20px":"16px 28px",cursor:"pointer",
                   fontFamily:"inherit",fontWeight:800,fontSize:vp.isMobile?14:16,
-                  boxShadow:`0 8px 32px ${C.lapis}44`,
+                  boxShadow:"0 8px 32px rgba(0,154,68,0.3)",
                   width:vp.isMobile?"100%":"auto",
                   justifyContent:"center",
                 }}>
                   <span style={{fontSize:18}}>🎼</span>
-                  Book a Band Now →
+                  Book et band nå →
                 </button>
-                <div style={{fontSize:11,color:C.muted,marginTop:8,textAlign:vp.isMobile?"center":"left"}}>Deposit paid via Stripe · No booking without payment</div>
+                <div style={{fontSize:11,color:C.muted,marginTop:8,textAlign:vp.isMobile?"center":"left"}}>Depositum betales via Stripe · Gratis å sende forespørsel</div>
               </div>
 
               {/* Right — how it works card */}
               {!vp.isMobile&&(
                 <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:20,overflow:"hidden",boxShadow:`0 24px 80px rgba(0,0,0,0.12)`}}>
-                  <div style={{height:4,background:`linear-gradient(90deg,${C.lapis},${C.gold},${C.ruby})`}}/>
+                  <div style={{height:4,background:"linear-gradient(90deg,#009A44,#000,#BE0000)"}}/>
                   <div style={{padding:"24px 20px"}}>
-                    <div style={{fontSize:11,fontWeight:700,color:C.gold,letterSpacing:"1px",textTransform:"uppercase" as const,marginBottom:4}}>{t('bandBookTitle')}</div>
-                    <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:700,color:C.text,marginBottom:16}}>{t('bandPickMusicians')}</div>
+                    <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:14}}>
+                      <span style={{fontFamily:"'Noto Naskh Arabic',serif",fontSize:22,color:"#C8A84A"}}>آواز</span>
+                      <div>
+                        <div style={{fontSize:11,fontWeight:700,color:"#C8A84A",letterSpacing:"1px",textTransform:"uppercase" as const}}>AWAZ</div>
+                        <div style={{fontSize:10,color:C.muted}}>Afghansk musikk booking</div>
+                      </div>
+                    </div>
+                    <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:700,color:C.text,marginBottom:16}}>Slik fungerer bandbooking</div>
 
                     {[
-                      {icon:"🎤",label:`Option A — ${t('bandOptionAHeading')||"Artist's Band"}`,desc:t('bandPickDesc')||"Book a vocalist who has set up their own band."},
-                      {icon:"🎛️",label:`Option B — ${t('bandBuildOwn')||"Build Your Own"}`,desc:t('bandNoBandsDesc')||"Pick individual musicians from the platform."},
-                      {icon:"💳",label:t('pricingDepositLabel')||"Deposit via Stripe",desc:t('pricingDepositDesc')||"Pay the deposit to confirm. Prices are set by each artist — no hidden fees."},
-                      {icon:"💵",label:t('pricingAfterLabel')||"Balance after the event",desc:t('pricingAfterDesc')||"Remaining amount paid in cash directly to the artists on the night."},
-                    ].map(({icon,label,desc})=>(
+                      {icon:"🎤",label:"Alternativ A — Artistens eget band",desc:"Book en vokalist som har satt opp sitt eget faste band. Artisten bestemmer hvem som er med.",color:"#C8A84A"},
+                      {icon:"🎛️",label:"Alternativ B — Bygg ditt eget",desc:"Velg enkeltmusikere fra plattformen — kun de som er tilgjengelige på din dato.",color:"#009A44"},
+                      {icon:"💳",label:"Depositum via Stripe",desc:"Kunden betaler depositum for å bekrefte bookingen. Trygt og sikkert.",color:C.text},
+                      {icon:"💵",label:"Saldo etter arrangementet",desc:"Restbeløpet betales kontant direkte til artistene på kvelden.",color:C.text},
+                    ].map(({icon,label,desc,color})=>(
                       <div key={label} style={{display:"flex",gap:12,padding:"10px 0",borderBottom:`1px solid ${C.border}`}}>
                         <span style={{fontSize:18,flexShrink:0,marginTop:2}}>{icon}</span>
                         <div>
-                          <div style={{fontWeight:700,color:C.text,fontSize:T.xs,marginBottom:2}}>{label}</div>
+                          <div style={{fontWeight:700,color,fontSize:T.xs,marginBottom:2}}>{label}</div>
                           <div style={{fontSize:11,color:C.muted,lineHeight:1.5}}>{desc}</div>
                         </div>
                       </div>
@@ -12755,11 +12764,11 @@ function AppInner() {
 
                     <button onClick={()=>setShowBandBooking(true)} style={{
                       width:"100%",marginTop:16,
-                      background:`linear-gradient(135deg,${C.gold},${C.saffron})`,
-                      color:C.bg,border:"none",borderRadius:12,padding:"14px",
+                      background:"linear-gradient(135deg,#009A44,#007A3D)",
+                      color:"#fff",border:"none",borderRadius:12,padding:"14px",
                       fontWeight:800,fontSize:15,cursor:"pointer",fontFamily:"inherit",
                     }}>
-                      🎼 Start Band Booking →
+                      🎼 Start bandbooking →
                     </button>
                   </div>
                 </div>
@@ -13367,11 +13376,34 @@ function AppInner() {
         <BandBookingSheet
           artists={artists}
           onClose={()=>setShowBandBooking(false)}
-          onBook={(selection)=>{
-            notify(`Band booking request submitted! Total: €${selection.totalEur}`,"success");
+          onBook={(req)=>{
+            // Same flow as solo: request sent, artist responds with price
+            handleNewBooking(req);
             setShowBandBooking(false);
+            // Show confirmation
+            setShowBandSent(true);
           }}
         />
+      )}
+      {showBandSent&&(
+        <div style={{position:"fixed",inset:0,zIndex:9100,background:"rgba(0,0,0,0.82)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}} onClick={()=>setShowBandSent(false)}>
+          <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:20,padding:"40px 36px",maxWidth:440,width:"100%",textAlign:"center"}} onClick={(e:any)=>e.stopPropagation()}>
+            <div style={{fontSize:56,marginBottom:16}}>🎼</div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:700,color:C.text,marginBottom:10}}>Bandforespørsel sendt!</div>
+            <div style={{color:C.textD,fontSize:T.sm,lineHeight:1.8,marginBottom:20}}>
+              Artistene har <strong style={{color:C.text}}>48 timer</strong> på å svare med et pristilbud.<br/>
+              Ingen betaling kreves nå — du betaler depositum kun etter at dere er enige om pris.
+            </div>
+            <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:10,padding:"12px 16px",marginBottom:20,fontSize:12,color:C.muted,lineHeight:1.7,textAlign:"left"}}>
+              ✦ Svar og pristilbud vises i dashbordet ditt<br/>
+              💬 All kommunikasjon skjer på Awaz — ingen e-post<br/>
+              🔒 Betaling sikres via Stripe ved aksept
+            </div>
+            <button onClick={()=>setShowBandSent(false)} style={{width:"100%",background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:12,padding:14,fontWeight:800,fontSize:15,cursor:"pointer",fontFamily:"inherit"}}>
+              Tilbake til forsiden
+            </button>
+          </div>
+        </div>
       )}
       {/* Contact / Inquiry modal */}
       {showContact&&(
@@ -13965,7 +13997,7 @@ function BandBookingSheet({artists, onClose, onBook}:{artists:any[];onClose:()=>
 
             <button onClick={proceed} disabled={currentSlots.length===0}
               style={{width:"100%",background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:12,padding:"16px",fontWeight:800,fontSize:16,cursor:"pointer",fontFamily:"inherit",opacity:currentSlots.length===0?0.5:1}}>
-              Review &amp; Pay →
+              Se over og send forespørsel →
             </button>
             {!allFilled&&currentSlots.length>0&&(
               <div style={{textAlign:"center",fontSize:11,color:C.muted,marginTop:6}}>Choose an artist for each role to continue</div>
@@ -13973,109 +14005,118 @@ function BandBookingSheet({artists, onClose, onBook}:{artists:any[];onClose:()=>
           </div>
         )}
 
-        {/* ── CONFIRM + PAY ── */}
+        {/* ── CONFIRM → SEND REQUEST (same flow as solo booking) ── */}
         {mode==="confirm"&&(
           <div>
-            <div style={{textAlign:"center",marginBottom:20}}>
-              <div style={{fontSize:32,marginBottom:8}}>🎼</div>
-              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:700,color:C.text,marginBottom:6}}>
-                {selectedLeadId&&leadArtist?`${leadArtist.name}'s Band`:"Your Band"}
+            <div style={{marginBottom:18}}>
+              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:700,color:C.text,marginBottom:4}}>
+                Bekreft og send forespørsel
               </div>
-              <div style={{color:C.muted,fontSize:T.sm}}>{eventType} · {bookingDate}</div>
+              <div style={{color:C.muted,fontSize:T.sm}}>Gratis å sende · Artistene svarer innen 48 timer · Betal kun når dere er enige</div>
             </div>
 
-            <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,padding:"14px 16px",marginBottom:16}}>
+            {/* Band lineup summary — NO PRICES shown to customer */}
+            <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,padding:"14px 16px",marginBottom:14}}>
+              <div style={{fontSize:10,color:C.muted,fontWeight:700,textTransform:"uppercase" as const,letterSpacing:"1px",marginBottom:10}}>Ditt band</div>
               {selectedLeadId&&leadArtist?(
-                // Option A: show artist's band as configured
                 <>
-                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderBottom:`1px solid ${C.border}`}}>
-                    <div style={{display:"flex",alignItems:"center",gap:8}}>
-                      <span style={{fontSize:18}}>🎤</span>
+                  {[{name:leadArtist.name,role:"Vokalist",icon:"🎤",genre:leadArtist.genre},
+                    ...(leadArtist.bandMembers as any[]).map((m:any)=>({name:m.name||m.role,role:m.role,icon:{Tabla:"🥁",Rubab:"🪕",Drums:"🎶",Keyboard:"🎹",Guitar:"🎸",Harmonium:"🎵",Vocalist:"🎤"}[m.role]||"🎵",genre:""}))
+                  ].map((member,i)=>(
+                    <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 0",borderBottom:`1px solid ${C.border}`}}>
+                      <span style={{fontSize:18}}>{member.icon}</span>
                       <div>
-                        <div style={{fontWeight:700,color:C.text,fontSize:T.sm}}>{leadArtist.name}</div>
-                        <div style={{fontSize:10,color:C.muted}}>Vocalist · {leadArtist.genre}</div>
+                        <div style={{fontWeight:600,color:C.text,fontSize:T.sm}}>{member.name}</div>
+                        <div style={{fontSize:10,color:C.muted}}>{member.role}{member.genre?` · ${member.genre}`:""}</div>
                       </div>
                     </div>
-                    <div style={{fontWeight:700,color:C.gold,fontSize:T.sm}}>{toLocalCurrency(leadArtist.depositWithBand||leadArtist.deposit_with_band||leadArtist.deposit||0,currency)}</div>
-                  </div>
-                  {(leadArtist.bandMembers as any[]).map((m:any,i:number)=>{
-                    const roleIcons:Record<string,string>={Tabla:"🥁",Rubab:"🪕",Drums:"🎶",Keyboard:"🎹",Guitar:"🎸",Harmonium:"🎵",Vocalist:"🎤"};
-                    return(
-                      <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderBottom:`1px solid ${C.border}`}}>
-                        <div style={{display:"flex",alignItems:"center",gap:8}}>
-                          <span style={{fontSize:18}}>{roleIcons[m.role]||"🎵"}</span>
-                          <div>
-                            <div style={{fontWeight:700,color:C.text,fontSize:T.sm}}>{m.name||m.role}</div>
-                            <div style={{fontSize:10,color:C.muted}}>{m.role}</div>
-                          </div>
-                        </div>
-                        <div style={{fontWeight:700,color:C.text,fontSize:T.sm}}>{toLocalCurrency(m.price||0,currency)}</div>
-                      </div>
-                    );
-                  })}
-                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",paddingTop:10,marginTop:4}}>
-                    <div style={{fontWeight:700,color:C.text,fontSize:T.sm}}>Total deposit · {(leadArtist.bandMembers as any[]).length+1} musicians</div>
-                    <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:800,color:C.gold,fontSize:T.lg}}>{toLocalCurrency(totalEur,currency)}</div>
-                  </div>
+                  ))}
                 </>
               ):(
-                // Option B: show individually picked slots
-                <>
-                  {currentSlots.map(slot=>{
-                    const def=BAND_ROLES.find(r=>r.role===slot.role);
-                    const a=artists.find(x=>x.id===slot.artistId);
-                    return(
-                      <div key={slot.role} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderBottom:`1px solid ${C.border}`}}>
-                        <div style={{display:"flex",alignItems:"center",gap:8}}>
-                          <span style={{fontSize:18}}>{def?.icon||"🎵"}</span>
-                          <div>
-                            <div style={{fontWeight:700,color:C.text,fontSize:T.sm}}>{a?.name||"—"}</div>
-                            <div style={{fontSize:10,color:C.muted}}>{def?.label}</div>
-                          </div>
-                        </div>
-                        <div style={{fontWeight:700,color:C.gold,fontSize:T.sm}}>{toLocalCurrency(a?.deposit||0,currency)}</div>
+                currentSlots.map(slot=>{
+                  const def=BAND_ROLES.find(r=>r.role===slot.role);
+                  const a=artists.find(x=>x.id===slot.artistId);
+                  return(
+                    <div key={slot.role} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 0",borderBottom:`1px solid ${C.border}`}}>
+                      <span style={{fontSize:18}}>{def?.icon||"🎵"}</span>
+                      <div>
+                        <div style={{fontWeight:600,color:C.text,fontSize:T.sm}}>{a?.name||"—"}</div>
+                        <div style={{fontSize:10,color:C.muted}}>{def?.label||slot.role}</div>
                       </div>
-                    );
-                  })}
-                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",paddingTop:10,marginTop:4}}>
-                    <div style={{fontWeight:700,color:C.text,fontSize:T.sm}}>Total deposit</div>
-                    <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:800,color:C.gold,fontSize:T.lg}}>{toLocalCurrency(totalEur,currency)}</div>
-                  </div>
-                </>
+                    </div>
+                  );
+                })
               )}
+              <div style={{paddingTop:10,display:"flex",gap:16,fontSize:12,color:C.muted,flexWrap:"wrap" as const}}>
+                <span>📅 {bookingDate}</span>
+                <span>🎉 {eventType}</span>
+                <span>🎼 {currentSlots.length} musikere</span>
+              </div>
             </div>
 
-            <div style={{background:C.lapisS,border:`1px solid ${C.lapis}33`,borderRadius:10,padding:"10px 14px",marginBottom:16,fontSize:11,color:C.muted,lineHeight:1.7}}>
-              {t('bandSecureNote')}
+            {/* Customer name + email */}
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:12}}>
+              <Inp label="Ditt fulle navn *" placeholder="Fornavn Etternavn" value={(window as any)._bandName||""} onChange={(e:any)=>{(window as any)._bandName=e.target.value;setErr("");}}/>
+              <Inp label="E-post *" type="email" placeholder="deg@epost.no" value={(window as any)._bandEmail||""} onChange={(e:any)=>{(window as any)._bandEmail=e.target.value;setErr("");}}/>
             </div>
+            <div style={{marginBottom:14}}>
+              <Inp label="By / sted for arrangementet" placeholder="Oslo, Bergen…" value={(window as any)._bandCity||""} onChange={(e:any)=>{(window as any)._bandCity=e.target.value;}}/>
+            </div>
+
+            {/* Trust signals */}
+            <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:10,padding:"10px 14px",marginBottom:14,display:"flex",flexWrap:"wrap" as const,gap:12}}>
+              {[["🔒","Kryptert og trygg"],["💰","Betal kun ved enighet"],["⏱","Svar innen 48t"],["🎼","Alle artistene varsles"]].map(([icon,text])=>(
+                <span key={text as string} style={{fontSize:11,color:C.muted,display:"flex",alignItems:"center",gap:4}}><span>{icon}</span><span>{text}</span></span>
+              ))}
+            </div>
+
+            {err&&<div style={{background:C.rubyS,border:`1px solid ${C.ruby}28`,borderRadius:8,padding:"10px 14px",color:C.ruby,fontSize:T.xs,marginBottom:12}}>⚠️ {err}</div>}
 
             <div style={{display:"flex",gap:8}}>
               <button onClick={()=>setMode(selectedLeadId?"prebuilt":"custom")}
-                style={{flex:1,background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,padding:"14px",fontWeight:700,fontSize:15,cursor:"pointer",fontFamily:"inherit",color:C.muted}}>
-                ← Edit
+                style={{flex:1,background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,padding:"14px",fontWeight:700,fontSize:14,cursor:"pointer",fontFamily:"inherit",color:C.muted}}>
+                ← Endre
               </button>
-              <button onClick={()=>setShowPaywall(true)}
-                style={{flex:2,background:`linear-gradient(135deg,${C.stripe},#4B44CC)`,color:"#fff",border:"none",borderRadius:12,padding:"16px",fontWeight:800,fontSize:16,cursor:"pointer",fontFamily:"inherit"}}>
-                Pay {toLocalCurrency(totalEur,currency)} via Stripe →
+              <button onClick={async()=>{
+                const name=((window as any)._bandName||"").trim();
+                const email=((window as any)._bandEmail||"").trim();
+                if(!name||name.length<3){setErr("Skriv inn fullt navn");return;}
+                if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)){setErr("Gyldig e-post er påkrevd");return;}
+                const req={
+                  id:crypto.randomUUID(),
+                  artist_id:selectedLeadId||currentSlots[0]?.artistId||"",
+                  customer_name:name,
+                  customer_email:email.toLowerCase(),
+                  event_date:bookingDate,
+                  event_type:eventType,
+                  event_location_city:((window as any)._bandCity||"").trim(),
+                  booking_type:"band",
+                  band_slots:JSON.stringify(currentSlots),
+                  notes:`Bandforespørsel: ${currentSlots.length} musikere — ${currentSlots.map(s=>artists.find(a=>a.id===s.artistId)?.name||s.role).join(", ")}`,
+                  status:"request_received",
+                  created_at:new Date().toISOString(),
+                };
+                if(HAS_SUPA){
+                  try{
+                    const sb=await getSupabase();
+                    if(sb) await sb.from("booking_requests").insert([req]);
+                  }catch(e){console.warn("Band request save:",e);}
+                }
+                onBook(req);
+                (window as any)._bandName="";
+                (window as any)._bandEmail="";
+                (window as any)._bandCity="";
+              }}
+                style={{flex:2,background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:12,padding:"16px",fontWeight:800,fontSize:15,cursor:"pointer",fontFamily:"inherit"}}>
+                Send bandforespørsel →
               </button>
+            </div>
+            <div style={{textAlign:"center" as const,fontSize:11,color:C.faint,marginTop:8}}>
+              Gratis å sende · Ingen betaling nå · Artistene setter pris og du aksepterer
             </div>
           </div>
         )}
 
-        {showPaywall&&(
-          <StripePaywall
-            amount={totalEur}
-            emoji="🎼"
-            label="Band Booking Deposit"
-            description={`${currentSlots.length}-piece band · ${eventType} · ${bookingDate}`}
-            metadata={{type:"band_booking",artistName:"Awaz Band",bookingId:`band_${Date.now()}`,email:""}}
-            onSuccess={(piId)=>{
-              setShowPaywall(false);
-              onBook({slots:currentSlots,totalEur,eventType,bookingDate,paymentIntentId:piId,currency});
-            }}
-            onClose={()=>setShowPaywall(false)}
-          />
-        )}
       </div>
     </Sheet>
   );
@@ -14270,9 +14311,9 @@ function ApplySheet({ onSubmit, onClose }) {
             {/* Value proposition — shown BEFORE form, reduces abandonment */}
             {step===1&&(
               <div style={{background:`linear-gradient(135deg,${C.goldS},${C.card})`,border:`1px solid ${C.gold}33`,borderRadius:12,padding:"14px 16px",marginBottom:18}}>
-                <div style={{fontSize:T.xs,fontWeight:800,color:C.gold,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:10}}>Artists on Awaz earn</div>
+                <div style={{fontSize:T.xs,fontWeight:800,color:C.gold,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:10}}>Artister på Awaz får</div>
                 <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:10}}>
-                  {[["88%",t('applyKeep')||"of every booking","kept by you"],["€0",t('applyFree')||"to join","completely free"],["48h",t('applyApproved')||"to get approved","& go live"]].map(([v,l,s])=>(
+                  {[["€0","å bli med","helt gratis"],["48t","godkjenning","& du er live"],["🌍","Europa","Norge, Sverige, Tyskland +"]].map(([v,l,s])=>(
                     <div key={l} style={{textAlign:"center",background:C.card,borderRadius:8,padding:"10px 6px",border:`1px solid ${C.border}`}}>
                       <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:800,color:C.gold,fontSize:"1.4rem",lineHeight:1}}>{v}</div>
                       <div style={{fontSize:9,color:C.muted,marginTop:3,lineHeight:1.4}}>{l}<br/><span style={{color:C.text,fontWeight:600}}>{s}</span></div>
@@ -14281,7 +14322,7 @@ function ApplySheet({ onSubmit, onClose }) {
                 </div>
                 <div style={{display:"flex",alignItems:"center",gap:6,fontSize:11,color:C.muted}}>
                   <span style={{color:C.emerald}}>●</span>
-                  <span>{t('artistsLive')||'Artists are getting booked in Norway, Sweden, Germany and UK right now'}</span>
+                  <span>{t('artistsLive')||'Artister bookes i Norge, Sverige, Tyskland og Storbritannia akkurat nå'}</span>
                 </div>
               </div>
             )}
