@@ -30,6 +30,33 @@ if (typeof window !== "undefined") {
 }
 
 // ── Supabase clients ─────────────────────────────────────────────────
+// ⚠️  KJØR I SUPABASE SQL EDITOR (én gang) — oppretter booking_requests-tabellen:
+// CREATE TABLE IF NOT EXISTS public.booking_requests (
+//   id TEXT PRIMARY KEY,
+//   artist_id TEXT NOT NULL,
+//   customer_name TEXT,
+//   customer_email TEXT,
+//   event_date TEXT,
+//   event_type TEXT,
+//   event_location_city TEXT,
+//   event_location_country TEXT,
+//   event_location_country_code TEXT,
+//   guest_count INT,
+//   booking_type TEXT,
+//   customer_budget_range TEXT,
+//   notes TEXT,
+//   status TEXT DEFAULT 'request_received',
+//   artist_offer NUMERIC,
+//   counter_round INT DEFAULT 0,
+//   decline_reason TEXT,
+//   expires_at TIMESTAMPTZ,
+//   created_at TIMESTAMPTZ DEFAULT NOW()
+// );
+// ALTER TABLE public.booking_requests ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY "Anyone can insert" ON public.booking_requests FOR INSERT WITH CHECK (true);
+// CREATE POLICY "Artist reads own" ON public.booking_requests FOR SELECT USING (true);
+// CREATE POLICY "Artist updates own" ON public.booking_requests FOR UPDATE USING (true);
+// ALTER PUBLICATION supabase_realtime ADD TABLE public.booking_requests;
 const SUPA_URL = import.meta.env.VITE_SUPABASE_URL  || "";
 const SUPA_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
 const HAS_SUPA = !!(SUPA_URL && SUPA_KEY);
@@ -5173,7 +5200,10 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
       {/* Booking Request Form — offer system */}
       {showBookingRequest&&(
         <BookingRequestForm artist={artist} onClose={()=>setShowBookingRequest(false)}
-          onSubmit={(req)=>{ console.log('[awaz] New booking request:', req.id); }}/>
+          onSubmit={(req)=>{
+            // Notify parent so admin gets updated and any in-app notification fires
+            onBookingCreated?.(req);
+          }}/>
       )}
 
       {/* Mobile: Calendar Sheet — now shows request button */}
@@ -5846,7 +5876,7 @@ function StripePlatformBanner({ notify }: { notify: (msg:string, type?:string)=>
   );
 }
 
-function AdminDash({ artists, setArtists, bookings, setBookings, users, inquiries, onAction, onLogout, onMsg, onUpdateInquiry, theme, onToggleTheme }) {
+function AdminDash({ artists, setArtists, bookings, setBookings, users, inquiries, bookingRequests=[], setBookingRequests, onAction, onLogout, onMsg, onUpdateInquiry, theme, onToggleTheme }) {
   // Sync module-level _theme so C proxy uses correct palette on every render
   if(theme) _theme = theme;
   const vp=useViewport();
@@ -6126,13 +6156,15 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
             <StatCard icon="" label="Pending Bookings"   value={pendingBooks}                         sub="Awaiting action"    color={C.saffron} onClick={()=>setTab("bookings")}/>
             <StatCard icon="" label="Active Artists"     value={approvedArtists}                      sub={`${pendingArtists} pending review`} color={C.ruby} onClick={()=>setTab("artists")}/>
             <StatCard icon="" label="New Inquiries"      value={newInquiries}                         sub="Unread"             color={C.lavender} onClick={()=>setTab("inquiries")}/>
+            <StatCard icon="📩" label="Bookingforespørsler" value={bookingRequests.filter((r:any)=>r.status==="request_received"||r.status==="pending").length} sub="Venter på svar" color={C.lapis} onClick={()=>setTab("bookingreqs")}/>
           </div>
 
           {/* Quick Links */}
           <div style={{marginBottom:20}}>
             <SectionHeader title="Quick Links"/>
-            <div style={{display:"grid",gridTemplateColumns:vp.isMobile?"1fr 1fr":"repeat(3,1fr)",gap:10}}>
+            <div style={{display:"grid",gridTemplateColumns:vp.isMobile?"1fr 1fr":"repeat(4,1fr)",gap:10}}>
               {[
+                {icon:"📩",label:"Forespørsler",desc:`${bookingRequests.length} totalt`,color:C.lapis,onClick:()=>setTab("bookingreqs")},
                 {icon:"📋",label:"Event Plans",desc:"View all submitted event plans",color:C.lapis,onClick:()=>setTab("eventplans")},
                 {icon:"💬",label:"Artist Chat",desc:"Message artists directly",color:C.emerald,onClick:()=>setTab("chat")},
                 {icon:"📊",label:"Finance",desc:"Revenue & payouts",color:C.gold,onClick:()=>setTab("finance")},
@@ -6505,6 +6537,59 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
                   </div>
                 )}
               </div>
+            </div>
+          )}
+        </div>
+      )}
+      {tab==="bookingreqs"&&(
+        <div>
+          <SectionHeader title="Bookingforespørsler"/>
+          <div style={{color:C.muted,fontSize:T.sm,marginBottom:16}}>Alle forespørsler sendt av kunder på plattformen.</div>
+          {bookingRequests.length===0?(
+            <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:"48px 24px",textAlign:"center",color:C.muted}}>
+              <div style={{fontSize:40,marginBottom:12}}>📩</div>
+              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,color:C.text,marginBottom:8}}>Ingen forespørsler ennå</div>
+              <div style={{fontSize:T.sm}}>Forespørsler fra kunder vises her i sanntid.</div>
+            </div>
+          ):(
+            <div style={{display:"flex",flexDirection:"column",gap:10}}>
+              {bookingRequests.map((r:any)=>{
+                const artist=artists.find((a:any)=>a.id===r.artist_id);
+                const statusColors:any={request_received:C.saffron,pending:C.saffron,offered:C.lapis,accepted:C.emerald,declined:C.ruby,expired:C.muted};
+                const statusLabels:any={request_received:"Ny",pending:"Ny",offered:"Tilbud sendt",accepted:"Akseptert",declined:"Avslått",expired:"Utløpt"};
+                return(
+                  <div key={r.id} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:"16px 18px"}}>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:8,marginBottom:10}}>
+                      <div>
+                        <div style={{fontWeight:700,color:C.text,fontSize:T.sm}}>{r.customer_name}</div>
+                        <div style={{color:C.muted,fontSize:T.xs,marginTop:2}}>{r.customer_email}</div>
+                      </div>
+                      <span style={{background:`${statusColors[r.status]||C.muted}20`,color:statusColors[r.status]||C.muted,padding:"3px 10px",borderRadius:20,fontSize:10,fontWeight:700}}>{statusLabels[r.status]||r.status}</span>
+                    </div>
+                    <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:6,marginBottom:8}}>
+                      {[
+                        ["Artist",artist?.name||r.artist_id?.slice(0,8)+"…"],
+                        ["Dato",r.event_date||"—"],
+                        ["Arrangementtype",r.event_type||"—"],
+                        ["Sted",`${r.event_location_city||""}${r.event_location_country?", "+r.event_location_country:""}`.trim()||"—"],
+                        ["Gjester",r.guest_count||"—"],
+                        ["Notater",r.notes||"—"],
+                      ].map(([k,v])=>(
+                        <div key={k as string} style={{background:C.surface,borderRadius:7,padding:"7px 10px"}}>
+                          <div style={{fontSize:9,color:C.muted,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.5px",marginBottom:2}}>{k}</div>
+                          <div style={{fontSize:T.xs,color:C.text,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{v as string}</div>
+                        </div>
+                      ))}
+                    </div>
+                    {r.artist_offer&&(
+                      <div style={{background:C.goldS,border:`1px solid ${C.gold}44`,borderRadius:8,padding:"8px 12px",fontSize:T.xs,color:C.muted}}>
+                        Artistens tilbud: <strong style={{color:C.gold}}>€{r.artist_offer}</strong>
+                      </div>
+                    )}
+                    <div style={{fontSize:10,color:C.faint,marginTop:8}}>Sendt: {new Date(r.created_at).toLocaleString("nb-NO")}</div>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
@@ -7249,18 +7334,88 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
 
   const pendingCount=myB.filter(b=>b.status==="pending_payment"||b.status==="pending").length;
 
-  const songRequestCount = songRequests.filter(r=>r.status==="pending").length;
+  const [songRequestCount, setSongRequestCountBadge] = useState(0);
+  const [bookingRequests,setBookingRequests]=useState<any[]>([]);
+
+  // ── Load booking requests for this artist ──────────────────────────────
+  React.useEffect(()=>{
+    if(!HAS_SUPA) return;
+    getSupabase().then(async sb=>{
+      if(!sb) return;
+      const {data}=await sb.from("booking_requests")
+        .select("*").eq("artist_id",artist.id)
+        .order("created_at",{ascending:false});
+      if(data) setBookingRequests(data.map((r:any)=>({
+        id:r.id,
+        artistId:r.artist_id,
+        customerName:r.customer_name,
+        customerEmail:r.customer_email,
+        eventDate:r.event_date,
+        eventType:r.event_type,
+        location:`${r.event_location_city||""}${r.event_location_country?", "+r.event_location_country:""}`,
+        countryCode:r.event_location_country_code||"",
+        guestCount:r.guest_count,
+        bookingType:r.booking_type,
+        budgetRange:r.customer_budget_range,
+        notes:r.notes,
+        status:r.status||"request_received",
+        artistOffer:r.artist_offer||null,
+        counterRound:r.counter_round||0,
+        declineReason:r.decline_reason||null,
+        expiresAt:r.expires_at?new Date(r.expires_at).getTime():Date.now()+48*60*60*1000,
+        createdAt:r.created_at,
+      })));
+    });
+  },[artist.id]);
+
+  // ── Realtime: booking_requests ─────────────────────────────────────────
+  React.useEffect(()=>{
+    if(!HAS_SUPA) return;
+    let ch:any=null;
+    getSupabase().then(sb=>{
+      if(!sb) return;
+      ch=sb.channel(`booking_requests_${artist.id}`)
+        .on("postgres_changes",{event:"*",schema:"public",table:"booking_requests",filter:`artist_id=eq.${artist.id}`},(payload:any)=>{
+          const map=(r:any)=>({
+            id:r.id,artistId:r.artist_id,customerName:r.customer_name,customerEmail:r.customer_email,
+            eventDate:r.event_date,eventType:r.event_type,
+            location:`${r.event_location_city||""}${r.event_location_country?", "+r.event_location_country:""}`,
+            countryCode:r.event_location_country_code||"",guestCount:r.guest_count,
+            bookingType:r.booking_type,budgetRange:r.customer_budget_range,notes:r.notes,
+            status:r.status||"request_received",artistOffer:r.artist_offer||null,
+            counterRound:r.counter_round||0,declineReason:r.decline_reason||null,
+            expiresAt:r.expires_at?new Date(r.expires_at).getTime():Date.now()+48*60*60*1000,
+            createdAt:r.created_at,
+          });
+          if(payload.eventType==="INSERT"){
+            const nr=map(payload.new);
+            setBookingRequests(p=>[nr,...p]);
+            notify(`Ny bookingforespørsel fra ${nr.customerName}!`,"message");
+            sendBrowserNotif("Ny forespørsel — Awaz",`${nr.customerName} ønsker å booke deg til ${nr.eventType}`);
+            setTab("bookingreqs");
+          } else if(payload.eventType==="UPDATE"){
+            setBookingRequests(p=>p.map(r=>r.id===payload.new.id?map(payload.new):r));
+          } else if(payload.eventType==="DELETE"){
+            setBookingRequests(p=>p.filter(r=>r.id!==payload.old.id));
+          }
+        }).subscribe();
+    });
+    return()=>{if(ch) ch.unsubscribe();};
+  },[artist.id]);
+
+  const pendingBookingReqs=bookingRequests.filter(r=>r.status==="request_received"||r.status==="pending").length;
   const navItems=[
-    {id:"overview",  label:"Overview"},
-    {id:"bookings",  label:"Bookings",  badge:pendingCount},
-    {id:"songreqs",  label:"Requests",  badge:songRequestCount},
-    {id:"calendar",  label:"Calendar"},
-    {id:"messages",  label:"Messages"},
-    {id:"band",      label:t('myBandTitle')},
-    {id:"pricing",   label:"Pricing"},
-    {id:"profile",   label:"Profile"},
-    {id:"social",    label:"Social"},
-    {id:"settings",  label:"Settings"},
+    {id:"overview",    label:"Oversikt"},
+    {id:"bookingreqs", label:"Forespørsler", badge:pendingBookingReqs},
+    {id:"bookings",    label:"Bookinger",    badge:pendingCount},
+    {id:"songreqs",    label:"Song Req.",    badge:songRequestCount},
+    {id:"calendar",    label:"Kalender"},
+    {id:"messages",    label:"Meldinger"},
+    {id:"band",        label:t('myBandTitle')},
+    {id:"pricing",     label:"Priser"},
+    {id:"profile",     label:"Profil"},
+    {id:"social",      label:"Sosiale"},
+    {id:"settings",    label:"Innstillinger"},
   ];
 
   const saveEdit=async()=>{
@@ -7585,6 +7740,49 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
                 </div>
               </div>
             ))}
+        </div>
+      )}
+
+      {tab==="bookingreqs"&&(
+        <div>
+          <div style={{marginBottom:20}}>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:4}}>Bookingforespørsler</div>
+            <div style={{color:C.muted,fontSize:T.sm,lineHeight:1.6}}>Kunder som ønsker å booke deg. Svar med pristilbud innen 48 timer.</div>
+          </div>
+
+          {/* Stats */}
+          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:20}}>
+            {[
+              {label:"Nye",      val:bookingRequests.filter(r=>r.status==="request_received"||r.status==="pending").length, color:C.saffron},
+              {label:"Tilbud sendt", val:bookingRequests.filter(r=>r.status==="offered").length, color:C.lapis},
+              {label:"Akseptert", val:bookingRequests.filter(r=>r.status==="accepted").length, color:C.emerald},
+            ].map(({label,val,color})=>(
+              <div key={label} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:10,padding:"12px",textAlign:"center"}}>
+                <div style={{fontSize:T.lg,fontWeight:800,color,marginBottom:2}}>{val}</div>
+                <div style={{fontSize:10,color:C.muted,fontWeight:600,letterSpacing:"0.5px",textTransform:"uppercase"}}>{label}</div>
+              </div>
+            ))}
+          </div>
+
+          <ArtistOfferPanel
+            requests={bookingRequests}
+            artist={artist}
+            onAction={async(id,update)=>{
+              // Optimistic update
+              setBookingRequests(p=>p.map(r=>r.id===id?{...r,...update}:r));
+              if(!HAS_SUPA) return;
+              try{
+                const sb=await getSupabase();
+                if(!sb) return;
+                const dbUpdate:any={status:update.status};
+                if(update.artistOffer!==undefined) dbUpdate.artist_offer=update.artistOffer;
+                if(update.counterRound!==undefined) dbUpdate.counter_round=update.counterRound;
+                if(update.declineReason!==undefined) dbUpdate.decline_reason=update.declineReason;
+                await sb.from("booking_requests").update(dbUpdate).eq("id",id);
+                notify(update.status==="declined"?"Forespørsel avslått":"Tilbud sendt!","success");
+              }catch(e){console.warn("Booking request update failed:",e);}
+            }}
+          />
         </div>
       )}
 
@@ -10837,6 +11035,7 @@ function AppInner() {
   const [artists,setArtists]=useState<any[]>([]);
   const [bookings,setBookings]=useState<any[]>([]);
   const [inquiries,setInquiries]=useState<any[]>([]);
+  const [adminBookingRequests,setAdminBookingRequests]=useState<any[]>([]);
   const handleNewInquiry=inq=>{setInquiries(p=>[inq,...p]);notify(`New inquiry from ${inq.name||'a visitor'}!`,'inquiry'); sendBrowserNotif('New Inquiry — Awaz',`${inq.name||'Someone'} sent a private inquiry`);};
   const handleUpdateInquiry=(id,updates)=>setInquiries(p=>p.map(i=>i.id===id?{...i,...updates}:i));
   const [session,setSession]=useState(null);
@@ -10889,11 +11088,13 @@ function AppInner() {
           });
           // Admin: load all data then set ready
           try{
-            const[artistRes,inquiryRes,bookingRes]=await Promise.all([
+            const[artistRes,inquiryRes,bookingRes,bookingReqRes]=await Promise.all([
               sb.from("artists").select("*"),
               sb.from("inquiries").select("*").order("created_at",{ascending:false}),
               sb.from("bookings").select("*").neq("status","admin_chat"),
+              sb.from("booking_requests").select("*").order("created_at",{ascending:false}),
             ]);
+            if(bookingReqRes.data?.length>0) setAdminBookingRequests(bookingReqRes.data);
             if(artistRes.data?.length>0) setArtists(artistRes.data.map((a:any)=>({
               id:a.id,name:a.name,nameDari:a.name_dari||"",genre:a.genre||"",location:a.location||"",
               rating:a.rating||0,reviews:a.reviews||0,priceInfo:a.price_info||"On request",
@@ -11048,11 +11249,13 @@ function AppInner() {
               });
               // Load admin data if not already loaded
               try{
-                const[artistRes, inquiryRes, bookingRes] = await Promise.all([
+                const[artistRes, inquiryRes, bookingRes, bookingReqRes2] = await Promise.all([
                   sb.from("artists").select("*"),
                   sb.from("inquiries").select("*").order("created_at",{ascending:false}),
                   sb.from("bookings").select("*").neq("status","admin_chat"),
+                  sb.from("booking_requests").select("*").order("created_at",{ascending:false}),
                 ]);
+                if(bookingReqRes2.data?.length>0) setAdminBookingRequests(bookingReqRes2.data);
                 if(artistRes.data?.length>0){
                   setArtists(artistRes.data.map(a=>({
                     id:a.id,name:a.name,nameDari:a.name_dari||"",
@@ -11501,6 +11704,18 @@ function AppInner() {
     }
   };
   const handleNewBooking=async b=>{
+    // ── New request-based flow (has artist_id field, no deposit) ──────────
+    const isRequest = b.artist_id !== undefined && b.deposit === undefined;
+    if(isRequest){
+      // This is a booking REQUEST, not a confirmed booking
+      notify(`Ny forespørsel fra ${b.customer_name||b.customerName||"en kunde"}!`,'booking');
+      sendBrowserNotif('Ny bookingforespørsel — Awaz',
+        `${b.customer_name||b.customerName||'En kunde'} ønsker å booke deg`);
+      // The Supabase insert already happened in BookingRequestForm.
+      // The realtime subscription in ArtistPortal will pick it up automatically.
+      return;
+    }
+    // ── Legacy confirmed booking ──────────────────────────────────────────
     setBookings(p=>[...p,b]);
     notify(`New booking from ${b.customerName||"a customer"}!`,'booking');
     sendBrowserNotif('New Booking — Awaz',`${b.customerName||'A customer'} wants to book you!`);
@@ -11678,7 +11893,7 @@ function AppInner() {
       <div style={{width:40,height:40,border:`3px solid ${C.border}`,borderTopColor:C.gold,borderRadius:"50%",animation:"spin 0.8s linear infinite"}}/>
     </div>
   );
-  if(session?.role==="admin") return <AdminDash key={lang+theme} theme={theme} onToggleTheme={toggleTheme} artists={artists} setArtists={setArtists} bookings={bookings} setBookings={setBookings} users={users} inquiries={inquiries} onAction={handleArtistAction} onLogout={logout} onMsg={handleMsg} onUpdateInquiry={handleUpdateInquiry}/>;
+  if(session?.role==="admin") return <AdminDash key={lang+theme} theme={theme} onToggleTheme={toggleTheme} artists={artists} setArtists={setArtists} bookings={bookings} setBookings={setBookings} users={users} inquiries={inquiries} bookingRequests={adminBookingRequests} setBookingRequests={setAdminBookingRequests} onAction={handleArtistAction} onLogout={logout} onMsg={handleMsg} onUpdateInquiry={handleUpdateInquiry}/>;
   if(session?.role==="artist"){
     const myA=artists.find(a=>a.id===session.artistId);
     // Only show dashboard if artist is approved by admin
