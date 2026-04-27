@@ -699,6 +699,9 @@ const TRANSLATIONS = {
     bandOptionBDesc:"Choose individual musicians from the platform — only those available on your date.",
     bandDepositDesc:"The customer pays a deposit to confirm the booking. Safe and secure.",
     bandBalanceDesc:"The remaining balance is paid in cash directly to the artists on the evening.",
+    reqTitle:"Send booking request",reqFreeLabel:"Free to send",reqFullName:"Full name *",reqNamePlaceholder:"First Last",reqEmail:"Email *",reqEmailPlaceholder:"you@email.com",reqDateLabel:"Date *",reqDateHint:"(at least 7 days ahead)",reqDateBusy:"⚠ Artist is busy on this date — choose another",reqDateFree:"✓ Artist has marked this date as available",reqDateUnconfirmed:"Date not confirmed — artist will clarify when responding",reqEventTypeLabel:"Type of event *",reqCountryLabel:"Country *",reqCountryPlaceholder:"Country (e.g. Norway)",reqCityLabel:"City / venue",reqCityPlaceholder:"Oslo, Bergen, Berlin…",reqBookingTypeLabel:"Booking type",reqSoloLabel:"Solo — vocalist only",reqSoloSub:"Voice only, no instruments",reqBandLabel:"With full band",reqBandSub:"Vocalist + musicians",reqGuestCount:"Number of guests",reqGuestPlaceholder:"e.g. 80",reqNotesLabel:"Tell the artist about your event *",reqNotesMin:"min",reqNotesPlaceholder:"Describe your event:",reqNotesHint:"Do not include phone numbers — all contact happens on Awaz.",reqConfirmText:"I confirm this request is genuine. I am willing to pay a deposit if we agree on a price.",reqTrustEncrypted:"Encrypted & secure",reqTrustReply:"Reply within 48h",reqTrustPayOnAgree:"Pay only when agreed",reqTrustAntiSpam:"Spam blocked",reqNextBtn:"Next →",reqBackBtn:"← Back",reqSendingBtn:"Sending…",reqSendBtn:"Send request →",reqDetailsTitle:"Details & confirmation",reqEventTitle:"About your event",reqSentTitle:"Request sent!",reqSentSub1:"will respond within",reqSentSub2:"48 hours",reqTrackTitle:"Track your request",reqTrackDesc:"Create a free account to track status and communicate directly with the artist.",reqCreateAccount:"Create account & track request →",reqAlreadyAccount:"I already have an account — log in",reqLinkedAccount:"✓ Request linked to your account",reqEmailUpdate:"Update sent to",reqCloseBtn:"Close",reqBlockedTitle:"Request blocked",
+    offerPanelTitle:"Booking requests",offerPanelSub:"Respond within 48 hours — requests expire automatically",offerNeedsReply:"Needs reply",offerActive:"Active",offerHistory:"History",offerNoRequests:"No requests yet",offerNoRequestsSub:"New booking requests appear here in real time.",offerFlaggedTitle:"Automatically flagged as low quality",offerFlaggedSub:"Review carefully. You can decline without reason or report to admin.",offerBackBtn:"← All requests",offerCustomerLabel:"Customer",offerEmailLabel:"Email",offerDateLabel:"Date",offerLocationLabel:"Location",offerGuestsLabel:"Guests",offerBookingTypeLabel:"Booking type",offerNotesLabel:"Note from customer",offerRespondTitle:"Respond to this request",offerDepositLabel:"💳 Deposit — paid now via Stripe",offerDepositPlaceholder:"e.g. 1500",offerYouReceive:"You receive (88%)",offerAwazFee:"Awaz platform fee (12%)",offerBalanceLabel:"💵 Balance after concert — cash to you",offerBalancePlaceholder:"e.g. 1000 (optional)",offerBalanceFree:"100% to you — Awaz takes nothing from the balance",offerSummaryTitle:"Summary for you",offerDepositPct:"Deposit (88%)",offerCashBalance:"Cash balance",offerTotalLabel:"Total to you",offerDeclineTitle:"Select reason for declining:",offerDeclineConfirm:"Confirm decline",offerSendOfferBtn:"Send offer",offerDeclineBtn:"Decline request",offerReportBtn:"Report misuse to admin",offerSendPriceBtn:"Send price offer →",offerCancelBtn:"Cancel",offerActiveOffer:"Your active offer",offerConfirmedTitle:"✓ Booking confirmed!",offerConfirmedNextSteps:"Next: Customer pays deposit via Stripe. Keep the date",offerDepositStripeLabel:"Deposit (Stripe)",offerBalanceAfterLabel:"Balance (cash)",offerChatTitle:"Chat with",offerChatNoMsgs:"No messages yet. Start the conversation with the customer.",offerChatPlaceholder:"Write a message to the customer…",offerStatusNew:"New request",offerStatusOffered:"Offer sent",offerStatusCounter:"Customer counter-offer",offerStatusAccepted:"Price agreed ✓",offerStatusDeclined:"Declined",offerStatusExpired:"Expired",offerStatusBooked:"Booked ✓",offerQualityGood:"★ Serious",offerQualityOk:"OK",offerQualityLow:"⚠ Low quality",
+    custPortalTitle:"My bookings",custPortalSub:"Track your requests and respond to offers.",custNewOffers:"You have",custNewOffersSuf:"unanswered offer(s)!",custNewOffersCTA:"Click to see and respond",custNoBookings:"No requests yet",custNoBookingsSub:"Find an artist and send your first request — it's free.",custStatusWaiting:"Waiting for response",custStatusOffered:"Offer received ✨",custStatusAccepted:"Booking confirmed ✓",custStatusCounter:"Counter-offer sent",custStatusDeclined:"Declined",custStatusExpired:"Expired",custStepSent:"Sent",custStepOffer:"Offer",custStepAccepted:"Accepted",custOfferTitle:"✨ You have received an offer",custDepositNow:"Deposit — pay now",custDepositStripe:"Secure payment via Stripe",custBalanceAfter:"Balance — after concert",custBalanceCash:"Cash to artist",custAcceptBtn:"✓ Accept and confirm booking",custCounterSend:"Send counter-offer",custCounterPlaceholder:"Your counter-offer",custDeclinedTitle:"Request declined",custDeclinedReason:"Reason:",custDeclinedSub:"You can send a request to another artist.",custDetailsLabel:"Request details",custChatTitle:"Messages with",custChatNoMsgs:"No messages yet. Ask the artist questions here.",custChatPlaceholder:"Write a message…",custConfirmedTitle:"🎉 Booking confirmed!",custConfirmedSub:"Confirmation sent to",custConfirmedDate:"Date:",custConfirmedStripe:"The artist will send you a Stripe payment link for the deposit.",custCounterError:"Enter a valid amount",
     bandPayBtn:"Pay via Stripe →",
     bandConfirmTitle:"Confirm Your Band",
     bandReadyTitle:"Ready-made Band",
@@ -782,8 +785,8 @@ const TRANSLATIONS = {
     portalHome:"Hjem", portalCalendar:"Kalender", portalBookings:"Bookinger",
     portalMessages:"Meldinger", portalProfile:"Profil", portalSocial:"Sosiale",
     availabilityTitle:"Tilgjengelighet", availabilityHint:"Trykk på datoer for å veksle Ledig ↔ Blokkert",
-    myBookings:"Mine bookinger", messagesTitle:"Meldinger", myProfile:"Min profil",
-    editProfile:"Rediger", cancelEdit:"Avbryt", saveProfile:"Lagre",
+    myBookings:t("custPortalTitle"), messagesTitle:"Meldinger", myProfile:"Min profil",
+    editProfile:"Rediger", cancelEdit:t("offerCancelBtn"), saveProfile:"Lagre",
     noBookingsYet:"Ingen bookinger ennå. Legg til tilgjengelige datoer!",
     noChatsYet:"Chat låses opp når kundene betaler depositum.",
     depositPaid:"Depositum ✓ Betalt", depositPending:"✗ Venter",
@@ -804,7 +807,7 @@ const TRANSLATIONS = {
     chatLocked:"Låst — depositum kreves", chatActive:"Aktiv",
     typeMessage:"Skriv en melding…", depositRequired:"Depositum kreves",
     chatLockedTitle:"Chat låst", chatLockedBody:"Betal depositum for å låse opp meldinger.",
-    back:"← Tilbake", from:"FRA", clearFilters:"Fjern filtre",
+    back:t("reqBackBtn"), from:"FRA", clearFilters:"Fjern filtre",
     noArtistsFound:"Ingen artister funnet", tryDifferent:"Prøv en annen sjanger eller søkeord.",
     artistsCount:"{n} artist", artistsCountPlural:"{n} artister",
     howStep1Title:"Utforsk",
@@ -860,7 +863,7 @@ const TRANSLATIONS = {
     addNow:"Legg til nå →",
     noBookingsYet2:"Ingen bookinger ennå. Legg til tilgjengelige datoer!",
     tapToToggle:"Trykk på datoer for å veksle Ledig ↔ Blokkert",
-    myBookings2:"Mine bookinger",
+    myBookings2:t("custPortalTitle"),
     noBookingsYet3:"Ingen bookinger ennå.",
     noChatsYet2:"Chat låses opp når kundene betaler depositum.",
     noMessagesYet:"Ingen meldinger ennå",
@@ -883,7 +886,7 @@ const TRANSLATIONS = {
     selectRange:"Velg en ramme…",
     preferredArtist:"Foretrukket artist (valgfritt)",
     notSureYet:"Ikke sikker ennå — la eieren foreslå",
-    noInquiriesYet:"Ingen forespørsler ennå",
+    noInquiriesYet:t("offerNoRequests"),
     noInquiriesDesc:"Besøkendes forespørsler vises her når kontaktwidgeten er aktiv.",
     yourReply:"Ditt svar (sendt)",
     marketPricing:"Markedspriser",
@@ -938,7 +941,7 @@ const TRANSLATIONS = {
     pricingArtist6:"12% plattformgebyr — ingenting annet",
     splitLabel1:"Artistens depositum",
     splitDesc1:"Satt av artist (min €500)",
-    splitLabel2:"Du mottar (88%)",
+    splitLabel2:t("offerYouReceive"),
     splitDesc2:"Automatisk overført til Stripe",
     splitLabel3:"Awaz-gebyr (12%)",
     splitDesc3:"Plattformdrift",
@@ -961,7 +964,7 @@ const TRANSLATIONS = {
     step6Title:"Møt opp og nyt alt",
     step6Desc:"Artisten opptrer. Du betaler restbeløpet kontant, direkte til artisten etter konserten.",
     step6Badge:"Kontantbetaling",
-    depositStripe:"Depositum (Stripe)",
+    depositStripe:t("offerDepositStripeLabel"),
     unverified:"Uverifisert",
     reinstate:"Gjenopprett",
     paymentModel:"BETALINGSMODELL",
@@ -1119,6 +1122,148 @@ const TRANSLATIONS = {
     bandOptionBDesc:"Velg enkeltmusikere fra plattformen — kun de som er tilgjengelige på din dato.",
     bandDepositDesc:"Kunden betaler depositum for å bekrefte bookingen. Trygt og sikkert.",
     bandBalanceDesc:"Restbeløpet betales kontant direkte til artistene på kvelden.",
+    // ── Booking Request Form ──────────────────────────────────────────
+    reqTitle:"Send bookingforespørsel",
+    reqFreeLabel:"Gratis å sende",
+    reqFullName:"Fullt navn *",
+    reqNamePlaceholder:"Fornavn Etternavn",
+    reqEmail:"E-post *",
+    reqEmailPlaceholder:"deg@epost.no",
+    reqDateLabel:"Dato *",
+    reqDateHint:"(minst 7 dager frem)",
+    reqDateBusy:"⚠ Artisten er opptatt denne datoen — velg en annen",
+    reqDateFree:"✓ Artisten har markert denne datoen som ledig",
+    reqDateUnconfirmed:"Datoen er ikke bekreftet — artisten avklarer ved svar",
+    reqEventTypeLabel:"Type arrangement *",
+    reqCountryLabel:"Land *",
+    reqCountryPlaceholder:"Land (f.eks. Norge)",
+    reqCityLabel:"By / sted",
+    reqCityPlaceholder:"Oslo, Bergen, Berlin…",
+    reqBookingTypeLabel:t("reqBookingTypeLabel"),
+    reqSoloLabel:t("reqSoloLabel"),
+    reqSoloSub:t("reqSoloSub"),
+    reqBandLabel:t("reqBandLabel"),
+    reqBandSub:t("reqBandSub"),
+    reqGuestCount:"Antall gjester",
+    reqGuestPlaceholder:"F.eks. 80",
+    reqNotesLabel:t("reqNotesLabel"),
+    reqNotesMin:"min",
+    reqNotesPlaceholder:"Beskriv arrangementet:\n• Type feiring og anledning\n• Ønskede sanger eller stil\n• Spesielle ønsker",
+    reqNotesHint:t("reqNotesHint"),
+    reqConfirmText:t("reqConfirmText"),
+    reqTrustEncrypted:"Kryptert og trygg",
+    reqTrustReply:"Svar innen 48t",
+    reqTrustPayOnAgree:"Betal kun ved enighet",
+    reqTrustAntiSpam:"Spam blokkeres",
+    reqNextBtn:t("reqNextBtn"),
+    reqBackBtn:t("reqBackBtn"),
+    reqSendingBtn:"Sender…",
+    reqSendBtn:"Send forespørsel →",
+    reqDetailsTitle:t("reqDetailsTitle"),
+    reqEventTitle:t("reqEventTitle"),
+    reqSentTitle:t("reqSentTitle"),
+    reqSentSub1:"vil svare innen",
+    reqSentSub2:"48 timer",
+    reqTrackTitle:t("reqTrackTitle"),
+    reqTrackDesc:t("reqTrackDesc"),
+    reqCreateAccount:t("reqCreateAccount"),
+    reqAlreadyAccount:t("reqAlreadyAccount"),
+    reqLinkedAccount:t("reqLinkedAccount"),
+    reqEmailUpdate:"Oppdatering sendes til",
+    reqCloseBtn:"Lukk",
+    reqBlockedTitle:t("reqBlockedTitle"),
+    // ── ArtistOfferPanel ─────────────────────────────────────────────
+    offerPanelTitle:t("offerPanelTitle"),
+    offerPanelSub:t("offerPanelSub"),
+    offerNeedsReply:t("offerNeedsReply"),
+    offerActive:t("offerActive"),
+    offerHistory:t("offerHistory"),
+    offerNoRequests:t("offerNoRequests"),
+    offerNoRequestsSub:t("offerNoRequestsSub"),
+    offerFlaggedTitle:t("offerFlaggedTitle"),
+    offerFlaggedSub:t("offerFlaggedSub"),
+    offerBackBtn:t("offerBackBtn"),
+    offerCustomerLabel:"Kunde",
+    offerEmailLabel:"E-post",
+    offerDateLabel:"Dato",
+    offerLocationLabel:"Sted",
+    offerGuestsLabel:"Gjester",
+    offerBookingTypeLabel:t("reqBookingTypeLabel"),
+    offerNotesLabel:t("offerNotesLabel"),
+    offerRespondTitle:t("offerRespondTitle"),
+    offerDepositLabel:t("offerDepositLabel"),
+    offerDepositPlaceholder:t("offerDepositPlaceholder"),
+    offerYouReceive:t("offerYouReceive"),
+    offerAwazFee:t("offerAwazFee"),
+    offerBalanceLabel:t("offerBalanceLabel"),
+    offerBalancePlaceholder:t("offerBalancePlaceholder"),
+    offerBalanceFree:t("offerBalanceFree"),
+    offerSummaryTitle:t("offerSummaryTitle"),
+    offerDepositPct:t("offerDepositPct"),
+    offerCashBalance:t("offerCashBalance"),
+    offerTotalLabel:t("offerTotalLabel"),
+    offerDeclineTitle:t("offerDeclineTitle"),
+    offerDeclineConfirm:t("offerDeclineConfirm"),
+    offerSendOfferBtn:t("offerSendOfferBtn"),
+    offerDeclineBtn:t("offerDeclineBtn"),
+    offerReportBtn:t("offerReportBtn"),
+    offerSendPriceBtn:t("offerSendPriceBtn"),
+    offerCancelBtn:t("offerCancelBtn"),
+    offerActiveOffer:t("offerActiveOffer"),
+    offerConfirmedTitle:t("offerConfirmedTitle"),
+    offerConfirmedNextSteps:t("offerConfirmedNextSteps"),
+    offerDepositStripeLabel:t("offerDepositStripeLabel"),
+    offerBalanceAfterLabel:t("offerBalanceAfterLabel"),
+    offerChatTitle:"Chat med",
+    offerChatNoMsgs:t("offerChatNoMsgs"),
+    offerChatPlaceholder:"Skriv melding til kunden…",
+    offerStatusNew:"Ny forespørsel",
+    offerStatusOffered:"Tilbud sendt",
+    offerStatusCounter:"Kunde motbyr",
+    offerStatusAccepted:"Pris avtalt ✓",
+    offerStatusDeclined:"Avslått",
+    offerStatusExpired:"Utløpt",
+    offerStatusBooked:"Booket ✓",
+    offerQualityGood:"★ Seriøs",
+    offerQualityOk:"OK",
+    offerQualityLow:"⚠ Lav kvalitet",
+    // ── CustomerPortal ───────────────────────────────────────────────
+    custPortalTitle:t("custPortalTitle"),
+    custPortalSub:t("custPortalSub"),
+    custNewOffers:t("custNewOffers"),
+    custNewOffersSuf:t("custNewOffersSuf"),
+    custNewOffersCTA:t("custNewOffersCTA"),
+    custNoBookings:t("offerNoRequests"),
+    custNoBookingsSub:t("custNoBookingsSub"),
+    custStatusWaiting:"Venter på svar",
+    custStatusOffered:"Tilbud mottatt ✨",
+    custStatusAccepted:"Booking bekreftet ✓",
+    custStatusCounter:"Motbud sendt",
+    custStatusDeclined:"Avslått",
+    custStatusExpired:"Utløpt",
+    custStepSent:"Sendt",
+    custStepOffer:"Tilbud",
+    custStepAccepted:"Akseptert",
+    custOfferTitle:t("custOfferTitle"),
+    custDepositNow:t("custDepositNow"),
+    custDepositStripe:t("custDepositStripe"),
+    custBalanceAfter:t("custBalanceAfter"),
+    custBalanceCash:t("custBalanceCash"),
+    custAcceptBtn:t("custAcceptBtn"),
+    custCounterSend:t("custCounterSend"),
+    custCounterPlaceholder:"Ditt motbud",
+    custDeclinedTitle:t("custDeclinedTitle"),
+    custDeclinedReason:t("custDeclinedReason"),
+    custDeclinedSub:t("custDeclinedSub"),
+    custDetailsLabel:t("custDetailsLabel"),
+    custChatTitle:"Meldinger med",
+    custChatNoMsgs:t("custChatNoMsgs"),
+    custChatPlaceholder:"Skriv en melding…",
+    custConfirmedTitle:t("custConfirmedTitle"),
+    custConfirmedSub:t("custConfirmedSub"),
+    custConfirmedDate:t("custConfirmedDate"),
+    custConfirmedStripe:t("custConfirmedStripe"),
+    custCounterError:t("custCounterError"),
     bandPayBtn:"Betal via Stripe →",
     bandConfirmTitle:"Bekreft bandet ditt",
     bandReadyTitle:"Ferdig sammensatt band",
@@ -1536,6 +1681,145 @@ const TRANSLATIONS = {
     bandOptionBDesc:"Wählen Sie einzelne Musiker von der Plattform — nur diejenigen, die an Ihrem Datum verfügbar sind.",
     bandDepositDesc:"Der Kunde zahlt eine Anzahlung zur Bestätigung. Sicher und zuverlässig.",
     bandBalanceDesc:"Der Restbetrag wird nach der Veranstaltung direkt bar an die Künstler gezahlt.",
+    reqTitle:"Buchungsanfrage senden",
+    reqFreeLabel:"Kostenlos senden",
+    reqFullName:"Vollständiger Name *",
+    reqNamePlaceholder:"Vor- und Nachname",
+    reqEmail:"E-Mail *",
+    reqEmailPlaceholder:"du@email.de",
+    reqDateLabel:"Datum *",
+    reqDateHint:"(mindestens 7 Tage im Voraus)",
+    reqDateBusy:"⚠ Künstler ist an diesem Datum beschäftigt — wählen Sie ein anderes",
+    reqDateFree:"✓ Künstler hat dieses Datum als verfügbar markiert",
+    reqDateUnconfirmed:"Datum nicht bestätigt — Künstler klärt beim Antworten",
+    reqEventTypeLabel:"Art der Veranstaltung *",
+    reqCountryLabel:"Land *",
+    reqCountryPlaceholder:"Land (z.B. Deutschland)",
+    reqCityLabel:"Stadt / Veranstaltungsort",
+    reqCityPlaceholder:"Berlin, Hamburg…",
+    reqBookingTypeLabel:"Buchungsart",
+    reqSoloLabel:"Solo — nur Sänger/in",
+    reqSoloSub:"Gesang ohne Instrumente",
+    reqBandLabel:"Mit ganzer Band",
+    reqBandSub:"Sänger/in + Musiker",
+    reqGuestCount:"Anzahl der Gäste",
+    reqGuestPlaceholder:"z.B. 80",
+    reqNotesLabel:"Erzählen Sie dem Künstler von Ihrer Veranstaltung *",
+    reqNotesMin:"min",
+    reqNotesPlaceholder:"Beschreiben Sie Ihre Veranstaltung:\n• Art der Feier\n• Gewünschte Lieder\n• Besondere Wünsche",
+    reqNotesHint:"Keine Telefonnummern — alle Kontakte über Awaz.",
+    reqConfirmText:"Ich bestätige, dass diese Anfrage ernst gemeint ist. Ich bin bereit, eine Anzahlung zu leisten, wenn wir uns auf einen Preis einigen. Ich verstehe, dass Missbrauch zur Sperrung meines Kontos führen kann.",
+    reqTrustEncrypted:"Verschlüsselt & sicher",
+    reqTrustReply:"Antwort innerhalb 48h",
+    reqTrustPayOnAgree:"Zahlung nur bei Einigung",
+    reqTrustAntiSpam:"Spam wird blockiert",
+    reqNextBtn:"Weiter →",
+    reqBackBtn:"← Zurück",
+    reqSendingBtn:"Senden…",
+    reqSendBtn:"Anfrage senden →",
+    reqDetailsTitle:"Details & Bestätigung",
+    reqEventTitle:"Über Ihre Veranstaltung",
+    reqSentTitle:"Anfrage gesendet!",
+    reqSentSub1:"antwortet innerhalb von",
+    reqSentSub2:"48 Stunden",
+    reqTrackTitle:"Anfrage verfolgen",
+    reqTrackDesc:"Erstellen Sie ein kostenloses Konto, um den Status zu verfolgen und direkt mit dem Künstler zu kommunizieren.",
+    reqCreateAccount:"Konto erstellen & Anfrage verfolgen →",
+    reqAlreadyAccount:"Ich habe bereits ein Konto — Anmelden",
+    reqLinkedAccount:"✓ Anfrage mit Ihrem Konto verknüpft",
+    reqEmailUpdate:"Aktualisierung gesendet an",
+    reqCloseBtn:"Schließen",
+    reqBlockedTitle:"Anfrage blockiert",
+    offerPanelTitle:"Buchungsanfragen",
+    offerPanelSub:"Antworten Sie innerhalb von 48 Stunden — Anfragen laufen automatisch ab",
+    offerNeedsReply:"Antwort erforderlich",
+    offerActive:"Aktiv",
+    offerHistory:"Verlauf",
+    offerNoRequests:"Noch keine Anfragen",
+    offerNoRequestsSub:"Neue Buchungsanfragen von Kunden erscheinen hier in Echtzeit.",
+    offerFlaggedTitle:"Automatisch als niedrige Qualität markiert",
+    offerFlaggedSub:"Sorgfältig prüfen. Sie können ohne Begründung ablehnen oder dem Admin melden.",
+    offerBackBtn:"← Alle Anfragen",
+    offerCustomerLabel:"Kunde",
+    offerEmailLabel:"E-Mail",
+    offerDateLabel:"Datum",
+    offerLocationLabel:"Ort",
+    offerGuestsLabel:"Gäste",
+    offerBookingTypeLabel:"Buchungsart",
+    offerNotesLabel:"Notiz vom Kunden",
+    offerRespondTitle:"Auf Anfrage antworten",
+    offerDepositLabel:"💳 Anzahlung — jetzt via Stripe bezahlen",
+    offerDepositPlaceholder:"z.B. 1500",
+    offerYouReceive:"Sie erhalten (88%)",
+    offerAwazFee:"Awaz Plattformgebühr (12%)",
+    offerBalanceLabel:"💵 Restzahlung nach Konzert — bar an Sie",
+    offerBalancePlaceholder:"z.B. 1000 (optional)",
+    offerBalanceFree:"100% für Sie — Awaz nimmt nichts von der Restzahlung",
+    offerSummaryTitle:"Zusammenfassung für Sie",
+    offerDepositPct:"Anzahlung (88%)",
+    offerCashBalance:"Restzahlung bar",
+    offerTotalLabel:"Gesamt für Sie",
+    offerDeclineTitle:"Ablehnungsgrund wählen:",
+    offerDeclineConfirm:"Ablehnung bestätigen",
+    offerSendOfferBtn:"Angebot senden",
+    offerDeclineBtn:"Anfrage ablehnen",
+    offerReportBtn:"Missbrauch melden",
+    offerSendPriceBtn:"Preisangebot senden →",
+    offerCancelBtn:"Abbrechen",
+    offerActiveOffer:"Ihr aktives Angebot",
+    offerConfirmedTitle:"✓ Buchung bestätigt!",
+    offerConfirmedNextSteps:"Nächste Schritte: Kunde zahlt Anzahlung via Stripe. Sie erhalten Bestätigung per E-Mail. Datum reservieren:",
+    offerDepositStripeLabel:"Anzahlung (Stripe)",
+    offerBalanceAfterLabel:"Restzahlung (bar)",
+    offerChatTitle:"Chat mit",
+    offerChatNoMsgs:"Noch keine Nachrichten. Starten Sie das Gespräch.",
+    offerChatPlaceholder:"Nachricht an Kunden…",
+    offerStatusNew:"Neue Anfrage",
+    offerStatusOffered:"Angebot gesendet",
+    offerStatusCounter:"Kunde macht Gegenangebot",
+    offerStatusAccepted:"Preis vereinbart ✓",
+    offerStatusDeclined:"Abgelehnt",
+    offerStatusExpired:"Abgelaufen",
+    offerStatusBooked:"Gebucht ✓",
+    offerQualityGood:"★ Seriös",
+    offerQualityOk:"OK",
+    offerQualityLow:"⚠ Niedrige Qualität",
+    custPortalTitle:"Meine Buchungen",
+    custPortalSub:"Verfolgen Sie Ihre Anfragen und antworten Sie auf Angebote.",
+    custNewOffers:"Sie haben",
+    custNewOffersSuf:"unbeantwortetes Angebot!",
+    custNewOffersCTA:"Klicken, um das Angebot zu sehen und zu antworten",
+    custNoBookings:"Noch keine Anfragen",
+    custNoBookingsSub:"Finden Sie einen Künstler und senden Sie Ihre erste Anfrage — kostenlos.",
+    custStatusWaiting:"Wartet auf Antwort",
+    custStatusOffered:"Angebot erhalten ✨",
+    custStatusAccepted:"Buchung bestätigt ✓",
+    custStatusCounter:"Gegenangebot gesendet",
+    custStatusDeclined:"Abgelehnt",
+    custStatusExpired:"Abgelaufen",
+    custStepSent:"Gesendet",
+    custStepOffer:"Angebot",
+    custStepAccepted:"Akzeptiert",
+    custOfferTitle:"✨ Sie haben ein Angebot erhalten",
+    custDepositNow:"Anzahlung — jetzt bezahlen",
+    custDepositStripe:"Sichere Zahlung via Stripe",
+    custBalanceAfter:"Restzahlung — nach Konzert",
+    custBalanceCash:"Bar an Künstler",
+    custAcceptBtn:"✓ Angebot annehmen & Buchung bestätigen",
+    custCounterSend:"Gegenangebot senden",
+    custCounterPlaceholder:"Ihr Gegenangebot",
+    custDeclinedTitle:"Anfrage abgelehnt",
+    custDeclinedReason:"Grund:",
+    custDeclinedSub:"Sie können eine Anfrage an einen anderen Künstler senden.",
+    custDetailsLabel:"Anfragedetails",
+    custChatTitle:"Nachrichten mit",
+    custChatNoMsgs:"Noch keine Nachrichten. Stellen Sie dem Künstler hier Fragen.",
+    custChatPlaceholder:"Nachricht schreiben…",
+    custConfirmedTitle:"🎉 Buchung bestätigt!",
+    custConfirmedSub:"Bestätigung gesendet an",
+    custConfirmedDate:"Datum:",
+    custConfirmedStripe:"Der Künstler sendet Ihnen einen Stripe-Zahlungslink für die Anzahlung.",
+    custCounterError:"Gültigen Betrag eingeben",
     bandPayBtn:"Bezahlen via Stripe →",
     bandConfirmTitle:"Band bestätigen",
     bandReadyTitle:"Fertige Band",
@@ -1953,6 +2237,145 @@ const TRANSLATIONS = {
     bandOptionBDesc:"Choisissez des musiciens individuels sur la plateforme — uniquement ceux disponibles à votre date.",
     bandDepositDesc:"Le client paie un acompte pour confirmer la réservation. Sûr et sécurisé.",
     bandBalanceDesc:"Le solde restant est payé en espèces directement aux artistes le soir même.",
+    reqTitle:"Envoyer une demande de réservation",
+    reqFreeLabel:"Gratuit à envoyer",
+    reqFullName:"Nom complet *",
+    reqNamePlaceholder:"Prénom Nom",
+    reqEmail:"E-mail *",
+    reqEmailPlaceholder:"toi@email.fr",
+    reqDateLabel:"Date *",
+    reqDateHint:"(au moins 7 jours à l'avance)",
+    reqDateBusy:"⚠ L'artiste est occupé ce jour — choisissez une autre date",
+    reqDateFree:"✓ L'artiste a marqué cette date comme disponible",
+    reqDateUnconfirmed:"Date non confirmée — l'artiste précisera lors de sa réponse",
+    reqEventTypeLabel:"Type d'événement *",
+    reqCountryLabel:"Pays *",
+    reqCountryPlaceholder:"Pays (ex. France)",
+    reqCityLabel:"Ville / lieu",
+    reqCityPlaceholder:"Paris, Lyon, Berlin…",
+    reqBookingTypeLabel:"Type de réservation",
+    reqSoloLabel:"Solo — chanteur(se) seulement",
+    reqSoloSub:"Voix sans instruments",
+    reqBandLabel:"Avec groupe complet",
+    reqBandSub:"Chanteur(se) + musiciens",
+    reqGuestCount:"Nombre d'invités",
+    reqGuestPlaceholder:"ex. 80",
+    reqNotesLabel:"Décrivez votre événement à l'artiste *",
+    reqNotesMin:"min",
+    reqNotesPlaceholder:"Décrivez votre événement:\n• Type de célébration\n• Chansons préférées\n• Demandes spéciales",
+    reqNotesHint:"Ne pas inclure de numéro de téléphone — tous les contacts via Awaz.",
+    reqConfirmText:"Je confirme que cette demande est sérieuse. Je suis prêt(e) à payer un acompte si nous nous mettons d'accord sur un prix.",
+    reqTrustEncrypted:"Chiffré & sécurisé",
+    reqTrustReply:"Réponse sous 48h",
+    reqTrustPayOnAgree:"Paiement uniquement en cas d'accord",
+    reqTrustAntiSpam:"Spam bloqué",
+    reqNextBtn:"Suivant →",
+    reqBackBtn:"← Retour",
+    reqSendingBtn:"Envoi…",
+    reqSendBtn:"Envoyer la demande →",
+    reqDetailsTitle:"Détails & confirmation",
+    reqEventTitle:"Votre événement",
+    reqSentTitle:"Demande envoyée !",
+    reqSentSub1:"répondra dans",
+    reqSentSub2:"48 heures",
+    reqTrackTitle:"Suivre votre demande",
+    reqTrackDesc:"Créez un compte gratuit pour suivre le statut et communiquer directement avec l'artiste.",
+    reqCreateAccount:"Créer un compte & suivre la demande →",
+    reqAlreadyAccount:"J'ai déjà un compte — se connecter",
+    reqLinkedAccount:"✓ Demande liée à votre compte",
+    reqEmailUpdate:"Mise à jour envoyée à",
+    reqCloseBtn:"Fermer",
+    reqBlockedTitle:"Demande bloquée",
+    offerPanelTitle:"Demandes de réservation",
+    offerPanelSub:"Répondez dans les 48 heures — les demandes expirent automatiquement",
+    offerNeedsReply:"Réponse requise",
+    offerActive:"Actives",
+    offerHistory:"Historique",
+    offerNoRequests:"Pas encore de demandes",
+    offerNoRequestsSub:"Les nouvelles demandes des clients apparaissent ici en temps réel.",
+    offerFlaggedTitle:"Marqué automatiquement comme basse qualité",
+    offerFlaggedSub:"Examiner attentivement. Vous pouvez refuser sans raison ou signaler à l'admin.",
+    offerBackBtn:"← Toutes les demandes",
+    offerCustomerLabel:"Client",
+    offerEmailLabel:"E-mail",
+    offerDateLabel:"Date",
+    offerLocationLabel:"Lieu",
+    offerGuestsLabel:"Invités",
+    offerBookingTypeLabel:"Type de réservation",
+    offerNotesLabel:"Note du client",
+    offerRespondTitle:"Répondre à la demande",
+    offerDepositLabel:"💳 Acompte — payé maintenant via Stripe",
+    offerDepositPlaceholder:"ex. 1500",
+    offerYouReceive:"Vous recevez (88%)",
+    offerAwazFee:"Frais de plateforme Awaz (12%)",
+    offerBalanceLabel:"💵 Solde après concert — en espèces",
+    offerBalancePlaceholder:"ex. 1000 (optionnel)",
+    offerBalanceFree:"100% pour vous — Awaz ne prend rien sur le solde",
+    offerSummaryTitle:"Résumé pour vous",
+    offerDepositPct:"Acompte (88%)",
+    offerCashBalance:"Solde en espèces",
+    offerTotalLabel:"Total pour vous",
+    offerDeclineTitle:"Choisir la raison du refus :",
+    offerDeclineConfirm:"Confirmer le refus",
+    offerSendOfferBtn:"Envoyer l'offre",
+    offerDeclineBtn:"Refuser la demande",
+    offerReportBtn:"Signaler un abus",
+    offerSendPriceBtn:"Envoyer une offre de prix →",
+    offerCancelBtn:"Annuler",
+    offerActiveOffer:"Votre offre active",
+    offerConfirmedTitle:"✓ Réservation confirmée !",
+    offerConfirmedNextSteps:"Prochaines étapes : Le client paie l'acompte via Stripe. Vous recevrez une confirmation par e-mail. Gardez la date",
+    offerDepositStripeLabel:"Acompte (Stripe)",
+    offerBalanceAfterLabel:"Solde (espèces)",
+    offerChatTitle:"Chat avec",
+    offerChatNoMsgs:"Pas encore de messages. Commencez la conversation.",
+    offerChatPlaceholder:"Message au client…",
+    offerStatusNew:"Nouvelle demande",
+    offerStatusOffered:"Offre envoyée",
+    offerStatusCounter:"Contre-offre du client",
+    offerStatusAccepted:"Prix convenu ✓",
+    offerStatusDeclined:"Refusé",
+    offerStatusExpired:"Expiré",
+    offerStatusBooked:"Réservé ✓",
+    offerQualityGood:"★ Sérieux",
+    offerQualityOk:"OK",
+    offerQualityLow:"⚠ Basse qualité",
+    custPortalTitle:"Mes réservations",
+    custPortalSub:"Suivez vos demandes et répondez aux offres.",
+    custNewOffers:"Vous avez",
+    custNewOffersSuf:"offre(s) sans réponse !",
+    custNewOffersCTA:"Cliquez pour voir et répondre à l'offre",
+    custNoBookings:"Pas encore de demandes",
+    custNoBookingsSub:"Trouvez un artiste et envoyez votre première demande — c'est gratuit.",
+    custStatusWaiting:"En attente de réponse",
+    custStatusOffered:"Offre reçue ✨",
+    custStatusAccepted:"Réservation confirmée ✓",
+    custStatusCounter:"Contre-offre envoyée",
+    custStatusDeclined:"Refusé",
+    custStatusExpired:"Expiré",
+    custStepSent:"Envoyé",
+    custStepOffer:"Offre",
+    custStepAccepted:"Accepté",
+    custOfferTitle:"✨ Vous avez reçu une offre",
+    custDepositNow:"Acompte — à payer maintenant",
+    custDepositStripe:"Paiement sécurisé via Stripe",
+    custBalanceAfter:"Solde — après concert",
+    custBalanceCash:"En espèces à l'artiste",
+    custAcceptBtn:"✓ Accepter et confirmer la réservation",
+    custCounterSend:"Envoyer une contre-offre",
+    custCounterPlaceholder:"Votre contre-offre",
+    custDeclinedTitle:"Demande refusée",
+    custDeclinedReason:"Raison :",
+    custDeclinedSub:"Vous pouvez envoyer une demande à un autre artiste.",
+    custDetailsLabel:"Détails de la demande",
+    custChatTitle:"Messages avec",
+    custChatNoMsgs:"Pas encore de messages. Posez vos questions à l'artiste ici.",
+    custChatPlaceholder:"Écrire un message…",
+    custConfirmedTitle:"🎉 Réservation confirmée !",
+    custConfirmedSub:"Confirmation envoyée à",
+    custConfirmedDate:"Date :",
+    custConfirmedStripe:"L'artiste vous enverra un lien de paiement Stripe pour l'acompte.",
+    custCounterError:"Entrez un montant valide",
     bandPayBtn:"Payer via Stripe →",
     bandConfirmTitle:"Confirmer votre groupe",
     bandReadyTitle:"Groupe prêt",
@@ -2371,6 +2794,145 @@ const TRANSLATIONS = {
     bandOptionBDesc:"نوازندگان جداگانه از پلتفرم انتخاب کنید — فقط کسانی که در تاریخ شما در دسترس هستند.",
     bandDepositDesc:"مشتری پیش‌پرداخت می‌دهد تا رزرو تأیید شود. ایمن و مطمئن.",
     bandBalanceDesc:"مبلغ باقیمانده پس از مراسم به صورت نقدی مستقیم به هنرمندان پرداخت می‌شود.",
+    reqTitle:"ارسال درخواست رزرو",
+    reqFreeLabel:"ارسال رایگان",
+    reqFullName:"نام کامل *",
+    reqNamePlaceholder:"نام و نام خانوادگی",
+    reqEmail:"ایمیل *",
+    reqEmailPlaceholder:"شما@ایمیل.com",
+    reqDateLabel:"تاریخ *",
+    reqDateHint:"(حداقل ۷ روز آینده)",
+    reqDateBusy:"⚠ هنرمند در این تاریخ مشغول است — تاریخ دیگری انتخاب کنید",
+    reqDateFree:"✓ هنرمند این تاریخ را به عنوان آزاد علامت‌گذاری کرده است",
+    reqDateUnconfirmed:"تاریخ تأیید نشده — هنرمند هنگام پاسخ مشخص می‌کند",
+    reqEventTypeLabel:"نوع مراسم *",
+    reqCountryLabel:"کشور *",
+    reqCountryPlaceholder:"کشور (مثلاً نروژ)",
+    reqCityLabel:"شهر / محل",
+    reqCityPlaceholder:"اسلو، برلین…",
+    reqBookingTypeLabel:"نوع رزرو",
+    reqSoloLabel:"سولو — فقط خواننده",
+    reqSoloSub:"صدا بدون ساز",
+    reqBandLabel:"با گروه کامل",
+    reqBandSub:"خواننده + موزیسین‌ها",
+    reqGuestCount:"تعداد مهمانان",
+    reqGuestPlaceholder:"مثلاً ۸۰",
+    reqNotesLabel:"مراسم خود را به هنرمند توضیح دهید *",
+    reqNotesMin:"حداقل",
+    reqNotesPlaceholder:"مراسم خود را توضیح دهید:\n• نوع جشن\n• آهنگ‌های دلخواه\n• درخواست‌های ویژه",
+    reqNotesHint:"شماره تلفن وارد نکنید — همه ارتباطات از طریق Awaz.",
+    reqConfirmText:"تأیید می‌کنم که این درخواست جدی است. حاضرم پیش‌پرداخت بدهم اگر بر سر قیمت توافق کنیم.",
+    reqTrustEncrypted:"رمزنگاری شده و امن",
+    reqTrustReply:"پاسخ در ۴۸ ساعت",
+    reqTrustPayOnAgree:"پرداخت فقط در صورت توافق",
+    reqTrustAntiSpam:"اسپم مسدود می‌شود",
+    reqNextBtn:"بعدی →",
+    reqBackBtn:"← برگشت",
+    reqSendingBtn:"در حال ارسال…",
+    reqSendBtn:"ارسال درخواست →",
+    reqDetailsTitle:"جزئیات و تأیید",
+    reqEventTitle:"درباره مراسم شما",
+    reqSentTitle:"درخواست ارسال شد!",
+    reqSentSub1:"در عرض",
+    reqSentSub2:"۴۸ ساعت پاسخ می‌دهد",
+    reqTrackTitle:"درخواست خود را دنبال کنید",
+    reqTrackDesc:"یک حساب رایگان بسازید تا وضعیت را پیگیری کنید و مستقیم با هنرمند ارتباط داشته باشید.",
+    reqCreateAccount:"ایجاد حساب و پیگیری درخواست →",
+    reqAlreadyAccount:"قبلاً حساب دارم — ورود",
+    reqLinkedAccount:"✓ درخواست به حساب شما متصل شد",
+    reqEmailUpdate:"به‌روزرسانی برای",
+    reqCloseBtn:"بستن",
+    reqBlockedTitle:"درخواست مسدود شد",
+    offerPanelTitle:"درخواست‌های رزرو",
+    offerPanelSub:"در ۴۸ ساعت پاسخ دهید — درخواست‌ها به‌صورت خودکار منقضی می‌شوند",
+    offerNeedsReply:"نیاز به پاسخ",
+    offerActive:"فعال",
+    offerHistory:"تاریخچه",
+    offerNoRequests:"هنوز هیچ درخواستی نیست",
+    offerNoRequestsSub:"درخواست‌های جدید مشتریان اینجا نمایش داده می‌شوند.",
+    offerFlaggedTitle:"به‌صورت خودکار با کیفیت پایین علامت‌گذاری شد",
+    offerFlaggedSub:"با دقت بررسی کنید. می‌توانید بدون دلیل رد کنید.",
+    offerBackBtn:"← همه درخواست‌ها",
+    offerCustomerLabel:"مشتری",
+    offerEmailLabel:"ایمیل",
+    offerDateLabel:"تاریخ",
+    offerLocationLabel:"محل",
+    offerGuestsLabel:"مهمانان",
+    offerBookingTypeLabel:"نوع رزرو",
+    offerNotesLabel:"یادداشت مشتری",
+    offerRespondTitle:"پاسخ به درخواست",
+    offerDepositLabel:"💳 پیش‌پرداخت — اکنون از طریق Stripe",
+    offerDepositPlaceholder:"مثلاً ۱۵۰۰",
+    offerYouReceive:"شما دریافت می‌کنید (۸۸٪)",
+    offerAwazFee:"کارمزد پلتفرم Awaz (۱۲٪)",
+    offerBalanceLabel:"💵 مانده بعد از کنسرت — نقدی",
+    offerBalancePlaceholder:"مثلاً ۱۰۰۰ (اختیاری)",
+    offerBalanceFree:"۱۰۰٪ برای شما — Awaz از مانده چیزی نمی‌گیرد",
+    offerSummaryTitle:"خلاصه برای شما",
+    offerDepositPct:"پیش‌پرداخت (۸۸٪)",
+    offerCashBalance:"مانده نقدی",
+    offerTotalLabel:"مجموع برای شما",
+    offerDeclineTitle:"دلیل رد را انتخاب کنید:",
+    offerDeclineConfirm:"تأیید رد",
+    offerSendOfferBtn:"ارسال پیشنهاد",
+    offerDeclineBtn:"رد درخواست",
+    offerReportBtn:"گزارش سوءاستفاده",
+    offerSendPriceBtn:"ارسال پیشنهاد قیمت →",
+    offerCancelBtn:"لغو",
+    offerActiveOffer:"پیشنهاد فعال شما",
+    offerConfirmedTitle:"✓ رزرو تأیید شد!",
+    offerConfirmedNextSteps:"مراحل بعدی: مشتری پیش‌پرداخت را از طریق Stripe پرداخت می‌کند. تأیید از طریق ایمیل.",
+    offerDepositStripeLabel:"پیش‌پرداخت (Stripe)",
+    offerBalanceAfterLabel:"مانده (نقدی)",
+    offerChatTitle:"چت با",
+    offerChatNoMsgs:"هنوز پیامی نیست. مکالمه را شروع کنید.",
+    offerChatPlaceholder:"پیام به مشتری…",
+    offerStatusNew:"درخواست جدید",
+    offerStatusOffered:"پیشنهاد ارسال شد",
+    offerStatusCounter:"پیشنهاد متقابل مشتری",
+    offerStatusAccepted:"قیمت توافق شد ✓",
+    offerStatusDeclined:"رد شد",
+    offerStatusExpired:"منقضی شد",
+    offerStatusBooked:"رزرو شد ✓",
+    offerQualityGood:"★ جدی",
+    offerQualityOk:"قابل قبول",
+    offerQualityLow:"⚠ کیفیت پایین",
+    custPortalTitle:"رزروهای من",
+    custPortalSub:"وضعیت درخواست‌ها را دنبال کنید و به پیشنهادات پاسخ دهید.",
+    custNewOffers:"شما",
+    custNewOffersSuf:"پیشنهاد بی‌پاسخ دارید!",
+    custNewOffersCTA:"کلیک کنید تا پیشنهاد را ببینید",
+    custNoBookings:"هنوز هیچ درخواستی نیست",
+    custNoBookingsSub:"یک هنرمند پیدا کنید و اولین درخواست خود را بفرستید — رایگان است.",
+    custStatusWaiting:"منتظر پاسخ",
+    custStatusOffered:"پیشنهاد دریافت شد ✨",
+    custStatusAccepted:"رزرو تأیید شد ✓",
+    custStatusCounter:"پیشنهاد متقابل ارسال شد",
+    custStatusDeclined:"رد شد",
+    custStatusExpired:"منقضی شد",
+    custStepSent:"ارسال شد",
+    custStepOffer:"پیشنهاد",
+    custStepAccepted:"پذیرفته شد",
+    custOfferTitle:"✨ شما یک پیشنهاد دریافت کرده‌اید",
+    custDepositNow:"پیش‌پرداخت — اکنون",
+    custDepositStripe:"پرداخت امن از طریق Stripe",
+    custBalanceAfter:"مانده — بعد از کنسرت",
+    custBalanceCash:"نقدی به هنرمند",
+    custAcceptBtn:"✓ قبول و تأیید رزرو",
+    custCounterSend:"ارسال پیشنهاد متقابل",
+    custCounterPlaceholder:"پیشنهاد متقابل شما",
+    custDeclinedTitle:"درخواست رد شد",
+    custDeclinedReason:"دلیل:",
+    custDeclinedSub:"می‌توانید به هنرمند دیگری درخواست بفرستید.",
+    custDetailsLabel:"جزئیات درخواست",
+    custChatTitle:"پیام‌ها با",
+    custChatNoMsgs:"هنوز پیامی نیست. سوالات خود را اینجا بپرسید.",
+    custChatPlaceholder:"یک پیام بنویسید…",
+    custConfirmedTitle:"🎉 رزرو تأیید شد!",
+    custConfirmedSub:"تأیید ارسال شد به",
+    custConfirmedDate:"تاریخ:",
+    custConfirmedStripe:"هنرمند لینک پرداخت Stripe را برای پیش‌پرداخت برایتان می‌فرستد.",
+    custCounterError:"مبلغ معتبر وارد کنید",
     bandPayBtn:"پرداخت از طریق Stripe →",
     bandConfirmTitle:"تأیید گروه شما",
     bandReadyTitle:"گروه آماده",
@@ -2789,6 +3351,145 @@ const TRANSLATIONS = {
     bandOptionBDesc:"له پلیټفارم نه انفرادي موسیقاران وټاکئ — یوازې هغه چې ستاسو نیټه کې شتون لري.",
     bandDepositDesc:"پیرودونکی د بک تأیید لپاره پیش پیسه ورکوي. خوندي او مطمئن.",
     bandBalanceDesc:"پاتې مبلغ د مراسمو وروسته مستقیم نغده هنرمندانو ته ورکول کیږي.",
+    reqTitle:"د بک کولو غوښتنه وليږئ",
+    reqFreeLabel:"د لیږلو لپاره وړیا",
+    reqFullName:"بشپړ نوم *",
+    reqNamePlaceholder:"نوم او کورنی نوم",
+    reqEmail:"بریښنالیک *",
+    reqEmailPlaceholder:"تاسو@بریښنالیک.com",
+    reqDateLabel:"نیټه *",
+    reqDateHint:"(لږ تر لږه ۷ ورځې وړاندې)",
+    reqDateBusy:"⚠ هنرمند پدې نیټه بوخت دی — بله نیټه وټاکئ",
+    reqDateFree:"✓ هنرمند دا نیټه د شتون لرونکي په توګه نښه کړې ده",
+    reqDateUnconfirmed:"نیټه تأیید نه ده — هنرمند به پر ځواب کې روښانه کړي",
+    reqEventTypeLabel:"د مراسمو ډول *",
+    reqCountryLabel:"هیواد *",
+    reqCountryPlaceholder:"هیواد (لکه ناروې)",
+    reqCityLabel:"ښار / ځای",
+    reqCityPlaceholder:"اسلو، برلین…",
+    reqBookingTypeLabel:"د بک کولو ډول",
+    reqSoloLabel:"سولو — یوازې سندریز",
+    reqSoloSub:"غږ پرته د آلو نه",
+    reqBandLabel:"د بشپړ ډلې سره",
+    reqBandSub:"سندریز + موسیقاران",
+    reqGuestCount:"د مهمانانو شمیر",
+    reqGuestPlaceholder:"لکه ۸۰",
+    reqNotesLabel:"هنرمند ته خپل مراسم وضاحت کړئ *",
+    reqNotesMin:"لږ تر لږه",
+    reqNotesPlaceholder:"خپل مراسم توضیح کړئ:\n• د جشن ډول\n• غوره سندرې\n• ځانګړي غوښتنې",
+    reqNotesHint:"د تلیفون شمیره مه لیکئ — ټول اړیکې د Awaz له لارې.",
+    reqConfirmText:"تأیید کوم چې دا غوښتنه جدي ده. زه حاضر یم پیش پیسه ورکړم که چیرې موږ پر قیمت موافق شو.",
+    reqTrustEncrypted:"کوډ شوی او خوندي",
+    reqTrustReply:"د ۴۸ ساعتو دننه ځواب",
+    reqTrustPayOnAgree:"یوازې د موافقت سره ورکونه",
+    reqTrustAntiSpam:"سپام بندیږي",
+    reqNextBtn:"بل →",
+    reqBackBtn:"← شاته",
+    reqSendingBtn:"لیږل کیږي…",
+    reqSendBtn:"غوښتنه وليږئ →",
+    reqDetailsTitle:"تفصیلات او تأیید",
+    reqEventTitle:"ستاسو مراسم",
+    reqSentTitle:"غوښتنه ولیږل شوه!",
+    reqSentSub1:"د",
+    reqSentSub2:"۴۸ ساعتو دننه ځواب ورکوي",
+    reqTrackTitle:"خپله غوښتنه تعقیب کړئ",
+    reqTrackDesc:"د وضعیت د تعقیب لپاره وړیا حساب جوړ کړئ.",
+    reqCreateAccount:"حساب جوړ کړئ او غوښتنه تعقیب کړئ →",
+    reqAlreadyAccount:"زما دمخه حساب شته — ننوتل",
+    reqLinkedAccount:"✓ غوښتنه ستاسو حساب سره وصل شوه",
+    reqEmailUpdate:"تازه معلومات ولیږل شول",
+    reqCloseBtn:"بندول",
+    reqBlockedTitle:"غوښتنه بنده شوه",
+    offerPanelTitle:"د بک کولو غوښتنې",
+    offerPanelSub:"د ۴۸ ساعتو دننه ځواب ورکړئ — غوښتنې به اتوماتیک پای ته ورسیږي",
+    offerNeedsReply:"ځواب ته اړتیا",
+    offerActive:"فعال",
+    offerHistory:"تاریخچه",
+    offerNoRequests:"لاهم غوښتنه نشته",
+    offerNoRequestsSub:"د پیرودونکو نوې غوښتنې دلته ښودل کیږي.",
+    offerFlaggedTitle:"اتوماتیک د ټیټ کیفیت لرونکي ونښته شوه",
+    offerFlaggedSub:"غور وکړئ. تاسو کولی شئ بې دلیله رد کړئ.",
+    offerBackBtn:"← ټولې غوښتنې",
+    offerCustomerLabel:"پیرودونکی",
+    offerEmailLabel:"بریښنالیک",
+    offerDateLabel:"نیټه",
+    offerLocationLabel:"ځای",
+    offerGuestsLabel:"مهمانان",
+    offerBookingTypeLabel:"د بک کولو ډول",
+    offerNotesLabel:"د پیرودونکي یادښت",
+    offerRespondTitle:"غوښتنې ته ځواب",
+    offerDepositLabel:"💳 پیش پیسه — اوس د Stripe له لارې",
+    offerDepositPlaceholder:"لکه ۱۵۰۰",
+    offerYouReceive:"تاسو ترلاسه کوئ (۸۸٪)",
+    offerAwazFee:"د Awaz پلیټفارم فیس (۱۲٪)",
+    offerBalanceLabel:"💵 د کنسرت وروسته پاتې — نغده",
+    offerBalancePlaceholder:"لکه ۱۰۰۰ (اختیاري)",
+    offerBalanceFree:"۱۰۰٪ ستاسو لپاره — Awaz له پاتې نه هیڅ نه اخلي",
+    offerSummaryTitle:"ستاسو لپاره لنډیز",
+    offerDepositPct:"پیش پیسه (۸۸٪)",
+    offerCashBalance:"نغده پاتې",
+    offerTotalLabel:"ستاسو لپاره ټول",
+    offerDeclineTitle:"د رد کولو دلیل وټاکئ:",
+    offerDeclineConfirm:"رد تأیید کړئ",
+    offerSendOfferBtn:"وړاندیز وليږئ",
+    offerDeclineBtn:"غوښتنه رد کړئ",
+    offerReportBtn:"د ناوړه ګټې اخیستنې راپور ورکړئ",
+    offerSendPriceBtn:"د قیمت وړاندیز وليږئ →",
+    offerCancelBtn:"لغو کول",
+    offerActiveOffer:"ستاسو فعال وړاندیز",
+    offerConfirmedTitle:"✓ بک تأیید شو!",
+    offerConfirmedNextSteps:"راتلونکې ګامونه: پیرودونکی د Stripe له لارې پیش پیسه ورکوي. تأیید به بریښنالیک ته ولیږل شي.",
+    offerDepositStripeLabel:"پیش پیسه (Stripe)",
+    offerBalanceAfterLabel:"پاتې (نغده)",
+    offerChatTitle:"سره چیټ",
+    offerChatNoMsgs:"لاهم پیغام نشته. خبرې پیل کړئ.",
+    offerChatPlaceholder:"پیرودونکي ته پیغام…",
+    offerStatusNew:"نوې غوښتنه",
+    offerStatusOffered:"وړاندیز ولیږل شو",
+    offerStatusCounter:"د پیرودونکي ضد وړاندیز",
+    offerStatusAccepted:"قیمت موافق شو ✓",
+    offerStatusDeclined:"رد شو",
+    offerStatusExpired:"پای ته ورسید",
+    offerStatusBooked:"بک شو ✓",
+    offerQualityGood:"★ جدي",
+    offerQualityOk:"قابل قبول",
+    offerQualityLow:"⚠ ټیټ کیفیت",
+    custPortalTitle:"زما بک کول",
+    custPortalSub:"خپلې غوښتنې تعقیب کړئ او وړاندیزونو ته ځواب ورکړئ.",
+    custNewOffers:"تاسو لرئ",
+    custNewOffersSuf:"ناځوابه وړاندیز!",
+    custNewOffersCTA:"د لیدو او ځواب ورکولو لپاره کلیک وکړئ",
+    custNoBookings:"لاهم غوښتنه نشته",
+    custNoBookingsSub:"یو هنرمند ومومئ او لومړنۍ غوښتنه وليږئ — وړیا ده.",
+    custStatusWaiting:"د ځواب انتظار",
+    custStatusOffered:"وړاندیز ترلاسه شو ✨",
+    custStatusAccepted:"بک تأیید شو ✓",
+    custStatusCounter:"ضد وړاندیز ولیږل شو",
+    custStatusDeclined:"رد شو",
+    custStatusExpired:"پای ته ورسید",
+    custStepSent:"ولیږل شو",
+    custStepOffer:"وړاندیز",
+    custStepAccepted:"قبول شو",
+    custOfferTitle:"✨ تاسو یو وړاندیز ترلاسه کړی",
+    custDepositNow:"پیش پیسه — اوس",
+    custDepositStripe:"د Stripe له لارې خوندي ورکونه",
+    custBalanceAfter:"پاتې — د کنسرت وروسته",
+    custBalanceCash:"هنرمند ته نغده",
+    custAcceptBtn:"✓ قبول او بک تأیید کړئ",
+    custCounterSend:"ضد وړاندیز وليږئ",
+    custCounterPlaceholder:"ستاسو ضد وړاندیز",
+    custDeclinedTitle:"غوښتنه رد شوه",
+    custDeclinedReason:"دلیل:",
+    custDeclinedSub:"تاسو کولی شئ بل هنرمند ته غوښتنه وليږئ.",
+    custDetailsLabel:"د غوښتنې تفصیلات",
+    custChatTitle:"سره پیغامونه",
+    custChatNoMsgs:"لاهم پیغام نشته. دلته هنرمند ته پوښتنه وکړئ.",
+    custChatPlaceholder:"پیغام ولیکئ…",
+    custConfirmedTitle:"🎉 بک تأیید شو!",
+    custConfirmedSub:"تأیید ولیږل شو",
+    custConfirmedDate:"نیټه:",
+    custConfirmedStripe:"هنرمند به تاسو ته د پیش پیسې لپاره د Stripe د ورکونې لینک درولیږي.",
+    custCounterError:"سم مبلغ دننه کړئ",
     bandPayBtn:"د Stripe له لارې ورکونه →",
     bandConfirmTitle:"خپله ډله تأیید کړئ",
     bandReadyTitle:"چمتو ډله",
@@ -4667,36 +5368,36 @@ function BookingRequestForm({ artist, onClose, onSubmit, session, onLoginRequest
 
   if(blockedMsg)return(<div style={{position:"fixed",inset:0,zIndex:900,background:"rgba(0,0,0,0.85)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}><div style={{background:C.card,border:`1px solid ${C.ruby}44`,borderRadius:20,padding:"36px 28px",maxWidth:400,width:"100%",textAlign:"center"}}><div style={{fontSize:44,marginBottom:12}}>⚠️</div><div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:700,color:C.text,marginBottom:10}}>Forespørsel blokkert</div><div style={{color:C.muted,fontSize:T.sm,lineHeight:1.7,marginBottom:20}}>{blockedMsg}</div><button onClick={onClose} style={{width:"100%",background:C.surface,color:C.muted,border:`1px solid ${C.border}`,borderRadius:10,padding:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit",fontSize:T.sm}}>Lukk</button></div></div>);
 
-  if(step===3)return(<div style={{position:"fixed",inset:0,zIndex:900,background:"rgba(0,0,0,0.82)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}} onClick={onClose}><div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:20,padding:"32px 28px",maxWidth:420,width:"100%"}} onClick={e=>e.stopPropagation()}><div style={{textAlign:"center",marginBottom:24}}><div style={{fontSize:52,marginBottom:12}}>✦</div><div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:700,color:C.text,marginBottom:8}}>Forespørsel sendt!</div><div style={{color:C.textD,fontSize:T.sm,lineHeight:1.8}}><strong style={{color:C.gold}}>{artist.name}</strong> vil svare innen <strong style={{color:C.text}}>48 timer</strong>.</div></div>{!session&&(<div style={{background:C.surface,border:`1px solid ${C.gold}44`,borderRadius:12,padding:"16px 18px",marginBottom:16}}><div style={{fontWeight:700,color:C.text,fontSize:T.sm,marginBottom:6}}>📲 Følg forespørselen din</div><div style={{color:C.muted,fontSize:T.xs,lineHeight:1.6,marginBottom:12}}>Opprett en gratis konto for å se status, motta tilbud og kommunisere direkte med artisten.</div><button onClick={()=>{onClose();onLoginRequest?.("register",form.email);}} style={{width:"100%",background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:10,padding:"12px",fontWeight:800,fontSize:T.sm,cursor:"pointer",fontFamily:"inherit",marginBottom:8}}>Opprett konto og følg forespørselen →</button><button onClick={()=>{onClose();onLoginRequest?.("login",form.email);}} style={{width:"100%",background:"transparent",color:C.muted,border:`1px solid ${C.border}`,borderRadius:10,padding:"10px",fontWeight:600,fontSize:T.xs,cursor:"pointer",fontFamily:"inherit"}}>Jeg har allerede en konto — logg inn</button></div>)}{session&&(<div style={{background:C.emeraldS,border:`1px solid ${C.emerald}44`,borderRadius:12,padding:"12px 16px",marginBottom:16,fontSize:T.xs,color:C.emerald,fontWeight:600}}>✓ Forespørselen er koblet til kontoen din</div>)}<div style={{fontSize:10,color:C.faint,textAlign:"center",lineHeight:1.6,marginBottom:14}}>📧 Oppdatering sendes til <strong style={{color:C.muted}}>{form.email}</strong></div><button onClick={onClose} style={{width:"100%",background:C.surface,color:C.muted,border:`1px solid ${C.border}`,borderRadius:10,padding:12,fontWeight:600,fontSize:T.sm,cursor:"pointer",fontFamily:"inherit"}}>Lukk</button></div></div>);
+  if(step===3)return(<div style={{position:"fixed",inset:0,zIndex:900,background:"rgba(0,0,0,0.82)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}} onClick={onClose}><div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:20,padding:"32px 28px",maxWidth:420,width:"100%"}} onClick={e=>e.stopPropagation()}><div style={{textAlign:"center",marginBottom:24}}><div style={{fontSize:52,marginBottom:12}}>✦</div><div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:700,color:C.text,marginBottom:8}}>Forespørsel sendt!</div><div style={{color:C.textD,fontSize:T.sm,lineHeight:1.8}}><strong style={{color:C.gold}}>{artist.name}</strong> {t("reqSentSub1")} <strong style={{color:C.text}}>{t("reqSentSub2")}</strong>.</div></div>{!session&&(<div style={{background:C.surface,border:`1px solid ${C.gold}44`,borderRadius:12,padding:"16px 18px",marginBottom:16}}><div style={{fontWeight:700,color:C.text,fontSize:T.sm,marginBottom:6}}>{t("reqTrackTitle")}</div><div style={{color:C.muted,fontSize:T.xs,lineHeight:1.6,marginBottom:12}}>{t("reqTrackDesc")}</div><button onClick={()=>{onClose();onLoginRequest?.("register",form.email);}} style={{width:"100%",background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:10,padding:"12px",fontWeight:800,fontSize:T.sm,cursor:"pointer",fontFamily:"inherit",marginBottom:8}}>{t("reqCreateAccount")}</button><button onClick={()=>{onClose();onLoginRequest?.("login",form.email);}} style={{width:"100%",background:"transparent",color:C.muted,border:`1px solid ${C.border}`,borderRadius:10,padding:"10px",fontWeight:600,fontSize:T.xs,cursor:"pointer",fontFamily:"inherit"}}>{t("reqAlreadyAccount")}</button></div>)}{session&&(<div style={{background:C.emeraldS,border:`1px solid ${C.emerald}44`,borderRadius:12,padding:"12px 16px",marginBottom:16,fontSize:T.xs,color:C.emerald,fontWeight:600}}>✓ Forespørselen er koblet til kontoen din</div>)}<div style={{fontSize:10,color:C.faint,textAlign:"center",lineHeight:1.6,marginBottom:14}}>📧 {t("reqEmailUpdate")} <strong style={{color:C.muted}}>{form.email}</strong></div><button onClick={onClose} style={{width:"100%",background:C.surface,color:C.muted,border:`1px solid ${C.border}`,borderRadius:10,padding:12,fontWeight:600,fontSize:T.sm,cursor:"pointer",fontFamily:"inherit"}}>{t("reqCloseBtn")}</button></div></div>);
 
   return(
-    <Sheet open onClose={onClose} title="Send bookingforespørsel">
+    <Sheet open onClose={onClose} title={t("reqTitle")||"Send bookingforespørsel"}>
       <div style={{padding:"16px 20px 32px"}}>
         <div style={{display:"flex",alignItems:"center",gap:12,padding:"12px 0 16px",borderBottom:`1px solid ${C.border}`,marginBottom:16}}>
           {artist.photo?<img src={artist.photo} alt={artist.name} style={{width:44,height:44,borderRadius:10,objectFit:"cover"}}/>:<div style={{width:44,height:44,borderRadius:10,background:C.goldS,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20}}>{artist.emoji}</div>}
           <div><div style={{fontWeight:700,color:C.text,fontSize:T.sm}}>{artist.name}</div><div style={{color:C.muted,fontSize:T.xs}}>{artist.genre} · {artist.location}</div></div>
-          <div style={{marginLeft:"auto",fontSize:10,color:C.emerald,background:C.emeraldS,borderRadius:20,padding:"4px 10px",border:`1px solid ${C.emerald}33`,fontWeight:700}}>Gratis å sende</div>
+          <div style={{marginLeft:"auto",fontSize:10,color:C.emerald,background:C.emeraldS,borderRadius:20,padding:"4px 10px",border:`1px solid ${C.emerald}33`,fontWeight:700}}>{t("reqFreeLabel")}</div>
         </div>
         <div style={{display:"flex",gap:8,marginBottom:20}}>{[1,2].map(s=>(<div key={s} style={{flex:1,height:3,borderRadius:2,background:s<=step?C.gold:C.border,transition:"background 0.3s"}}/>))}</div>
         {err&&<div style={{background:C.rubyS,border:`1px solid ${C.ruby}28`,borderRadius:8,padding:"10px 13px",color:C.ruby,fontSize:T.xs,marginBottom:12}}>⚠ {err}</div>}
 
         {step===1&&(<div style={{display:"flex",flexDirection:"column",gap:14}}>
           <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text,marginBottom:4}}>Om arrangementet ditt</div>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}><Inp label="Fullt navn *" placeholder="Fornavn Etternavn" value={form.name} onChange={e=>setF("name",e.target.value)}/><Inp label="E-post *" type="email" placeholder="deg@epost.no" value={form.email} onChange={e=>setF("email",e.target.value)}/></div>
-          <div><div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:6}}>Dato * <span style={{color:C.faint,fontWeight:400}}>(minst 7 dager frem)</span></div><input type="date" value={form.eventDate} onChange={e=>setF("eventDate",e.target.value)} min={new Date(Date.now()+7*24*60*60*1000).toISOString().split("T")[0]} style={{width:"100%",background:C.card,border:`2px solid ${form.eventDate?C.emerald:C.border}`,borderRadius:10,padding:"12px 14px",color:C.text,fontSize:T.sm,outline:"none",fontFamily:"inherit",boxSizing:"border-box" as const}}/>{form.eventDate&&(()=>{const d=new Date(form.eventDate);const mk=`${d.getFullYear()}-${d.getMonth()}`;const day=d.getDate();const isAvail=(artist.available?.[mk]||[]).includes(day);const isBlocked=(artist.blocked?.[mk]||[]).includes(day);if(isBlocked)return<div style={{marginTop:6,fontSize:11,color:C.ruby,fontWeight:600}}>⚠ Artisten er opptatt denne datoen — velg en annen</div>;if(isAvail)return<div style={{marginTop:6,fontSize:11,color:C.emerald,fontWeight:600}}>✓ Artisten har markert denne datoen som ledig</div>;return<div style={{marginTop:6,fontSize:11,color:C.muted}}>Datoen er ikke bekreftet — artisten avklarer ved svar</div>;})()}</div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}><Inp label={t("reqFullName")} placeholder={t("reqNamePlaceholder")} value={form.name} onChange={e=>setF("name",e.target.value)}/><Inp label={t("reqEmail")} type="email" placeholder={t("reqEmailPlaceholder")} value={form.email} onChange={e=>setF("email",e.target.value)}/></div>
+          <div><div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:6}}>{t("reqDateLabel")} <span style={{color:C.faint,fontWeight:400}}>({t("reqDateHint")})</span></div><input type="date" value={form.eventDate} onChange={e=>setF("eventDate",e.target.value)} min={new Date(Date.now()+7*24*60*60*1000).toISOString().split("T")[0]} style={{width:"100%",background:C.card,border:`2px solid ${form.eventDate?C.emerald:C.border}`,borderRadius:10,padding:"12px 14px",color:C.text,fontSize:T.sm,outline:"none",fontFamily:"inherit",boxSizing:"border-box" as const}}/>{form.eventDate&&(()=>{const d=new Date(form.eventDate);const mk=`${d.getFullYear()}-${d.getMonth()}`;const day=d.getDate();const isAvail=(artist.available?.[mk]||[]).includes(day);const isBlocked=(artist.blocked?.[mk]||[]).includes(day);if(isBlocked)return<div style={{marginTop:6,fontSize:11,color:C.ruby,fontWeight:600}}>{t("reqDateBusy")}</div>;if(isAvail)return<div style={{marginTop:6,fontSize:11,color:C.emerald,fontWeight:600}}>{t("reqDateFree")}</div>;return<div style={{marginTop:6,fontSize:11,color:C.muted}}>{t("reqDateUnconfirmed")}</div>;})()}</div>
           <div><div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:8}}>Type arrangement *</div><div style={{display:"flex",flexWrap:"wrap" as const,gap:6}}>{EVENT_TYPES.map(et=>(<button key={et} onClick={()=>setF("eventType",et)} style={{background:form.eventType===et?C.goldS:"transparent",color:form.eventType===et?C.gold:C.muted,border:`1px solid ${form.eventType===et?C.gold+"66":C.border}`,borderRadius:20,padding:"6px 14px",cursor:"pointer",fontFamily:"inherit",fontSize:T.xs,fontWeight:600,textTransform:"capitalize" as const}}>{et}</button>))}</div></div>
-          <div><div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:6}}>Land *</div>{artist.countryPricing?.filter((r:any)=>r.active).length>0?(<div style={{display:"flex",flexWrap:"wrap" as const,gap:6}}>{artist.countryPricing.filter((r:any)=>r.active).map((row:any)=>{const m=MARKETS.find(m=>m.code===row.code);const isSel=form.countryCode===row.code;return m?(<button key={row.code} onClick={()=>setForm(p=>({...p,countryCode:row.code,country:m.name}))} style={{background:isSel?C.goldS:C.surface,border:`2px solid ${isSel?C.gold:C.border}`,borderRadius:10,padding:"9px 14px",cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:7}}><span style={{fontSize:18}}>{m.flag}</span><span style={{fontSize:T.xs,fontWeight:isSel?700:500,color:isSel?C.gold:C.text}}>{m.name}</span>{isSel&&<span style={{color:C.gold,fontSize:12}}>✓</span>}</button>):null;})}</div>):(<Inp label="" placeholder="Land (f.eks. Norge)" value={form.country} onChange={e=>setForm(p=>({...p,country:e.target.value,countryCode:e.target.value.trim()?"OTHER":""}))}/>)}</div>
-          <Inp label="By / sted" placeholder="Oslo, Bergen, Berlin…" value={form.city} onChange={e=>setF("city",e.target.value)}/>
-          {(artist.artistType==="vocalist"||artist.artist_type==="vocalist")&&artist.depositWithBand&&(<div><div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:8}}>Bookingtype</div><div style={{display:"flex",gap:10}}>{[{v:"solo",l:"Solo — kun vokalist",sub:"Vokal uten band"},{v:"band",l:"Med fullt band",sub:"Vokalist + musikere"}].map(({v,l,sub})=>(<button key={v} onClick={()=>setF("bookingType",v)} style={{flex:1,background:form.bookingType===v?C.goldS:C.surface,border:`2px solid ${form.bookingType===v?C.gold:C.border}`,borderRadius:10,padding:"10px 12px",cursor:"pointer",fontFamily:"inherit",textAlign:"left" as const}}><div style={{fontSize:T.xs,fontWeight:700,color:form.bookingType===v?C.gold:C.text}}>{l}</div><div style={{fontSize:10,color:C.muted,marginTop:2}}>{sub}</div></button>))}</div></div>)}
+          <div><div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:6}}>{t("reqCountryLabel")}</div>{artist.countryPricing?.filter((r:any)=>r.active).length>0?(<div style={{display:"flex",flexWrap:"wrap" as const,gap:6}}>{artist.countryPricing.filter((r:any)=>r.active).map((row:any)=>{const m=MARKETS.find(m=>m.code===row.code);const isSel=form.countryCode===row.code;return m?(<button key={row.code} onClick={()=>setForm(p=>({...p,countryCode:row.code,country:m.name}))} style={{background:isSel?C.goldS:C.surface,border:`2px solid ${isSel?C.gold:C.border}`,borderRadius:10,padding:"9px 14px",cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:7}}><span style={{fontSize:18}}>{m.flag}</span><span style={{fontSize:T.xs,fontWeight:isSel?700:500,color:isSel?C.gold:C.text}}>{m.name}</span>{isSel&&<span style={{color:C.gold,fontSize:12}}>✓</span>}</button>):null;})}</div>):(<Inp label="" placeholder={t("reqCountryPlaceholder")} value={form.country} onChange={e=>setForm(p=>({...p,country:e.target.value,countryCode:e.target.value.trim()?"OTHER":""}))}/>)}</div>
+          <Inp label={t("reqCityLabel")} placeholder={t("reqCityPlaceholder")} value={form.city} onChange={e=>setF("city",e.target.value)}/>
+          {(artist.artistType==="vocalist"||artist.artist_type==="vocalist")&&artist.depositWithBand&&(<div><div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:8}}>Bookingtype</div><div style={{display:"flex",gap:10}}>{[{v:"solo",l:t("reqSoloLabel"),sub:t("reqSoloSub")},{v:"band",l:t("reqBandLabel"),sub:t("reqBandSub")}].map(({v,l,sub})=>(<button key={v} onClick={()=>setF("bookingType",v)} style={{flex:1,background:form.bookingType===v?C.goldS:C.surface,border:`2px solid ${form.bookingType===v?C.gold:C.border}`,borderRadius:10,padding:"10px 12px",cursor:"pointer",fontFamily:"inherit",textAlign:"left" as const}}><div style={{fontSize:T.xs,fontWeight:700,color:form.bookingType===v?C.gold:C.text}}>{l}</div><div style={{fontSize:10,color:C.muted,marginTop:2}}>{sub}</div></button>))}</div></div>)}
           <button onClick={()=>{const e=validateStep1();if(e){setErr(e);return;}setErr("");setStep(2);}} style={{width:"100%",background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:10,padding:14,fontWeight:800,fontSize:T.base,cursor:"pointer",fontFamily:"inherit",marginTop:4}}>Neste →</button>
         </div>)}
 
         {step===2&&(<div style={{display:"flex",flexDirection:"column",gap:14}}>
           <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text,marginBottom:4}}>Detaljer og bekreftelse</div>
-          <Inp label="Antall gjester" type="number" placeholder="F.eks. 80" value={form.guestCount} onChange={e=>setF("guestCount",e.target.value)}/>
+          <Inp label={t("reqGuestCount")} type="number" placeholder={t("reqGuestPlaceholder")} value={form.guestCount} onChange={e=>setF("guestCount",e.target.value)}/>
           <div>
-            <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:6}}>Fortell artisten om arrangementet * <span style={{color:form.notes.length>=20?C.emerald:C.muted,fontWeight:400}}>{form.notes.length}/20 min</span></div>
-            <textarea value={form.notes} onChange={e=>setF("notes",e.target.value)} placeholder={"Beskriv arrangementet:\n• Type feiring og anledning\n• Ønskede sanger eller stil\n• Spesielle ønsker"} rows={5} style={{width:"100%",background:C.card,border:`2px solid ${form.notes.length>=20?C.emerald:C.border}`,borderRadius:10,padding:"12px 14px",color:C.text,fontSize:T.sm,fontFamily:"inherit",outline:"none",resize:"vertical" as const,lineHeight:1.6,boxSizing:"border-box" as const}}/>
+            <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:6}}>Fortell artisten om arrangementet * <span style={{color:form.notes.length>=20?C.emerald:C.muted,fontWeight:400}}>{form.notes.length}/{t("reqNotesMin")}</span></div>
+            <textarea value={form.notes} onChange={e=>setF("notes",e.target.value)} placeholder={t("reqNotesPlaceholder")||"Beskriv arrangementet"} rows={5} style={{width:"100%",background:C.card,border:`2px solid ${form.notes.length>=20?C.emerald:C.border}`,borderRadius:10,padding:"12px 14px",color:C.text,fontSize:T.sm,fontFamily:"inherit",outline:"none",resize:"vertical" as const,lineHeight:1.6,boxSizing:"border-box" as const}}/>
             <div style={{fontSize:10,color:C.faint,marginTop:4}}>Ikke inkluder telefonnummer — all kontakt skjer på Awaz.</div>
           </div>
           {/* Honeypot — invisible to humans */}
@@ -4708,10 +5409,10 @@ function BookingRequestForm({ artist, onClose, onSubmit, session, onLoginRequest
               <div style={{fontSize:T.xs,color:C.textD,lineHeight:1.6}}>Jeg bekrefter at denne forespørselen er seriøs. Jeg er villig til å betale depositum dersom vi blir enige om pris. Jeg forstår at misbruk kan føre til at kontoen blokkeres.</div>
             </label>
           </div>
-          <div style={{background:`${C.lapis}08`,border:`1px solid ${C.lapis}22`,borderRadius:10,padding:"10px 14px"}}><div style={{display:"flex",flexWrap:"wrap" as const,gap:10}}>{[["🔒","Kryptert og trygg"],["⏱","Svar innen 48t"],["💰","Betal kun ved enighet"],["🚫","Spam blokkeres"]].map(([icon,text])=>(<div key={text as string} style={{display:"flex",alignItems:"center",gap:5,fontSize:10,color:C.muted}}><span>{icon}</span><span>{text}</span></div>))}</div></div>
+          <div style={{background:`${C.lapis}08`,border:`1px solid ${C.lapis}22`,borderRadius:10,padding:"10px 14px"}}><div style={{display:"flex",flexWrap:"wrap" as const,gap:10}}>{[["🔒",t("reqTrustEncrypted")],["⏱",t("reqTrustReply")],["💰",t("reqTrustPayOnAgree")],["🚫",t("reqTrustAntiSpam")]].map(([icon,text])=>(<div key={text as string} style={{display:"flex",alignItems:"center",gap:5,fontSize:10,color:C.muted}}><span>{icon}</span><span>{text}</span></div>))}</div></div>
           <div style={{display:"flex",gap:10}}>
             <button onClick={()=>setStep(1)} style={{background:C.surface,color:C.muted,border:`1px solid ${C.border}`,borderRadius:10,padding:"12px 16px",fontWeight:600,fontSize:T.sm,cursor:"pointer",fontFamily:"inherit",flex:"0 0 auto"}}>← Tilbake</button>
-            <button onClick={submitRequest} disabled={saving} style={{flex:1,background:saving?C.border:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:saving?C.muted:C.bg,border:"none",borderRadius:10,padding:14,fontWeight:800,fontSize:T.base,cursor:saving?"not-allowed":"pointer",fontFamily:"inherit"}}>{saving?"Sender…":"Send forespørsel →"}</button>
+            <button onClick={submitRequest} disabled={saving} style={{flex:1,background:saving?C.border:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:saving?C.muted:C.bg,border:"none",borderRadius:10,padding:14,fontWeight:800,fontSize:T.base,cursor:saving?"not-allowed":"pointer",fontFamily:"inherit"}}>{saving?t("reqSendingBtn"):t("reqSendBtn")}</button>
           </div>
         </div>)}
       </div>
@@ -6097,7 +6798,7 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
             <StatCard icon="" label="Pending Bookings"   value={pendingBooks}                         sub="Awaiting action"    color={C.saffron} onClick={()=>setTab("bookings")}/>
             <StatCard icon="" label="Active Artists"     value={approvedArtists}                      sub={`${pendingArtists} pending review`} color={C.ruby} onClick={()=>setTab("artists")}/>
             <StatCard icon="" label="New Inquiries"      value={newInquiries}                         sub="Unread"             color={C.lavender} onClick={()=>setTab("inquiries")}/>
-            <StatCard icon="📩" label="Bookingforespørsler" value={bookingRequests.filter((r:any)=>r.status==="request_received"||r.status==="pending").length} sub="Venter på svar" color={C.lapis} onClick={()=>setTab("bookingreqs")}/>
+            <StatCard icon="📩" label={t("offerPanelTitle")||"Bookingforespørsler"} value={bookingRequests.filter((r:any)=>r.status==="request_received"||r.status==="pending").length} sub="Venter på svar" color={C.lapis} onClick={()=>setTab("bookingreqs")}/>
           </div>
 
           {/* Quick Links */}
@@ -6484,7 +7185,7 @@ function AdminDash({ artists, setArtists, bookings, setBookings, users, inquirie
       )}
       {tab==="bookingreqs"&&(
         <div>
-          <SectionHeader title="Bookingforespørsler"/>
+          <SectionHeader title={t("offerPanelTitle")||"Bookingforespørsler"}/>
           <div style={{color:C.muted,fontSize:T.sm,marginBottom:16}}>Alle forespørsler sendt av kunder på plattformen.</div>
           {bookingRequests.length===0?(
             <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:"48px 24px",textAlign:"center",color:C.muted}}>
@@ -7721,7 +8422,7 @@ function ArtistPortal({ user, artist, bookings, session, onLogout, onToggleDay, 
                 if(update.counterRound!==undefined) dbUpdate.counter_round=update.counterRound;
                 if(update.declineReason!==undefined) dbUpdate.decline_reason=update.declineReason;
                 await sb.from("booking_requests").update(dbUpdate).eq("id",id);
-                notify(update.status==="declined"?"Forespørsel avslått":"Tilbud sendt!","success");
+                notify(update.status==="declined"?t("custDeclinedTitle"):"Tilbud sendt!","success");
               }catch(e){console.warn("Booking request update failed:",e);}
             }}
           />
@@ -10402,7 +11103,7 @@ function CustomerPortal({session, artists, onLogout, theme, onToggleTheme}:{sess
 
   const sendCounter=async()=>{
     const amt=parseInt(counterAmt);
-    if(!amt||amt<50){setCounterErr("Skriv inn gyldig beløp");return;}
+    if(!amt||amt<50){setCounterErr(t("custCounterError"));return;}
     const updated={...sel,status:"counter_offered",customer_counter:amt};
     setRequests(p=>p.map(r=>r.id===sel.id?updated:r)); setSel(updated);
     if(HAS_SUPA){
@@ -10416,7 +11117,7 @@ function CustomerPortal({session, artists, onLogout, theme, onToggleTheme}:{sess
   };
 
   const SC:Record<string,string>={request_received:C.saffron,pending:C.saffron,offered:C.lapis,accepted:C.emerald,counter_offered:C.gold,declined:C.ruby,expired:C.muted};
-  const SL:Record<string,string>={request_received:"Venter på svar",pending:"Venter på svar",offered:"Tilbud mottatt ✨",accepted:"Booking bekreftet ✓",counter_offered:"Motbud sendt",declined:"Avslått",expired:"Utløpt"};
+  const SL:Record<string,string>={request_received:t("custStatusWaiting"),pending:t("custStatusWaiting"),offered:t("custStatusOffered"),accepted:t("custStatusAccepted"),counter_offered:t("custStatusCounter"),declined:t("custStatusDeclined"),expired:t("custStatusExpired")};
   const aOf=(r:any)=>artists.find((a:any)=>a.id===r.artist_id);
 
   if(sel) return(
@@ -10440,7 +11141,7 @@ function CustomerPortal({session, artists, onLogout, theme, onToggleTheme}:{sess
         <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:"16px 18px",marginBottom:14}}>
           <div style={{fontSize:10,color:C.muted,fontWeight:700,textTransform:"uppercase" as const,marginBottom:12}}>Status</div>
           <div style={{display:"flex",alignItems:"center",gap:0}}>
-            {[["Sendt","request_received"],["Tilbud","offered"],["Akseptert","accepted"]].map(([label,st],i,arr)=>{
+            {[[t("custStepSent"),"request_received"],[t("custStepOffer"),"offered"],[t("custStepAccepted"),"accepted"]].map(([label,st],i,arr)=>{
               const order=["request_received","pending","offered","counter_offered","accepted","declined"];
               const cur=order.indexOf(sel.status); const tgt=order.indexOf(st);
               const done=sel.status==="accepted"?i<=2:cur>=tgt;
@@ -10483,7 +11184,7 @@ function CustomerPortal({session, artists, onLogout, theme, onToggleTheme}:{sess
               <div style={{display:"flex",gap:8}}>
                 <div style={{position:"relative" as const,flex:1}}>
                   <span style={{position:"absolute" as const,left:12,top:"50%",transform:"translateY(-50%)",color:C.muted}}>€</span>
-                  <input type="number" value={counterAmt} onChange={e=>setCounterAmt(e.target.value)} placeholder="Ditt motbud" min={50} style={{width:"100%",background:C.surface,border:`2px solid ${counterAmt?C.gold:C.border}`,borderRadius:8,padding:"11px 12px 11px 28px",color:C.text,fontSize:T.sm,outline:"none",fontFamily:"inherit",boxSizing:"border-box" as const}}/>
+                  <input type="number" value={counterAmt} onChange={e=>setCounterAmt(e.target.value)} placeholder={t("custCounterPlaceholder")} min={50} style={{width:"100%",background:C.surface,border:`2px solid ${counterAmt?C.gold:C.border}`,borderRadius:8,padding:"11px 12px 11px 28px",color:C.text,fontSize:T.sm,outline:"none",fontFamily:"inherit",boxSizing:"border-box" as const}}/>
                 </div>
                 <button onClick={sendCounter} style={{background:C.goldS,color:C.gold,border:`1px solid ${C.gold}44`,borderRadius:8,padding:"0 16px",fontWeight:700,fontSize:T.xs,cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap" as const}}>Send motbud</button>
               </div>
@@ -10561,7 +11262,7 @@ function CustomerPortal({session, artists, onLogout, theme, onToggleTheme}:{sess
           <div style={{padding:"10px 14px",borderTop:`1px solid ${C.border}`,display:"flex",gap:8}}>
             <input value={chatInput} onChange={e=>setChatInput(e.target.value)}
               onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMsg();}}}
-              placeholder="Skriv en melding…"
+              placeholder={t("custChatPlaceholder")}
               style={{flex:1,background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,padding:"10px 14px",color:C.text,fontSize:T.sm,outline:"none",fontFamily:"inherit"}}/>
             <button onClick={sendMsg} style={{background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:8,padding:"0 18px",fontWeight:800,cursor:"pointer",fontFamily:"inherit",fontSize:T.sm}}>→</button>
           </div>
@@ -10962,7 +11663,7 @@ function ArtistOfferPanel({requests,artist,onAction}:{requests:any[];artist:any;
   const history=myReqs.filter(r=>["declined","expired","booked"].includes(r.status));
 
   const SC:Record<string,string>={request_received:C.saffron,pending:C.saffron,offered:C.lapis,counter_offered:C.gold,accepted:C.emerald,declined:C.ruby,expired:C.muted,booked:C.emerald};
-  const SL:Record<string,string>={request_received:"Ny forespørsel",pending:"Ny forespørsel",offered:"Tilbud sendt",counter_offered:"Kunde motbyr",accepted:"Pris avtalt ✓",declined:"Avslått",expired:"Utløpt",booked:"Booket ✓"};
+  const SL:Record<string,string>={request_received:t("offerStatusNew"),pending:t("offerStatusNew"),offered:t("offerStatusOffered"),counter_offered:t("offerStatusCounter"),accepted:t("offerStatusAccepted"),declined:t("offerStatusDeclined"),expired:t("offerStatusExpired"),booked:t("offerStatusBooked")};
 
   // Load + realtime for chat messages
   React.useEffect(()=>{
@@ -11034,9 +11735,9 @@ function ArtistOfferPanel({requests,artist,onAction}:{requests:any[];artist:any;
   const qualityBadge=(req:any)=>{
     const s=req.quality_score||req.qualityScore||50;
     const f=req.flagged||s<30;
-    if(f) return{label:"⚠ Lav",bg:`${C.ruby}15`,color:C.ruby};
-    if(s>=70) return{label:"★ Seriøs",bg:C.emeraldS,color:C.emerald};
-    return{label:"OK",bg:C.surface,color:C.muted};
+    if(f) return{label:t("offerQualityLow"),bg:`${C.ruby}15`,color:C.ruby};
+    if(s>=70) return{label:t("offerQualityGood"),bg:C.emeraldS,color:C.emerald};
+    return{label:t("offerQualityOk"),bg:C.surface,color:C.muted};
   };
 
   const ReqCard=({req}:{req:any})=>{
@@ -11090,7 +11791,7 @@ function ArtistOfferPanel({requests,artist,onAction}:{requests:any[];artist:any;
             <span style={{background:`${SC[sel.status]||C.muted}20`,color:SC[sel.status]||C.muted,padding:"5px 12px",borderRadius:20,fontSize:T.xs,fontWeight:700}}>{SL[sel.status]||sel.status}</span>
           </div>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:sel.notes?12:0}}>
-            {[["Kunde",sel.customerName||sel.customer_name],["E-post",sel.customerEmail||sel.customer_email],["Dato",sel.eventDate||sel.event_date],["Sted",(sel.location||`${sel.event_location_city||""}${sel.event_location_country?", "+sel.event_location_country:""}`.trim())||"—"],["Gjester",(sel.guestCount||sel.guest_count)||"—"],["Bookingtype",sel.bookingType||sel.booking_type||"—"]].map(([k,v])=>(
+            {[[t("offerCustomerLabel"),sel.customerName||sel.customer_name],[t("offerEmailLabel"),sel.customerEmail||sel.customer_email],[t("offerDateLabel"),sel.eventDate||sel.event_date],[t("offerLocationLabel"),(sel.location||`${sel.event_location_city||""}${sel.event_location_country?", "+sel.event_location_country:""}`.trim())||"—"],[t("offerGuestsLabel"),(sel.guestCount||sel.guest_count)||"—"],[t("reqBookingTypeLabel"),sel.bookingType||sel.booking_type||"—"]].map(([k,v])=>(
               <div key={k as string} style={{background:C.surface,borderRadius:8,padding:"9px 12px"}}>
                 <div style={{fontSize:10,color:C.muted,fontWeight:700,letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:3}}>{k}</div>
                 <div style={{fontSize:T.sm,color:C.text,wordBreak:"break-all"}}>{v as string||"—"}</div>
@@ -11159,7 +11860,7 @@ function ArtistOfferPanel({requests,artist,onAction}:{requests:any[];artist:any;
                 <label style={{fontSize:T.xs,fontWeight:700,color:C.gold,display:"block",marginBottom:8}}>💳 Depositum — betales nå via Stripe</label>
                 <div style={{position:"relative"}}>
                   <span style={{position:"absolute",left:14,top:"50%",transform:"translateY(-50%)",color:C.muted,fontWeight:700}}>€</span>
-                  <input type="number" value={depositAmt} onChange={e=>setDepositAmt(e.target.value)} min={50} step={50} placeholder="F.eks. 1500" style={{width:"100%",background:C.card,border:`2px solid ${depositAmt?C.gold:C.border}`,borderRadius:8,padding:"12px 14px 12px 30px",color:C.text,fontSize:T.lg,outline:"none",fontFamily:"inherit",boxSizing:"border-box" as const,fontWeight:700}}/>
+                  <input type="number" value={depositAmt} onChange={e=>setDepositAmt(e.target.value)} min={50} step={50} placeholder={t("offerDepositPlaceholder")} style={{width:"100%",background:C.card,border:`2px solid ${depositAmt?C.gold:C.border}`,borderRadius:8,padding:"12px 14px 12px 30px",color:C.text,fontSize:T.lg,outline:"none",fontFamily:"inherit",boxSizing:"border-box" as const,fontWeight:700}}/>
                 </div>
                 {depositAmt&&parseInt(depositAmt)>0&&(
                   <div style={{marginTop:8,background:C.goldS,borderRadius:7,padding:"8px 12px",fontSize:12}}>
@@ -11172,7 +11873,7 @@ function ArtistOfferPanel({requests,artist,onAction}:{requests:any[];artist:any;
                 <label style={{fontSize:T.xs,fontWeight:700,color:C.emerald,display:"block",marginBottom:8}}>💵 Saldo etter konsert — betales kontant til deg</label>
                 <div style={{position:"relative"}}>
                   <span style={{position:"absolute",left:14,top:"50%",transform:"translateY(-50%)",color:C.muted,fontWeight:700}}>€</span>
-                  <input type="number" value={balanceAmt} onChange={e=>setBalanceAmt(e.target.value)} min={0} step={50} placeholder="F.eks. 1000 (valgfritt)" style={{width:"100%",background:C.card,border:`2px solid ${balanceAmt?C.emerald:C.border}`,borderRadius:8,padding:"12px 14px 12px 30px",color:C.text,fontSize:T.lg,outline:"none",fontFamily:"inherit",boxSizing:"border-box" as const,fontWeight:700}}/>
+                  <input type="number" value={balanceAmt} onChange={e=>setBalanceAmt(e.target.value)} min={0} step={50} placeholder={t("offerBalancePlaceholder")} style={{width:"100%",background:C.card,border:`2px solid ${balanceAmt?C.emerald:C.border}`,borderRadius:8,padding:"12px 14px 12px 30px",color:C.text,fontSize:T.lg,outline:"none",fontFamily:"inherit",boxSizing:"border-box" as const,fontWeight:700}}/>
                 </div>
                 {balanceAmt&&parseInt(balanceAmt)>0&&<div style={{marginTop:6,fontSize:11,color:C.emerald}}>100% til deg — Awaz tar ingenting av saldoen</div>}
               </div>
@@ -11224,7 +11925,7 @@ function ArtistOfferPanel({requests,artist,onAction}:{requests:any[];artist:any;
           </div>
           <div style={{padding:"10px 14px",borderTop:`1px solid ${C.border}`,display:"flex",gap:8}}>
             <input value={chatInput} onChange={e=>setChatInput(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendChat();}}}
-              placeholder="Skriv melding til kunden…"
+              placeholder={t("offerChatPlaceholder")}
               style={{flex:1,background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,padding:"10px 14px",color:C.text,fontSize:T.sm,outline:"none",fontFamily:"inherit"}}/>
             <button onClick={sendChat} style={{background:`linear-gradient(135deg,${C.gold},${C.saffron})`,color:C.bg,border:"none",borderRadius:8,padding:"0 18px",fontWeight:800,cursor:"pointer",fontFamily:"inherit",fontSize:T.sm}}>→</button>
           </div>
@@ -11242,8 +11943,8 @@ function ArtistOfferPanel({requests,artist,onAction}:{requests:any[];artist:any;
       {pending.length===0&&active.length===0&&(
         <div style={{textAlign:"center",padding:"48px 24px",background:C.card,borderRadius:12,border:`1px solid ${C.border}`}}>
           <div style={{fontSize:40,marginBottom:12,color:C.gold}}>✦</div>
-          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text,marginBottom:6}}>Ingen forespørsler ennå</div>
-          <div style={{color:C.muted,fontSize:T.sm}}>Nye bookingforespørsler fra kunder vises her i sanntid.</div>
+          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.lg,fontWeight:700,color:C.text,marginBottom:6}}>{t("offerNoRequests")}</div>
+          <div style={{color:C.muted,fontSize:T.sm}}>{t("offerNoRequestsSub")} fra kunder vises her i sanntid.</div>
         </div>
       )}
       {history.length>0&&<div style={{marginTop:8}}><div style={{fontSize:T.xs,fontWeight:700,color:C.muted,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:10}}>Historikk</div>{history.map(r=><ReqCard key={r.id} req={r}/>)}</div>}
@@ -13440,7 +14141,7 @@ function AppInner() {
             <div style={{fontSize:56,marginBottom:16}}>🎼</div>
             <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T.xl,fontWeight:700,color:C.text,marginBottom:10}}>Bandforespørsel sendt!</div>
             <div style={{color:C.textD,fontSize:T.sm,lineHeight:1.8,marginBottom:20}}>
-              Artistene har <strong style={{color:C.text}}>48 timer</strong> på å svare med et pristilbud.<br/>
+              Artistene har <strong style={{color:C.text}}>{t("reqSentSub2")}</strong> på å svare med et pristilbud.<br/>
               Ingen betaling kreves nå — du betaler depositum kun etter at dere er enige om pris.
             </div>
             <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:10,padding:"12px 16px",marginBottom:20,fontSize:12,color:C.muted,lineHeight:1.7,textAlign:"left"}}>
@@ -14105,8 +14806,8 @@ function BandBookingSheet({artists, onClose, onBook}:{artists:any[];onClose:()=>
 
             {/* Customer name + email */}
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:12}}>
-              <Inp label="Ditt fulle navn *" placeholder="Fornavn Etternavn" value={(window as any)._bandName||""} onChange={(e:any)=>{(window as any)._bandName=e.target.value;setErr("");}}/>
-              <Inp label="E-post *" type="email" placeholder="deg@epost.no" value={(window as any)._bandEmail||""} onChange={(e:any)=>{(window as any)._bandEmail=e.target.value;setErr("");}}/>
+              <Inp label="Ditt fulle navn *" placeholder={t("reqNamePlaceholder")} value={(window as any)._bandName||""} onChange={(e:any)=>{(window as any)._bandName=e.target.value;setErr("");}}/>
+              <Inp label={t("reqEmail")} type="email" placeholder={t("reqEmailPlaceholder")} value={(window as any)._bandEmail||""} onChange={(e:any)=>{(window as any)._bandEmail=e.target.value;setErr("");}}/>
             </div>
             <div style={{marginBottom:14}}>
               <Inp label="By / sted for arrangementet" placeholder="Oslo, Bergen…" value={(window as any)._bandCity||""} onChange={(e:any)=>{(window as any)._bandCity=e.target.value;}}/>
@@ -14114,7 +14815,7 @@ function BandBookingSheet({artists, onClose, onBook}:{artists:any[];onClose:()=>
 
             {/* Trust signals */}
             <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:10,padding:"10px 14px",marginBottom:14,display:"flex",flexWrap:"wrap" as const,gap:12}}>
-              {[["🔒","Kryptert og trygg"],["💰","Betal kun ved enighet"],["⏱","Svar innen 48t"],["🎼","Alle artistene varsles"]].map(([icon,text])=>(
+              {[["🔒",t("reqTrustEncrypted")],["💰",t("reqTrustPayOnAgree")],["⏱",t("reqTrustReply")],["🎼",t("bandAllArtistsNotified")||"Alle artistene varsles"]].map(([icon,text])=>(
                 <span key={text as string} style={{fontSize:11,color:C.muted,display:"flex",alignItems:"center",gap:4}}><span>{icon}</span><span>{text}</span></span>
               ))}
             </div>
