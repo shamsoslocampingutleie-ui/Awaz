@@ -4679,19 +4679,34 @@ function BookingRequestForm({ artist, onClose, onSubmit }) {
               </div>
             </div>
 
-            {/* Location */}
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-              <Inp label="City" placeholder="Oslo, Berlin…" value={form.city} onChange={e=>setF("city",e.target.value)}/>
-              <div>
-                <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:6}}>Country</div>
-                <select value={form.countryCode} onChange={e=>{
-                  const c=COUNTRIES.find(c=>c.code===e.target.value);
-                  setForm(p=>({...p,countryCode:e.target.value,country:c?.name||""}));
-                }} style={{width:"100%",background:C.card,border:`2px solid ${C.border}`,borderRadius:10,padding:"12px 14px",color:C.text,fontSize:T.sm,outline:"none",fontFamily:"inherit",boxSizing:"border-box" as const}}>
-                  {COUNTRIES.map(c=><option key={c.code} value={c.code}>{c.flag} {c.name}</option>)}
-                </select>
-              </div>
+            {/* Country where event takes place — only artist's active markets */}
+            <div>
+              <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:6}}>Land for arrangementet *</div>
+              {artist.countryPricing?.filter((r:any)=>r.active).length>0?(
+                <div style={{display:"flex",flexWrap:"wrap" as const,gap:6}}>
+                  {artist.countryPricing.filter((r:any)=>r.active).map((row:any)=>{
+                    const m=MARKETS.find(m=>m.code===row.code);
+                    const sel=form.countryCode===row.code;
+                    return m?(
+                      <button key={row.code} onClick={()=>setForm(p=>({...p,countryCode:row.code,country:m.name}))}
+                        style={{background:sel?C.goldS:C.surface,border:`2px solid ${sel?C.gold:C.border}`,borderRadius:10,padding:"9px 14px",cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:7,transition:"all 0.15s"}}>
+                        <span style={{fontSize:18}}>{m.flag}</span>
+                        <span style={{fontSize:T.xs,fontWeight:sel?700:500,color:sel?C.gold:C.text}}>{m.name}</span>
+                        {sel&&<span style={{color:C.gold,fontSize:12}}>✓</span>}
+                      </button>
+                    ):null;
+                  })}
+                </div>
+              ):(
+                <div>
+                  <div style={{fontSize:T.xs,fontWeight:700,color:C.muted,marginBottom:6}}>By</div>
+                  <Inp label="" placeholder="Oslo, Berlin…" value={form.city} onChange={e=>setF("city",e.target.value)}/>
+                </div>
+              )}
             </div>
+
+            {/* City */}
+            <Inp label="By / sted" placeholder="Oslo, Bergen, Berlin…" value={form.city} onChange={e=>setF("city",e.target.value)}/>
 
             {/* Booking type */}
             <div>
@@ -4967,30 +4982,27 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
                 <div style={{background:C.card,borderRadius:12,padding:vp.isMobile?20:28,border:`1px solid ${C.border}`}}>
                   <div style={{fontFamily:"'Cormorant Garamond',serif",color:C.gold,fontSize:T.xl,fontWeight:700,marginBottom:14,letterSpacing:"-0.3px"}}>{t('bookingTerms')}</div>
 
-                  {/* Vocalist dual pricing — shown clearly */}
+                  {/* Vocalist dual booking types — shown without prices */}
                   {(artist.artistType==="vocalist"||artist.artist_type==="vocalist")&&artist.depositWithBand&&(
                     <>
                       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:10}}>
                         <div style={{background:C.goldS,border:`2px solid ${C.gold}44`,borderRadius:10,padding:"12px 14px",textAlign:"center"}}>
                           <div style={{fontSize:18,marginBottom:4}}>🎤</div>
-                          <div style={{fontWeight:700,color:C.text,fontSize:T.xs,marginBottom:4}}>Solo — singer only</div>
-                          <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:800,color:C.gold,fontSize:T.xl}}>€{artist.deposit}</div>
-                          <div style={{fontSize:10,color:C.muted,marginTop:3}}>deposit · voice only, no instruments</div>
+                          <div style={{fontWeight:700,color:C.text,fontSize:T.xs,marginBottom:4}}>Solo — kun vokalist</div>
+                          <div style={{fontSize:11,color:C.muted,marginTop:3}}>Vokal uten instrumenter</div>
                         </div>
                         <div style={{background:C.lapisS,border:`2px solid ${C.lapis}44`,borderRadius:10,padding:"12px 14px",textAlign:"center"}}>
                           <div style={{fontSize:18,marginBottom:4}}>🎼</div>
-                          <div style={{fontWeight:700,color:C.text,fontSize:T.xs,marginBottom:4}}>With Full Band</div>
-                          <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:800,color:C.lapis,fontSize:T.xl}}>€{artist.depositWithBand||artist.deposit_with_band}</div>
-                          <div style={{fontSize:10,color:C.muted,marginTop:3}}>deposit · singer + full ensemble</div>
+                          <div style={{fontWeight:700,color:C.text,fontSize:T.xs,marginBottom:4}}>Med fullt band</div>
+                          <div style={{fontSize:11,color:C.muted,marginTop:3}}>Vokalist + musikere</div>
                         </div>
                       </div>
-                      {/* Important note for solo bookings */}
                       <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:10,padding:"10px 14px",marginBottom:16,display:"flex",gap:10,alignItems:"flex-start"}}>
                         <span style={{fontSize:16,flexShrink:0}}>💡</span>
                         <div>
                           <div style={{fontWeight:700,color:C.text,fontSize:T.xs,marginBottom:3}}>{t('bookingTermsSoloNote')}</div>
                           <div style={{fontSize:11,color:C.textD,lineHeight:1.6}}>
-                            If you want tabla, keyboard or other musicians at your event, choose <strong style={{color:C.lapis}}>With Full Band</strong> above — or use <strong style={{color:C.lapis}}>Book a Band</strong> to add individual instrumentalists from the platform separately.
+                            Vil du ha tabla, keyboard eller andre musikere, velg <strong style={{color:C.lapis}}>Med fullt band</strong> — eller bruk <strong style={{color:C.lapis}}>Book et Band</strong> for å legge til enkeltartister separat.
                           </div>
                         </div>
                       </div>
@@ -5019,17 +5031,17 @@ function ProfilePage({ artist, bookings, session, onBack, onBookingCreated }) {
                     ))}
                   </div>
                 </div>
-                {/* Performing countries — shown to customers */}
-                {artist.performingCountries?.length>0&&(
+                {/* Performing countries — shown to customers, no prices */}
+                {artist.countryPricing?.filter((r:any)=>r.active).length>0&&(
                   <div style={{background:C.card,borderRadius:12,padding:vp.isMobile?16:24,border:`1px solid ${C.border}`}}>
                     <div style={{fontFamily:"'Cormorant Garamond',serif",color:C.gold,fontSize:T.lg,fontWeight:700,marginBottom:4}}>{t('availableIn')||'Available In'}</div>
-                    <div style={{color:C.muted,fontSize:T.xs,marginBottom:14}}>{t('performingCountriesDesc')||'This artist performs in the following countries'}</div>
+                    <div style={{color:C.muted,fontSize:T.xs,marginBottom:14}}>Denne artisten er tilgjengelig for bookinger i følgende land</div>
                     <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
-                      {artist.performingCountries.map((code:string)=>{
-                        const m=MARKETS.find(m=>m.code===code);
+                      {artist.countryPricing.filter((r:any)=>r.active).map((row:any)=>{
+                        const m=MARKETS.find(m=>m.code===row.code);
                         if(!m) return null;
                         return(
-                          <div key={code} style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,padding:"8px 14px",display:"flex",alignItems:"center",gap:8}}>
+                          <div key={row.code} style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,padding:"8px 14px",display:"flex",alignItems:"center",gap:8}}>
                             <span style={{fontSize:18}}>{m.flag}</span>
                             <span style={{color:C.text,fontSize:T.sm,fontWeight:600}}>{m.name}</span>
                           </div>
@@ -10344,8 +10356,14 @@ function CountryPricingTab({ artist, onUpdateArtist, vp }) {
     <div style={{display:"flex",flexDirection:"column",gap:16}}>
       <div>
         <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:T["2xl"],fontWeight:700,color:C.text,marginBottom:4}}>{t('marketPricing')}</div>
-        <div style={{fontSize:T.sm,color:C.muted,lineHeight:1.7}}>
-          All prices are in EUR (€). Toggle countries where you are available to perform. You keep 88% of every deposit.
+        <div style={{fontSize:T.sm,color:C.muted,lineHeight:1.7,marginBottom:10}}>
+          Aktiver landene du er tilgjengelig i. Sett full pris og depositum per land — dette er intern informasjon og vises aldri til kunder.
+        </div>
+        <div style={{background:`${C.lapis}12`,border:`1px solid ${C.lapis}33`,borderRadius:8,padding:"9px 14px",display:"flex",alignItems:"center",gap:8}}>
+          <span style={{fontSize:14}}>🔒</span>
+          <span style={{fontSize:11,color:C.muted,lineHeight:1.5}}>
+            <strong style={{color:C.text}}>Prisene er private.</strong> Kunder ser kun hvilke land du kan spille i — ikke beløpene. Prisene brukes internt til å gi smarte prisanbefalinger når du mottar en forespørsel.
+          </span>
         </div>
       </div>
 
